@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
-import { getAnthropicCompletion } from "../helpers/anthropic";
-import { getEnrichJsonPrompt } from "../prompts/enrichJson";
+import { getAnthropicCompletion } from "@/helpers/anthropic";
+import { Template } from "@/utils/templateParser";
+import { getEnrichJsonPrompt } from "@/prompts/enrichJson";
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    const { start, end } = await request.json();
+
     const jsonPath = path.join(
       process.cwd(),
       "public",
@@ -15,12 +18,11 @@ export async function POST() {
     const jsonContent = await fs.readFile(jsonPath, "utf-8");
     const templates = JSON.parse(jsonContent).result.data.json;
 
-    const enrichedTemplates = await Promise.all(
-      templates.map(async (template) => {
-        const enrichedTemplate = await enrichTemplate(template);
-        return enrichedTemplate;
-      })
-    );
+    const enrichedTemplates = [];
+    for (let i = start; i < Math.min(end, templates.length); i++) {
+      const enrichedTemplate = await enrichTemplate(templates[i]);
+      enrichedTemplates.push(enrichedTemplate);
+    }
 
     return NextResponse.json(enrichedTemplates);
   } catch (error) {
@@ -32,7 +34,7 @@ export async function POST() {
   }
 }
 
-async function enrichTemplate(template) {
+async function enrichTemplate(template: Template) {
   const prompt = getEnrichJsonPrompt(template);
   const completion = await getAnthropicCompletion(prompt);
 

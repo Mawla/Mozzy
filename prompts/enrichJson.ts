@@ -8,7 +8,7 @@ export function getEnrichJsonPrompt(template: any): string {
     Emoji: ${template.emoji}
 
     Please provide:
-    1. A list of 3-5 relevant tags (comma-separated)
+    1. A list of 3-5 relevant tags (comma-separated), add a # to each tag
     2. An improved description (max 150 characters)
 
     Response format:
