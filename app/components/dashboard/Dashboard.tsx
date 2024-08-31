@@ -1,7 +1,7 @@
-import { Sidebar } from "./Sidebar";
-import { Header } from "./Header";
 import { ProductGrid } from "./ProductGrid";
-import { Button } from "../ui/button";
+import { Button } from "../../../components/ui/button";
+import Sidebar from "./Sidebar";
+import Header from "./Header";
 
 export default function Dashboard() {
   return (

@@ -15,6 +15,7 @@ export interface Template {
 export interface Pack {
   id: string;
   name: string;
+  emoji: string;
   templates: Template[];
 }
 
@@ -40,6 +41,7 @@ export class TemplateParser {
             template.name ||
             "Unnamed Pack",
           templates: [],
+          emoji: template.emoji,
         });
       }
 
