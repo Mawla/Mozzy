@@ -83,15 +83,32 @@ class PostService {
     tags: string[],
     templates: Template[]
   ): Promise<Template[]> {
-    return templates.filter((template) =>
-      template.tags.some((tag) => tags.includes(tag))
+    // Normalize tags (remove '#' if present and convert to lowercase)
+    const normalizedTags = tags.map((tag) =>
+      tag.replace("#", "").toLowerCase()
     );
+
+    // Filter and sort templates
+    const shortlistedTemplates = templates
+      .map((template) => {
+        const templateTags = template.tags.map((tag) => tag.toLowerCase());
+        const matchingTags = normalizedTags.filter((tag) =>
+          templateTags.includes(tag)
+        );
+        return { template, matchCount: matchingTags.length };
+      })
+      .filter((item) => item.matchCount > 0)
+      .sort((a, b) => b.matchCount - a.matchCount)
+      .map((item) => item.template);
+
+    // Return all matching templates, or all templates if no matches
+    return shortlistedTemplates.length > 0 ? shortlistedTemplates : templates;
   }
 
   async chooseBestTemplate(
     transcript: string,
     templates: Template[]
-  ): Promise<{ bestFit: Template; optionalChoices: Template[] }> {
+  ): Promise<{ bestFit: Template | null; optionalChoices: Template[] }> {
     try {
       const response = await this.callAPI<{
         bestTemplateResponse: string;
@@ -116,20 +133,17 @@ class PostService {
       // Find the optional choice templates from the list of templates
       const optionalChoiceTemplates = optionalChoiceIds
         .map((id: string) => templates.find((template) => template.id === id))
-        .filter(Boolean);
+        .filter(Boolean) as Template[];
 
       // Return the best fit template and the optional choices
-      if (!bestFitTemplate) {
-        throw new Error("No best fit template found");
-      }
       return {
-        bestFit: bestFitTemplate,
-        optionalChoices: optionalChoiceTemplates as Template[],
+        bestFit: bestFitTemplate || null,
+        optionalChoices: optionalChoiceTemplates,
       };
     } catch (error) {
       console.error("Error choosing best template:", error);
       // Return null for bestFit and an empty array for optionalChoices in case of an error
-      return { bestFit: {} as Template, optionalChoices: [] };
+      return { bestFit: null, optionalChoices: [] };
     }
   }
 

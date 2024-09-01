@@ -228,10 +228,12 @@ const CreatePostPage = () => {
     setProgressNotes("Starting template suggestion process...");
 
     try {
-      const tagsToUse = suggestedTags.length > 0 ? suggestedTags : tags;
+      // Get tags from storage
+      const storedTags = postService.getSuggestedTagsFromLocalStorage();
+      const tagsToUse = storedTags.length > 0 ? storedTags : tags;
 
       setProgressNotes(
-        (prev) => `${prev}\nUsing tags: ${tagsToUse.join(", ")}`
+        (prev) => `${prev}\nUsing tags from storage: ${tagsToUse.join(", ")}`
       );
 
       const allTemplates = packs.flatMap((pack) => pack.templates);
@@ -246,21 +248,25 @@ const CreatePostPage = () => {
             .join(", ")}`
       );
 
-      const { bestFit, optionalChoices } = await postService.chooseBestTemplate(
+      console.log("Shortlisted templates:", shortlistedTemplates);
+
+      const result = await postService.chooseBestTemplate(
         transcript,
         shortlistedTemplates
       );
 
-      if (bestFit) {
-        setSelectedTemplate(bestFit);
-        setTitle(bestFit.title);
-        setContent(bestFit.body);
-        postService.saveTemplateToLocalStorage(bestFit);
-        setSuggestedTemplates([bestFit, ...optionalChoices]);
+      console.log("Choose best template result:", result);
+
+      if (result.bestFit) {
+        setSelectedTemplate(result.bestFit);
+        setTitle(result.bestFit.title);
+        setContent(result.bestFit.body);
+        postService.saveTemplateToLocalStorage(result.bestFit);
+        setSuggestedTemplates([result.bestFit, ...result.optionalChoices]);
         setProgressNotes(
           (prev) =>
-            `${prev}\nBest fit template: ${bestFit.name}\n` +
-            `Optional choices: ${optionalChoices
+            `${prev}\nBest fit template: ${result.bestFit.name}\n` +
+            `Optional choices: ${result.optionalChoices
               .map((t) => t.name)
               .join(", ")}\n` +
             `All matching templates: ${shortlistedTemplates
@@ -278,21 +284,26 @@ const CreatePostPage = () => {
       }
     } catch (error) {
       console.error("Error suggesting template:", error);
-      setProgressNotes("An error occurred while suggesting a template.");
+      setProgressNotes(
+        `An error occurred while suggesting a template: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
 
     setIsLoading(false);
-  }, [suggestedTags, tags, transcript, packs]);
+  }, [tags, transcript, packs]);
 
   const handleShortlistTemplates = useCallback(async () => {
     setIsLoading(true);
     setProgressNotes("Starting template shortlisting process...");
 
     try {
-      const tagsToUse = suggestedTags.length > 0 ? suggestedTags : tags;
+      const storedTags = postService.getSuggestedTagsFromLocalStorage();
+      const tagsToUse = storedTags.length > 0 ? storedTags : tags;
 
       setProgressNotes(
-        (prev) => `${prev}\nUsing tags: ${tagsToUse.join(", ")}`
+        (prev) => `${prev}\nUsing tags from storage: ${tagsToUse.join(", ")}`
       );
 
       const allTemplates = packs.flatMap((pack) => pack.templates);
@@ -314,7 +325,7 @@ const CreatePostPage = () => {
     }
 
     setIsLoading(false);
-  }, [suggestedTags, tags, packs]);
+  }, [tags, packs]);
 
   return (
     <div className="container mx-auto px-4 py-8">
