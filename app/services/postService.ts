@@ -1,4 +1,5 @@
 import { Pack, Template, TemplateParser } from "@/utils/templateParser";
+import { AnthropicHelper } from "@/utils/AnthropicHelper";
 
 class PostService {
   getPacks(): Pack[] {
@@ -77,6 +78,42 @@ class PostService {
     localStorage.removeItem("merge");
     localStorage.removeItem("selectedTemplate");
     // Add any other items that need to be cleared
+  }
+
+  async suggestTags(transcript: string): Promise<string[]> {
+    const tagsPrompt = suggestTagsPrompt(transcript);
+    const suggestedTags = await AnthropicHelper.callClaudeAPI(tagsPrompt, 100);
+    return suggestedTags.split(",").map((tag) => tag.trim());
+  }
+
+  async shortlistTemplatesByTags(
+    tags: string[],
+    templates: Template[]
+  ): Promise<Template[]> {
+    return templates.filter((template) =>
+      template.tags.some((tag) => tags.includes(tag))
+    );
+  }
+
+  async chooseBestTemplate(
+    transcript: string,
+    templates: Template[]
+  ): Promise<{ bestFit: Template; optionalChoices: Template[] }> {
+    const bestTemplatePrompt = chooseBestTemplatePrompt(transcript, templates);
+    const bestTemplateResponse = await AnthropicHelper.callClaudeAPI(
+      bestTemplatePrompt,
+      1000
+    );
+
+    const [bestFitId, ...optionalChoiceIds] = bestTemplateResponse
+      .split("\n")
+      .map((line) => line.trim());
+    const bestFit = templates.find((template) => template.id === bestFitId);
+    const optionalChoices = optionalChoiceIds
+      .map((id) => templates.find((template) => template.id === id))
+      .filter(Boolean);
+
+    return { bestFit, optionalChoices };
   }
 }
 

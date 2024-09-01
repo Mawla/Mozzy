@@ -44,6 +44,8 @@ const CreatePostPage = () => {
   const [activeTab, setActiveTab] = useState("content");
   const [isMerging, setIsMerging] = useState(false);
   const [mergedContent, setMergedContent] = useState("");
+  const [progressNotes, setProgressNotes] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     console.log("Component mounted");
@@ -194,6 +196,30 @@ const CreatePostPage = () => {
     }
   }, []);
 
+  const handleSuggestTagsAndChooseTemplate = async (transcript: string) => {
+    setIsLoading(true);
+    setProgressNotes("Starting tag suggestion process...");
+
+    try {
+      const tags = await postService.suggestTags(transcript);
+      setProgressNotes((prev) => `${prev}\nSuggested tags: ${tags.join(", ")}`);
+
+      setProgressNotes((prev) => `${prev}\nShortlisting templates...`);
+      const allTemplates = packs.flatMap((pack) => pack.templates);
+      const shortlistedTemplates = await postService.shortlistTemplatesByTags(tags, allTemplates);
+      setProgressNotes((prev) => `${prev}\nShortlisted templates: ${shortlistedTemplates.map(t => t.name).join(", ")}`);
+
+      setProgressNotes((prev) => `${prev}\nChoosing the best template...`);
+      const { bestFit, optionalChoices } = await postService.chooseBestTemplate(transcript, shortlistedTemplates);
+      setProgressNotes((prev) => `${prev}\nBest fit template: ${bestFit.name}\nOptional choices: ${optionalChoices.map(t => t.name).join(", ")}`);
+    } catch (error) {
+      console.error("Error suggesting tags and choosing template:", error);
+      setProgressNotes(`Error: ${error.message}`);
+    }
+
+    setIsLoading(false);
+  };
+
   return (
     <ErrorBoundary>
       <div className="space-y-6">
@@ -335,6 +361,18 @@ const CreatePostPage = () => {
           onClose={() => setIsTemplateModalOpen(false)}
           packs={packs}
           onSelectTemplate={handleTemplateSelect}
+        />
+        <Button
+          onClick={() => handleSuggestTagsAndChooseTemplate(transcript)}
+          className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded text-sm"
+        >
+          Suggest Tags & Choose Template
+        </Button>
+        <textarea
+          value={progressNotes}
+          readOnly
+          placeholder="Progress notes will appear here..."
+          className="flex-grow p-2 border rounded resize-none overflow-auto text-sm"
         />
       </div>
     </ErrorBoundary>
