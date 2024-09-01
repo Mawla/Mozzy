@@ -126,22 +126,8 @@ const CreatePostPage = () => {
       setTranscript(
         (prevTranscript) => prevTranscript + "\n\n" + importedContent
       );
-
-      if (packs.length > 0) {
-        const allTemplates = packs.flatMap((pack) => pack.templates);
-        const chosenTemplate = await postService.chooseTemplate(
-          importedContent,
-          allTemplates
-        );
-        if (chosenTemplate) {
-          setSelectedTemplate(chosenTemplate);
-          setTitle(chosenTemplate.title);
-          setContent(chosenTemplate.body);
-          postService.saveTemplateToLocalStorage(chosenTemplate);
-        }
-      }
     },
-    [packs]
+    []
   );
 
   const handleMerge = useCallback(async () => {
@@ -158,28 +144,6 @@ const CreatePostPage = () => {
       setIsMerging(false);
     }
   }, [transcript, content]);
-
-  const handleSuggestTemplate = useCallback(async () => {
-    if (packs.length > 0 && transcript) {
-      const allTemplates = packs.flatMap((pack) => pack.templates);
-      const suggestedTemplate = await postService.chooseTemplate(
-        transcript,
-        allTemplates
-      );
-      if (suggestedTemplate) {
-        setSelectedTemplate(suggestedTemplate);
-        setTitle(suggestedTemplate.title);
-        setContent(suggestedTemplate.body);
-        postService.saveTemplateToLocalStorage(suggestedTemplate);
-      } else {
-        alert("No suitable template found. Please choose one manually.");
-      }
-    } else {
-      alert(
-        "Please import a transcript first and ensure templates are loaded."
-      );
-    }
-  }, [packs, transcript]);
 
   const handleClear = useCallback(async () => {
     try {
@@ -206,15 +170,40 @@ const CreatePostPage = () => {
 
       setProgressNotes((prev) => `${prev}\nShortlisting templates...`);
       const allTemplates = packs.flatMap((pack) => pack.templates);
-      const shortlistedTemplates = await postService.shortlistTemplatesByTags(tags, allTemplates);
-      setProgressNotes((prev) => `${prev}\nShortlisted templates: ${shortlistedTemplates.map(t => t.name).join(", ")}`);
+      const shortlistedTemplates = await postService.shortlistTemplatesByTags(
+        tags,
+        allTemplates
+      );
+      setProgressNotes(
+        (prev) =>
+          `${prev}\nShortlisted templates: ${shortlistedTemplates
+            .map((t) => t.name)
+            .join(", ")}`
+      );
 
       setProgressNotes((prev) => `${prev}\nChoosing the best template...`);
-      const { bestFit, optionalChoices } = await postService.chooseBestTemplate(transcript, shortlistedTemplates);
-      setProgressNotes((prev) => `${prev}\nBest fit template: ${bestFit.name}\nOptional choices: ${optionalChoices.map(t => t.name).join(", ")}`);
+      const { bestFit, optionalChoices } = await postService.chooseBestTemplate(
+        transcript,
+        shortlistedTemplates
+      );
+      setSelectedTemplate(bestFit);
+      setTitle(bestFit.title);
+      setContent(bestFit.body);
+      postService.saveTemplateToLocalStorage(bestFit);
+      setProgressNotes(
+        (prev) =>
+          `${prev}\nBest fit template: ${
+            bestFit.name
+          }\nOptional choices: ${optionalChoices.map((t) => t.name).join(", ")}`
+      );
     } catch (error) {
-      console.error("Error suggesting tags and choosing template:", error);
-      setProgressNotes(`Error: ${error.message}`);
+      if (error instanceof Error) {
+        console.error("Error suggesting tags and choosing template:", error);
+        setProgressNotes(`Error: ${error.message}`);
+      } else {
+        console.error("Unexpected error:", error);
+        setProgressNotes("An unexpected error occurred.");
+      }
     }
 
     setIsLoading(false);
