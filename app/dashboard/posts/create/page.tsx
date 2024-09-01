@@ -6,7 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pack, Template } from "@/utils/templateParser";
 import dynamic from "next/dynamic";
 import { Loader2 } from "lucide-react";
-import ErrorBoundary from "@/components/ErrorBoundary";
 import { postService } from "@/app/services/postService";
 import { Trash2 } from "lucide-react";
 import ImportTranscriptModal from "@/app/components/dashboard/ImportTranscriptModal";
@@ -23,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import TemplateSelectionModal from "@/app/components/dashboard/posts/TemplateSelectionModal";
 import PackSelectionModal from "@/app/components/dashboard/PackSelectionModal";
+import { Badge } from "@/components/ui/badge";
 
 const MDEditor = dynamic(
   () => import("@uiw/react-md-editor").then((mod) => mod.default),
@@ -46,27 +46,44 @@ const CreatePostPage = () => {
   const [mergedContent, setMergedContent] = useState("");
   const [progressNotes, setProgressNotes] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
 
   useEffect(() => {
-    console.log("Component mounted");
-    setPacks(postService.getPacks());
+    try {
+      console.log("Component mounted");
+      setPacks(postService.getPacks());
 
-    // Load saved data from localStorage
-    const savedTemplate = postService.getTemplateFromLocalStorage();
-    const savedTranscript = postService.getFromLocalStorage("transcript");
-    const savedContent = postService.getFromLocalStorage("content");
+      // Load saved data from localStorage
+      const savedTemplate = postService.getTemplateFromLocalStorage();
+      const savedTranscript = postService.getFromLocalStorage("transcript");
+      const savedContent = postService.getFromLocalStorage("content");
+      const savedTags = postService.getSuggestedTagsFromLocalStorage();
 
-    if (savedTemplate) {
-      setSelectedTemplate(savedTemplate);
-      setTitle(savedTemplate.title);
-    }
+      if (savedTemplate) {
+        setSelectedTemplate(savedTemplate);
+        setTitle(savedTemplate.title);
+      }
 
-    if (savedTranscript) {
-      setTranscript(savedTranscript);
-    }
+      if (savedTranscript) {
+        setTranscript(savedTranscript);
+      }
 
-    if (savedContent) {
-      setContent(savedContent);
+      if (savedContent) {
+        setContent(savedContent);
+      }
+
+      if (savedTags.length > 0) {
+        setSuggestedTags(savedTags);
+        setTags(savedTags);
+      }
+
+      setProgressNotes("Loaded saved data from storage.");
+    } catch (error) {
+      console.error("Error in component mount effect:", error);
+      setProgressNotes(
+        "Error loading saved data. Please try refreshing the page."
+      );
     }
   }, []);
 
@@ -76,6 +93,14 @@ const CreatePostPage = () => {
 
   useEffect(() => {
     postService.saveToLocalStorage("content", content);
+  }, [content]);
+
+  useEffect(() => {
+    // Extract tags from content
+    const extractedTags = content.match(/#\w+/g) || [];
+    const uniqueTags = Array.from(new Set(extractedTags));
+    setTags(uniqueTags);
+    postService.saveSuggestedTagsToLocalStorage(uniqueTags);
   }, [content]);
 
   const handlePackSelect = useCallback(
@@ -133,15 +158,25 @@ const CreatePostPage = () => {
   const handleMerge = useCallback(async () => {
     console.log("Merging content");
     setIsMerging(true);
+    setProgressNotes((prev) => `${prev}\nStarting content merge process...`);
     try {
+      setProgressNotes((prev) => `${prev}\nMerging transcript and template...`);
       const merged = await postService.mergeContent(transcript, content);
       setMergedContent(merged);
       setActiveTab("merge");
+      setProgressNotes((prev) => `${prev}\nMerge completed successfully.`);
     } catch (error) {
       console.error("Error merging content:", error);
+      setProgressNotes(
+        (prev) =>
+          `${prev}\nError merging content: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+      );
       alert("Failed to merge content. Please try again.");
     } finally {
       setIsMerging(false);
+      setProgressNotes((prev) => `${prev}\nMerge process finished.`);
     }
   }, [transcript, content]);
 
@@ -153,25 +188,53 @@ const CreatePostPage = () => {
       setTranscript("");
       setMergedContent("");
       setSelectedTemplate(null);
-      // You may want to reset other relevant state here
+      setSuggestedTags([]);
+      setTags([]);
     } catch (error) {
       console.error("Error clearing data:", error);
       alert("Failed to clear data. Please try again.");
     }
   }, []);
 
-  const handleSuggestTagsAndChooseTemplate = async (transcript: string) => {
+  const handleSuggestTags = async (transcript: string) => {
     setIsLoading(true);
     setProgressNotes("Starting tag suggestion process...");
 
     try {
-      const tags = await postService.suggestTags(transcript);
-      setProgressNotes((prev) => `${prev}\nSuggested tags: ${tags.join(", ")}`);
+      const suggestedTags = await postService.suggestTags(transcript);
+      setSuggestedTags(suggestedTags);
+      setTags(suggestedTags); // Update the tags state immediately
+      postService.saveSuggestedTagsToLocalStorage(suggestedTags);
+      setProgressNotes(
+        (prev) => `${prev}\nSuggested tags: ${suggestedTags.join(", ")}`
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Error suggesting tags:", error);
+        setProgressNotes((prev) => `${prev}\nError: ${error.message}`);
+      } else {
+        console.error("Unexpected error:", error);
+        setProgressNotes((prev) => `${prev}\nAn unexpected error occurred.`);
+      }
+    }
 
-      setProgressNotes((prev) => `${prev}\nShortlisting templates...`);
+    setIsLoading(false);
+  };
+
+  const handleSuggestTemplate = useCallback(async () => {
+    setIsLoading(true);
+    setProgressNotes("Starting template suggestion process...");
+
+    try {
+      const tagsToUse = suggestedTags.length > 0 ? suggestedTags : tags;
+
+      setProgressNotes(
+        (prev) => `${prev}\nUsing tags: ${tagsToUse.join(", ")}`
+      );
+
       const allTemplates = packs.flatMap((pack) => pack.templates);
       const shortlistedTemplates = await postService.shortlistTemplatesByTags(
-        tags,
+        tagsToUse,
         allTemplates
       );
       setProgressNotes(
@@ -181,13 +244,11 @@ const CreatePostPage = () => {
             .join(", ")}`
       );
 
-      setProgressNotes((prev) => `${prev}\nChoosing the best template...`);
       const { bestFit, optionalChoices } = await postService.chooseBestTemplate(
         transcript,
         shortlistedTemplates
       );
-      console.log("bestFit:", bestFit); // Add this line
-      console.log("optionalChoices:", optionalChoices); // Add this line
+
       if (bestFit) {
         setSelectedTemplate(bestFit);
         setTitle(bestFit.title);
@@ -208,44 +269,15 @@ const CreatePostPage = () => {
         );
       }
     } catch (error) {
-      if (error instanceof Error) {
-        console.error("Error suggesting tags and choosing template:", error);
-        setProgressNotes(`Error: ${error.message}`);
-      } else {
-        console.error("Unexpected error:", error);
-        setProgressNotes("An unexpected error occurred.");
-      }
+      console.error("Error suggesting template:", error);
+      setProgressNotes("An error occurred while suggesting a template.");
     }
 
     setIsLoading(false);
-  };
-
-  const handleSuggestTags = async (transcript: string) => {
-    setIsLoading(true);
-    setProgressNotes("Starting tag suggestion process...");
-
-    try {
-      const tags = await postService.suggestTags(transcript);
-      setProgressNotes((prev) => `${prev}\nSuggested tags: ${tags.join(", ")}`);
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("Error suggesting tags:", error);
-        setProgressNotes((prev) => `${prev}\nError: ${error.message}`);
-      } else {
-        console.error("Unexpected error:", error);
-        setProgressNotes((prev) => `${prev}\nAn unexpected error occurred.`);
-      }
-    }
-
-    setIsLoading(false);
-  };
-
-  const handleSuggestTemplate = useCallback(() => {
-    setIsTemplateModalOpen(true);
-  }, []);
+  }, [suggestedTags, tags, transcript, packs]);
 
   return (
-    <ErrorBoundary>
+    <div className="container mx-auto px-4 py-8">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold">Create New Post</h1>
@@ -303,19 +335,42 @@ const CreatePostPage = () => {
             <label htmlFor="content" className="block text-sm font-medium mb-1">
               Content
             </label>
+            <div className="flex items-center space-x-2 mb-2">
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList>
+                  <TabsTrigger value="content">Content</TabsTrigger>
+                  <TabsTrigger value="template">Template</TabsTrigger>
+                  <TabsTrigger value="merge">Merge</TabsTrigger>
+                </TabsList>
+              </Tabs>
+              <div className="flex flex-wrap gap-1">
+                {tags.map((tag, index) => (
+                  <Badge key={index} variant="secondary">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            </div>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList>
-                <TabsTrigger value="content">Content</TabsTrigger>
-                <TabsTrigger value="template">Template</TabsTrigger>
-                <TabsTrigger value="merge">Merge</TabsTrigger>
-              </TabsList>
               <TabsContent value="content" className="mt-2">
-                <MDEditor
-                  value={transcript}
-                  onChange={(value) => setTranscript(value || "")}
-                  preview="edit"
-                  height={400}
-                />
+                <div className="space-y-4">
+                  <MDEditor
+                    value={transcript}
+                    onChange={(value) => setTranscript(value || "")}
+                    preview="edit"
+                    height={400}
+                  />
+                  <Button
+                    onClick={() => handleSuggestTags(transcript)}
+                    className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2 inline" />
+                    ) : null}
+                    Suggest Tags
+                  </Button>
+                </div>
               </TabsContent>
               <TabsContent value="template" className="mt-2">
                 <div className="space-y-4">
@@ -325,7 +380,7 @@ const CreatePostPage = () => {
                     preview="edit"
                     height={400}
                   />
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <Button
                       onClick={() => setIsTemplateModalOpen(true)}
                       variant="default"
@@ -336,14 +391,15 @@ const CreatePostPage = () => {
                           }`
                         : "Choose a Template"}
                     </Button>
-                    <Button onClick={handleSuggestTemplate} variant="secondary">
-                      Suggest Template
-                    </Button>
                     <Button
-                      onClick={() => handleSuggestTags(transcript)}
+                      onClick={handleSuggestTemplate}
                       variant="secondary"
+                      disabled={isLoading}
                     >
-                      Suggest Tags
+                      {isLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2 inline" />
+                      ) : null}
+                      Suggest Template
                     </Button>
                   </div>
                 </div>
@@ -392,12 +448,6 @@ const CreatePostPage = () => {
           packs={packs}
           onSelectTemplate={handleTemplateSelect}
         />
-        <Button
-          onClick={() => handleSuggestTagsAndChooseTemplate(transcript)}
-          className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded text-sm"
-        >
-          Suggest Tags & Choose Template
-        </Button>
         <div className="w-full max-w-4xl mx-auto">
           <textarea
             value={progressNotes}
@@ -407,7 +457,7 @@ const CreatePostPage = () => {
           />
         </div>
       </div>
-    </ErrorBoundary>
+    </div>
   );
 };
 
