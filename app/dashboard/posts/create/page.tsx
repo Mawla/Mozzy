@@ -48,6 +48,10 @@ const CreatePostPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
+  const [shortlistedTemplates, setShortlistedTemplates] = useState<Template[]>(
+    []
+  );
+  const [suggestedTemplates, setSuggestedTemplates] = useState<Template[]>([]);
 
   useEffect(() => {
     try {
@@ -77,7 +81,7 @@ const CreatePostPage = () => {
 
       if (savedTags.length > 0) {
         setSuggestedTags(savedTags);
-        setTags(savedTags);
+        setTags(savedTags); // Set both suggestedTags and tags
       }
 
       setProgressNotes("Loaded saved data from storage.");
@@ -95,14 +99,6 @@ const CreatePostPage = () => {
 
   useEffect(() => {
     postService.saveToLocalStorage("content", content);
-  }, [content]);
-
-  useEffect(() => {
-    // Extract tags from content
-    const extractedTags = content.match(/#\w+/g) || [];
-    const uniqueTags = Array.from(new Set(extractedTags));
-    setTags(uniqueTags);
-    postService.saveSuggestedTagsToLocalStorage(uniqueTags);
   }, [content]);
 
   const handlePackSelect = useCallback(
@@ -204,6 +200,7 @@ const CreatePostPage = () => {
 
     try {
       const suggestedTags = await postService.suggestTags(transcript);
+      // IMPORTANT: Preserve the '#' symbol in tags. Do not modify this logic.
       const formattedTags = suggestedTags.map((tag) =>
         tag.startsWith("#") ? tag : `#${tag}`
       );
@@ -259,18 +256,24 @@ const CreatePostPage = () => {
         setTitle(bestFit.title);
         setContent(bestFit.body);
         postService.saveTemplateToLocalStorage(bestFit);
+        setSuggestedTemplates([bestFit, ...optionalChoices]);
         setProgressNotes(
           (prev) =>
-            `${prev}\nBest fit template: ${
-              bestFit.name
-            }\nOptional choices: ${optionalChoices
+            `${prev}\nBest fit template: ${bestFit.name}\n` +
+            `Optional choices: ${optionalChoices
+              .map((t) => t.name)
+              .join(", ")}\n` +
+            `All matching templates: ${shortlistedTemplates
               .map((t) => t.name)
               .join(", ")}`
         );
       } else {
         setProgressNotes(
           (prev) =>
-            `${prev}\nNo best fit template found. Please select a template manually.`
+            `${prev}\nNo best fit template found. Please select a template manually.\n` +
+            `All matching templates: ${shortlistedTemplates
+              .map((t) => t.name)
+              .join(", ")}`
         );
       }
     } catch (error) {
@@ -280,6 +283,38 @@ const CreatePostPage = () => {
 
     setIsLoading(false);
   }, [suggestedTags, tags, transcript, packs]);
+
+  const handleShortlistTemplates = useCallback(async () => {
+    setIsLoading(true);
+    setProgressNotes("Starting template shortlisting process...");
+
+    try {
+      const tagsToUse = suggestedTags.length > 0 ? suggestedTags : tags;
+
+      setProgressNotes(
+        (prev) => `${prev}\nUsing tags: ${tagsToUse.join(", ")}`
+      );
+
+      const allTemplates = packs.flatMap((pack) => pack.templates);
+      const shortlisted = await postService.shortlistTemplatesByTags(
+        tagsToUse,
+        allTemplates
+      );
+
+      setShortlistedTemplates(shortlisted);
+      setProgressNotes(
+        (prev) =>
+          `${prev}\nShortlisted templates: ${shortlisted
+            .map((t) => t.name)
+            .join(", ")}`
+      );
+    } catch (error) {
+      console.error("Error shortlisting templates:", error);
+      setProgressNotes("An error occurred while shortlisting templates.");
+    }
+
+    setIsLoading(false);
+  }, [suggestedTags, tags, packs]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -349,7 +384,11 @@ const CreatePostPage = () => {
                 </TabsList>
               </Tabs>
               <div className="flex flex-wrap gap-1">
-                {(tags.length > 0 ? tags : suggestedTags).map((tag, index) => (
+                {/* 
+                  IMPORTANT: Do not modify the tag display logic below.
+                  Tags should be displayed as-is, including the '#' symbol.
+                */}
+                {tags.map((tag, index) => (
                   <Badge key={index} variant="secondary">
                     {tag}
                   </Badge>
@@ -365,16 +404,18 @@ const CreatePostPage = () => {
                     preview="edit"
                     height={400}
                   />
-                  <Button
-                    onClick={() => handleSuggestTags(transcript)}
-                    className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2 inline" />
-                    ) : null}
-                    Suggest Tags
-                  </Button>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Button
+                      onClick={() => handleSuggestTags(transcript)}
+                      className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2 inline" />
+                      ) : null}
+                      Suggest Tags
+                    </Button>
+                  </div>
                 </div>
               </TabsContent>
               <TabsContent value="template" className="mt-2">
@@ -385,7 +426,7 @@ const CreatePostPage = () => {
                     preview="edit"
                     height={400}
                   />
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
                     <Button
                       onClick={() => setIsTemplateModalOpen(true)}
                       variant="default"
@@ -395,6 +436,16 @@ const CreatePostPage = () => {
                             selectedTemplate.title || selectedTemplate.name
                           }`
                         : "Choose a Template"}
+                    </Button>
+                    <Button
+                      onClick={handleShortlistTemplates}
+                      variant="secondary"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2 inline" />
+                      ) : null}
+                      Shortlist Templates
                     </Button>
                     <Button
                       onClick={handleSuggestTemplate}
@@ -452,6 +503,8 @@ const CreatePostPage = () => {
           onClose={() => setIsTemplateModalOpen(false)}
           packs={packs}
           onSelectTemplate={handleTemplateSelect}
+          shortlistedTemplates={shortlistedTemplates}
+          suggestedTemplates={suggestedTemplates}
         />
         <div className="w-full max-w-4xl mx-auto">
           <textarea
