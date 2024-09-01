@@ -5,6 +5,8 @@ import {
 } from "@/prompts/anthropicPrompts";
 import { Template } from "@/utils/templateParser";
 
+const CLAUDE_MODEL_VERSION = "claude-3-5-sonnet-20240620";
+
 export class AnthropicHelper {
   private static anthropic: Anthropic;
 
@@ -17,49 +19,57 @@ export class AnthropicHelper {
     return AnthropicHelper.anthropic;
   }
 
-  static async mergeTranscriptAndTemplate(
-    transcript: string,
-    template: string
+  private static async callClaudeAPI(
+    prompt: string,
+    maxTokens: number
   ): Promise<string> {
     try {
       const response = await AnthropicHelper.getInstance().messages.create({
-        model: "claude-3-opus-20240229",
-        max_tokens: 1000,
+        model: CLAUDE_MODEL_VERSION,
+        max_tokens: maxTokens || 1000,
         messages: [
           {
             role: "user",
-            content: mergeTranscriptAndTemplatePrompt(transcript, template),
+            content: prompt,
           },
         ],
       });
 
-      return response.content[0].text;
+      if (
+        response.content &&
+        response.content.length > 0 &&
+        "text" in response.content[0]
+      ) {
+        return response.content[0].text.trim();
+      } else {
+        throw new Error("Invalid response format from Claude API");
+      }
     } catch (error) {
       console.error("Error calling Anthropic API:", error);
-      throw new Error("Failed to merge content");
+      throw new Error("Failed to call Claude API");
     }
+  }
+
+  static async mergeTranscriptAndTemplate(
+    transcript: string,
+    template: string
+  ): Promise<string> {
+    const prompt = mergeTranscriptAndTemplatePrompt(transcript, template);
+    return this.callClaudeAPI(prompt, 1000);
   }
 
   static async chooseAppropriateTemplate(
     transcript: string,
     templates: Template[]
   ): Promise<string> {
-    try {
-      const response = await AnthropicHelper.getInstance().messages.create({
-        model: "claude-3-opus-20240229",
-        max_tokens: 100,
-        messages: [
-          {
-            role: "user",
-            content: chooseTemplatePrompt(transcript, templates),
-          },
-        ],
-      });
+    const prompt = chooseTemplatePrompt(transcript, templates);
+    return this.callClaudeAPI(prompt, 100);
+  }
 
-      return response.content[0].text.trim();
-    } catch (error) {
-      console.error("Error calling Anthropic API:", error);
-      throw new Error("Failed to choose template");
-    }
+  static async enrichTemplateWithClaude(
+    prompt: string,
+    maxTokens: number
+  ): Promise<string> {
+    return this.callClaudeAPI(prompt, maxTokens);
   }
 }

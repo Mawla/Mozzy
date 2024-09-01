@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Template } from "@/utils/templateParser";
 import { getEnrichJsonPrompt } from "@/prompts/enrichJson";
-import { getAnthropicCompletion } from "@/helpers/anthropic";
+import { AnthropicHelper } from "@/utils/AnthropicHelper";
 
 // Function to enrich a single template
 async function enrichTemplate(
   template: Template
 ): Promise<Template & { tags: string[]; improvedDescription: string }> {
   const prompt = getEnrichJsonPrompt(template);
-  const completion = await getAnthropicCompletion(prompt);
+  const completion = await AnthropicHelper.enrichTemplateWithClaude(prompt, 1000);
 
   const enrichment = completion.split("\n");
   const tags = enrichment[0].replace("Tags: ", "").split(", ");
