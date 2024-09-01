@@ -188,16 +188,25 @@ const CreatePostPage = () => {
       );
       console.log("bestFit:", bestFit); // Add this line
       console.log("optionalChoices:", optionalChoices); // Add this line
-      setSelectedTemplate(bestFit);
-      setTitle(bestFit.title);
-      setContent(bestFit.body);
-      postService.saveTemplateToLocalStorage(bestFit);
-      setProgressNotes(
-        (prev) =>
-          `${prev}\nBest fit template: ${
-            bestFit.name
-          }\nOptional choices: ${optionalChoices.map((t) => t.name).join(", ")}`
-      );
+      if (bestFit) {
+        setSelectedTemplate(bestFit);
+        setTitle(bestFit.title);
+        setContent(bestFit.body);
+        postService.saveTemplateToLocalStorage(bestFit);
+        setProgressNotes(
+          (prev) =>
+            `${prev}\nBest fit template: ${
+              bestFit.name
+            }\nOptional choices: ${optionalChoices
+              .map((t) => t.name)
+              .join(", ")}`
+        );
+      } else {
+        setProgressNotes(
+          (prev) =>
+            `${prev}\nNo best fit template found. Please select a template manually.`
+        );
+      }
     } catch (error) {
       if (error instanceof Error) {
         console.error("Error suggesting tags and choosing template:", error);
@@ -389,12 +398,14 @@ const CreatePostPage = () => {
         >
           Suggest Tags & Choose Template
         </Button>
-        <textarea
-          value={progressNotes}
-          readOnly
-          placeholder="Progress notes will appear here..."
-          className="flex-grow p-2 border rounded resize-none overflow-auto text-sm"
-        />
+        <div className="w-full max-w-4xl mx-auto">
+          <textarea
+            value={progressNotes}
+            readOnly
+            placeholder="Progress notes will appear here..."
+            className="w-full p-4 border rounded resize-none overflow-auto text-sm min-h-[200px]"
+          />
+        </div>
       </div>
     </ErrorBoundary>
   );

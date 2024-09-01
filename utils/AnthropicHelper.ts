@@ -64,6 +64,7 @@ export class AnthropicHelper {
     templates: Template[]
   ): Promise<string> {
     const prompt = chooseBestTemplatePrompt(transcript, templates);
+    console.log("chooseBestTemplate prompt:", prompt); // Add this line
     const response = await this.callClaudeAPI(prompt, 1000);
     console.log("chooseBestTemplate response:", response); // Add this line
     return response;

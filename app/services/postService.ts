@@ -93,15 +93,20 @@ class PostService {
     templates: Template[]
   ): Promise<{ bestFit: Template; optionalChoices: Template[] }> {
     try {
-      const { bestTemplateResponse } = await this.callAPI<{
+      const response = await this.callAPI<{
         bestTemplateResponse: string;
       }>("chooseBestTemplate", { transcript, templates });
 
-      console.log("bestTemplateResponse:", bestTemplateResponse);
+      console.log("API response:", response);
 
-      // Parse the response to get the template and choices
-      const { template: bestFitId, choices: optionalChoiceIds } =
-        JSON.parse(bestTemplateResponse);
+      // Parse the inner JSON string
+      const parsedResponse = JSON.parse(response.bestTemplateResponse);
+
+      console.log("Parsed response:", parsedResponse);
+
+      // Extract template and choices from the parsed response
+      const bestFitId = parsedResponse.template;
+      const optionalChoiceIds = parsedResponse.choices || [];
 
       // Find the best fit template from the list of templates
       const bestFitTemplate = templates.find(

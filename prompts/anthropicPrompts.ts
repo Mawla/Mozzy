@@ -45,8 +45,14 @@ ${templateDescriptions}
 Respond with the best template ID and optional choice IDs in this JSON format:
 {
   "template": "string",
-  "choices": ["string"] // Optional array of choice IDs, can be empty
+  "choices": ["string"]
 }
 
-Only include the JSON object in your response, without any additional text.`;
+Only include the JSON object in your response, without any additional text.
+
+Example response:
+{
+  "template": "clj8now3o001kxl73rskkewxo",
+  "choices": ["clj8now3o001kxl73rskkewx2", "clj3now3o001kxl73rskkewxo"]
+}`;
 };
