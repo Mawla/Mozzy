@@ -10,6 +10,9 @@ export interface Template {
   name: string;
   format: string;
   uses: number;
+  walkthroughVideo: string | null;
+  tags: string[];
+  packId: string;
 }
 
 export interface Pack {
@@ -27,36 +30,22 @@ export class TemplateParser {
   }
 
   private parsePacks() {
-    const templates = allTemplates.result.data.json;
+    const templates = allTemplates;
     const packMap = new Map<string, Pack>();
 
-    templates.forEach((template: any) => {
+    templates.forEach((template: Template) => {
       const packId = template.packId;
       if (!packMap.has(packId)) {
         packMap.set(packId, {
           id: packId,
-          name:
-            template.pack.name ||
-            template.title ||
-            template.name ||
-            "Unnamed Pack",
+          name: template.name || "Unnamed Pack",
           templates: [],
           emoji: template.emoji,
         });
       }
 
       const pack = packMap.get(packId)!;
-      pack.templates.push({
-        id: template.id,
-        title: template.title,
-        body: template.body,
-        slug: template.slug,
-        description: template.description,
-        emoji: template.emoji,
-        name: template.name,
-        format: template.format,
-        uses: template.uses,
-      });
+      pack.templates.push(template);
     });
 
     this.packs = Array.from(packMap.values());
