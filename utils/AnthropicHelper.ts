@@ -64,7 +64,9 @@ export class AnthropicHelper {
     templates: Template[]
   ): Promise<string> {
     const prompt = chooseBestTemplatePrompt(transcript, templates);
-    return this.callClaudeAPI(prompt, 1000);
+    const response = await this.callClaudeAPI(prompt, 1000);
+    console.log("chooseBestTemplate response:", response); // Add this line
+    return response;
   }
 
   static async suggestTags(transcript: string): Promise<string[]> {

@@ -97,24 +97,30 @@ class PostService {
         bestTemplateResponse: string;
       }>("chooseBestTemplate", { transcript, templates });
 
-      // Parse the response to get the best fit template ID and optional choice IDs
-      const [bestFitId, ...optionalChoiceIds] = bestTemplateResponse
-        .split("\n")
-        .map((line: string) => line.trim());
+      console.log("bestTemplateResponse:", bestTemplateResponse);
+
+      // Parse the response to get the template and choices
+      const { template: bestFitId, choices: optionalChoiceIds } =
+        JSON.parse(bestTemplateResponse);
 
       // Find the best fit template from the list of templates
-      const bestFit = templates.find((template) => template.id === bestFitId);
+      const bestFitTemplate = templates.find(
+        (template) => template.id === bestFitId
+      );
 
       // Find the optional choice templates from the list of templates
-      const optionalChoices = optionalChoiceIds
+      const optionalChoiceTemplates = optionalChoiceIds
         .map((id: string) => templates.find((template) => template.id === id))
         .filter(Boolean);
 
       // Return the best fit template and the optional choices
-      if (!bestFit) {
+      if (!bestFitTemplate) {
         throw new Error("No best fit template found");
       }
-      return { bestFit, optionalChoices: optionalChoices as Template[] };
+      return {
+        bestFit: bestFitTemplate,
+        optionalChoices: optionalChoiceTemplates as Template[],
+      };
     } catch (error) {
       console.error("Error choosing best template:", error);
       // Return null for bestFit and an empty array for optionalChoices in case of an error

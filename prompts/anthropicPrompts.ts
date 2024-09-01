@@ -30,21 +30,23 @@ ${transcript}
 export const chooseBestTemplatePrompt = (
   transcript: string,
   templates: Template[]
-) => `
-Given the following transcript and templates, choose the best fit template and provide 3-5 optional choices:
+): string => {
+  const templateDescriptions = templates
+    .map(
+      (template) =>
+        `Template ID: ${template.id}, Description: ${template.description}`
+    )
+    .join("\n");
 
-Transcript:
-${transcript}
+  return `Given the following transcript: "${transcript}", choose the best template from the following options:
 
-Templates:
-${templates
-  .map(
-    (template) => `
-ID: ${template.id}
-Description: ${template.description}
-Body: ${template.body}
-Tags: ${template.tags.join(", ")}
-`
-  )
-  .join("\n")}
-`;
+${templateDescriptions}
+
+Respond with the best template ID and optional choice IDs in this JSON format:
+{
+  "template": "string",
+  "choices": ["string"] // Optional array of choice IDs, can be empty
+}
+
+Only include the JSON object in your response, without any additional text.`;
+};

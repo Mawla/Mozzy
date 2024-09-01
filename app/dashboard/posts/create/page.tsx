@@ -186,6 +186,8 @@ const CreatePostPage = () => {
         transcript,
         shortlistedTemplates
       );
+      console.log("bestFit:", bestFit); // Add this line
+      console.log("optionalChoices:", optionalChoices); // Add this line
       setSelectedTemplate(bestFit);
       setTitle(bestFit.title);
       setContent(bestFit.body);
