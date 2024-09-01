@@ -13,6 +13,6 @@ export function getEnrichJsonPrompt(template: any): string {
 
     Response format:
     Tags: tag1, tag2, tag3
-    Description: Improved description here
+    Description: Improved description here, don't add 'improved' to the description
   `;
 }

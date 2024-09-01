@@ -1,40 +1,12 @@
-import { NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
-import { getAnthropicCompletion } from "@/helpers/anthropic";
+import { NextRequest, NextResponse } from "next/server";
 import { Template } from "@/utils/templateParser";
 import { getEnrichJsonPrompt } from "@/prompts/enrichJson";
+import { getAnthropicCompletion } from "@/helpers/anthropic";
 
-export async function POST(request: Request) {
-  try {
-    const { start, end } = await request.json();
-
-    const jsonPath = path.join(
-      process.cwd(),
-      "public",
-      "packs",
-      "alltemplates.json"
-    );
-    const jsonContent = await fs.readFile(jsonPath, "utf-8");
-    const templates = JSON.parse(jsonContent).result.data.json;
-
-    const enrichedTemplates = [];
-    for (let i = start; i < Math.min(end, templates.length); i++) {
-      const enrichedTemplate = await enrichTemplate(templates[i]);
-      enrichedTemplates.push(enrichedTemplate);
-    }
-
-    return NextResponse.json(enrichedTemplates);
-  } catch (error) {
-    console.error("Error enriching JSON:", error);
-    return NextResponse.json(
-      { error: "Failed to enrich JSON" },
-      { status: 500 }
-    );
-  }
-}
-
-async function enrichTemplate(template: Template) {
+// Function to enrich a single template
+async function enrichTemplate(
+  template: Template
+): Promise<Template & { tags: string[]; improvedDescription: string }> {
   const prompt = getEnrichJsonPrompt(template);
   const completion = await getAnthropicCompletion(prompt);
 
@@ -47,4 +19,28 @@ async function enrichTemplate(template: Template) {
     tags,
     improvedDescription,
   };
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const { templates } = await req.json();
+
+    if (!templates || !Array.isArray(templates)) {
+      return NextResponse.json(
+        { error: "Invalid templates provided" },
+        { status: 400 }
+      );
+    }
+
+    // Enrich all templates in the batch
+    const enrichedTemplates = await Promise.all(templates.map(enrichTemplate));
+
+    return NextResponse.json(enrichedTemplates);
+  } catch (error) {
+    console.error("Error enriching templates:", error);
+    return NextResponse.json(
+      { error: "Error enriching templates" },
+      { status: 500 }
+    );
+  }
 }
