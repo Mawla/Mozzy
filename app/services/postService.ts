@@ -1,5 +1,4 @@
 import { Pack, Template, TemplateParser } from "@/utils/templateParser";
-import { AnthropicHelper } from "@/utils/AnthropicHelper";
 
 class PostService {
   getPacks(): Pack[] {
@@ -7,47 +6,26 @@ class PostService {
     return parser.getPacks();
   }
 
-  async chooseTemplate(
-    transcript: string,
-    templates: Template[]
-  ): Promise<Template | null> {
-    try {
-      const response = await fetch("/api/choose-template", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ transcript, templates }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to choose template");
-      }
-
-      const { chosenTemplateId } = await response.json();
-      return templates.find((t) => t.id === chosenTemplateId) || null;
-    } catch (error) {
-      console.error("Error choosing template:", error);
-      return null;
-    }
-  }
-
   async mergeContent(transcript: string, template: string): Promise<string> {
     try {
-      const response = await fetch("/api/merge", {
+      // Call the unified API route to merge content
+      const response = await fetch("/api/anthropic", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ transcript, template }),
+        body: JSON.stringify({
+          action: "mergeContent",
+          data: { transcript, template },
+        }),
       });
 
       if (!response.ok) {
         throw new Error("Failed to merge content");
       }
 
-      const mergedContent = await response.json();
-      return mergedContent.result;
+      const { mergedContent } = await response.json();
+      return mergedContent;
     } catch (error) {
       console.error("Error merging content:", error);
       throw error;
@@ -81,9 +59,26 @@ class PostService {
   }
 
   async suggestTags(transcript: string): Promise<string[]> {
-    const tagsPrompt = suggestTagsPrompt(transcript);
-    const suggestedTags = await AnthropicHelper.callClaudeAPI(tagsPrompt, 100);
-    return suggestedTags.split(",").map((tag) => tag.trim());
+    try {
+      // Call the unified API route to get suggested tags
+      const response = await fetch("/api/anthropic", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action: "suggestTags", data: { transcript } }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to suggest tags");
+      }
+
+      const { suggestedTags } = await response.json();
+      return suggestedTags;
+    } catch (error) {
+      console.error("Error suggesting tags:", error);
+      return [];
+    }
   }
 
   async shortlistTemplatesByTags(
@@ -99,21 +94,48 @@ class PostService {
     transcript: string,
     templates: Template[]
   ): Promise<{ bestFit: Template; optionalChoices: Template[] }> {
-    const bestTemplatePrompt = chooseBestTemplatePrompt(transcript, templates);
-    const bestTemplateResponse = await AnthropicHelper.callClaudeAPI(
-      bestTemplatePrompt,
-      1000
-    );
+    try {
+      // Call the unified API route to get the best template response
+      const response = await fetch("/api/anthropic", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "chooseBestTemplate",
+          data: { transcript, templates },
+        }),
+      });
 
-    const [bestFitId, ...optionalChoiceIds] = bestTemplateResponse
-      .split("\n")
-      .map((line) => line.trim());
-    const bestFit = templates.find((template) => template.id === bestFitId);
-    const optionalChoices = optionalChoiceIds
-      .map((id) => templates.find((template) => template.id === id))
-      .filter(Boolean);
+      if (!response.ok) {
+        throw new Error("Failed to choose best template");
+      }
 
-    return { bestFit, optionalChoices };
+      const { bestTemplateResponse } = await response.json();
+
+      // Parse the response to get the best fit template ID and optional choice IDs
+      const [bestFitId, ...optionalChoiceIds] = bestTemplateResponse
+        .split("\n")
+        .map((line) => line.trim());
+
+      // Find the best fit template from the list of templates
+      const bestFit = templates.find((template) => template.id === bestFitId);
+
+      // Find the optional choice templates from the list of templates
+      const optionalChoices = optionalChoiceIds
+        .map((id) => templates.find((template) => template.id === id))
+        .filter(Boolean);
+
+      // Return the best fit template and the optional choices
+      if (!bestFit) {
+        throw new Error("No best fit template found");
+      }
+      return { bestFit, optionalChoices: optionalChoices as Template[] };
+    } catch (error) {
+      console.error("Error choosing best template:", error);
+      // Return null for bestFit and an empty array for optionalChoices in case of an error
+      return { bestFit: {} as Template, optionalChoices: [] };
+    }
   }
 }
 

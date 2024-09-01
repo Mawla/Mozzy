@@ -1,7 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import {
   mergeTranscriptAndTemplatePrompt,
-  chooseTemplatePrompt,
   suggestTagsPrompt,
   chooseBestTemplatePrompt,
 } from "@/prompts/anthropicPrompts";
@@ -60,12 +59,18 @@ export class AnthropicHelper {
     return this.callClaudeAPI(prompt, 1000);
   }
 
-  static async chooseAppropriateTemplate(
+  static async chooseBestTemplate(
     transcript: string,
     templates: Template[]
   ): Promise<string> {
-    const prompt = chooseTemplatePrompt(transcript, templates);
-    return this.callClaudeAPI(prompt, 100);
+    const prompt = chooseBestTemplatePrompt(transcript, templates);
+    return this.callClaudeAPI(prompt, 1000);
+  }
+
+  static async suggestTags(transcript: string): Promise<string[]> {
+    const prompt = suggestTagsPrompt(transcript);
+    const response = await this.callClaudeAPI(prompt, 100);
+    return response.split(",").map((tag) => tag.trim());
   }
 
   static async enrichTemplateWithClaude(
@@ -73,35 +78,5 @@ export class AnthropicHelper {
     maxTokens: number
   ): Promise<string> {
     return this.callClaudeAPI(prompt, maxTokens);
-  }
-
-  static async suggestTagsAndChooseTemplate(
-    transcript: string,
-    templates: Template[]
-  ): Promise<{ bestFit: Template; reasoning: string; optionalChoices: Template[] }> {
-    // Step 1: Suggest tags for the transcript
-    const tagsPrompt = suggestTagsPrompt(transcript);
-    const suggestedTags = await this.callClaudeAPI(tagsPrompt, 100);
-
-    // Step 2: Shortlist likely matches using the tags
-    const shortlistedTemplates = templates.filter(template =>
-      template.tags.some(tag => suggestedTags.includes(tag))
-    );
-
-    // Step 3: Choose the best fit using the content of the transcript and the description and body of the template
-    const bestTemplatePrompt = chooseBestTemplatePrompt(transcript, shortlistedTemplates);
-    const bestTemplateResponse = await this.callClaudeAPI(bestTemplatePrompt, 1000);
-
-    // Parse the response to get the best fit and optional choices
-    const [bestFitId, ...optionalChoiceIds] = bestTemplateResponse.split("\n").map(line => line.trim());
-    const bestFit = templates.find(template => template.id === bestFitId);
-    const optionalChoices = optionalChoiceIds.map(id => templates.find(template => template.id === id)).filter(Boolean);
-
-    // Return the best fit, reasoning, and optional choices
-    return {
-      bestFit,
-      reasoning: `The best fit was chosen based on the tags: ${suggestedTags} and the content of the transcript.`,
-      optionalChoices,
-    };
   }
 }
