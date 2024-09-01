@@ -6,25 +6,33 @@ class PostService {
     return parser.getPacks();
   }
 
-  async mergeContent(transcript: string, template: string): Promise<string> {
+  private async callAPI<T>(action: string, data: any): Promise<T> {
     try {
-      // Call the unified API route to merge content
       const response = await fetch("/api/anthropic", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          action: "mergeContent",
-          data: { transcript, template },
-        }),
+        body: JSON.stringify({ action, data }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to merge content");
+        throw new Error(`Failed to ${action}`);
       }
 
-      const { mergedContent } = await response.json();
+      return response.json();
+    } catch (error) {
+      console.error(`Error in ${action} API call:`, error);
+      throw error;
+    }
+  }
+
+  async mergeContent(transcript: string, template: string): Promise<string> {
+    try {
+      const { mergedContent } = await this.callAPI<{ mergedContent: string }>(
+        "mergeContent",
+        { transcript, template }
+      );
       return mergedContent;
     } catch (error) {
       console.error("Error merging content:", error);
@@ -60,20 +68,10 @@ class PostService {
 
   async suggestTags(transcript: string): Promise<string[]> {
     try {
-      // Call the unified API route to get suggested tags
-      const response = await fetch("/api/anthropic", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ action: "suggestTags", data: { transcript } }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to suggest tags");
-      }
-
-      const { suggestedTags } = await response.json();
+      const { suggestedTags } = await this.callAPI<{ suggestedTags: string[] }>(
+        "suggestTags",
+        { transcript }
+      );
       return suggestedTags;
     } catch (error) {
       console.error("Error suggesting tags:", error);
@@ -95,35 +93,21 @@ class PostService {
     templates: Template[]
   ): Promise<{ bestFit: Template; optionalChoices: Template[] }> {
     try {
-      // Call the unified API route to get the best template response
-      const response = await fetch("/api/anthropic", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          action: "chooseBestTemplate",
-          data: { transcript, templates },
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to choose best template");
-      }
-
-      const { bestTemplateResponse } = await response.json();
+      const { bestTemplateResponse } = await this.callAPI<{
+        bestTemplateResponse: string;
+      }>("chooseBestTemplate", { transcript, templates });
 
       // Parse the response to get the best fit template ID and optional choice IDs
       const [bestFitId, ...optionalChoiceIds] = bestTemplateResponse
         .split("\n")
-        .map((line) => line.trim());
+        .map((line: string) => line.trim());
 
       // Find the best fit template from the list of templates
       const bestFit = templates.find((template) => template.id === bestFitId);
 
       // Find the optional choice templates from the list of templates
       const optionalChoices = optionalChoiceIds
-        .map((id) => templates.find((template) => template.id === id))
+        .map((id: string) => templates.find((template) => template.id === id))
         .filter(Boolean);
 
       // Return the best fit template and the optional choices

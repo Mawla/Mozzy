@@ -209,6 +209,30 @@ const CreatePostPage = () => {
     setIsLoading(false);
   };
 
+  const handleSuggestTags = async (transcript: string) => {
+    setIsLoading(true);
+    setProgressNotes("Starting tag suggestion process...");
+
+    try {
+      const tags = await postService.suggestTags(transcript);
+      setProgressNotes((prev) => `${prev}\nSuggested tags: ${tags.join(", ")}`);
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Error suggesting tags:", error);
+        setProgressNotes((prev) => `${prev}\nError: ${error.message}`);
+      } else {
+        console.error("Unexpected error:", error);
+        setProgressNotes((prev) => `${prev}\nAn unexpected error occurred.`);
+      }
+    }
+
+    setIsLoading(false);
+  };
+
+  const handleSuggestTemplate = useCallback(() => {
+    setIsTemplateModalOpen(true);
+  }, []);
+
   return (
     <ErrorBoundary>
       <div className="space-y-6">
@@ -290,7 +314,7 @@ const CreatePostPage = () => {
                     preview="edit"
                     height={400}
                   />
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
                     <Button
                       onClick={() => setIsTemplateModalOpen(true)}
                       variant="default"
@@ -303,6 +327,12 @@ const CreatePostPage = () => {
                     </Button>
                     <Button onClick={handleSuggestTemplate} variant="secondary">
                       Suggest Template
+                    </Button>
+                    <Button
+                      onClick={() => handleSuggestTags(transcript)}
+                      variant="secondary"
+                    >
+                      Suggest Tags
                     </Button>
                   </div>
                 </div>
