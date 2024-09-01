@@ -132,6 +132,16 @@ class PostService {
       return { bestFit: {} as Template, optionalChoices: [] };
     }
   }
+
+  saveSuggestedTagsToLocalStorage(tags: string[]): void {
+    console.log("Saving tags to localStorage:", tags); // Debug log
+    localStorage.setItem("suggestedTags", JSON.stringify(tags));
+  }
+
+  getSuggestedTagsFromLocalStorage(): string[] {
+    const savedTags = localStorage.getItem("suggestedTags");
+    return savedTags ? JSON.parse(savedTags) : [];
+  }
 }
 
 export const postService = new PostService();

@@ -60,6 +60,8 @@ const CreatePostPage = () => {
       const savedContent = postService.getFromLocalStorage("content");
       const savedTags = postService.getSuggestedTagsFromLocalStorage();
 
+      console.log("Saved tags from localStorage:", savedTags); // Debug log
+
       if (savedTemplate) {
         setSelectedTemplate(savedTemplate);
         setTitle(savedTemplate.title);
@@ -202,11 +204,14 @@ const CreatePostPage = () => {
 
     try {
       const suggestedTags = await postService.suggestTags(transcript);
-      setSuggestedTags(suggestedTags);
-      setTags(suggestedTags); // Update the tags state immediately
-      postService.saveSuggestedTagsToLocalStorage(suggestedTags);
+      const formattedTags = suggestedTags.map((tag) =>
+        tag.startsWith("#") ? tag : `#${tag}`
+      );
+      setSuggestedTags(formattedTags);
+      setTags(formattedTags);
+      postService.saveSuggestedTagsToLocalStorage(formattedTags);
       setProgressNotes(
-        (prev) => `${prev}\nSuggested tags: ${suggestedTags.join(", ")}`
+        (prev) => `${prev}\nSuggested tags: ${formattedTags.join(", ")}`
       );
     } catch (error) {
       if (error instanceof Error) {
@@ -344,7 +349,7 @@ const CreatePostPage = () => {
                 </TabsList>
               </Tabs>
               <div className="flex flex-wrap gap-1">
-                {tags.map((tag, index) => (
+                {(tags.length > 0 ? tags : suggestedTags).map((tag, index) => (
                   <Badge key={index} variant="secondary">
                     {tag}
                   </Badge>
