@@ -2,17 +2,15 @@ import allTemplates from "../public/packs/alltemplates.json";
 
 export interface Template {
   id: string;
-  title: string;
-  body: string;
-  slug: string;
-  description: string;
-  emoji: string;
   name: string;
-  format: string;
-  uses: number;
-  walkthroughVideo: string | null;
-  tags: string[];
-  packId: string;
+  title?: string;
+  description: string;
+  body: string;
+  emoji: string;
+  isRecent?: boolean;
+  isFavorite?: boolean;
+  isSuggested?: boolean;
+  isShortlisted?: boolean;
 }
 
 export interface Pack {

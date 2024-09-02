@@ -14,6 +14,11 @@ ${template}
 
 Please provide the merged content:
 Do not include any feedback, exposition or additional text within your response.
+Follow the template format closely, but feel free to add or remove sections as needed.
+Reduce and reorder the transcript content as needed to fit the template.
+Don't invent content but feel free to rephrase and reorder the transcript content to fit the template.
+Make sure the final output makes sense and is coherent, doesn't include any missing words or sentences.
+Make sure the final output doesn't include any placeholders like {Topic Expert} or {Expert Quote}. etc
 `;
 
 export const suggestTagsPrompt = (transcript: string) => `

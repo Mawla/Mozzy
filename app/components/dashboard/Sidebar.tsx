@@ -8,6 +8,7 @@ import {
   FileText,
   LineChart,
   Settings,
+  Users, // Import the Users icon
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,12 @@ const Sidebar = () => {
               icon={Settings}
               label="Settings"
               active={pathname === "/dashboard/settings"}
+            />
+            <NavItem
+              href="/dashboard/icp"
+              icon={Users}
+              label="ICP"
+              active={pathname === "/dashboard/icp"}
             />
           </nav>
         </div>

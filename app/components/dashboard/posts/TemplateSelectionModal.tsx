@@ -11,6 +11,13 @@ import dynamic from "next/dynamic";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { ChevronLeft, Trash2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
@@ -34,9 +41,32 @@ const TemplateSelectionModal: React.FC<TemplateSelectionModalProps> = ({
   const [stage, setStage] = useState<"packs" | "templates" | "preview">(
     "packs"
   );
+  const [filter, setFilter] = useState<
+    "all" | "recent" | "favorite" | "suggested" | "shortlisted"
+  >("all");
+
+  const [suggestedTemplateIds, setSuggestedTemplateIds] = useState<string[]>(
+    []
+  );
+  const [shortlistedTemplateIds, setShortlistedTemplateIds] = useState<
+    string[]
+  >([]);
 
   useEffect(() => {
     if (isOpen) {
+      // Load suggested and shortlisted template IDs from localStorage
+      const storedSuggestedIds = localStorage.getItem("suggestedTemplateIds");
+      const storedShortlistedIds = localStorage.getItem(
+        "shortlistedTemplateIds"
+      );
+
+      setSuggestedTemplateIds(
+        storedSuggestedIds ? JSON.parse(storedSuggestedIds) : []
+      );
+      setShortlistedTemplateIds(
+        storedShortlistedIds ? JSON.parse(storedShortlistedIds) : []
+      );
+
       setStage("packs");
       setSelectedPack(null);
       setSelectedTemplate(null);
@@ -77,6 +107,30 @@ const TemplateSelectionModal: React.FC<TemplateSelectionModalProps> = ({
     onClose();
   };
 
+  const filteredPacks = packs.filter((pack) => {
+    if (filter === "all") return true;
+    if (filter === "recent") return pack.templates.some((t) => t.isRecent);
+    if (filter === "favorite") return pack.templates.some((t) => t.isFavorite);
+    if (filter === "suggested")
+      return pack.templates.some((t) => suggestedTemplateIds.includes(t.id));
+    if (filter === "shortlisted")
+      return pack.templates.some((t) => shortlistedTemplateIds.includes(t.id));
+    return true;
+  });
+
+  const filterTemplates = (templates: Template[]) => {
+    return templates.filter((template) => {
+      if (filter === "all") return true;
+      if (filter === "recent") return template.isRecent;
+      if (filter === "favorite") return template.isFavorite;
+      if (filter === "suggested")
+        return suggestedTemplateIds.includes(template.id);
+      if (filter === "shortlisted")
+        return shortlistedTemplateIds.includes(template.id);
+      return true;
+    });
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col p-0">
@@ -108,11 +162,33 @@ const TemplateSelectionModal: React.FC<TemplateSelectionModalProps> = ({
             <Trash2 className="h-4 w-4" />
           </Button>
         </DialogHeader>
+
+        {/* Add the dropdown here */}
+        <div className="px-6 py-2 bg-background border-b">
+          <Select
+            value={filter}
+            onValueChange={(
+              value: "all" | "recent" | "favorite" | "suggested" | "shortlisted"
+            ) => setFilter(value)}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter templates" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Templates</SelectItem>
+              <SelectItem value="recent">Recent Templates</SelectItem>
+              <SelectItem value="favorite">Favorite Templates</SelectItem>
+              <SelectItem value="suggested">Suggested Templates</SelectItem>
+              <SelectItem value="shortlisted">Shortlisted Templates</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <ScrollArea className="flex-grow px-6 pb-6">
           {stage === "packs" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {packs && packs.length > 0 ? (
-                packs.map((pack) => (
+              {filteredPacks && filteredPacks.length > 0 ? (
+                filteredPacks.map((pack) => (
                   <Card
                     key={pack.id}
                     className="cursor-pointer hover:bg-muted transition-colors"
@@ -134,14 +210,14 @@ const TemplateSelectionModal: React.FC<TemplateSelectionModalProps> = ({
                   </Card>
                 ))
               ) : (
-                <p>No packs available.</p>
+                <p>No packs available for the selected filter.</p>
               )}
             </div>
           )}
           {stage === "templates" && selectedPack && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {selectedPack.templates && selectedPack.templates.length > 0 ? (
-                selectedPack.templates.map((template) => (
+                filterTemplates(selectedPack.templates).map((template) => (
                   <Card
                     key={template.id}
                     className="cursor-pointer hover:bg-muted transition-colors"
@@ -163,7 +239,7 @@ const TemplateSelectionModal: React.FC<TemplateSelectionModalProps> = ({
                   </Card>
                 ))
               ) : (
-                <p>No templates available for this pack.</p>
+                <p>No templates available for this pack and filter.</p>
               )}
             </div>
           )}
