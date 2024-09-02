@@ -47,20 +47,20 @@ const Sidebar = () => {
             <NavItem
               href="/dashboard/analytics"
               icon={LineChart}
-              label="Analytics"
+              label="Content Bank"
               active={pathname === "/dashboard/analytics"}
-            />
-            <NavItem
-              href="/dashboard/settings"
-              icon={Settings}
-              label="Settings"
-              active={pathname === "/dashboard/settings"}
             />
             <NavItem
               href="/dashboard/icp"
               icon={Users}
               label="ICP"
               active={pathname === "/dashboard/icp"}
+            />
+            <NavItem
+              href="/dashboard/settings"
+              icon={Settings}
+              label="Settings"
+              active={pathname === "/dashboard/settings"}
             />
           </nav>
         </div>

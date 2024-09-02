@@ -67,3 +67,59 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom styles for MDXEditor to match the app theme */
+.mde-editor {
+  background-color: #ffffff; /* White background */
+  color: #212529; /* Dark text color */
+  border-radius: 0.5rem; /* Slightly round the edges */
+  overflow: hidden; /* Ensure content doesn't overflow the rounded corners */
+  font-family: "Inter", sans-serif; /* Use the same font */
+  font-size: 1rem; /* Use the same font size */
+  font-weight: 400; /* Use the same font weight */
+  height: 40vh; /* Fixed height to 40% of the viewport height */
+}
+
+.mde-editor .mdx-editor-toolbar {
+  background-color: #d1d5db; /* Slightly darker gray for toolbar */
+  border-bottom: 1px solid #9ca3af; /* Border color */
+}
+
+.mde-editor .mdx-editor-content {
+  background-color: #ffffff; /* White background for content */
+  color: #212529; /* Dark text color */
+  height: calc(40vh - 40px); /* Adjust height to account for toolbar */
+  overflow-y: auto; /* Scrollable */
+}
+
+.mde-editor .mdx-editor-preview {
+  background-color: #ffffff; /* White background for preview */
+  color: #212529; /* Dark text color */
+  height: calc(40vh - 40px); /* Adjust height to account for toolbar */
+  overflow-y: auto; /* Scrollable */
+}
+
+.mde-editor .mdx-editor-text {
+  background-color: #ffffff; /* White background for text area */
+  color: #212529; /* Dark text color */
+  height: calc(40vh - 40px); /* Adjust height to account for toolbar */
+  overflow-y: auto; /* Scrollable */
+}
+
+.mde-editor .mdx-editor-toolbar button {
+  color: #495057; /* Button text color */
+}
+
+.mde-editor .mdx-editor-toolbar button:hover {
+  background-color: #d1d5db; /* Hover background color for buttons */
+}
+
+/* Custom styles for light-themed badges */
+.badge-light {
+  background-color: #f3f4f6; /* Light gray background */
+  color: #374151; /* Dark gray text color */
+  border-radius: 0.375rem; /* Slightly rounded corners */
+  padding: 0.25rem 0.5rem; /* Padding */
+  font-size: 0.875rem; /* Font size */
+  font-weight: 500; /* Font weight */
+}

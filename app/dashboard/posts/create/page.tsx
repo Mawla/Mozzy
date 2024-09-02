@@ -1,13 +1,15 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
+// import { useEditor, EditorContent } from "@tiptap/react";
+import { EditorProvider, useCurrentEditor } from "@tiptap/react";
+
+import StarterKit from "@tiptap/starter-kit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pack, Template } from "@/utils/templateParser";
-import dynamic from "next/dynamic";
-import { Loader2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import { postService } from "@/app/services/postService";
-import { Trash2 } from "lucide-react";
 import ImportTranscriptModal from "@/app/components/dashboard/ImportTranscriptModal";
 import {
   AlertDialog,
@@ -23,11 +25,6 @@ import {
 import TemplateSelectionModal from "@/app/components/dashboard/posts/TemplateSelectionModal";
 import PackSelectionModal from "@/app/components/dashboard/PackSelectionModal";
 import { Badge } from "@/components/ui/badge";
-
-const MDEditor = dynamic(
-  () => import("@uiw/react-md-editor").then((mod) => mod.default),
-  { ssr: false }
-);
 
 const CreatePostPage = () => {
   const [isTranscriptModalOpen, setIsTranscriptModalOpen] = useState(false);
@@ -53,6 +50,26 @@ const CreatePostPage = () => {
   );
   const [suggestedTemplates, setSuggestedTemplates] = useState<Template[]>([]);
 
+  // const editor = useEditor({
+  //   extensions: [StarterKit],
+  //   content,
+  // });
+  const { editor } = useCurrentEditor();
+
+  const extensions = [
+    // Color.configure({ types: [TextStyle.name, ListItem.name] }),
+    // TextStyle.configure({ types: [ListItem.name] }),
+    StarterKit.configure({
+      bulletList: {
+        keepMarks: true,
+        keepAttributes: false, // TODO : Making this as `false` becase marks are not preserved when I try to preserve attrs, awaiting a bit of help
+      },
+      orderedList: {
+        keepMarks: true,
+        keepAttributes: false, // TODO : Making this as `false` becase marks are not preserved when I try to preserve attrs, awaiting a bit of help
+      },
+    }),
+  ];
   useEffect(() => {
     try {
       console.log("Component mounted");
@@ -69,6 +86,7 @@ const CreatePostPage = () => {
       if (savedTemplate) {
         setSelectedTemplate(savedTemplate);
         setTitle(savedTemplate.title);
+        setContent(savedTemplate.body); // Ensure content is set
       }
 
       if (savedTranscript) {
@@ -114,20 +132,12 @@ const CreatePostPage = () => {
     [packs]
   );
 
-  const handleTemplateSelect = useCallback(
-    (templateId: string) => {
-      console.log("Template selected:", templateId);
-      const allTemplates = packs.flatMap((pack) => pack.templates);
-      const template = allTemplates.find((t) => t.id === templateId);
-      if (template) {
-        setSelectedTemplate(template);
-        setTitle(template.title);
-        setContent(template.body);
-        postService.saveTemplateToLocalStorage(template);
-      }
-    },
-    [packs]
-  );
+  const handleTemplateSelect = (template: Template) => {
+    setSelectedTemplate(template);
+    setTitle(template.title);
+    setContent(template.body); // Ensure content is set
+    postService.saveTemplateToLocalStorage(template);
+  };
 
   const handleBackToPackSelection = useCallback(() => {
     setIsTemplateModalOpen(false);
@@ -228,28 +238,6 @@ const CreatePostPage = () => {
     setProgressNotes("Starting template suggestion process...");
 
     try {
-      // Get tags from storage
-      const storedTags = postService.getSuggestedTagsFromLocalStorage();
-      const tagsToUse = storedTags.length > 0 ? storedTags : tags;
-
-      setProgressNotes(
-        (prev) => `${prev}\nUsing tags from storage: ${tagsToUse.join(", ")}`
-      );
-
-      const allTemplates = packs.flatMap((pack) => pack.templates);
-      const shortlistedTemplates = await postService.shortlistTemplatesByTags(
-        tagsToUse,
-        allTemplates
-      );
-      setProgressNotes(
-        (prev) =>
-          `${prev}\nShortlisted templates: ${shortlistedTemplates
-            .map((t) => t.name)
-            .join(", ")}`
-      );
-
-      console.log("Shortlisted templates:", shortlistedTemplates);
-
       const result = await postService.chooseBestTemplate(
         transcript,
         shortlistedTemplates
@@ -260,7 +248,7 @@ const CreatePostPage = () => {
       if (result.bestFit) {
         setSelectedTemplate(result.bestFit);
         setTitle(result.bestFit.title);
-        setContent(result.bestFit.body);
+        setContent(result.bestFit.body); // Ensure content is set
         postService.saveTemplateToLocalStorage(result.bestFit);
         setSuggestedTemplates([result.bestFit, ...result.optionalChoices]);
         setProgressNotes(
@@ -292,7 +280,7 @@ const CreatePostPage = () => {
     }
 
     setIsLoading(false);
-  }, [tags, transcript, packs]);
+  }, [transcript, shortlistedTemplates]);
 
   const handleShortlistTemplates = useCallback(async () => {
     setIsLoading(true);
@@ -312,10 +300,21 @@ const CreatePostPage = () => {
         allTemplates
       );
 
-      setShortlistedTemplates(shortlisted);
+      // Sort templates by the number of tag overlaps and select the top 10
+      const sortedShortlisted = shortlisted
+        .map((template) => ({
+          template,
+          overlapCount: template.tags.filter((tag) => tagsToUse.includes(tag))
+            .length,
+        }))
+        .sort((a, b) => b.overlapCount - a.overlapCount)
+        .slice(0, 10)
+        .map((item) => item.template);
+
+      setShortlistedTemplates(sortedShortlisted);
       setProgressNotes(
         (prev) =>
-          `${prev}\nShortlisted templates: ${shortlisted
+          `${prev}\nShortlisted templates: ${sortedShortlisted
             .map((t) => t.name)
             .join(", ")}`
       );
@@ -380,6 +379,7 @@ const CreatePostPage = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter post title"
+              className="border border-gray-300 rounded-md p-2"
             />
           </div>
           <div>
@@ -395,12 +395,8 @@ const CreatePostPage = () => {
                 </TabsList>
               </Tabs>
               <div className="flex flex-wrap gap-1">
-                {/* 
-                  IMPORTANT: Do not modify the tag display logic below.
-                  Tags should be displayed as-is, including the '#' symbol.
-                */}
                 {tags.map((tag, index) => (
-                  <Badge key={index} variant="secondary">
+                  <Badge key={index} className="badge-light">
                     {tag}
                   </Badge>
                 ))}
@@ -409,12 +405,10 @@ const CreatePostPage = () => {
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsContent value="content" className="mt-2">
                 <div className="space-y-4">
-                  <MDEditor
-                    value={transcript}
-                    onChange={(value) => setTranscript(value || "")}
-                    preview="edit"
-                    height={400}
-                  />
+                  <EditorProvider
+                    extensions={extensions}
+                    content={transcript}
+                  ></EditorProvider>
                   <div className="grid grid-cols-2 gap-4">
                     <Button
                       onClick={() => handleSuggestTags(transcript)}
@@ -431,26 +425,26 @@ const CreatePostPage = () => {
               </TabsContent>
               <TabsContent value="template" className="mt-2">
                 <div className="space-y-4">
-                  <MDEditor
-                    value={content}
-                    onChange={(value) => setContent(value || "")}
-                    preview="edit"
-                    height={400}
-                  />
+                  <EditorProvider
+                    extensions={extensions}
+                    content={content}
+                  ></EditorProvider>
+
                   <div className="grid grid-cols-3 gap-4">
                     <Button
                       onClick={() => setIsTemplateModalOpen(true)}
                       variant="default"
+                      className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded"
                     >
                       {selectedTemplate
-                        ? `Template: ${
+                        ? `${selectedTemplate.emoji} Template: ${
                             selectedTemplate.title || selectedTemplate.name
                           }`
                         : "Choose a Template"}
                     </Button>
                     <Button
                       onClick={handleShortlistTemplates}
-                      variant="secondary"
+                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                       disabled={isLoading}
                     >
                       {isLoading ? (
@@ -460,7 +454,7 @@ const CreatePostPage = () => {
                     </Button>
                     <Button
                       onClick={handleSuggestTemplate}
-                      variant="secondary"
+                      className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
                       disabled={isLoading}
                     >
                       {isLoading ? (
@@ -473,12 +467,10 @@ const CreatePostPage = () => {
               </TabsContent>
               <TabsContent value="merge" className="mt-2">
                 <div className="space-y-4">
-                  <MDEditor
-                    value={mergedContent}
-                    onChange={(value) => setMergedContent(value || "")}
-                    preview="edit"
-                    height={400}
-                  />
+                  <EditorProvider
+                    extensions={extensions}
+                    content={mergedContent}
+                  ></EditorProvider>
                   {isMerging ? (
                     <div className="flex items-center justify-center p-4 bg-muted rounded-md">
                       <Loader2 className="h-6 w-6 animate-spin mr-2" />
@@ -488,7 +480,7 @@ const CreatePostPage = () => {
                     <Button
                       onClick={handleMerge}
                       disabled={!transcript || !content}
-                      className="w-full"
+                      className="w-full bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
                     >
                       Merge Content and Template
                     </Button>
@@ -514,6 +506,7 @@ const CreatePostPage = () => {
           onClose={() => setIsTemplateModalOpen(false)}
           packs={packs}
           onSelectTemplate={handleTemplateSelect}
+          onTemplateSelect={handleTemplateSelect}
           shortlistedTemplates={shortlistedTemplates}
           suggestedTemplates={suggestedTemplates}
         />
@@ -522,12 +515,11 @@ const CreatePostPage = () => {
             value={progressNotes}
             readOnly
             placeholder="Progress notes will appear here..."
-            className="w-full p-4 border rounded resize-none overflow-auto text-sm min-h-[200px]"
+            className="w-full p-4 border rounded resize-none overflow-auto text-sm min-h-[200px] bg-gray-100"
           />
         </div>
       </div>
     </div>
   );
 };
-
 export default CreatePostPage;

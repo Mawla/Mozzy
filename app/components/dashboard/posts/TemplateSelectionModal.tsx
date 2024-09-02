@@ -26,6 +26,7 @@ interface TemplateSelectionModalProps {
   onClose: () => void;
   packs: Pack[];
   onSelectTemplate: (templateId: string) => void;
+  onTemplateSelect: (template: Template) => void; // New prop
 }
 
 const TemplateSelectionModal: React.FC<TemplateSelectionModalProps> = ({
@@ -33,6 +34,7 @@ const TemplateSelectionModal: React.FC<TemplateSelectionModalProps> = ({
   onClose,
   packs,
   onSelectTemplate,
+  onTemplateSelect, // New prop
 }) => {
   const [selectedPack, setSelectedPack] = useState<Pack | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(
@@ -86,6 +88,7 @@ const TemplateSelectionModal: React.FC<TemplateSelectionModalProps> = ({
   const handleUseTemplate = () => {
     if (selectedTemplate) {
       onSelectTemplate(selectedTemplate.id);
+      onTemplateSelect(selectedTemplate); // Call the new prop
       onClose();
     }
   };
