@@ -162,3 +162,35 @@
     [ ] Implement word-level timestamps in transcriptions
     [ ] Add ability to re-transcribe specific sections of audio
     [ ] Implement confidence scores for transcribed words
+
+26. Implement OpenAI Whisper Integration: ⏳ (To Do)
+    [ ] Set up OpenAI API client using the new API key
+    [ ] Create a service function to send audio data to Whisper API
+    [ ] Implement error handling for API calls
+    [ ] Update AudioRecorder component to use the new Whisper service
+    [ ] Add loading state while waiting for transcription
+    [ ] Test the integration with various audio inputs
+
+27. Implement Local Storage for Content Bank: ✅
+    [✓] Create utility functions for saving and retrieving recordings from local storage
+    [✓] Update ContentBank component to use local storage
+    [✓] Implement UI for displaying list of recordings
+    [✓] Add text area for viewing selected recording's transcript
+    [✓] Include audio player for selected recording
+
+28. Enhance Content Bank UI: ⏳ (To Do)
+    [ ] Implement search functionality for recordings
+    [ ] Add ability to edit transcripts
+    [ ] Implement pagination or infinite scroll for large numbers of recordings
+    [ ] Add sorting options (e.g., by date, length of transcript)
+    [ ] Implement delete functionality for recordings
+
+29. Implement Enhanced Content Bank Interface: ⏳ (In Progress)
+    [✓] Update StoredRecording interface to include summary and improved transcript
+    [✓] Modify ContentBank component to display new recording details
+    [ ] Implement AI service for generating summaries
+    [ ] Implement AI service for generating improved transcripts
+    [ ] Update handleRecordingComplete to use new AI services
+    [ ] Add error handling for AI service calls
+    [ ] Implement loading states for AI processing
+    [ ] Add ability to edit summaries and improved transcripts
