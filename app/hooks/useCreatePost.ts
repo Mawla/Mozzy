@@ -113,8 +113,8 @@ export const useCreatePost = (): UseCreatePostReturn => {
 
       if (savedTemplate) {
         setSelectedTemplate(savedTemplate);
-        setTitle(savedTemplate.title);
-        setContent(savedTemplate.body);
+        setTitle(savedTemplate.title || "");
+        setContent(savedTemplate.body || "");
       }
 
       if (savedTranscript) {
@@ -179,8 +179,8 @@ export const useCreatePost = (): UseCreatePostReturn => {
 
   const handleTemplateSelect = (template: Template) => {
     setSelectedTemplate(template);
-    setTitle(template.title);
-    setContent(template.body);
+    setTitle(template.title || "");
+    setContent(template.body || "");
     postService.saveTemplateToLocalStorage(template);
   };
 
@@ -249,8 +249,8 @@ export const useCreatePost = (): UseCreatePostReturn => {
 
       if (result.bestFit) {
         setSelectedTemplate(result.bestFit);
-        setTitle(result.bestFit.title);
-        setContent(result.bestFit.body);
+        setTitle(result.bestFit.title || "");
+        setContent(result.bestFit.body || "");
         postService.saveTemplateToLocalStorage(result.bestFit);
         setSuggestedTemplates([result.bestFit, ...result.optionalChoices]);
         setProgressNotes(
