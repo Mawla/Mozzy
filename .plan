@@ -186,11 +186,11 @@
     [ ] Implement delete functionality for recordings
 
 29. Implement Enhanced Content Bank Interface: ⏳ (In Progress)
-    [✓] Update StoredRecording interface to include summary and improved transcript
+    [✓] Update StoredRecording interface to include title and improved transcript
     [✓] Modify ContentBank component to display new recording details
-    [ ] Implement AI service for generating summaries
-    [ ] Implement AI service for generating improved transcripts
-    [ ] Update handleRecordingComplete to use new AI services
-    [ ] Add error handling for AI service calls
-    [ ] Implement loading states for AI processing
-    [ ] Add ability to edit summaries and improved transcripts
+    [✓] Implement AI service for generating titles
+    [✓] Implement AI service for generating improved transcripts
+    [✓] Update handleRecordingComplete to use new AI services
+    [✓] Add error handling for AI service calls
+    [✓] Implement loading states for AI processing
+    [ ] Add ability to edit titles and improved transcripts

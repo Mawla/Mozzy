@@ -1,29 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
-import {
-  mergeTranscriptAndTemplatePrompt,
-  suggestTagsPrompt,
-  chooseBestTemplatePrompt,
-} from "@/prompts/anthropicPrompts";
-import { Template } from "@/utils/templateParser";
 
 const CLAUDE_MODEL_VERSION = "claude-3-5-sonnet-20240620";
 
-interface AnthropicHelperInterface {
-  getInstance(): Anthropic;
-  getCompletion(prompt: string, maxTokens?: number): Promise<string>;
-  mergeTranscriptAndTemplate(
-    transcript: string,
-    template: string
-  ): Promise<string>;
-  chooseBestTemplate(
-    transcript: string,
-    templates: Template[]
-  ): Promise<string>;
-  suggestTags(transcript: string): Promise<string[]>;
-  enrichTemplateWithClaude(prompt: string, maxTokens: number): Promise<string>;
-}
-
-export class AnthropicHelper implements AnthropicHelperInterface {
+export class AnthropicHelper {
   private static instance: AnthropicHelper;
   private anthropic: Anthropic;
 
@@ -40,22 +19,12 @@ export class AnthropicHelper implements AnthropicHelperInterface {
     return AnthropicHelper.instance;
   }
 
-  public getInstance(): Anthropic {
-    return this.anthropic;
-  }
-
   public async getCompletion(
     prompt: string,
     maxTokens: number = 1000
   ): Promise<string> {
-    return this.callClaudeAPI(prompt, maxTokens);
-  }
-
-  private async callClaudeAPI(
-    prompt: string,
-    maxTokens: number
-  ): Promise<string> {
     try {
+      console.log("Calling Anthropic API with prompt:", prompt);
       const response = await this.anthropic.messages.create({
         model: CLAUDE_MODEL_VERSION,
         max_tokens: maxTokens,
@@ -66,6 +35,8 @@ export class AnthropicHelper implements AnthropicHelperInterface {
           },
         ],
       });
+
+      console.log("Anthropic API response:", response);
 
       if (
         response.content &&
@@ -78,39 +49,10 @@ export class AnthropicHelper implements AnthropicHelperInterface {
       }
     } catch (error) {
       console.error("Error calling Anthropic API:", error);
-      throw new Error("Failed to call Claude API");
+      if (error instanceof Anthropic.APIError) {
+        console.error("Anthropic API Error details:", error.error);
+      }
+      throw new Error(`Failed to call Claude API: ${(error as Error).message}`);
     }
-  }
-
-  public async mergeTranscriptAndTemplate(
-    transcript: string,
-    template: string
-  ): Promise<string> {
-    const prompt = mergeTranscriptAndTemplatePrompt(transcript, template);
-    return this.callClaudeAPI(prompt, 1000);
-  }
-
-  public async chooseBestTemplate(
-    transcript: string,
-    templates: Template[]
-  ): Promise<string> {
-    const prompt = chooseBestTemplatePrompt(transcript, templates);
-    console.log("chooseBestTemplate prompt:", prompt);
-    const response = await this.callClaudeAPI(prompt, 1000);
-    console.log("chooseBestTemplate response:", response);
-    return response;
-  }
-
-  public async suggestTags(transcript: string): Promise<string[]> {
-    const prompt = suggestTagsPrompt(transcript);
-    const response = await this.callClaudeAPI(prompt, 100);
-    return response.split(",").map((tag) => tag.trim());
-  }
-
-  public async enrichTemplateWithClaude(
-    prompt: string,
-    maxTokens: number
-  ): Promise<string> {
-    return this.callClaudeAPI(prompt, maxTokens);
   }
 }
