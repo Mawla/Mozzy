@@ -41,10 +41,11 @@
    [ ] Update imports for constants (pending creation of constants file)
    [✓] Ensured all imports use absolute paths
 
-7. Refactor LinkedIn Service: ✅
-   [✓] Implemented postToLinkedIn function in postService.ts
-   [✓] Added error handling for LinkedIn posting
-   [✓] Updated related components to use the new function
+7. Refactor LinkedIn Service: ⏳ (To Do)
+   [ ] Remove existing LinkedIn posting functionality
+   [ ] Update postService.ts to remove LinkedIn-related functions
+   [ ] Remove LinkedIn-related UI elements and state
+   [ ] Update documentation to reflect removal of LinkedIn integration
 
 8. Create a Types File: ✅
    [✓] Created app/types/post.ts
@@ -129,3 +130,35 @@
     [ ] Add logging for error scenarios
     [ ] Add logging for user actions
     [ ] Implement log rotation and storage
+
+21. Implement Audio Recording and Transcription: ⏳ (To Do)
+    [ ] Implement audio recording functionality in AudioRecorder component
+    [ ] Set up backend endpoint for receiving audio data
+    [ ] Integrate OpenAI Whisper API for transcription
+    [ ] Implement error handling for audio recording and transcription
+    [ ] Add loading state for transcription process
+    [ ] Update UI to show transcription progress
+
+22. Refactor LinkedIn Integration: ⏳ (To Do)
+    [ ] Remove existing LinkedIn posting functionality
+    [ ] Update postService.ts to remove LinkedIn-related functions
+    [ ] Remove LinkedIn-related UI elements and state
+    [ ] Update documentation to reflect removal of LinkedIn integration
+
+23. Optimize Audio Processing: ⏳ (To Do)
+    [ ] Research and implement audio compression before sending to server
+    [ ] Implement chunking for long audio files
+    [ ] Add progress indicator for audio upload and processing
+    [ ] Implement cancellation for ongoing audio processing
+
+24. Enhance Audio Playback: ⏳ (To Do)
+    [ ] Add audio playback functionality for recorded audio
+    [ ] Implement audio waveform visualization
+    [ ] Add ability to trim audio before transcription
+    [ ] Implement volume normalization for recorded audio
+
+25. Implement Transcription Review: ⏳ (To Do)
+    [ ] Create UI for reviewing and editing transcriptions
+    [ ] Implement word-level timestamps in transcriptions
+    [ ] Add ability to re-transcribe specific sections of audio
+    [ ] Implement confidence scores for transcribed words
