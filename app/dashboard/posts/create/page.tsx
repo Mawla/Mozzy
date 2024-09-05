@@ -1,15 +1,12 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-// import { useEditor, EditorContent } from "@tiptap/react";
-import { EditorProvider, useCurrentEditor } from "@tiptap/react";
-
-import StarterKit from "@tiptap/starter-kit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pack, Template } from "@/utils/templateParser";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, Trash2, Share2 } from "lucide-react";
 import { postService } from "@/app/services/postService";
+import { linkedInService } from "@/app/services/linkedInService";
 import ImportTranscriptModal from "@/app/components/dashboard/ImportTranscriptModal";
 import {
   AlertDialog,
@@ -25,6 +22,7 @@ import {
 import TemplateSelectionModal from "@/app/components/dashboard/posts/TemplateSelectionModal";
 import PackSelectionModal from "@/app/components/dashboard/PackSelectionModal";
 import { Badge } from "@/components/ui/badge";
+import TipTapEditor from "@/app/components/TipTapEditor";
 
 const CreatePostPage = () => {
   const [isTranscriptModalOpen, setIsTranscriptModalOpen] = useState(false);
@@ -49,27 +47,8 @@ const CreatePostPage = () => {
     []
   );
   const [suggestedTemplates, setSuggestedTemplates] = useState<Template[]>([]);
+  const [isPosting, setIsPosting] = useState(false);
 
-  // const editor = useEditor({
-  //   extensions: [StarterKit],
-  //   content,
-  // });
-  const { editor } = useCurrentEditor();
-
-  const extensions = [
-    // Color.configure({ types: [TextStyle.name, ListItem.name] }),
-    // TextStyle.configure({ types: [ListItem.name] }),
-    StarterKit.configure({
-      bulletList: {
-        keepMarks: true,
-        keepAttributes: false, // TODO : Making this as `false` becase marks are not preserved when I try to preserve attrs, awaiting a bit of help
-      },
-      orderedList: {
-        keepMarks: true,
-        keepAttributes: false, // TODO : Making this as `false` becase marks are not preserved when I try to preserve attrs, awaiting a bit of help
-      },
-    }),
-  ];
   useEffect(() => {
     try {
       console.log("Component mounted");
@@ -326,6 +305,44 @@ const CreatePostPage = () => {
     setIsLoading(false);
   }, [tags, packs]);
 
+  const handlePostToLinkedIn = useCallback(async () => {
+    if (!mergedContent) {
+      alert("Please merge content before posting to LinkedIn.");
+      return;
+    }
+
+    setIsPosting(true);
+    setProgressNotes((prev) => `${prev}\nStarting LinkedIn post process...`);
+
+    try {
+      // Assuming linkedInService.post() handles the API call to LinkedIn
+      await linkedInService.post(title, mergedContent, tags);
+      setProgressNotes((prev) => `${prev}\nSuccessfully posted to LinkedIn.`);
+      alert("Successfully posted to LinkedIn!");
+    } catch (error) {
+      console.error("Error posting to LinkedIn:", error);
+      setProgressNotes(
+        (prev) =>
+          `${prev}\nError posting to LinkedIn: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+      );
+      alert("Failed to post to LinkedIn. Please try again.");
+    } finally {
+      setIsPosting(false);
+    }
+  }, [title, mergedContent, tags]);
+
+  const handleEditorUpdate = (newContent: string) => {
+    if (activeTab === "content") {
+      setTranscript(newContent);
+    } else if (activeTab === "template") {
+      setContent(newContent);
+    } else if (activeTab === "merge") {
+      setMergedContent(newContent);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="space-y-6">
@@ -337,6 +354,18 @@ const CreatePostPage = () => {
               className="bg-[#1e293b] text-white hover:bg-[#334155]"
             >
               Import Transcript
+            </Button>
+            <Button
+              onClick={handlePostToLinkedIn}
+              disabled={isPosting || !mergedContent}
+              className="bg-[#0077b5] text-white hover:bg-[#006097]"
+            >
+              {isPosting ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2 inline" />
+              ) : (
+                <Share2 className="mr-2 h-4 w-4" />
+              )}
+              Share on LinkedIn
             </Button>
             <Button className="bg-[#1e293b] text-white hover:bg-[#334155]">
               Publish
@@ -405,10 +434,10 @@ const CreatePostPage = () => {
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsContent value="content" className="mt-2">
                 <div className="space-y-4">
-                  <EditorProvider
-                    extensions={extensions}
+                  <TipTapEditor
                     content={transcript}
-                  ></EditorProvider>
+                    onUpdate={handleEditorUpdate}
+                  />
                   <div className="grid grid-cols-2 gap-4">
                     <Button
                       onClick={() => handleSuggestTags(transcript)}
@@ -425,11 +454,10 @@ const CreatePostPage = () => {
               </TabsContent>
               <TabsContent value="template" className="mt-2">
                 <div className="space-y-4">
-                  <EditorProvider
-                    extensions={extensions}
+                  <TipTapEditor
                     content={content}
-                  ></EditorProvider>
-
+                    onUpdate={handleEditorUpdate}
+                  />
                   <div className="grid grid-cols-3 gap-4">
                     <Button
                       onClick={() => setIsTemplateModalOpen(true)}
@@ -467,10 +495,10 @@ const CreatePostPage = () => {
               </TabsContent>
               <TabsContent value="merge" className="mt-2">
                 <div className="space-y-4">
-                  <EditorProvider
-                    extensions={extensions}
+                  <TipTapEditor
                     content={mergedContent}
-                  ></EditorProvider>
+                    onUpdate={handleEditorUpdate}
+                  />
                   {isMerging ? (
                     <div className="flex items-center justify-center p-4 bg-muted rounded-md">
                       <Loader2 className="h-6 w-6 animate-spin mr-2" />
@@ -506,7 +534,6 @@ const CreatePostPage = () => {
           onClose={() => setIsTemplateModalOpen(false)}
           packs={packs}
           onSelectTemplate={handleTemplateSelect}
-          onTemplateSelect={handleTemplateSelect}
           shortlistedTemplates={shortlistedTemplates}
           suggestedTemplates={suggestedTemplates}
         />
@@ -522,4 +549,5 @@ const CreatePostPage = () => {
     </div>
   );
 };
+
 export default CreatePostPage;
