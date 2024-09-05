@@ -12,13 +12,21 @@ ${transcript}
 Template:
 ${template}
 
-Please provide the merged content:
-Do not include any feedback, exposition or additional text within your response.
-Follow the template format closely, but feel free to add or remove sections as needed.
-Reduce and reorder the transcript content as needed to fit the template.
-Don't invent content but feel free to rephrase and reorder the transcript content to fit the template.
-Make sure the final output makes sense and is coherent, doesn't include any missing words or sentences.
-Make sure the final output doesn't include any placeholders like {Topic Expert} or {Expert Quote}. etc
+Please provide the merged content and a suggested title in the following JSON format:
+{
+  "mergedContent": "The merged content goes here...",
+  "suggestedTitle": "A compelling title for the merged content"
+}
+
+Guidelines:
+- Follow the template format closely, but feel free to add or remove sections as needed.
+- Reduce and reorder the transcript content as needed to fit the template.
+- Don't invent content but feel free to rephrase and reorder the transcript content to fit the template.
+- Make sure the final output makes sense and is coherent, doesn't include any missing words or sentences.
+- Make sure the final output doesn't include any placeholders like {Topic Expert} or {Expert Quote}, etc.
+- The suggested title should be compelling and relevant to the merged content.
+
+Only include the JSON object in your response, without any additional text.
 `;
 
 export const suggestTagsPrompt = (transcript: string) => `

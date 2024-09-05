@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -36,6 +36,7 @@ const CreatePostPage = () => {
     setTitle,
     content,
     transcript,
+    setTranscript,
     activeTab,
     setActiveTab,
     isMerging,
@@ -43,6 +44,7 @@ const CreatePostPage = () => {
     progressNotes,
     isLoading,
     tags,
+    suggestedTags,
     shortlistedTemplates,
     suggestedTemplates,
     isPosting,
@@ -54,9 +56,38 @@ const CreatePostPage = () => {
     handleMerge,
     handleClear,
     handlePostToLinkedIn,
-    handleEditorUpdate,
     handleImportTranscript,
+    setContent,
+    setMergedContent,
+    filteredPacks,
+    filter,
+    setFilter,
   } = useCreatePost();
+
+  const handleEditorUpdate = useCallback(
+    (newContent: string) => {
+      if (activeTab === "content") {
+        setTranscript(newContent);
+      } else if (activeTab === "template") {
+        setContent(newContent);
+      } else if (activeTab === "merge") {
+        setMergedContent(newContent);
+      }
+    },
+    [activeTab, setTranscript, setContent, setMergedContent]
+  );
+
+  console.log("Rendering CreatePostPage", {
+    activeTab,
+    title,
+    contentLength: content?.length ?? 0,
+    transcriptLength: transcript?.length ?? 0,
+    mergedContentLength: mergedContent?.length ?? 0,
+    isTemplateModalOpen,
+    isTranscriptModalOpen,
+    isPackModalOpen,
+    tags: tags?.length ?? 0,
+  });
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -127,31 +158,17 @@ const CreatePostPage = () => {
             />
           </div>
           <div>
-            <label htmlFor="content" className="block text-sm font-medium mb-1">
-              Content
-            </label>
-            <div className="flex items-center space-x-2 mb-2">
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList>
-                  <TabsTrigger value="content">Content</TabsTrigger>
-                  <TabsTrigger value="template">Template</TabsTrigger>
-                  <TabsTrigger value="merge">Merge</TabsTrigger>
-                </TabsList>
-              </Tabs>
-              <div className="flex flex-wrap gap-1">
-                {tags.map((tag, index) => (
-                  <Badge key={index} className="badge-light">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            </div>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsContent value="content" className="mt-2">
+              <TabsList>
+                <TabsTrigger value="content">Content</TabsTrigger>
+                <TabsTrigger value="template">Template</TabsTrigger>
+                <TabsTrigger value="merge">Merge</TabsTrigger>
+              </TabsList>
+              <TabsContent value="content">
                 <div className="space-y-4">
                   <TipTapEditor
-                    content={transcript}
-                    onUpdate={handleEditorUpdate}
+                    content={transcript || ""}
+                    onUpdate={(newContent) => handleEditorUpdate(newContent)}
                   />
                   <div className="grid grid-cols-2 gap-4">
                     <Button
@@ -167,10 +184,10 @@ const CreatePostPage = () => {
                   </div>
                 </div>
               </TabsContent>
-              <TabsContent value="template" className="mt-2">
+              <TabsContent value="template">
                 <div className="space-y-4">
                   <TipTapEditor
-                    content={content}
+                    content={content || ""}
                     onUpdate={handleEditorUpdate}
                   />
                   <div className="grid grid-cols-3 gap-4">
@@ -208,10 +225,10 @@ const CreatePostPage = () => {
                   </div>
                 </div>
               </TabsContent>
-              <TabsContent value="merge" className="mt-2">
+              <TabsContent value="merge">
                 <div className="space-y-4">
                   <TipTapEditor
-                    content={mergedContent}
+                    content={mergedContent || ""}
                     onUpdate={handleEditorUpdate}
                   />
                   {isMerging ? (
@@ -232,26 +249,31 @@ const CreatePostPage = () => {
               </TabsContent>
             </Tabs>
           </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium">Tags</label>
+            <div className="flex flex-wrap gap-2">
+              {tags.map((tag, index) => (
+                <Badge key={index} variant="secondary">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          </div>
+          {suggestedTags.length > 0 && (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium">
+                Suggested Tags
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {suggestedTags.map((tag, index) => (
+                  <Badge key={index} variant="outline">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-        <ImportTranscriptModal
-          isOpen={isTranscriptModalOpen}
-          onClose={() => setIsTranscriptModalOpen(false)}
-          onImport={handleImportTranscript}
-        />
-        <PackSelectionModal
-          isOpen={isPackModalOpen}
-          onClose={() => setIsPackModalOpen(false)}
-          packs={packs}
-          onSelectPack={handlePackSelect}
-        />
-        <TemplateSelectionModal
-          isOpen={isTemplateModalOpen}
-          onClose={() => setIsTemplateModalOpen(false)}
-          packs={packs}
-          onSelectTemplate={handleTemplateSelect}
-          shortlistedTemplates={shortlistedTemplates}
-          suggestedTemplates={suggestedTemplates}
-        />
         <div className="w-full max-w-4xl mx-auto">
           <textarea
             value={progressNotes}
@@ -261,8 +283,33 @@ const CreatePostPage = () => {
           />
         </div>
       </div>
+      <ImportTranscriptModal
+        isOpen={isTranscriptModalOpen}
+        onClose={() => setIsTranscriptModalOpen(false)}
+        onImport={handleImportTranscript}
+      />
+      <PackSelectionModal
+        isOpen={isPackModalOpen}
+        onClose={() => setIsPackModalOpen(false)}
+        packs={filteredPacks}
+        onSelectPack={handlePackSelect}
+      />
+      <TemplateSelectionModal
+        isOpen={isTemplateModalOpen}
+        onClose={() => setIsTemplateModalOpen(false)}
+        filteredPacks={filteredPacks}
+        onSelectTemplate={handleTemplateSelect}
+        filter={filter}
+        setFilter={setFilter}
+      />
     </div>
   );
 };
 
-export default CreatePostPage;
+export default function CreatePostPageWrapper() {
+  return (
+    <React.StrictMode>
+      <CreatePostPage />
+    </React.StrictMode>
+  );
+}

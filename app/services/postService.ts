@@ -27,13 +27,29 @@ class PostService {
     }
   }
 
-  async mergeContent(transcript: string, template: string): Promise<string> {
+  async mergeContent(
+    transcript: string,
+    template: string
+  ): Promise<{ mergedContent: string; suggestedTitle: string }> {
     try {
-      const { mergedContent } = await this.callAPI<{ mergedContent: string }>(
-        "mergeContent",
-        { transcript, template }
-      );
-      return mergedContent;
+      const response = await this.callAPI<{
+        mergedContent: string;
+        suggestedTitle: string;
+      }>("mergeContent", {
+        transcript,
+        template,
+        prompt:
+          "Please merge the provided transcript and template. Also, suggest a compelling title for the merged content.",
+      });
+
+      if (!response.mergedContent || !response.suggestedTitle) {
+        throw new Error("Invalid response from mergeContent API");
+      }
+
+      return {
+        mergedContent: response.mergedContent,
+        suggestedTitle: response.suggestedTitle,
+      };
     } catch (error) {
       console.error("Error merging content:", error);
       throw error;
@@ -99,10 +115,13 @@ class PostService {
       })
       .filter((item) => item.matchCount > 0)
       .sort((a, b) => b.matchCount - a.matchCount)
+      .slice(0, 10) // Take only the top 10 matches
       .map((item) => item.template);
 
-    // Return all matching templates, or all templates if no matches
-    return shortlistedTemplates.length > 0 ? shortlistedTemplates : templates;
+    // Return the top 10 matching templates, or all matching templates if less than 10
+    return shortlistedTemplates.length > 0
+      ? shortlistedTemplates
+      : templates.slice(0, 10);
   }
 
   async chooseBestTemplate(
@@ -135,6 +154,9 @@ class PostService {
         .map((id: string) => templates.find((template) => template.id === id))
         .filter(Boolean) as Template[];
 
+      console.log("Best fit template:", bestFitTemplate);
+      console.log("Optional choices:", optionalChoiceTemplates);
+
       // Return the best fit template and the optional choices
       return {
         bestFit: bestFitTemplate || null,
@@ -155,6 +177,21 @@ class PostService {
   getSuggestedTagsFromLocalStorage(): string[] {
     const savedTags = localStorage.getItem("suggestedTags");
     return savedTags ? JSON.parse(savedTags) : [];
+  }
+
+  async postToLinkedIn(title: string, content: string): Promise<void> {
+    try {
+      const response = await this.callAPI<{ success: boolean }>(
+        "postToLinkedIn",
+        { title, content }
+      );
+      if (!response.success) {
+        throw new Error("Failed to post to LinkedIn");
+      }
+    } catch (error) {
+      console.error("Error posting to LinkedIn:", error);
+      throw error;
+    }
   }
 }
 

@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Pack, Template } from "@/utils/templateParser";
+import { Pack, Template } from "@/types/post";
 import dynamic from "next/dynamic";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
@@ -24,17 +24,21 @@ const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 interface TemplateSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  packs: Pack[];
-  onSelectTemplate: (templateId: string) => void;
-  onTemplateSelect: (template: Template) => void; // New prop
+  filteredPacks: Pack[];
+  onSelectTemplate: (template: Template) => void;
+  filter: "all" | "recent" | "favorite" | "suggested" | "shortlisted";
+  setFilter: (
+    filter: "all" | "recent" | "favorite" | "suggested" | "shortlisted"
+  ) => void;
 }
 
 const TemplateSelectionModal: React.FC<TemplateSelectionModalProps> = ({
   isOpen,
   onClose,
-  packs,
+  filteredPacks,
   onSelectTemplate,
-  onTemplateSelect, // New prop
+  filter,
+  setFilter,
 }) => {
   const [selectedPack, setSelectedPack] = useState<Pack | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(
@@ -43,9 +47,6 @@ const TemplateSelectionModal: React.FC<TemplateSelectionModalProps> = ({
   const [stage, setStage] = useState<"packs" | "templates" | "preview">(
     "packs"
   );
-  const [filter, setFilter] = useState<
-    "all" | "recent" | "favorite" | "suggested" | "shortlisted"
-  >("all");
 
   const [suggestedTemplateIds, setSuggestedTemplateIds] = useState<string[]>(
     []
@@ -87,8 +88,7 @@ const TemplateSelectionModal: React.FC<TemplateSelectionModalProps> = ({
 
   const handleUseTemplate = () => {
     if (selectedTemplate) {
-      onSelectTemplate(selectedTemplate.id);
-      onTemplateSelect(selectedTemplate); // Call the new prop
+      onSelectTemplate(selectedTemplate);
       onClose();
     }
   };
@@ -109,17 +109,6 @@ const TemplateSelectionModal: React.FC<TemplateSelectionModalProps> = ({
     localStorage.removeItem("merge");
     onClose();
   };
-
-  const filteredPacks = packs.filter((pack) => {
-    if (filter === "all") return true;
-    if (filter === "recent") return pack.templates.some((t) => t.isRecent);
-    if (filter === "favorite") return pack.templates.some((t) => t.isFavorite);
-    if (filter === "suggested")
-      return pack.templates.some((t) => suggestedTemplateIds.includes(t.id));
-    if (filter === "shortlisted")
-      return pack.templates.some((t) => shortlistedTemplateIds.includes(t.id));
-    return true;
-  });
 
   const filterTemplates = (templates: Template[]) => {
     return templates.filter((template) => {

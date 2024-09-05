@@ -8,26 +8,57 @@ import { Template } from "@/utils/templateParser";
 
 const CLAUDE_MODEL_VERSION = "claude-3-5-sonnet-20240620";
 
-export class AnthropicHelper {
-  private static anthropic: Anthropic;
+interface AnthropicHelperInterface {
+  getInstance(): Anthropic;
+  getCompletion(prompt: string, maxTokens?: number): Promise<string>;
+  mergeTranscriptAndTemplate(
+    transcript: string,
+    template: string
+  ): Promise<string>;
+  chooseBestTemplate(
+    transcript: string,
+    templates: Template[]
+  ): Promise<string>;
+  suggestTags(transcript: string): Promise<string[]>;
+  enrichTemplateWithClaude(prompt: string, maxTokens: number): Promise<string>;
+}
 
-  public static getInstance(): Anthropic {
-    if (!AnthropicHelper.anthropic) {
-      AnthropicHelper.anthropic = new Anthropic({
-        apiKey: process.env.ANTHROPIC_API_KEY,
-      });
-    }
-    return AnthropicHelper.anthropic;
+export class AnthropicHelper implements AnthropicHelperInterface {
+  private static instance: AnthropicHelper;
+  private anthropic: Anthropic;
+
+  private constructor() {
+    this.anthropic = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
+    });
   }
 
-  private static async callClaudeAPI(
+  public static getInstance(): AnthropicHelper {
+    if (!AnthropicHelper.instance) {
+      AnthropicHelper.instance = new AnthropicHelper();
+    }
+    return AnthropicHelper.instance;
+  }
+
+  public getInstance(): Anthropic {
+    return this.anthropic;
+  }
+
+  public async getCompletion(
+    prompt: string,
+    maxTokens: number = 1000
+  ): Promise<string> {
+    return this.callClaudeAPI(prompt, maxTokens);
+  }
+
+  private async callClaudeAPI(
     prompt: string,
     maxTokens: number
   ): Promise<string> {
     try {
-      const response = await AnthropicHelper.getInstance().messages.create({
+      const response = await this.anthropic.messages.create({
         model: CLAUDE_MODEL_VERSION,
-        max_tokens: maxTokens || 1000,
+        max_tokens: maxTokens,
         messages: [
           {
             role: "user",
@@ -51,7 +82,7 @@ export class AnthropicHelper {
     }
   }
 
-  static async mergeTranscriptAndTemplate(
+  public async mergeTranscriptAndTemplate(
     transcript: string,
     template: string
   ): Promise<string> {
@@ -59,24 +90,24 @@ export class AnthropicHelper {
     return this.callClaudeAPI(prompt, 1000);
   }
 
-  static async chooseBestTemplate(
+  public async chooseBestTemplate(
     transcript: string,
     templates: Template[]
   ): Promise<string> {
     const prompt = chooseBestTemplatePrompt(transcript, templates);
-    console.log("chooseBestTemplate prompt:", prompt); // Add this line
+    console.log("chooseBestTemplate prompt:", prompt);
     const response = await this.callClaudeAPI(prompt, 1000);
-    console.log("chooseBestTemplate response:", response); // Add this line
+    console.log("chooseBestTemplate response:", response);
     return response;
   }
 
-  static async suggestTags(transcript: string): Promise<string[]> {
+  public async suggestTags(transcript: string): Promise<string[]> {
     const prompt = suggestTagsPrompt(transcript);
     const response = await this.callClaudeAPI(prompt, 100);
     return response.split(",").map((tag) => tag.trim());
   }
 
-  static async enrichTemplateWithClaude(
+  public async enrichTemplateWithClaude(
     prompt: string,
     maxTokens: number
   ): Promise<string> {
