@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 
@@ -17,24 +17,40 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
 }) => {
   const editor = useEditor({
     extensions: [StarterKit],
-    content,
+    content: content,
     editable,
     onUpdate: ({ editor }) => {
       onUpdate(editor.getHTML());
     },
     editorProps: {
       attributes: {
-        class:
-          "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none",
+        class: "outline-none h-full",
       },
     },
   });
 
+  useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content);
+    }
+  }, [content, editor]);
+
   return (
-    <div className="border rounded-md p-4">
-      <EditorContent editor={editor} />
-      {!content && (
-        <p className="text-gray-400 absolute top-[1.2rem] left-[1.2rem]">
+    <div className="border border-gray-200 rounded-md p-4 bg-white h-[400px] overflow-y-auto relative">
+      <style jsx global>{`
+        .ProseMirror {
+          outline: none !important;
+          height: 100%;
+          font-size: 16px;
+          line-height: 1.5;
+        }
+        .ProseMirror * {
+          outline: none !important;
+        }
+      `}</style>
+      <EditorContent editor={editor} className="prose max-w-none h-full" />
+      {(!content || content === "<p></p>") && (
+        <p className="text-gray-400 absolute top-[1.2rem] left-[1.2rem] pointer-events-none text-base">
           {placeholder}
         </p>
       )}

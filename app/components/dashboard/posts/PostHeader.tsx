@@ -44,9 +44,6 @@ export const PostHeader: React.FC<PostHeaderProps> = ({
         <Button onClick={() => setIsPackModalOpen(true)}>
           {BUTTON_TEXTS.SELECT_PACK}
         </Button>
-        <Button onClick={() => setIsTemplateModalOpen(true)}>
-          {BUTTON_TEXTS.SELECT_TEMPLATE}
-        </Button>
         <Button onClick={handleSuggestTags}>{BUTTON_TEXTS.SUGGEST_TAGS}</Button>
         <Button onClick={handleShortlistTemplates}>
           {BUTTON_TEXTS.SHORTLIST_TEMPLATES}
