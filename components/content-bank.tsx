@@ -10,12 +10,18 @@ import {
   saveRecordingsToLocalStorage,
   getRecordingsFromLocalStorage,
 } from "@/app/utils/localStorage";
+import {
+  generateTitle,
+  generateImprovedTranscript,
+} from "@/app/services/aiTextService";
 
 export function ContentBank() {
   const [recordings, setRecordings] = useState<StoredRecording[]>([]);
   const [isRecording, setIsRecording] = useState(false);
   const [selectedRecording, setSelectedRecording] =
     useState<StoredRecording | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const storedRecordings = getRecordingsFromLocalStorage();
@@ -26,23 +32,34 @@ export function ContentBank() {
     transcript: string,
     audioUrl: string
   ) => {
-    // Here, you would typically call your AI service to generate the summary and improved transcript
-    // For now, we'll use a placeholder summary
-    const summary = "This is a placeholder summary for the recording.";
-    const improvedTranscript = null;
+    setIsProcessing(true);
+    setError(null); // Reset error state
+    try {
+      const title = await generateTitle(transcript);
+      const improvedTranscript = await generateImprovedTranscript(transcript);
 
-    const newRecording: StoredRecording = {
-      id: Date.now().toString(),
-      date: new Date().toISOString(),
-      audioUrl,
-      originalTranscript: transcript,
-      summary,
-      improvedTranscript,
-    };
-    const updatedRecordings = [newRecording, ...recordings];
-    setRecordings(updatedRecordings);
-    saveRecordingsToLocalStorage(updatedRecordings);
-    setIsRecording(false);
+      const newRecording: StoredRecording = {
+        id: Date.now().toString(),
+        date: new Date().toISOString(),
+        audioUrl,
+        originalTranscript: transcript,
+        title,
+        improvedTranscript,
+      };
+      const updatedRecordings = [newRecording, ...recordings];
+      setRecordings(updatedRecordings);
+      saveRecordingsToLocalStorage(updatedRecordings);
+    } catch (error) {
+      console.error("Error processing recording:", error);
+      setError(
+        `An error occurred while processing the recording: ${
+          (error as Error).message
+        }`
+      );
+    } finally {
+      setIsProcessing(false);
+      setIsRecording(false);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -89,7 +106,7 @@ export function ContentBank() {
                     {formatDate(recording.date)}
                   </span>
                   <p className="text-sm text-gray-800 mt-2">
-                    {recording.summary || "No summary available"}
+                    {recording.title || "No title available"}
                   </p>
                 </li>
               ))}
@@ -142,6 +159,34 @@ export function ContentBank() {
             )}
           </div>
         </div>
+        {isProcessing && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white p-4 rounded-lg">
+              <p>Processing recording...</p>
+            </div>
+          </div>
+        )}
+        {error && (
+          <div
+            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+            role="alert"
+          >
+            <strong className="font-bold">Error!</strong>
+            <span className="block sm:inline"> {error}</span>
+            <span className="absolute top-0 bottom-0 right-0 px-4 py-3">
+              <svg
+                className="fill-current h-6 w-6 text-red-500"
+                role="button"
+                onClick={() => setError(null)}
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+              >
+                <title>Close</title>
+                <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
+              </svg>
+            </span>
+          </div>
+        )}
       </main>
     </div>
   );

@@ -77,3 +77,75 @@ Example response:
   "choices": ["clj8now3o001kxl73rskkewx2", "clj3now3o001kxl73rskkewxo"]
 }`;
 };
+
+export const generateSummaryPrompt = (transcript: string) => `
+Please summarize the following transcript:
+
+${transcript}
+
+Provide your response in the following JSON format:
+{
+  "summary": "Your summary goes here"
+}
+
+Guidelines:
+- Keep the summary concise and informative
+- Capture the main points and key ideas from the transcript
+- Aim for a summary length of about 2-3 sentences
+
+Only include the JSON object in your response, without any additional text.
+
+Example response:
+{
+  "summary": "This is a placeholder summary of the transcript. It covers the main points discussed and provides a brief overview of the content."
+}
+`;
+
+export const generateImprovedTranscriptPrompt = (transcript: string) => `
+Improve the following transcript by fixing grammar, punctuation, and clarity:
+
+${transcript}
+
+Provide your response in this JSON format:
+{
+  "improvedTranscript": "Your improved transcript goes here"
+}
+
+Guidelines:
+- Correct grammar and punctuation
+- Enhance clarity without changing meaning
+- Maintain the speaker's voice and style
+- Remove filler words and repetitions
+- Organize ideas more coherently if needed
+
+Only include the JSON object in your response.
+
+Example:
+{
+  "improvedTranscript": "This is a placeholder for the improved transcript, enhancing clarity and readability."
+}
+`;
+
+export const generateTitlePrompt = (transcript: string) => `
+Please generate a concise and engaging title for the following transcript:
+
+${transcript}
+
+Provide your response in the following JSON format:
+{
+  "title": "Your generated title goes here"
+}
+
+Guidelines:
+- Create a title that captures the main topic or theme of the transcript
+- Keep the title short and catchy, ideally under 10 words
+- Make it engaging and descriptive enough to give an idea of the content
+- Avoid using generic titles; make it specific to the transcript content
+
+Only include the JSON object in your response, without any additional text.
+
+Example response:
+{
+  "title": "The Future of AI in Healthcare: Revolutionizing Patient Care"
+}
+`;

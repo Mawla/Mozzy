@@ -3,7 +3,7 @@ export interface StoredRecording {
   date: string;
   audioUrl: string;
   originalTranscript: string;
-  summary: string | null;
+  title: string | null;
   improvedTranscript: string | null;
 }
 

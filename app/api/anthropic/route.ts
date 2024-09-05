@@ -4,11 +4,20 @@ import {
   mergeTranscriptAndTemplatePrompt,
   suggestTagsPrompt,
   chooseBestTemplatePrompt,
+  generateTitlePrompt,
+  generateImprovedTranscriptPrompt,
+  generateSummaryPrompt,
 } from "@/prompts/anthropicPrompts";
 import { Template } from "@/utils/templateParser";
 
 interface AnthropicRequest {
-  action: "mergeContent" | "suggestTags" | "chooseBestTemplate";
+  action:
+    | "mergeContent"
+    | "suggestTags"
+    | "chooseBestTemplate"
+    | "generateTitle"
+    | "generateImprovedTranscript"
+    | "generateSummary";
   data: {
     transcript?: string;
     template?: string;
@@ -32,6 +41,8 @@ interface ChooseBestTemplateResponse {
 export async function POST(request: NextRequest) {
   try {
     const { action, data }: AnthropicRequest = await request.json();
+    console.log("Received request:", { action, data });
+
     const anthropicHelper = AnthropicHelper.getInstance();
 
     switch (action) {
@@ -80,13 +91,107 @@ export async function POST(request: NextRequest) {
         const response: ChooseBestTemplateResponse = { bestTemplateResponse };
         return NextResponse.json(response);
       }
+      case "generateTitle": {
+        const { transcript } = data;
+        if (!transcript) {
+          return NextResponse.json(
+            { error: "Missing transcript" },
+            { status: 400 }
+          );
+        }
+        console.log(
+          "Generating title for transcript:",
+          transcript.slice(0, 100) + "..."
+        );
+        const titlePrompt = generateTitlePrompt(transcript);
+        console.log("Title prompt:", titlePrompt);
+        try {
+          const titleResponse = await anthropicHelper.getCompletion(
+            titlePrompt,
+            50
+          );
+          const parsedResponse = JSON.parse(titleResponse);
+          console.log("Generated title:", parsedResponse.title);
+          return NextResponse.json({ title: parsedResponse.title });
+        } catch (error) {
+          console.error("Error generating title:", error);
+          return NextResponse.json(
+            {
+              error: "Failed to generate title",
+              details: (error as Error).message,
+            },
+            { status: 500 }
+          );
+        }
+      }
+      case "generateImprovedTranscript": {
+        const { transcript } = data;
+        if (!transcript) {
+          return NextResponse.json(
+            { error: "Missing transcript" },
+            { status: 400 }
+          );
+        }
+        const improvedTranscriptPrompt =
+          generateImprovedTranscriptPrompt(transcript);
+        try {
+          const improvedTranscriptResponse =
+            await anthropicHelper.getCompletion(improvedTranscriptPrompt, 500);
+          const parsedResponse = JSON.parse(improvedTranscriptResponse);
+          return NextResponse.json({
+            improvedTranscript: parsedResponse.improvedTranscript,
+          });
+        } catch (error) {
+          console.error("Error generating improved transcript:", error);
+          return NextResponse.json(
+            {
+              error: "Failed to generate improved transcript",
+              details: (error as Error).message,
+            },
+            { status: 500 }
+          );
+        }
+      }
+      case "generateSummary": {
+        const { transcript } = data;
+        if (!transcript) {
+          return NextResponse.json(
+            { error: "Missing transcript" },
+            { status: 400 }
+          );
+        }
+        console.log(
+          "Generating summary for transcript:",
+          transcript.slice(0, 100) + "..."
+        );
+        const summaryPrompt = generateSummaryPrompt(transcript);
+        console.log("Summary prompt:", summaryPrompt);
+        try {
+          const summaryResponse = await anthropicHelper.getCompletion(
+            summaryPrompt,
+            150
+          );
+          const parsedResponse = JSON.parse(summaryResponse);
+          console.log("Generated summary:", parsedResponse.summary);
+          return NextResponse.json({ summary: parsedResponse.summary });
+        } catch (error) {
+          console.error("Error generating summary:", error);
+          return NextResponse.json(
+            {
+              error: "Failed to generate summary",
+              details: (error as Error).message,
+            },
+            { status: 500 }
+          );
+        }
+      }
       default:
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
   } catch (error) {
     console.error("Error in anthropic API route:", error);
     return NextResponse.json(
-      { error: "Failed to process request" },
+      { error: "Failed to process request", details: (error as Error).message },
       { status: 500 }
     );
   }
