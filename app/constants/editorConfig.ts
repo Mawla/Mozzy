@@ -5,15 +5,12 @@ export const TAB_NAMES = {
 };
 
 export const BUTTON_TEXTS = {
-  IMPORT_TRANSCRIPT: "Import Transcript",
-  SELECT_PACK: "Select Pack",
   SELECT_TEMPLATE: "Select Template",
   SUGGEST_TAGS: "Suggest Tags",
   SHORTLIST_TEMPLATES: "Shortlist Templates",
-  SUGGEST_TEMPLATE: "Suggest Template",
   CLEAR: "Clear",
-  POST_TO_LINKEDIN: "Post to LinkedIn",
   MERGE_CONTENT: "Merge Content and Template",
+  POST_TO_LINKEDIN: "Post to LinkedIn",
 };
 
 export const PLACEHOLDERS = {

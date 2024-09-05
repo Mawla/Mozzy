@@ -4,10 +4,6 @@ import { postService } from "@/app/services/postService";
 
 // Add this interface
 export interface UseCreatePostReturn {
-  isTranscriptModalOpen: boolean;
-  setIsTranscriptModalOpen: (isOpen: boolean) => void;
-  isPackModalOpen: boolean;
-  setIsPackModalOpen: (isOpen: boolean) => void;
   isTemplateModalOpen: boolean;
   setIsTemplateModalOpen: (isOpen: boolean) => void;
   packs: Pack[];
@@ -45,12 +41,11 @@ export interface UseCreatePostReturn {
   handleClear: () => void;
   handlePostToLinkedIn: () => void;
   handleImportTranscript: (importedTranscript: string) => void;
+  handleSelectTemplate: () => void; // Rename from handleSelectPack
 }
 
 // Update the function signature to use the interface
 export const useCreatePost = (): UseCreatePostReturn => {
-  const [isTranscriptModalOpen, setIsTranscriptModalOpen] = useState(false);
-  const [isPackModalOpen, setIsPackModalOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [packs, setPacks] = useState<Pack[]>([]); // Initialize as an empty array
   const [selectedPack, setSelectedPack] = useState<Pack | null>(null);
@@ -164,6 +159,10 @@ export const useCreatePost = (): UseCreatePostReturn => {
     console.log("mergedContent changed:", mergedContent);
   }, [mergedContent]);
 
+  const handleSelectTemplate = useCallback(() => {
+    setIsTemplateModalOpen(true);
+  }, []);
+
   const handlePackSelect = useCallback(
     (packId: string) => {
       console.log("Pack selected:", packId);
@@ -171,7 +170,6 @@ export const useCreatePost = (): UseCreatePostReturn => {
       if (pack) {
         setSelectedPack(pack);
         setIsTemplateModalOpen(true);
-        setIsPackModalOpen(false);
       }
     },
     [packs]
@@ -182,6 +180,7 @@ export const useCreatePost = (): UseCreatePostReturn => {
     setTitle(template.title || "");
     setContent(template.body || "");
     postService.saveTemplateToLocalStorage(template);
+    setIsTemplateModalOpen(false);
   };
 
   const handleSuggestTags = async (transcript: string) => {
@@ -354,10 +353,6 @@ export const useCreatePost = (): UseCreatePostReturn => {
   }, []);
 
   return {
-    isTranscriptModalOpen,
-    setIsTranscriptModalOpen,
-    isPackModalOpen,
-    setIsPackModalOpen,
     isTemplateModalOpen,
     setIsTemplateModalOpen,
     packs,
@@ -393,5 +388,6 @@ export const useCreatePost = (): UseCreatePostReturn => {
     handleClear,
     handlePostToLinkedIn,
     handleImportTranscript,
+    handleSelectTemplate,
   };
 };

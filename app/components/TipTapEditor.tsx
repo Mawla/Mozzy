@@ -20,7 +20,12 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
     content: content,
     editable,
     onUpdate: ({ editor }) => {
-      onUpdate(editor.getHTML());
+      const htmlContent = editor.getHTML();
+      const plainText = htmlContent
+        .replace(/<p>/g, "")
+        .replace(/<\/p>/g, "\n\n")
+        .trim();
+      onUpdate(plainText);
     },
     editorProps: {
       attributes: {
@@ -31,7 +36,12 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
 
   useEffect(() => {
     if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content);
+      editor.commands.setContent(
+        content
+          .split("\n")
+          .map((line) => `<p>${line}</p>`)
+          .join("")
+      );
     }
   }, [content, editor]);
 
@@ -43,6 +53,9 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
           height: 100%;
           font-size: 16px;
           line-height: 1.5;
+        }
+        .ProseMirror p {
+          margin: 0;
         }
         .ProseMirror * {
           outline: none !important;
