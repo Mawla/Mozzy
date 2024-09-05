@@ -1,0 +1,54 @@
+1. Separate State Management:
+  - Create a new file: app/hooks/useCreatePost.ts
+  - Move all state declarations and related useEffects to this custom hook
+  - Export a function that returns all necessary state and update functions
+
+2. Extract API Service Calls:
+  - Create a new file: app/services/apiService.ts
+  - Move all API-related functions (e.g., handleSuggestTags, handleShortlistTemplates) to this service
+  - Ensure these functions are pure and don't directly manipulate state
+
+3. Create Separate Components:
+  3.1. Create app/components/dashboard/posts/PostHeader.tsx
+  - Move the header section with buttons to this component
+  3.2. Create app/components/dashboard/posts/PostContent.tsx
+  - Move the content section with tabs to this component
+  3.3. Create app/components/dashboard/posts/ProgressNotes.tsx
+  - Move the progress notes textarea to this component
+
+4. Simplify CreatePostPage:
+  - Update app/dashboard/posts/create/page.tsx
+  - Use the new custom hook for state management
+  - Render the new separate components
+  - Pass necessary props and callbacks to child components
+
+5. Create a Constants File:
+  - Create app/constants/editorConfig.ts
+  - Move any constant values (e.g., tab names, button texts) to this file
+
+6. Update Import Statements:
+  - Update all import statements in affected files to reflect the new structure
+
+7. Refactor LinkedIn Service:
+  - Update app/services/linkedInService.ts
+  - Implement proper error handling and OAuth token management
+
+8. Create a Types File:
+  - Create app/types/post.ts
+  - Move all type definitions (e.g., Pack, Template) to this file
+
+9. Update TipTapEditor Component:
+  - Refactor app/components/TipTapEditor.tsx to be more reusable
+  - Consider creating a config prop to customize editor options
+
+10. Create a Utilities File:
+  - Create app/utils/formatters.ts
+  - Move utility functions like formatContent to this file
+
+11. Test and Debug:
+  - Thoroughly test all new components and functions
+  - Ensure all features still work as expected after refactoring
+
+12. Update Documentation:
+  - Update any existing documentation to reflect the new structure
+  - Add comments to new files explaining their purpose and usage
