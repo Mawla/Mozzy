@@ -58,3 +58,31 @@ export async function generateTitle(transcript: string): Promise<string> {
     throw error;
   }
 }
+
+export async function suggestTags(transcript: string): Promise<string[]> {
+  try {
+    const response = await fetch("/api/anthropic", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "suggestTags",
+        data: { transcript },
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        `HTTP error! status: ${response.status}, message: ${errorData.error}, details: ${errorData.details}`
+      );
+    }
+
+    const data = await response.json();
+    return data.suggestedTags;
+  } catch (error) {
+    console.error("Error suggesting tags:", error);
+    throw error;
+  }
+}

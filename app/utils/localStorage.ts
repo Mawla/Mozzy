@@ -5,6 +5,7 @@ export interface StoredRecording {
   originalTranscript: string;
   title: string | null;
   improvedTranscript: string | null;
+  tags: string[]; // Add this line
 }
 
 const STORAGE_KEY = "contentBankRecordings";

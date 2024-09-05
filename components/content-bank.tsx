@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { AudioRecorder } from "@/components/audio-recorder";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import {
   StoredRecording,
   saveRecordingsToLocalStorage,
@@ -13,6 +13,7 @@ import {
 import {
   generateTitle,
   generateImprovedTranscript,
+  suggestTags,
 } from "@/app/services/aiTextService";
 
 export function ContentBank() {
@@ -33,10 +34,13 @@ export function ContentBank() {
     audioUrl: string
   ) => {
     setIsProcessing(true);
-    setError(null); // Reset error state
+    setError(null);
     try {
-      const title = await generateTitle(transcript);
-      const improvedTranscript = await generateImprovedTranscript(transcript);
+      const [title, improvedTranscript, tags] = await Promise.all([
+        generateTitle(transcript),
+        generateImprovedTranscript(transcript),
+        suggestTags(transcript),
+      ]);
 
       const newRecording: StoredRecording = {
         id: Date.now().toString(),
@@ -45,6 +49,7 @@ export function ContentBank() {
         originalTranscript: transcript,
         title,
         improvedTranscript,
+        tags,
       };
       const updatedRecordings = [newRecording, ...recordings];
       setRecordings(updatedRecordings);
@@ -62,6 +67,10 @@ export function ContentBank() {
     }
   };
 
+  const handleCloseRecorder = () => {
+    setIsRecording(false);
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString(undefined, {
@@ -76,16 +85,28 @@ export function ContentBank() {
       <main className="flex-grow p-6">
         <div className="mb-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-800">Content Bank</h1>
-          <Button
-            onClick={() => setIsRecording(true)}
-            className="bg-gray-800 hover:bg-gray-900 text-white"
-          >
-            <Plus className="h-4 w-4 mr-2" /> New Recording
-          </Button>
+          <div className="flex items-center space-x-4">
+            {isProcessing && (
+              <div className="flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+                <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                Processing recording...
+              </div>
+            )}
+            <Button
+              onClick={() => setIsRecording(true)}
+              className="bg-gray-800 hover:bg-gray-900 text-white"
+              disabled={isProcessing}
+            >
+              <Plus className="h-4 w-4 mr-2" /> New Recording
+            </Button>
+          </div>
         </div>
         {isRecording && (
           <div className="mb-6">
-            <AudioRecorder onRecordingComplete={handleRecordingComplete} />
+            <AudioRecorder
+              onRecordingComplete={handleRecordingComplete}
+              onClose={handleCloseRecorder}
+            />
           </div>
         )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -125,16 +146,6 @@ export function ContentBank() {
                   }
                   readOnly
                 />
-                {selectedRecording.summary && (
-                  <>
-                    <h3 className="font-semibold mt-2">Summary</h3>
-                    <Textarea
-                      className="w-full h-24 mb-2"
-                      value={selectedRecording.summary}
-                      readOnly
-                    />
-                  </>
-                )}
                 {selectedRecording.improvedTranscript && (
                   <>
                     <h3 className="font-semibold mt-2">Improved Transcript</h3>
@@ -151,6 +162,22 @@ export function ContentBank() {
                   controls
                   className="w-full"
                 />
+                {selectedRecording.tags &&
+                  selectedRecording.tags.length > 0 && (
+                    <>
+                      <h3 className="font-semibold mt-2">Tags</h3>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {selectedRecording.tags.map((tag, index) => (
+                          <span
+                            key={index}
+                            className="bg-gray-200 px-2 py-1 rounded-full text-sm"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  )}
               </>
             ) : (
               <p className="text-gray-500">
@@ -159,16 +186,9 @@ export function ContentBank() {
             )}
           </div>
         </div>
-        {isProcessing && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white p-4 rounded-lg">
-              <p>Processing recording...</p>
-            </div>
-          </div>
-        )}
         {error && (
           <div
-            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+            className="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
             role="alert"
           >
             <strong className="font-bold">Error!</strong>
@@ -182,7 +202,7 @@ export function ContentBank() {
                 viewBox="0 0 20 20"
               >
                 <title>Close</title>
-                <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
+                <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.15 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
               </svg>
             </span>
           </div>

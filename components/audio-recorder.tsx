@@ -3,14 +3,25 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Mic, Play, Pause, Trash2, Download, Save } from "lucide-react";
+import {
+  Mic,
+  Play,
+  Pause,
+  Trash2,
+  Download,
+  Check,
+  Save,
+  RotateCcw,
+} from "lucide-react";
 import { useAudioRecorder } from "@/app/hooks/useAudioRecorder";
 import { transcribeAudio } from "@/app/utils/transcribeAudio";
 
 export function AudioRecorder({
   onRecordingComplete,
+  onClose,
 }: {
-  onRecordingComplete: (transcript: string, audioUrl: string) => void;
+  onRecordingComplete: (transcript: string, audioUrl: string) => Promise<void>;
+  onClose: () => void;
 }) {
   const {
     isRecording,
@@ -26,6 +37,7 @@ export function AudioRecorder({
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [time, setTime] = useState(0);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [isReviewing, setIsReviewing] = useState(false);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -43,7 +55,7 @@ export function AudioRecorder({
 
   useEffect(() => {
     if (!isRecording && audioBlob) {
-      handleSaveAndTranscribe();
+      handleTranscribe();
     }
   }, [isRecording, audioBlob]);
 
@@ -53,12 +65,13 @@ export function AudioRecorder({
     } else {
       await startRecording();
       setTime(0);
-      setTranscript("Recording started...\n");
+      setTranscript("");
       setAudioUrl(null);
+      setIsReviewing(false);
     }
   };
 
-  const handleSaveAndTranscribe = async () => {
+  const handleTranscribe = async () => {
     if (audioBlob) {
       setIsTranscribing(true);
       try {
@@ -67,13 +80,20 @@ export function AudioRecorder({
 
         const transcribedText = await transcribeAudio(audioBlob);
         setTranscript(transcribedText);
-        onRecordingComplete(transcribedText, url);
+        setIsReviewing(true);
       } catch (error) {
         console.error("Error transcribing audio:", error);
         setTranscript("Error transcribing audio. Please try again.");
       } finally {
         setIsTranscribing(false);
       }
+    }
+  };
+
+  const handleSave = async () => {
+    if (audioUrl && transcript) {
+      await onRecordingComplete(transcript, audioUrl);
+      onClose();
     }
   };
 
@@ -123,7 +143,11 @@ export function AudioRecorder({
         <div>
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-gray-600">
-              {isRecording ? "Recording on" : "Recording off"}
+              {isRecording
+                ? "Recording on"
+                : isReviewing
+                ? "Review transcript"
+                : "Recording off"}
             </span>
           </div>
           <div className="h-2 bg-gray-200 rounded-full mb-2">
@@ -141,17 +165,18 @@ export function AudioRecorder({
         </div>
         <div>
           <div className="flex justify-center space-x-4 mb-2">
-            <Button
-              onClick={togglePause}
-              className="w-12 h-12 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-800"
-              disabled={!isRecording}
-            >
-              {isPaused ? (
-                <Play className="h-6 w-6" />
-              ) : (
-                <Pause className="h-6 w-6" />
-              )}
-            </Button>
+            {isRecording && (
+              <Button
+                onClick={togglePause}
+                className="w-12 h-12 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-800"
+              >
+                {isPaused ? (
+                  <Play className="h-6 w-6" />
+                ) : (
+                  <Pause className="h-6 w-6" />
+                )}
+              </Button>
+            )}
             <Button
               onClick={handleToggleRecording}
               className={`w-16 h-16 rounded-full ${
@@ -162,17 +187,21 @@ export function AudioRecorder({
               disabled={isTranscribing || permissionStatus === "denied"}
             >
               {isRecording ? (
-                <Save className="h-8 w-8" />
+                <Check className="h-8 w-8" />
+              ) : isReviewing ? (
+                <RotateCcw className="h-8 w-8" />
               ) : (
                 <Mic className="h-8 w-8" />
               )}
             </Button>
-            <Button
-              onClick={() => setTranscript("")}
-              className="w-12 h-12 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-800"
-            >
-              <Trash2 className="h-6 w-6" />
-            </Button>
+            {isReviewing && (
+              <Button
+                onClick={handleSave}
+                className="w-16 h-16 rounded-full bg-gray-800 hover:bg-gray-900 text-white"
+              >
+                <Save className="h-8 w-8" />
+              </Button>
+            )}
           </div>
           <div className="flex justify-between items-center">
             <Button
