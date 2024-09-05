@@ -8,6 +8,7 @@ import ImportTranscriptModal from "@/app/components/dashboard/ImportTranscriptMo
 import PackSelectionModal from "@/app/components/dashboard/PackSelectionModal";
 import { Badge } from "@/components/ui/badge";
 import { Template } from "@/utils/templateParser"; // Update this import if needed
+import { LABELS } from "@/app/constants/editorConfig";
 
 const CreatePostPage = () => {
   const {
@@ -90,7 +91,7 @@ const CreatePostPage = () => {
         handleMerge={handleMerge}
       />
       <div className="space-y-2">
-        <label className="block text-sm font-medium">Tags</label>
+        <label className="block text-sm font-medium">{LABELS.TAGS}</label>
         <div className="flex flex-wrap gap-2">
           {tags.map((tag, index) => (
             <Badge key={index} variant="secondary">
@@ -101,7 +102,9 @@ const CreatePostPage = () => {
       </div>
       {suggestedTags.length > 0 && (
         <div className="space-y-2">
-          <label className="block text-sm font-medium">Suggested Tags</label>
+          <label className="block text-sm font-medium">
+            {LABELS.SUGGESTED_TAGS}
+          </label>
           <div className="flex flex-wrap gap-2">
             {suggestedTags.map((tag, index) => (
               <Badge key={index} variant="outline">

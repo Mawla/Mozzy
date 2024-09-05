@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { BUTTON_TEXTS, PLACEHOLDERS } from "@/app/constants/editorConfig";
 
 interface PostHeaderProps {
   title: string;
@@ -31,24 +32,32 @@ export const PostHeader: React.FC<PostHeaderProps> = ({
     <div className="space-y-4">
       <Input
         type="text"
-        placeholder="Enter post title"
+        placeholder={PLACEHOLDERS.TITLE_INPUT}
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         className="w-full"
       />
       <div className="flex flex-wrap gap-2">
         <Button onClick={() => setIsTranscriptModalOpen(true)}>
-          Import Transcript
+          {BUTTON_TEXTS.IMPORT_TRANSCRIPT}
         </Button>
-        <Button onClick={() => setIsPackModalOpen(true)}>Select Pack</Button>
+        <Button onClick={() => setIsPackModalOpen(true)}>
+          {BUTTON_TEXTS.SELECT_PACK}
+        </Button>
         <Button onClick={() => setIsTemplateModalOpen(true)}>
-          Select Template
+          {BUTTON_TEXTS.SELECT_TEMPLATE}
         </Button>
-        <Button onClick={handleSuggestTags}>Suggest Tags</Button>
-        <Button onClick={handleShortlistTemplates}>Shortlist Templates</Button>
-        <Button onClick={handleSuggestTemplate}>Suggest Template</Button>
-        <Button onClick={handleClear}>Clear</Button>
-        <Button onClick={handlePostToLinkedIn}>Post to LinkedIn</Button>
+        <Button onClick={handleSuggestTags}>{BUTTON_TEXTS.SUGGEST_TAGS}</Button>
+        <Button onClick={handleShortlistTemplates}>
+          {BUTTON_TEXTS.SHORTLIST_TEMPLATES}
+        </Button>
+        <Button onClick={handleSuggestTemplate}>
+          {BUTTON_TEXTS.SUGGEST_TEMPLATE}
+        </Button>
+        <Button onClick={handleClear}>{BUTTON_TEXTS.CLEAR}</Button>
+        <Button onClick={handlePostToLinkedIn}>
+          {BUTTON_TEXTS.POST_TO_LINKEDIN}
+        </Button>
       </div>
     </div>
   );
