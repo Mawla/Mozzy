@@ -1,393 +1,447 @@
 import { useState, useEffect, useCallback } from "react";
 import { Pack, Template } from "@/utils/templateParser";
 import { postService } from "@/app/services/postService";
+import { ActiveTabType } from "@/app/types/editor";
 
-// Add this interface
 export interface UseCreatePostReturn {
-  isTemplateModalOpen: boolean;
-  setIsTemplateModalOpen: (isOpen: boolean) => void;
-  packs: Pack[];
-  selectedPack: Pack | null;
-  selectedTemplate: Template | null;
-  title: string;
-  setTitle: (title: string) => void;
-  content: string;
-  setContent: (content: string) => void;
-  transcript: string;
-  setTranscript: (transcript: string) => void;
-  activeTab: "content" | "template" | "merge";
-  setActiveTab: (tab: "content" | "template" | "merge") => void;
-  isMerging: boolean;
-  mergedContent: string;
-  setMergedContent: (content: string) => void;
-  progressNotes: string;
-  isLoading: boolean;
-  suggestedTags: string[];
-  tags: string[];
-  shortlistedTemplates: Template[];
-  suggestedTemplates: Template[];
-  isPosting: boolean;
-  filter: "all" | "recent" | "favorite" | "suggested" | "shortlisted";
-  setFilter: (
-    filter: "all" | "recent" | "favorite" | "suggested" | "shortlisted"
+  state: {
+    isTemplateModalOpen: boolean;
+    packs: Pack[];
+    selectedPack: Pack | null;
+    selectedTemplate: Template | null;
+    title: string;
+    content: string;
+    transcript: string;
+    activeTab: ActiveTabType;
+    isMerging: boolean;
+    mergedContent: string;
+    progressNotes: string;
+    suggestedTags: string[];
+    tags: string[];
+    shortlistedTemplates: Template[];
+    suggestedTemplates: Template[];
+    isPosting: boolean;
+    filter: "all" | "recent" | "favorite" | "suggested" | "shortlisted";
+    templateFilter: "all" | "recent" | "favorite" | "suggested" | "shortlisted";
+    filteredPacks: Pack[];
+    storedRecordings: any[]; // Add proper type when available
+    templates: Template[];
+    isImporting: boolean;
+    isSuggestingTags: boolean;
+    isShortlisting: boolean;
+    isOpeningTemplateModal: boolean;
+    isClearing: boolean;
+    isSuggestingTemplate: boolean;
+  };
+  updateState: (
+    newState:
+      | Partial<UseCreatePostReturn["state"]>
+      | ((
+          prevState: UseCreatePostReturn["state"]
+        ) => Partial<UseCreatePostReturn["state"]>)
   ) => void;
-  filteredPacks: Pack[];
-  handlePackSelect: (packId: string) => void;
-  handleTemplateSelect: (template: Template) => void;
+  isLoading: boolean;
+  error: string | null;
+  handleMerge: () => Promise<void>;
   handleSuggestTags: (transcript: string) => Promise<void>;
   handleShortlistTemplates: () => Promise<void>;
+  handleClear: () => Promise<void>;
+  handleImportToPost: (importedTranscript: string) => void;
+  handleSelectTemplate: (template: Template) => void;
+  handlePostToLinkedIn: () => Promise<void>;
   handleSuggestTemplate: () => Promise<void>;
-  handleMerge: () => void;
-  handleClear: () => void;
-  handlePostToLinkedIn: () => void;
-  handleImportTranscript: (importedTranscript: string) => void;
-  handleSelectTemplate: () => void; // Rename from handleSelectPack
 }
 
-// Update the function signature to use the interface
 export const useCreatePost = (): UseCreatePostReturn => {
-  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
-  const [packs, setPacks] = useState<Pack[]>([]); // Initialize as an empty array
-  const [selectedPack, setSelectedPack] = useState<Pack | null>(null);
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(
-    null
-  );
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [transcript, setTranscript] = useState("");
-  const [activeTab, setActiveTab] = useState<"content" | "template" | "merge">(
-    "content"
-  );
-  const [isMerging, setIsMerging] = useState(false);
-  const [mergedContent, setMergedContent] = useState("");
-  const [progressNotes, setProgressNotes] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
-  const [tags, setTags] = useState<string[]>([]); // Initialize as an empty array
-  const [shortlistedTemplates, setShortlistedTemplates] = useState<Template[]>(
+  const [state, setState] = useState<UseCreatePostReturn["state"]>({
+    isTemplateModalOpen: false,
+    packs: [],
+    selectedPack: null,
+    selectedTemplate: null,
+    title: "",
+    content: "",
+    transcript: "",
+    activeTab: "content",
+    isMerging: false,
+    mergedContent: "",
+    progressNotes: "",
+    suggestedTags: [],
+    tags: [],
+    shortlistedTemplates: [],
+    suggestedTemplates: [],
+    isPosting: false,
+    filter: "all",
+    templateFilter: "all",
+    filteredPacks: [],
+    storedRecordings: [],
+    templates: [],
+    isImporting: false,
+    isSuggestingTags: false,
+    isShortlisting: false,
+    isOpeningTemplateModal: false,
+    isClearing: false,
+    isSuggestingTemplate: false,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const updateState = useCallback(
+    (
+      newState:
+        | Partial<UseCreatePostReturn["state"]>
+        | ((
+            prevState: UseCreatePostReturn["state"]
+          ) => Partial<UseCreatePostReturn["state"]>)
+    ) => {
+      setState((prevState) => {
+        const updatedState =
+          typeof newState === "function" ? newState(prevState) : newState;
+        return { ...prevState, ...updatedState };
+      });
+    },
     []
   );
-  const [suggestedTemplates, setSuggestedTemplates] = useState<Template[]>([]);
-  const [isPosting, setIsPosting] = useState(false);
-
-  // Add these state variables
-  const [filter, setFilter] = useState<
-    "all" | "recent" | "favorite" | "suggested" | "shortlisted"
-  >("all");
-  const [filteredPacks, setFilteredPacks] = useState<Pack[]>([]);
-
-  // Add this useEffect to update filteredPacks when packs or filter changes
-  useEffect(() => {
-    const newFilteredPacks = packs.filter((pack) => {
-      if (filter === "all") return true;
-      if (filter === "recent") return pack.templates.some((t) => t.isRecent);
-      if (filter === "favorite")
-        return pack.templates.some((t) => t.isFavorite);
-      if (filter === "suggested")
-        return pack.templates.some((t) => t.isSuggested);
-      if (filter === "shortlisted")
-        return pack.templates.some((t) => t.isShortlisted);
-      return true;
-    });
-    setFilteredPacks(newFilteredPacks);
-  }, [packs, filter]);
 
   useEffect(() => {
-    try {
-      console.log("Component mounted");
-      const loadedPacks = postService.getPacks();
-      setPacks(loadedPacks || []); // Ensure packs is always an array
+    const initializeState = async () => {
+      try {
+        console.log("Initializing state...");
+        setIsLoading(true);
 
-      // Load saved data from localStorage
-      const savedTemplate = postService.getTemplateFromLocalStorage();
-      const savedTranscript = postService.getFromLocalStorage("transcript");
-      const savedContent = postService.getFromLocalStorage("content");
-      const savedTags = postService.getSuggestedTagsFromLocalStorage();
+        const loadedPacks = postService.getPacks();
+        console.log("Loaded packs:", loadedPacks);
 
-      console.log("Saved tags from localStorage:", savedTags);
+        const savedTemplate = postService.getTemplateFromLocalStorage();
+        const savedTranscript =
+          postService.getFromLocalStorage("transcript") || "";
+        const savedContent = postService.getFromLocalStorage("content") || "";
+        const savedMergedContent =
+          postService.getFromLocalStorage("mergedContent") || "";
+        const savedTags = postService.getSuggestedTagsFromLocalStorage();
 
-      if (savedTemplate) {
-        setSelectedTemplate(savedTemplate);
-        setTitle(savedTemplate.title || "");
-        setContent(savedTemplate.body || "");
+        console.log("Loaded packs:", loadedPacks);
+        console.log("Saved template:", savedTemplate);
+        console.log("Saved transcript:", savedTranscript);
+        console.log("Saved content:", savedContent);
+        console.log("Saved merged content:", savedMergedContent);
+        console.log("Saved tags:", savedTags);
+
+        updateState({
+          packs: loadedPacks || [],
+          filteredPacks: loadedPacks || [],
+          selectedTemplate: savedTemplate || null,
+          title: savedTemplate?.title || "",
+          content: savedContent,
+          transcript: savedTranscript,
+          mergedContent: savedMergedContent,
+          tags: savedTags,
+          suggestedTags: savedTags,
+          progressNotes: "Loaded saved data from storage.",
+        });
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error initializing state:", error);
+        setError(
+          "Failed to initialize post data. Please try refreshing the page."
+        );
+        setIsLoading(false);
       }
+    };
 
-      if (savedTranscript) {
-        setTranscript(savedTranscript);
-      }
-
-      if (savedContent) {
-        setContent(savedContent);
-      }
-
-      if (savedTags.length > 0) {
-        setSuggestedTags(savedTags);
-        setTags(savedTags);
-      }
-
-      setProgressNotes("Loaded saved data from storage.");
-    } catch (error) {
-      console.error("Error in component mount effect:", error);
-      setProgressNotes(
-        "Error loading saved data. Please try refreshing the page."
-      );
-      setPacks([]); // Set to empty array in case of error
-    }
-  }, []);
+    initializeState();
+  }, [updateState]);
 
   useEffect(() => {
-    postService.saveToLocalStorage("transcript", transcript);
-  }, [transcript]);
+    postService.saveToLocalStorage("transcript", state.transcript);
+  }, [state.transcript]);
 
   useEffect(() => {
-    postService.saveToLocalStorage("content", content);
-  }, [content]);
+    postService.saveToLocalStorage("content", state.content);
+  }, [state.content]);
 
   useEffect(() => {
-    console.log("activeTab changed:", activeTab);
-  }, [activeTab]);
+    console.log("activeTab changed:", state.activeTab);
+  }, [state.activeTab]);
 
   useEffect(() => {
-    console.log("transcript changed:", transcript);
-  }, [transcript]);
+    console.log("transcript changed:", state.transcript);
+  }, [state.transcript]);
 
   useEffect(() => {
-    console.log("content changed:", content);
-  }, [content]);
+    console.log("content changed:", state.content);
+  }, [state.content]);
 
   useEffect(() => {
-    console.log("mergedContent changed:", mergedContent);
-  }, [mergedContent]);
+    console.log("mergedContent changed:", state.mergedContent);
+  }, [state.mergedContent]);
 
-  const handleSelectTemplate = useCallback(() => {
-    setIsTemplateModalOpen(true);
-  }, []);
+  const handleSelectTemplate = useCallback(
+    (template: Template) => {
+      updateState({
+        selectedTemplate: template,
+        title: template.title || "",
+        content: template.body || "",
+        isTemplateModalOpen: false,
+        activeTab: "template",
+      });
+      postService.saveTemplateToLocalStorage(template);
+    },
+    [updateState]
+  );
 
   const handlePackSelect = useCallback(
     (packId: string) => {
       console.log("Pack selected:", packId);
-      const pack = packs.find((p) => p.id === packId);
+      const pack = state.packs.find((p) => p.id === packId);
       if (pack) {
-        setSelectedPack(pack);
-        setIsTemplateModalOpen(true);
+        updateState({ selectedPack: pack, isTemplateModalOpen: true });
       }
     },
-    [packs]
+    [state.packs, updateState]
   );
 
   const handleTemplateSelect = (template: Template) => {
-    setSelectedTemplate(template);
-    setTitle(template.title || "");
-    setContent(template.body || "");
+    updateState({
+      selectedTemplate: template,
+      title: template.title || "",
+      content: template.body || "",
+    });
     postService.saveTemplateToLocalStorage(template);
-    setIsTemplateModalOpen(false);
+    updateState({ isTemplateModalOpen: false });
+  };
+
+  const handleAsyncOperation = async (
+    operation: () => Promise<void>,
+    loadingKey: keyof UseCreatePostReturn["state"]
+  ) => {
+    updateState({ [loadingKey]: true } as Partial<
+      UseCreatePostReturn["state"]
+    >);
+    try {
+      await operation();
+    } finally {
+      updateState({ [loadingKey]: false } as Partial<
+        UseCreatePostReturn["state"]
+      >);
+    }
   };
 
   const handleSuggestTags = async (transcript: string) => {
-    setIsLoading(true);
-    setProgressNotes("• Starting tag suggestion process...");
-
-    try {
-      const suggestedTags = await postService.suggestTags(transcript);
-      setSuggestedTags(suggestedTags);
-      setTags(suggestedTags);
-      postService.saveSuggestedTagsToLocalStorage(suggestedTags);
-      setProgressNotes(
-        (prev) =>
-          `${prev}\n• Suggested tags:\n  ${suggestedTags
-            .map((tag) => `- ${tag}`)
-            .join("\n  ")}`
-      );
-    } catch (error) {
-      console.error("Error suggesting tags:", error);
-      setProgressNotes((prev) => `${prev}\n• Error suggesting tags: ${error}`);
-    }
-
-    setIsLoading(false);
+    await handleAsyncOperation(async () => {
+      updateState({ progressNotes: "• Starting tag suggestion process..." });
+      try {
+        console.log(
+          "Calling postService.suggestTags with transcript:",
+          transcript
+        );
+        const suggestedTags = await postService.suggestTags(transcript);
+        console.log("Received suggested tags:", suggestedTags);
+        updateState((prevState) => {
+          const newTags = Array.from(
+            new Set([...prevState.tags, ...suggestedTags])
+          );
+          return {
+            suggestedTags,
+            tags: newTags,
+            progressNotes:
+              prevState.progressNotes +
+              `\n• Suggested tags:\n  ${suggestedTags
+                .map((tag) => `- ${tag}`)
+                .join("\n  ")}`,
+          };
+        });
+        postService.saveSuggestedTagsToLocalStorage(suggestedTags);
+      } catch (error) {
+        console.error("Error suggesting tags:", error);
+        updateState((prevState) => ({
+          progressNotes:
+            prevState.progressNotes + `\n• Error suggesting tags: ${error}`,
+        }));
+      }
+    }, "isSuggestingTags");
   };
 
   const handleShortlistTemplates = useCallback(async () => {
-    setIsLoading(true);
-    setProgressNotes("• Starting template shortlisting process...");
+    await handleAsyncOperation(async () => {
+      updateState({
+        progressNotes: "• Starting template shortlisting process...",
+      });
+      try {
+        const storedTags = postService.getSuggestedTagsFromLocalStorage();
+        const tagsToUse = storedTags.length > 0 ? storedTags : state.tags;
+        const allTemplates = state.packs.flatMap((pack) => pack.templates);
+        const shortlisted = await postService.shortlistTemplatesByTags(
+          tagsToUse,
+          allTemplates
+        );
 
-    try {
-      const storedTags = postService.getSuggestedTagsFromLocalStorage();
-      const tagsToUse = storedTags.length > 0 ? storedTags : tags;
-      const allTemplates = packs.flatMap((pack) => pack.templates);
-      const shortlisted = await postService.shortlistTemplatesByTags(
-        tagsToUse,
-        allTemplates
-      );
-
-      setShortlistedTemplates(shortlisted);
-      setProgressNotes(
-        (prev) =>
-          `${prev}\n• Shortlisted top ${
+        updateState((prevState) => ({
+          shortlistedTemplates: shortlisted,
+          progressNotes: `${prevState.progressNotes}\n• Shortlisted top ${
             shortlisted.length
-          } templates:\n  ${shortlisted.map((t) => `- ${t.name}`).join("\n  ")}`
-      );
-    } catch (error) {
-      console.error("Error shortlisting templates:", error);
-      setProgressNotes(
-        (prev) => `${prev}\n• Error shortlisting templates: ${error}`
-      );
-    }
-
-    setIsLoading(false);
-  }, [tags, packs]);
-
-  const handleSuggestTemplate = useCallback(async () => {
-    setIsLoading(true);
-    setProgressNotes("• Starting template suggestion process...");
-
-    try {
-      const result = await postService.chooseBestTemplate(
-        transcript,
-        shortlistedTemplates
-      );
-
-      if (result.bestFit) {
-        setSelectedTemplate(result.bestFit);
-        setTitle(result.bestFit.title || "");
-        setContent(result.bestFit.body || "");
-        postService.saveTemplateToLocalStorage(result.bestFit);
-        setSuggestedTemplates([result.bestFit, ...result.optionalChoices]);
-        setProgressNotes(
-          (prev) =>
-            `${prev}\n• Best fit template: ${result.bestFit.name}` +
-            (result.optionalChoices.length > 0
-              ? `\n• Optional choices:\n  ${result.optionalChoices
-                  .map((t) => `- ${t.name}`)
-                  .join("\n  ")}`
-              : "\n• No optional choices available.")
-        );
-      } else {
-        setProgressNotes(
-          (prev) =>
-            `${prev}\n• No best fit template found. Please select a template manually.`
-        );
+          } templates:\n  ${shortlisted
+            .map((t) => `- ${t.name}`)
+            .join("\n  ")}`,
+        }));
+      } catch (error) {
+        console.error("Error shortlisting templates:", error);
+        updateState((prevState) => ({
+          progressNotes: `${prevState.progressNotes}\n• Error shortlisting templates: ${error}`,
+        }));
       }
-    } catch (error) {
-      console.error("Error suggesting template:", error);
-      setProgressNotes(
-        (prev) => `${prev}\n• Error suggesting template: ${error}`
-      );
-    }
-
-    setIsLoading(false);
-  }, [transcript, shortlistedTemplates]);
+    }, "isShortlisting");
+  }, [state.tags, state.packs, updateState]);
 
   const handleMerge = useCallback(async () => {
-    setIsMerging(true);
-    setProgressNotes("• Starting content merge process...");
-    try {
-      const { mergedContent: mergedResult, suggestedTitle } =
-        await postService.mergeContent(transcript, content);
-      setMergedContent(mergedResult);
-
-      if (!title && suggestedTitle) {
-        setTitle(suggestedTitle);
-        setProgressNotes(
-          (prev) =>
-            `${prev}\n• Content merged successfully.\n• Suggested title: "${suggestedTitle}"`
-        );
-      } else if (!title) {
-        setProgressNotes(
-          (prev) =>
-            `${prev}\n• Content merged successfully.\n• No title suggested. Please enter a title manually.`
-        );
-      } else {
-        setProgressNotes(
-          (prev) =>
-            `${prev}\n• Content merged successfully.\n• Existing title kept: "${title}"`
-        );
+    await handleAsyncOperation(async () => {
+      updateState({ progressNotes: "• Starting content merge process..." });
+      try {
+        const { mergedContent: mergedResult, suggestedTitle } =
+          await postService.mergeContent(state.transcript, state.content);
+        updateState((prevState) => ({
+          mergedContent: mergedResult,
+          title:
+            !prevState.title && suggestedTitle
+              ? suggestedTitle
+              : prevState.title,
+          progressNotes: `${
+            prevState.progressNotes
+          }\n• Content merged successfully.${
+            !prevState.title && suggestedTitle
+              ? `\n• Suggested title: "${suggestedTitle}"`
+              : !prevState.title
+              ? "\n• No title suggested. Please enter a title manually."
+              : `\n• Existing title kept: "${prevState.title}"`
+          }`,
+          activeTab: "merge",
+        }));
+      } catch (error) {
+        console.error("Error merging content:", error);
+        updateState((prevState) => ({
+          progressNotes: `${prevState.progressNotes}\n• Error merging content: ${error}`,
+        }));
       }
-
-      setActiveTab("merge");
-    } catch (error) {
-      console.error("Error merging content:", error);
-      setProgressNotes((prev) => `${prev}\n• Error merging content: ${error}`);
-    } finally {
-      setIsMerging(false);
-    }
-  }, [transcript, content, title, setTitle, setActiveTab]);
+    }, "isMerging");
+  }, [state.transcript, state.content, state.title, updateState]);
 
   const handleClear = useCallback(async () => {
-    try {
-      await postService.clearPostData();
-      setTitle("");
-      setContent("");
-      setTranscript("");
-      setMergedContent("");
-      setSelectedTemplate(null);
-      setTags([]);
-      setSuggestedTags([]);
-      setShortlistedTemplates([]);
-      setSuggestedTemplates([]);
-      setProgressNotes("• All post data cleared successfully.");
-    } catch (error) {
-      console.error("Error clearing post data:", error);
-      setProgressNotes(`• Error clearing post data: ${error}`);
-    }
-  }, []);
+    await handleAsyncOperation(async () => {
+      try {
+        await postService.clearPostData();
+        updateState({
+          title: "",
+          content: "",
+          transcript: "",
+          mergedContent: "",
+          selectedTemplate: null,
+          tags: [],
+          suggestedTags: [],
+          shortlistedTemplates: [],
+          suggestedTemplates: [],
+          progressNotes: "• All post data cleared successfully.",
+        });
+      } catch (error) {
+        console.error("Error clearing post data:", error);
+        updateState({
+          progressNotes: `• Error clearing post data: ${error}`,
+        });
+      }
+    }, "isClearing");
+  }, [updateState]);
 
   const handlePostToLinkedIn = useCallback(async () => {
-    setIsPosting(true);
-    setProgressNotes("• Posting to LinkedIn...");
-    try {
-      await postService.postToLinkedIn(title, mergedContent);
-      setProgressNotes((prev) => `${prev}\n• Posted to LinkedIn successfully.`);
-    } catch (error) {
-      console.error("Error posting to LinkedIn:", error);
-      setProgressNotes(
-        (prev) => `${prev}\n• Error posting to LinkedIn: ${error}`
-      );
-    }
-    setIsPosting(false);
-  }, [title, mergedContent]);
+    await handleAsyncOperation(async () => {
+      updateState({ progressNotes: "• Posting to LinkedIn..." });
+      try {
+        await postService.postToLinkedIn(state.title, state.mergedContent);
+        updateState((prevState) => ({
+          progressNotes: `${prevState.progressNotes}\n• Posted to LinkedIn successfully.`,
+        }));
+      } catch (error) {
+        console.error("Error posting to LinkedIn:", error);
+        updateState((prevState) => ({
+          progressNotes: `${prevState.progressNotes}\n• Error posting to LinkedIn: ${error}`,
+        }));
+      }
+    }, "isPosting");
+  }, [state.title, state.mergedContent, updateState]);
 
-  const handleImportTranscript = useCallback((importedTranscript: string) => {
-    setTranscript(importedTranscript);
-    postService.saveToLocalStorage("transcript", importedTranscript);
-    setProgressNotes("• Transcript imported successfully.");
-  }, []);
+  const handleImportToPost = useCallback(
+    (importedTranscript: string) => {
+      handleAsyncOperation(async () => {
+        updateState({
+          transcript: importedTranscript,
+          progressNotes: "• Transcript imported successfully.",
+        });
+        postService.saveToLocalStorage("transcript", importedTranscript);
+      }, "isImporting");
+    },
+    [updateState]
+  );
+
+  const handleSuggestTemplate = useCallback(async () => {
+    await handleAsyncOperation(async () => {
+      updateState((prevState) => ({
+        progressNotes:
+          prevState.progressNotes +
+          "\n• Starting template suggestion process...",
+      }));
+      try {
+        const result = await postService.chooseBestTemplate(
+          state.transcript,
+          state.shortlistedTemplates
+        );
+
+        if (result.bestFit) {
+          updateState((prevState) => ({
+            selectedTemplate: result.bestFit,
+            title: result.bestFit.title || "",
+            content: result.bestFit.body || "",
+            suggestedTemplates: [
+              result.bestFit,
+              ...(result.optionalChoices || []),
+            ].filter((t): t is Template => t !== null),
+            progressNotes:
+              prevState.progressNotes +
+              `\n• Best fit template: ${result.bestFit.name}` +
+              (result.optionalChoices && result.optionalChoices.length > 0
+                ? `\n• Optional choices:\n  ${result.optionalChoices
+                    .map((t) => (t ? `- ${t.name}` : ""))
+                    .filter(Boolean)
+                    .join("\n  ")}`
+                : "\n• No optional choices available."),
+          }));
+          postService.saveTemplateToLocalStorage(result.bestFit);
+        } else {
+          updateState((prevState) => ({
+            progressNotes:
+              prevState.progressNotes +
+              "\n• No best fit template found. Please select a template manually.",
+          }));
+        }
+      } catch (error) {
+        console.error("Error suggesting template:", error);
+        updateState((prevState) => ({
+          progressNotes:
+            prevState.progressNotes + `\n• Error suggesting template: ${error}`,
+        }));
+      }
+    }, "isSuggestingTemplate");
+  }, [state.transcript, state.shortlistedTemplates, updateState]);
 
   return {
-    isTemplateModalOpen,
-    setIsTemplateModalOpen,
-    packs,
-    selectedPack,
-    selectedTemplate,
-    title,
-    setTitle,
-    content,
-    setContent,
-    transcript,
-    setTranscript,
-    activeTab,
-    setActiveTab,
-    isMerging,
-    mergedContent,
-    setMergedContent,
-    progressNotes,
+    state,
+    updateState,
     isLoading,
-    suggestedTags,
-    tags,
-    shortlistedTemplates,
-    suggestedTemplates,
-    isPosting,
-    filter,
-    setFilter,
-    filteredPacks,
-    handlePackSelect,
-    handleTemplateSelect,
+    error,
+    handleMerge,
     handleSuggestTags,
     handleShortlistTemplates,
-    handleSuggestTemplate,
-    handleMerge,
     handleClear,
-    handlePostToLinkedIn,
-    handleImportTranscript,
+    handleImportToPost,
     handleSelectTemplate,
+    handlePostToLinkedIn,
+    handleSuggestTemplate,
   };
 };

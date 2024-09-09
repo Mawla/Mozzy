@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -29,13 +30,14 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
     },
     editorProps: {
       attributes: {
-        class: "outline-none h-full",
+        class: "prose max-w-none text-base focus:outline-none h-full",
       },
     },
+    immediatelyRender: false,
   });
 
   useEffect(() => {
-    if (editor && content !== editor.getHTML()) {
+    if (editor && editor.getHTML() !== content) {
       editor.commands.setContent(
         content
           .split("\n")

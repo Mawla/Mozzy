@@ -1,8 +1,20 @@
 export const TAB_NAMES = {
+  TRANSCRIPT: "Transcript",
+  TEMPLATE: "Template",
+  MERGED_CONTENT: "Merged Content",
+};
+
+export const TAB_TYPES = {
+  TRANSCRIPT: "transcript",
+  TEMPLATE: "template",
+  MERGED_CONTENT: "mergedContent",
+} as const;
+
+export const ACTIVE_TAB_TYPES = {
   CONTENT: "content",
   TEMPLATE: "template",
   MERGE: "merge",
-};
+} as const;
 
 export const BUTTON_TEXTS = {
   SELECT_TEMPLATE: "Select Template",

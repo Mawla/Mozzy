@@ -24,8 +24,8 @@ const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 interface TemplateSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  filteredPacks: Pack[];
   onSelectTemplate: (template: Template) => void;
+  filteredPacks: Pack[];
   filter: "all" | "recent" | "favorite" | "suggested" | "shortlisted";
   setFilter: (
     filter: "all" | "recent" | "favorite" | "suggested" | "shortlisted"
@@ -57,6 +57,10 @@ const TemplateSelectionModal: React.FC<TemplateSelectionModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
+      console.log(
+        "TemplateSelectionModal opened. Filtered packs:",
+        filteredPacks
+      );
       // Load suggested and shortlisted template IDs from localStorage
       const storedSuggestedIds = localStorage.getItem("suggestedTemplateIds");
       const storedShortlistedIds = localStorage.getItem(
@@ -74,7 +78,7 @@ const TemplateSelectionModal: React.FC<TemplateSelectionModalProps> = ({
       setSelectedPack(null);
       setSelectedTemplate(null);
     }
-  }, [isOpen]);
+  }, [isOpen, filteredPacks]);
 
   const handlePackClick = (pack: Pack) => {
     setSelectedPack(pack);

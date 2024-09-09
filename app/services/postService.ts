@@ -77,21 +77,24 @@ class PostService {
     localStorage.removeItem("transcript");
     localStorage.removeItem("template");
     localStorage.removeItem("content");
-    localStorage.removeItem("merge");
+    localStorage.removeItem("mergedContent");
     localStorage.removeItem("selectedTemplate");
+    localStorage.removeItem("suggestedTags");
     // Add any other items that need to be cleared
   }
 
   async suggestTags(transcript: string): Promise<string[]> {
     try {
+      console.log("Suggesting tags for transcript:", transcript);
       const { suggestedTags } = await this.callAPI<{ suggestedTags: string[] }>(
         "suggestTags",
         { transcript }
       );
+      console.log("Received suggested tags:", suggestedTags);
       return suggestedTags;
     } catch (error) {
       console.error("Error suggesting tags:", error);
-      return [];
+      throw error;
     }
   }
 

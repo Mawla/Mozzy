@@ -2,18 +2,21 @@ import React from "react";
 
 interface ProgressNotesProps {
   progressNotes: string;
+  onUpdate: (notes: string) => void;
 }
 
 export const ProgressNotes: React.FC<ProgressNotesProps> = ({
   progressNotes,
+  onUpdate,
 }) => {
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className="mt-4">
+      <h3 className="text-lg font-semibold mb-2">Progress Notes</h3>
       <textarea
+        className="w-full h-32 p-2 border rounded"
         value={progressNotes}
+        onChange={(e) => onUpdate(e.target.value)}
         readOnly
-        placeholder="Progress notes will appear here..."
-        className="w-full p-4 border rounded resize-none overflow-auto text-sm min-h-[200px] bg-gray-100"
       />
     </div>
   );

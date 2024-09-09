@@ -163,27 +163,33 @@
     [ ] Add ability to re-transcribe specific sections of audio
     [ ] Implement confidence scores for transcribed words
 
-26. Implement OpenAI Whisper Integration: ⏳ (To Do)
-    [ ] Set up OpenAI API client using the new API key
-    [ ] Create a service function to send audio data to Whisper API
-    [ ] Implement error handling for API calls
-    [ ] Update AudioRecorder component to use the new Whisper service
-    [ ] Add loading state while waiting for transcription
+26. Implement OpenAI Whisper Integration: ✅
+    [✓] Set up OpenAI API client using the new API key
+    [✓] Create a service function to send audio data to Whisper API
+    [✓] Implement error handling for API calls
+    [✓] Update AudioRecorder component to use the new Whisper service
+    [✓] Add loading state while waiting for transcription
+    [✓] Create abstract OpenAI route for handling different OpenAI API calls
     [ ] Test the integration with various audio inputs
 
-27. Implement Local Storage for Content Bank: ✅
-    [✓] Create utility functions for saving and retrieving recordings from local storage
-    [✓] Update ContentBank component to use local storage
-    [✓] Implement UI for displaying list of recordings
-    [✓] Add text area for viewing selected recording's transcript
-    [✓] Include audio player for selected recording
+27. Migrate AI functionality to Vercel AI SDK: 🆕
+    [ ] Install Vercel AI SDK
+    [ ] Update AI-related components to use Vercel AI SDK
+    [ ] Refactor transcription logic to use Vercel AI SDK
+    [ ] Implement streaming for real-time transcription updates
+    [ ] Update error handling to use Vercel AI SDK's error handling mechanisms
+    [ ] Test and verify AI functionality with Vercel AI SDK
+    [ ] Update documentation to reflect the use of Vercel AI SDK
 
-28. Enhance Content Bank UI: ⏳ (To Do)
-    [ ] Implement search functionality for recordings
-    [ ] Add ability to edit transcripts
-    [ ] Implement pagination or infinite scroll for large numbers of recordings
-    [ ] Add sorting options (e.g., by date, length of transcript)
-    [ ] Implement delete functionality for recordings
+28. Implement Local Storage for Audio Recordings: 🆕
+    [ ] Research browser storage options (localStorage, IndexedDB)
+    [ ] Implement storage mechanism for audio blobs
+    [ ] Add functions to save and retrieve audio recordings
+    [ ] Update AudioRecorder component to use local storage
+    [ ] Implement clean-up mechanism for old recordings
+    [ ] Add error handling for storage operations
+    [ ] Update UI to show locally stored recordings
+    [ ] Implement playback functionality for stored recordings
 
 29. Implement Enhanced Content Bank Interface: ⏳ (In Progress)
     [✓] Update StoredRecording interface to include title, improved transcript, and tags
@@ -196,3 +202,1230 @@
     [✓] Implement loading states for AI processing
     [✓] Display tags in the UI
     [ ] Add ability to edit titles, improved transcripts, and tags
+
+30. Implement Content Bank Item Import for Posts: ✅
+    [✓] Created a new component for selecting content bank items
+    [✓] Implemented search/filter functionality for content bank items
+    [✓] Added an "Import to Post" button in the ContentBank component
+    [✓] Created a service function to fetch full details of a content bank item
+    [✓] Updated the CreatePostPage component to accept imported content
+    [✓] Implemented basic logic to merge imported transcription with existing post content
+    [✓] Implemented basic error handling for the import process
+    [✓] Implemented a basic loading state during import
+    [✓] Made the content bank selector a modal
+    [ ] Add UI for reviewing and editing the merged content
+    [ ] Implement undo functionality for imports
+    [ ] Refine error handling and user feedback
+    [ ] Update documentation
+
+31. Refactor CreatePostPage Component: ✅
+    [✓] Removed unused variables and functions
+    [✓] Updated useCreatePost hook to include all necessary state and functions
+    [✓] Refactored handleEditorUpdate to use the updated state management
+    [✓] Updated PostContent component props to match the new state structure
+    [✓] Removed LinkedIn-related functionality
+    [✓] Added error handling and loading state for undefined state
+    [✓] Added more detailed error handling and logging
+    [ ] Updated PostContent component to reflect new props structure
+    [ ] Updated TemplateSelectionModal component to reflect new props structure
+    [ ] Tested the refactored CreatePostPage component
+
+32. Investigate and Fix useCreatePost Hook: ✅
+    [✓] Reviewed useCreatePost hook implementation
+    [✓] Ensured proper initialization of state
+    [✓] Added error handling in the hook
+    [✓] Updated hook to return loading state
+    [ ] Tested hook with various scenarios
+    [ ] Updated documentation for useCreatePost hook
+
+33. Debug CreatePostPage Loading Issue: ✅
+    [✓] Added console logs in useCreatePost hook to track initialization
+    [✓] Updated CreatePostPage to use new useCreatePost structure
+    [✓] Implemented error boundary to catch and display any rendering errors
+    [ ] Checked for any errors in the browser console
+    [ ] Verified that all required components and hooks are properly imported
+    [ ] Tested the page in different browsers to isolate the issue
+    [ ] Used React DevTools to inspect component state and props
+
+34. Fix TipTapEditor Content Handling: ✅
+    [✓] Updated TipTapEditor to handle undefined or null content
+    [✓] Modified PostContent component to pass correct props to TipTapEditor
+    [✓] Updated CreatePostPage to ensure correct content prop is passed
+    [ ] Test content tab functionality
+    [ ] Implement error boundary for TipTapEditor component
+    [ ] Add loading state for TipTapEditor initialization
+
+35. Reintroduce Tabs in PostContent: ✅
+    [✓] Updated PostContent component to include tabs
+    [✓] Modified CreatePostPage to use updated PostContent component
+    [✓] Ensured all necessary props are passed to PostContent
+    [✓] Added text areas (TipTapEditor) for each tab
+    [✓] Added standard Textarea components for each tab
+    [✓] Added specific buttons for each tab
+    [✓] Refactored PostContent to use PostContentProps interface
+    [ ] Test tab functionality
+    [ ] Verify that content updates correctly for each tab
+    [ ] Implement smooth transitions between tabs
+    [ ] Ensure proper styling and layout for each tab
+    [ ] Decide on final UI (whether to keep both Textarea and TipTapEditor or choose one)
+
+36. Fix Select Template Button Functionality: ✅
+    [✓] Updated CreatePostPage to define handleSelectTemplate function
+    [✓] Passed handleSelectTemplate to PostContent component
+    [✓] Updated PostContent to use handleSelectTemplate prop correctly
+    [✓] Refactored CreatePostPage to use state consistently
+    [ ] Test Select Template button functionality
+    [ ] Verify that TemplateSelectionModal opens when button is clicked
+    [ ] Ensure template selection works as expected
+
+37. Refactor CreatePostPage for Consistency: 🆕
+    [✓] Removed local state and functions in favor of using state from useCreatePost
+    [✓] Updated all handler functions to use those provided by state
+    [✓] Simplified the component by removing unnecessary local logic
+    [ ] Test all functionality to ensure it works with the refactored component
+    [ ] Update any components that may be affected by these changes
+    [ ] Review and update documentation if necessary
+
+38. Fix Merge Functionality in CreatePostPage: ⏳ (In Progress)
+    [✓] Added handleMerge function in CreatePostPage component
+    [✓] Updated PostContent props to use the new handleMerge function
+    [ ] Implement proper merge logic (possibly using postService)
+    [ ] Test merge functionality
+    [ ] Add error handling for merge operation
+    [ ] Update UI to reflect merge status and results
+
+39. Refactor CreatePostPage for Consistency: ⏳ (In Progress)
+    [✓] Removed local state and functions in favor of using state from useCreatePost
+    [✓] Updated all handler functions to use those provided by state or implemented placeholders
+    [✓] Simplified component by removing unnecessary local logic
+    [✓] Added null checks for potentially undefined state properties
+    [ ] Implement missing functionality (suggestTags, shortlistTemplates, clear, importToPost)
+    [ ] Test all functionality to ensure it works with the refactored component
+    [ ] Update any components that may be affected by these changes
+    [ ] Review and update documentation if necessary
+
+40. Fix TemplateSelectionModal Props: 🆕
+    [✓] Updated CreatePostPage to pass correct props to TemplateSelectionModal
+    [✓] Removed 'templates' prop from TemplateSelectionModal
+    [✓] Added 'filteredPacks', 'filter', and 'setFilter' props to TemplateSelectionModal
+    [ ] Test TemplateSelectionModal functionality with new props
+    [ ] Update TemplateSelectionModal component if necessary to use new props
+    [ ] Ensure template selection process works correctly with filtered packs
+
+41. Implement Audio Recording and Transcription: ⏳ (To Do)
+    [ ] Implement audio recording functionality in AudioRecorder component
+    [ ] Set up backend endpoint for receiving audio data
+    [ ] Integrate OpenAI Whisper API for transcription
+    [ ] Implement error handling for audio recording and transcription
+    [ ] Add loading state for transcription process
+    [ ] Update UI to show transcription progress
+
+42. Refactor LinkedIn Integration: ⏳ (To Do)
+    [ ] Remove existing LinkedIn posting functionality
+    [ ] Update postService.ts to remove LinkedIn-related functions
+    [ ] Remove LinkedIn-related UI elements and state
+    [ ] Update documentation to reflect removal of LinkedIn integration
+
+43. Optimize Audio Processing: ⏳ (To Do)
+    [ ] Research and implement audio compression before sending to server
+    [ ] Implement chunking for long audio files
+    [ ] Add progress indicator for audio upload and processing
+    [ ] Implement cancellation for ongoing audio processing
+
+44. Enhance Audio Playback: ⏳ (To Do)
+    [ ] Add audio playback functionality for recorded audio
+    [ ] Implement audio waveform visualization
+    [ ] Add ability to trim audio before transcription
+    [ ] Implement volume normalization for recorded audio
+
+45. Implement Transcription Review: ⏳ (To Do)
+    [ ] Create UI for reviewing and editing transcriptions
+    [ ] Implement word-level timestamps in transcriptions
+    [ ] Add ability to re-transcribe specific sections of audio
+    [ ] Implement confidence scores for transcribed words
+
+46. Implement OpenAI Whisper Integration: ✅
+    [✓] Set up OpenAI API client using the new API key
+    [✓] Create a service function to send audio data to Whisper API
+    [✓] Implement error handling for API calls
+    [✓] Update AudioRecorder component to use the new Whisper service
+    [✓] Add loading state while waiting for transcription
+    [✓] Create abstract OpenAI route for handling different OpenAI API calls
+    [ ] Test the integration with various audio inputs
+
+47. Migrate AI functionality to Vercel AI SDK: 🆕
+    [ ] Install Vercel AI SDK
+    [ ] Update AI-related components to use Vercel AI SDK
+    [ ] Refactor transcription logic to use Vercel AI SDK
+    [ ] Implement streaming for real-time transcription updates
+    [ ] Update error handling to use Vercel AI SDK's error handling mechanisms
+    [ ] Test and verify AI functionality with Vercel AI SDK
+    [ ] Update documentation to reflect the use of Vercel AI SDK
+
+48. Implement Local Storage for Audio Recordings: 🆕
+    [ ] Research browser storage options (localStorage, IndexedDB)
+    [ ] Implement storage mechanism for audio blobs
+    [ ] Add functions to save and retrieve audio recordings
+    [ ] Update AudioRecorder component to use local storage
+    [ ] Implement clean-up mechanism for old recordings
+    [ ] Add error handling for storage operations
+    [ ] Update UI to show locally stored recordings
+    [ ] Implement playback functionality for stored recordings
+
+49. Implement Enhanced Content Bank Interface: ⏳ (In Progress)
+    [✓] Update StoredRecording interface to include title, improved transcript, and tags
+    [✓] Modify ContentBank component to display new recording details
+    [✓] Implement AI service for generating titles
+    [✓] Implement AI service for generating improved transcripts
+    [✓] Implement AI service for suggesting tags
+    [✓] Update handleRecordingComplete to use new AI services
+    [✓] Add error handling for AI service calls
+    [✓] Implement loading states for AI processing
+    [✓] Display tags in the UI
+    [ ] Add ability to edit titles, improved transcripts, and tags
+
+50. Implement Content Bank Item Import for Posts: ✅
+    [✓] Created a new component for selecting content bank items
+    [✓] Implemented search/filter functionality for content bank items
+    [✓] Added an "Import to Post" button in the ContentBank component
+    [✓] Created a service function to fetch full details of a content bank item
+    [✓] Updated the CreatePostPage component to accept imported content
+    [✓] Implemented basic logic to merge imported transcription with existing post content
+    [✓] Implemented basic error handling for the import process
+    [✓] Implemented a basic loading state during import
+    [✓] Made the content bank selector a modal
+    [ ] Add UI for reviewing and editing the merged content
+    [ ] Implement undo functionality for imports
+    [ ] Refine error handling and user feedback
+    [ ] Update documentation
+
+51. Refactor CreatePostPage Component: ✅
+    [✓] Removed unused variables and functions
+    [✓] Updated useCreatePost hook to include all necessary state and functions
+    [✓] Refactored handleEditorUpdate to use the updated state management
+    [✓] Updated PostContent component props to match the new state structure
+    [✓] Removed LinkedIn-related functionality
+    [✓] Added error handling and loading state for undefined state
+    [✓] Added more detailed error handling and logging
+    [ ] Updated PostContent component to reflect new props structure
+    [ ] Updated TemplateSelectionModal component to reflect new props structure
+    [ ] Tested the refactored CreatePostPage component
+
+52. Investigate and Fix useCreatePost Hook: ✅
+    [✓] Reviewed useCreatePost hook implementation
+    [✓] Ensured proper initialization of state
+    [✓] Added error handling in the hook
+    [✓] Updated hook to return loading state
+    [ ] Tested hook with various scenarios
+    [ ] Updated documentation for useCreatePost hook
+
+53. Debug CreatePostPage Loading Issue: ✅
+    [✓] Added console logs in useCreatePost hook to track initialization
+    [✓] Updated CreatePostPage to use new useCreatePost structure
+    [✓] Implemented error boundary to catch and display any rendering errors
+    [ ] Checked for any errors in the browser console
+    [ ] Verified that all required components and hooks are properly imported
+    [ ] Tested the page in different browsers to isolate the issue
+    [ ] Used React DevTools to inspect component state and props
+
+54. Fix TipTapEditor Content Handling: ✅
+    [✓] Updated TipTapEditor to handle undefined or null content
+    [✓] Modified PostContent component to pass correct props to TipTapEditor
+    [✓] Updated CreatePostPage to ensure correct content prop is passed
+    [ ] Test content tab functionality
+    [ ] Implement error boundary for TipTapEditor component
+    [ ] Add loading state for TipTapEditor initialization
+
+55. Reintroduce Tabs in PostContent: ✅
+    [✓] Updated PostContent component to include tabs
+    [✓] Modified CreatePostPage to use updated PostContent component
+    [✓] Ensured all necessary props are passed to PostContent
+    [✓] Added text areas (TipTapEditor) for each tab
+    [✓] Added standard Textarea components for each tab
+    [✓] Added specific buttons for each tab
+    [✓] Refactored PostContent to use PostContentProps interface
+    [ ] Test tab functionality
+    [ ] Verify that content updates correctly for each tab
+    [ ] Implement smooth transitions between tabs
+    [ ] Ensure proper styling and layout for each tab
+    [ ] Decide on final UI (whether to keep both Textarea and TipTapEditor or choose one)
+
+56. Fix Select Template Button Functionality: ✅
+    [✓] Updated CreatePostPage to define handleSelectTemplate function
+    [✓] Passed handleSelectTemplate to PostContent component
+    [✓] Updated PostContent to use handleSelectTemplate prop correctly
+    [✓] Refactored CreatePostPage to use state consistently
+    [ ] Test Select Template button functionality
+    [ ] Verify that TemplateSelectionModal opens when button is clicked
+    [ ] Ensure template selection works as expected
+
+57. Refactor CreatePostPage for Consistency: 🆕
+    [✓] Removed local state and functions in favor of using state from useCreatePost
+    [✓] Updated all handler functions to use those provided by state
+    [✓] Simplified the component by removing unnecessary local logic
+    [ ] Test all functionality to ensure it works with the refactored component
+    [ ] Update any components that may be affected by these changes
+    [ ] Review and update documentation if necessary
+
+58. Fix Merge Functionality in CreatePostPage: ⏳ (In Progress)
+    [✓] Added handleMerge function in CreatePostPage component
+    [✓] Updated PostContent props to use the new handleMerge function
+    [ ] Implement proper merge logic (possibly using postService)
+    [ ] Test merge functionality
+    [ ] Add error handling for merge operation
+    [ ] Update UI to reflect merge status and results
+
+59. Refactor CreatePostPage for Consistency: ⏳ (In Progress)
+    [✓] Removed local state and functions in favor of using state from useCreatePost
+    [✓] Updated all handler functions to use those provided by state or implemented placeholders
+    [✓] Simplified component by removing unnecessary local logic
+    [✓] Added null checks for potentially undefined state properties
+    [ ] Implement missing functionality (suggestTags, shortlistTemplates, clear, importToPost)
+    [ ] Test all functionality to ensure it works with the refactored component
+    [ ] Update any components that may be affected by these changes
+    [ ] Review and update documentation if necessary
+
+60. Fix TemplateSelectionModal Props: 🆕
+    [✓] Updated CreatePostPage to pass correct props to TemplateSelectionModal
+    [✓] Removed 'templates' prop from TemplateSelectionModal
+    [✓] Added 'filteredPacks', 'filter', and 'setFilter' props to TemplateSelectionModal
+    [ ] Test TemplateSelectionModal functionality with new props
+    [ ] Update TemplateSelectionModal component if necessary to use new props
+    [ ] Ensure template selection process works correctly with filtered packs
+
+61. Implement Audio Recording and Transcription: ⏳ (To Do)
+    [ ] Implement audio recording functionality in AudioRecorder component
+    [ ] Set up backend endpoint for receiving audio data
+    [ ] Integrate OpenAI Whisper API for transcription
+    [ ] Implement error handling for audio recording and transcription
+    [ ] Add loading state for transcription process
+    [ ] Update UI to show transcription progress
+
+62. Refactor LinkedIn Integration: ⏳ (To Do)
+    [ ] Remove existing LinkedIn posting functionality
+    [ ] Update postService.ts to remove LinkedIn-related functions
+    [ ] Remove LinkedIn-related UI elements and state
+    [ ] Update documentation to reflect removal of LinkedIn integration
+
+63. Optimize Audio Processing: ⏳ (To Do)
+    [ ] Research and implement audio compression before sending to server
+    [ ] Implement chunking for long audio files
+    [ ] Add progress indicator for audio upload and processing
+    [ ] Implement cancellation for ongoing audio processing
+
+64. Enhance Audio Playback: ⏳ (To Do)
+    [ ] Add audio playback functionality for recorded audio
+    [ ] Implement audio waveform visualization
+    [ ] Add ability to trim audio before transcription
+    [ ] Implement volume normalization for recorded audio
+
+65. Implement Transcription Review: ⏳ (To Do)
+    [ ] Create UI for reviewing and editing transcriptions
+    [ ] Implement word-level timestamps in transcriptions
+    [ ] Add ability to re-transcribe specific sections of audio
+    [ ] Implement confidence scores for transcribed words
+
+66. Implement OpenAI Whisper Integration: ✅
+    [✓] Set up OpenAI API client using the new API key
+    [✓] Create a service function to send audio data to Whisper API
+    [✓] Implement error handling for API calls
+    [✓] Update AudioRecorder component to use the new Whisper service
+    [✓] Add loading state while waiting for transcription
+    [✓] Create abstract OpenAI route for handling different OpenAI API calls
+    [ ] Test the integration with various audio inputs
+
+67. Migrate AI functionality to Vercel AI SDK: 🆕
+    [ ] Install Vercel AI SDK
+    [ ] Update AI-related components to use Vercel AI SDK
+    [ ] Refactor transcription logic to use Vercel AI SDK
+    [ ] Implement streaming for real-time transcription updates
+    [ ] Update error handling to use Vercel AI SDK's error handling mechanisms
+    [ ] Test and verify AI functionality with Vercel AI SDK
+    [ ] Update documentation to reflect the use of Vercel AI SDK
+
+68. Implement Local Storage for Audio Recordings: 🆕
+    [ ] Research browser storage options (localStorage, IndexedDB)
+    [ ] Implement storage mechanism for audio blobs
+    [ ] Add functions to save and retrieve audio recordings
+    [ ] Update AudioRecorder component to use local storage
+    [ ] Implement clean-up mechanism for old recordings
+    [ ] Add error handling for storage operations
+    [ ] Update UI to show locally stored recordings
+    [ ] Implement playback functionality for stored recordings
+
+69. Implement Enhanced Content Bank Interface: ⏳ (In Progress)
+    [✓] Update StoredRecording interface to include title, improved transcript, and tags
+    [✓] Modify ContentBank component to display new recording details
+    [✓] Implement AI service for generating titles
+    [✓] Implement AI service for generating improved transcripts
+    [✓] Implement AI service for suggesting tags
+    [✓] Update handleRecordingComplete to use new AI services
+    [✓] Add error handling for AI service calls
+    [✓] Implement loading states for AI processing
+    [✓] Display tags in the UI
+    [ ] Add ability to edit titles, improved transcripts, and tags
+
+70. Implement Content Bank Item Import for Posts: ✅
+    [✓] Created a new component for selecting content bank items
+    [✓] Implemented search/filter functionality for content bank items
+    [✓] Added an "Import to Post" button in the ContentBank component
+    [✓] Created a service function to fetch full details of a content bank item
+    [✓] Updated the CreatePostPage component to accept imported content
+    [✓] Implemented basic logic to merge imported transcription with existing post content
+    [✓] Implemented basic error handling for the import process
+    [✓] Implemented a basic loading state during import
+    [✓] Made the content bank selector a modal
+    [ ] Add UI for reviewing and editing the merged content
+    [ ] Implement undo functionality for imports
+    [ ] Refine error handling and user feedback
+    [ ] Update documentation
+
+71. Refactor CreatePostPage Component: ✅
+    [✓] Removed unused variables and functions
+    [✓] Updated useCreatePost hook to include all necessary state and functions
+    [✓] Refactored handleEditorUpdate to use the updated state management
+    [✓] Updated PostContent component props to match the new state structure
+    [✓] Removed LinkedIn-related functionality
+    [✓] Added error handling and loading state for undefined state
+    [✓] Added more detailed error handling and logging
+    [ ] Updated PostContent component to reflect new props structure
+    [ ] Updated TemplateSelectionModal component to reflect new props structure
+    [ ] Tested the refactored CreatePostPage component
+
+72. Investigate and Fix useCreatePost Hook: ✅
+    [✓] Reviewed useCreatePost hook implementation
+    [✓] Ensured proper initialization of state
+    [✓] Added error handling in the hook
+    [✓] Updated hook to return loading state
+    [ ] Tested hook with various scenarios
+    [ ] Updated documentation for useCreatePost hook
+
+73. Debug CreatePostPage Loading Issue: ✅
+    [✓] Added console logs in useCreatePost hook to track initialization
+    [✓] Updated CreatePostPage to use new useCreatePost structure
+    [✓] Implemented error boundary to catch and display any rendering errors
+    [ ] Checked for any errors in the browser console
+    [ ] Verified that all required components and hooks are properly imported
+    [ ] Tested the page in different browsers to isolate the issue
+    [ ] Used React DevTools to inspect component state and props
+
+74. Fix TipTapEditor Content Handling: ✅
+    [✓] Updated TipTapEditor to handle undefined or null content
+    [✓] Modified PostContent component to pass correct props to TipTapEditor
+    [✓] Updated CreatePostPage to ensure correct content prop is passed
+    [ ] Test content tab functionality
+    [ ] Implement error boundary for TipTapEditor component
+    [ ] Add loading state for TipTapEditor initialization
+
+75. Reintroduce Tabs in PostContent: ✅
+    [✓] Updated PostContent component to include tabs
+    [✓] Modified CreatePostPage to use updated PostContent component
+    [✓] Ensured all necessary props are passed to PostContent
+    [✓] Added text areas (TipTapEditor) for each tab
+    [✓] Added standard Textarea components for each tab
+    [✓] Added specific buttons for each tab
+    [✓] Refactored PostContent to use PostContentProps interface
+    [ ] Test tab functionality
+    [ ] Verify that content updates correctly for each tab
+    [ ] Implement smooth transitions between tabs
+    [ ] Ensure proper styling and layout for each tab
+    [ ] Decide on final UI (whether to keep both Textarea and TipTapEditor or choose one)
+
+76. Fix Select Template Button Functionality: ✅
+    [✓] Updated CreatePostPage to define handleSelectTemplate function
+    [✓] Passed handleSelectTemplate to PostContent component
+    [✓] Updated PostContent to use handleSelectTemplate prop correctly
+    [✓] Refactored CreatePostPage to use state consistently
+    [ ] Test Select Template button functionality
+    [ ] Verify that TemplateSelectionModal opens when button is clicked
+    [ ] Ensure template selection works as expected
+
+77. Refactor CreatePostPage for Consistency: 🆕
+    [✓] Removed local state and functions in favor of using state from useCreatePost
+    [✓] Updated all handler functions to use those provided by state
+    [✓] Simplified the component by removing unnecessary local logic
+    [ ] Test all functionality to ensure it works with the refactored component
+    [ ] Update any components that may be affected by these changes
+    [ ] Review and update documentation if necessary
+
+78. Fix Merge Functionality in CreatePostPage: ⏳ (In Progress)
+    [✓] Added handleMerge function in CreatePostPage component
+    [✓] Updated PostContent props to use the new handleMerge function
+    [ ] Implement proper merge logic (possibly using postService)
+    [ ] Test merge functionality
+    [ ] Add error handling for merge operation
+    [ ] Update UI to reflect merge status and results
+
+79. Refactor CreatePostPage for Consistency: ⏳ (In Progress)
+    [✓] Removed local state and functions in favor of using state from useCreatePost
+    [✓] Updated all handler functions to use those provided by state or implemented placeholders
+    [✓] Simplified component by removing unnecessary local logic
+    [✓] Added null checks for potentially undefined state properties
+    [ ] Implement missing functionality (suggestTags, shortlistTemplates, clear, importToPost)
+    [ ] Test all functionality to ensure it works with the refactored component
+    [ ] Update any components that may be affected by these changes
+    [ ] Review and update documentation if necessary
+
+80. Fix TemplateSelectionModal Props: 🆕
+    [✓] Updated CreatePostPage to pass correct props to TemplateSelectionModal
+    [✓] Removed 'templates' prop from TemplateSelectionModal
+    [✓] Added 'filteredPacks', 'filter', and 'setFilter' props to TemplateSelectionModal
+    [ ] Test TemplateSelectionModal functionality with new props
+    [ ] Update TemplateSelectionModal component if necessary to use new props
+    [ ] Ensure template selection process works correctly with filtered packs
+
+81. Implement Audio Recording and Transcription: ⏳ (To Do)
+    [ ] Implement audio recording functionality in AudioRecorder component
+    [ ] Set up backend endpoint for receiving audio data
+    [ ] Integrate OpenAI Whisper API for transcription
+    [ ] Implement error handling for audio recording and transcription
+    [ ] Add loading state for transcription process
+    [ ] Update UI to show transcription progress
+
+82. Refactor LinkedIn Integration: ⏳ (To Do)
+    [ ] Remove existing LinkedIn posting functionality
+    [ ] Update postService.ts to remove LinkedIn-related functions
+    [ ] Remove LinkedIn-related UI elements and state
+    [ ] Update documentation to reflect removal of LinkedIn integration
+
+83. Optimize Audio Processing: ⏳ (To Do)
+    [ ] Research and implement audio compression before sending to server
+    [ ] Implement chunking for long audio files
+    [ ] Add progress indicator for audio upload and processing
+    [ ] Implement cancellation for ongoing audio processing
+
+84. Enhance Audio Playback: ⏳ (To Do)
+    [ ] Add audio playback functionality for recorded audio
+    [ ] Implement audio waveform visualization
+    [ ] Add ability to trim audio before transcription
+    [ ] Implement volume normalization for recorded audio
+
+85. Implement Transcription Review: ⏳ (To Do)
+    [ ] Create UI for reviewing and editing transcriptions
+    [ ] Implement word-level timestamps in transcriptions
+    [ ] Add ability to re-transcribe specific sections of audio
+    [ ] Implement confidence scores for transcribed words
+
+86. Implement OpenAI Whisper Integration: ✅
+    [✓] Set up OpenAI API client using the new API key
+    [✓] Create a service function to send audio data to Whisper API
+    [✓] Implement error handling for API calls
+    [✓] Update AudioRecorder component to use the new Whisper service
+    [✓] Add loading state while waiting for transcription
+    [✓] Create abstract OpenAI route for handling different OpenAI API calls
+    [ ] Test the integration with various audio inputs
+
+87. Migrate AI functionality to Vercel AI SDK: 🆕
+    [ ] Install Vercel AI SDK
+    [ ] Update AI-related components to use Vercel AI SDK
+    [ ] Refactor transcription logic to use Vercel AI SDK
+    [ ] Implement streaming for real-time transcription updates
+    [ ] Update error handling to use Vercel AI SDK's error handling mechanisms
+    [ ] Test and verify AI functionality with Vercel AI SDK
+    [ ] Update documentation to reflect the use of Vercel AI SDK
+
+88. Implement Local Storage for Audio Recordings: 🆕
+    [ ] Research browser storage options (localStorage, IndexedDB)
+    [ ] Implement storage mechanism for audio blobs
+    [ ] Add functions to save and retrieve audio recordings
+    [ ] Update AudioRecorder component to use local storage
+    [ ] Implement clean-up mechanism for old recordings
+    [ ] Add error handling for storage operations
+    [ ] Update UI to show locally stored recordings
+    [ ] Implement playback functionality for stored recordings
+
+89. Implement Enhanced Content Bank Interface: ⏳ (In Progress)
+    [✓] Update StoredRecording interface to include title, improved transcript, and tags
+    [✓] Modify ContentBank component to display new recording details
+    [✓] Implement AI service for generating titles
+    [✓] Implement AI service for generating improved transcripts
+    [✓] Implement AI service for suggesting tags
+    [✓] Update handleRecordingComplete to use new AI services
+    [✓] Add error handling for AI service calls
+    [✓] Implement loading states for AI processing
+    [✓] Display tags in the UI
+    [ ] Add ability to edit titles, improved transcripts, and tags
+
+90. Implement Content Bank Item Import for Posts: ✅
+    [✓] Created a new component for selecting content bank items
+    [✓] Implemented search/filter functionality for content bank items
+    [✓] Added an "Import to Post" button in the ContentBank component
+    [✓] Created a service function to fetch full details of a content bank item
+    [✓] Updated the CreatePostPage component to accept imported content
+    [✓] Implemented basic logic to merge imported transcription with existing post content
+    [✓] Implemented basic error handling for the import process
+    [✓] Implemented a basic loading state during import
+    [✓] Made the content bank selector a modal
+    [ ] Add UI for reviewing and editing the merged content
+    [ ] Implement undo functionality for imports
+    [ ] Refine error handling and user feedback
+    [ ] Update documentation
+
+91. Refactor CreatePostPage Component: ✅
+    [✓] Removed unused variables and functions
+    [✓] Updated useCreatePost hook to include all necessary state and functions
+    [✓] Refactored handleEditorUpdate to use the updated state management
+    [✓] Updated PostContent component props to match the new state structure
+    [✓] Removed LinkedIn-related functionality
+    [✓] Added error handling and loading state for undefined state
+    [✓] Added more detailed error handling and logging
+    [ ] Updated PostContent component to reflect new props structure
+    [ ] Updated TemplateSelectionModal component to reflect new props structure
+    [ ] Tested the refactored CreatePostPage component
+
+92. Investigate and Fix useCreatePost Hook: ✅
+    [✓] Reviewed useCreatePost hook implementation
+    [✓] Ensured proper initialization of state
+    [✓] Added error handling in the hook
+    [✓] Updated hook to return loading state
+    [ ] Tested hook with various scenarios
+    [ ] Updated documentation for useCreatePost hook
+
+93. Debug CreatePostPage Loading Issue: ✅
+    [✓] Added console logs in useCreatePost hook to track initialization
+    [✓] Updated CreatePostPage to use new useCreatePost structure
+    [✓] Implemented error boundary to catch and display any rendering errors
+    [ ] Checked for any errors in the browser console
+    [ ] Verified that all required components and hooks are properly imported
+    [ ] Tested the page in different browsers to isolate the issue
+    [ ] Used React DevTools to inspect component state and props
+
+94. Fix TipTapEditor Content Handling: ✅
+    [✓] Updated TipTapEditor to handle undefined or null content
+    [✓] Modified PostContent component to pass correct props to TipTapEditor
+    [✓] Updated CreatePostPage to ensure correct content prop is passed
+    [ ] Test content tab functionality
+    [ ] Implement error boundary for TipTapEditor component
+    [ ] Add loading state for TipTapEditor initialization
+
+95. Reintroduce Tabs in PostContent: ✅
+    [✓] Updated PostContent component to include tabs
+    [✓] Modified CreatePostPage to use updated PostContent component
+    [✓] Ensured all necessary props are passed to PostContent
+    [✓] Added text areas (TipTapEditor) for each tab
+    [✓] Added standard Textarea components for each tab
+    [✓] Added specific buttons for each tab
+    [✓] Refactored PostContent to use PostContentProps interface
+    [ ] Test tab functionality
+    [ ] Verify that content updates correctly for each tab
+    [ ] Implement smooth transitions between tabs
+    [ ] Ensure proper styling and layout for each tab
+    [ ] Decide on final UI (whether to keep both Textarea and TipTapEditor or choose one)
+
+96. Fix Select Template Button Functionality: ✅
+    [✓] Updated CreatePostPage to define handleSelectTemplate function
+    [✓] Passed handleSelectTemplate to PostContent component
+    [✓] Updated PostContent to use handleSelectTemplate prop correctly
+    [✓] Refactored CreatePostPage to use state consistently
+    [ ] Test Select Template button functionality
+    [ ] Verify that TemplateSelectionModal opens when button is clicked
+    [ ] Ensure template selection works as expected
+
+97. Refactor CreatePostPage for Consistency: 🆕
+    [✓] Removed local state and functions in favor of using state from useCreatePost
+    [✓] Updated all handler functions to use those provided by state
+    [✓] Simplified the component by removing unnecessary local logic
+    [ ] Test all functionality to ensure it works with the refactored component
+    [ ] Update any components that may be affected by these changes
+    [ ] Review and update documentation if necessary
+
+98. Fix Merge Functionality in CreatePostPage: ⏳ (In Progress)
+    [✓] Added handleMerge function in CreatePostPage component
+    [✓] Updated PostContent props to use the new handleMerge function
+    [ ] Implement proper merge logic (possibly using postService)
+    [ ] Test merge functionality
+    [ ] Add error handling for merge operation
+    [ ] Update UI to reflect merge status and results
+
+99. Refactor CreatePostPage for Consistency: ⏳ (In Progress)
+    [✓] Removed local state and functions in favor of using state from useCreatePost
+    [✓] Updated all handler functions to use those provided by state or implemented placeholders
+    [✓] Simplified component by removing unnecessary local logic
+    [✓] Added null checks for potentially undefined state properties
+    [ ] Implement missing functionality (suggestTags, shortlistTemplates, clear, importToPost)
+    [ ] Test all functionality to ensure it works with the refactored component
+    [ ] Update any components that may be affected by these changes
+    [ ] Review and update documentation if necessary
+
+100. Fix TemplateSelectionModal Props: 🆕
+     [✓] Updated CreatePostPage to pass correct props to TemplateSelectionModal
+     [✓] Removed 'templates' prop from TemplateSelectionModal
+     [✓] Added 'filteredPacks', 'filter', and 'setFilter' props to TemplateSelectionModal
+     [ ] Test TemplateSelectionModal functionality with new props
+     [ ] Update TemplateSelectionModal component if necessary to use new props
+     [ ] Ensure template selection process works correctly with filtered packs
+
+101. Implement Audio Recording and Transcription: ⏳ (To Do)
+     [ ] Implement audio recording functionality in AudioRecorder component
+     [ ] Set up backend endpoint for receiving audio data
+     [ ] Integrate OpenAI Whisper API for transcription
+     [ ] Implement error handling for audio recording and transcription
+     [ ] Add loading state for transcription process
+     [ ] Update UI to show transcription progress
+
+102. Refactor LinkedIn Integration: ⏳ (To Do)
+     [ ] Remove existing LinkedIn posting functionality
+     [ ] Update postService.ts to remove LinkedIn-related functions
+     [ ] Remove LinkedIn-related UI elements and state
+     [ ] Update documentation to reflect removal of LinkedIn integration
+
+103. Optimize Audio Processing: ⏳ (To Do)
+     [ ] Research and implement audio compression before sending to server
+     [ ] Implement chunking for long audio files
+     [ ] Add progress indicator for audio upload and processing
+     [ ] Implement cancellation for ongoing audio processing
+
+104. Enhance Audio Playback: ⏳ (To Do)
+     [ ] Add audio playback functionality for recorded audio
+     [ ] Implement audio waveform visualization
+     [ ] Add ability to trim audio before transcription
+     [ ] Implement volume normalization for recorded audio
+
+105. Implement Transcription Review: ⏳ (To Do)
+     [ ] Create UI for reviewing and editing transcriptions
+     [ ] Implement word-level timestamps in transcriptions
+     [ ] Add ability to re-transcribe specific sections of audio
+     [ ] Implement confidence scores for transcribed words
+
+106. Implement OpenAI Whisper Integration: ✅
+     [✓] Set up OpenAI API client using the new API key
+     [✓] Create a service function to send audio data to Whisper API
+     [✓] Implement error handling for API calls
+     [✓] Update AudioRecorder component to use the new Whisper service
+     [✓] Add loading state while waiting for transcription
+     [✓] Create abstract OpenAI route for handling different OpenAI API calls
+     [ ] Test the integration with various audio inputs
+
+107. Migrate AI functionality to Vercel AI SDK: 🆕
+     [ ] Install Vercel AI SDK
+     [ ] Update AI-related components to use Vercel AI SDK
+     [ ] Refactor transcription logic to use Vercel AI SDK
+     [ ] Implement streaming for real-time transcription updates
+     [ ] Update error handling to use Vercel AI SDK's error handling mechanisms
+     [ ] Test and verify AI functionality with Vercel AI SDK
+     [ ] Update documentation to reflect the use of Vercel AI SDK
+
+108. Implement Local Storage for Audio Recordings: 🆕
+     [ ] Research browser storage options (localStorage, IndexedDB)
+     [ ] Implement storage mechanism for audio blobs
+     [ ] Add functions to save and retrieve audio recordings
+     [ ] Update AudioRecorder component to use local storage
+     [ ] Implement clean-up mechanism for old recordings
+     [ ] Add error handling for storage operations
+     [ ] Update UI to show locally stored recordings
+     [ ] Implement playback functionality for stored recordings
+
+109. Implement Enhanced Content Bank Interface: ⏳ (In Progress)
+     [✓] Update StoredRecording interface to include title, improved transcript, and tags
+     [✓] Modify ContentBank component to display new recording details
+     [✓] Implement AI service for generating titles
+     [✓] Implement AI service for generating improved transcripts
+     [✓] Implement AI service for suggesting tags
+     [✓] Update handleRecordingComplete to use new AI services
+     [✓] Add error handling for AI service calls
+     [✓] Implement loading states for AI processing
+     [✓] Display tags in the UI
+     [ ] Add ability to edit titles, improved transcripts, and tags
+
+110. Implement Content Bank Item Import for Posts: ✅
+     [✓] Created a new component for selecting content bank items
+     [✓] Implemented search/filter functionality for content bank items
+     [✓] Added an "Import to Post" button in the ContentBank component
+     [✓] Created a service function to fetch full details of a content bank item
+     [✓] Updated the CreatePostPage component to accept imported content
+     [✓] Implemented basic logic to merge imported transcription with existing post content
+     [✓] Implemented basic error handling for the import process
+     [✓] Implemented a basic loading state during import
+     [✓] Made the content bank selector a modal
+     [ ] Add UI for reviewing and editing the merged content
+     [ ] Implement undo functionality for imports
+     [ ] Refine error handling and user feedback
+     [ ] Update documentation
+
+111. Refactor CreatePostPage Component: ✅
+     [✓] Removed unused variables and functions
+     [✓] Updated useCreatePost hook to include all necessary state and functions
+     [✓] Refactored handleEditorUpdate to use the updated state management
+     [✓] Updated PostContent component props to match the new state structure
+     [✓] Removed LinkedIn-related functionality
+     [✓] Added error handling and loading state for undefined state
+     [✓] Added more detailed error handling and logging
+     [ ] Updated PostContent component to reflect new props structure
+     [ ] Updated TemplateSelectionModal component to reflect new props structure
+     [ ] Tested the refactored CreatePostPage component
+
+112. Investigate and Fix useCreatePost Hook: ✅
+     [✓] Reviewed useCreatePost hook implementation
+     [✓] Ensured proper initialization of state
+     [✓] Added error handling in the hook
+     [✓] Updated hook to return loading state
+     [ ] Tested hook with various scenarios
+     [ ] Updated documentation for useCreatePost hook
+
+113. Debug CreatePostPage Loading Issue: ✅
+     [✓] Added console logs in useCreatePost hook to track initialization
+     [✓] Updated CreatePostPage to use new useCreatePost structure
+     [✓] Implemented error boundary to catch and display any rendering errors
+     [ ] Checked for any errors in the browser console
+     [ ] Verified that all required components and hooks are properly imported
+     [ ] Tested the page in different browsers to isolate the issue
+     [ ] Used React DevTools to inspect component state and props
+
+114. Fix TipTapEditor Content Handling: ✅
+     [✓] Updated TipTapEditor to handle undefined or null content
+     [✓] Modified PostContent component to pass correct props to TipTapEditor
+     [✓] Updated CreatePostPage to ensure correct content prop is passed
+     [ ] Test content tab functionality
+     [ ] Implement error boundary for TipTapEditor component
+     [ ] Add loading state for TipTapEditor initialization
+
+115. Reintroduce Tabs in PostContent: ✅
+     [✓] Updated PostContent component to include tabs
+     [✓] Modified CreatePostPage to use updated PostContent component
+     [✓] Ensured all necessary props are passed to PostContent
+     [✓] Added text areas (TipTapEditor) for each tab
+     [✓] Added standard Textarea components for each tab
+     [✓] Added specific buttons for each tab
+     [✓] Refactored PostContent to use PostContentProps interface
+     [ ] Test tab functionality
+     [ ] Verify that content updates correctly for each tab
+     [ ] Implement smooth transitions between tabs
+     [ ] Ensure proper styling and layout for each tab
+     [ ] Decide on final UI (whether to keep both Textarea and TipTapEditor or choose one)
+
+116. Fix Select Template Button Functionality: ✅
+     [✓] Updated CreatePostPage to define handleSelectTemplate function
+     [✓] Passed handleSelectTemplate to PostContent component
+     [✓] Updated PostContent to use handleSelectTemplate prop correctly
+     [✓] Refactored CreatePostPage to use state consistently
+     [ ] Test Select Template button functionality
+     [ ] Verify that TemplateSelectionModal opens when button is clicked
+     [ ] Ensure template selection works as expected
+
+117. Refactor CreatePostPage for Consistency: 🆕
+     [✓] Removed local state and functions in favor of using state from useCreatePost
+     [✓] Updated all handler functions to use those provided by state
+     [✓] Simplified the component by removing unnecessary local logic
+     [ ] Test all functionality to ensure it works with the refactored component
+     [ ] Update any components that may be affected by these changes
+     [ ] Review and update documentation if necessary
+
+118. Fix Merge Functionality in CreatePostPage: ⏳ (In Progress)
+     [✓] Added handleMerge function in CreatePostPage component
+     [✓] Updated PostContent props to use the new handleMerge function
+     [ ] Implement proper merge logic (possibly using postService)
+     [ ] Test merge functionality
+     [ ] Add error handling for merge operation
+     [ ] Update UI to reflect merge status and results
+
+119. Refactor CreatePostPage for Consistency: ⏳ (In Progress)
+     [✓] Removed local state and functions in favor of using state from useCreatePost
+     [✓] Updated all handler functions to use those provided by state or implemented placeholders
+     [✓] Simplified component by removing unnecessary local logic
+     [✓] Added null checks for potentially undefined state properties
+     [ ] Implement missing functionality (suggestTags, shortlistTemplates, clear, importToPost)
+     [ ] Test all functionality to ensure it works with the refactored component
+     [ ] Update any components that may be affected by these changes
+     [ ] Review and update documentation if necessary
+
+120. Fix TemplateSelectionModal Props: 🆕
+     [✓] Updated CreatePostPage to pass correct props to TemplateSelectionModal
+     [✓] Removed 'templates' prop from TemplateSelectionModal
+     [✓] Added 'filteredPacks', 'filter', and 'setFilter' props to TemplateSelectionModal
+     [ ] Test TemplateSelectionModal functionality with new props
+     [ ] Update TemplateSelectionModal component if necessary to use new props
+     [ ] Ensure template selection process works correctly with filtered packs
+
+121. Implement Audio Recording and Transcription: ⏳ (To Do)
+     [ ] Implement audio recording functionality in AudioRecorder component
+     [ ] Set up backend endpoint for receiving audio data
+     [ ] Integrate OpenAI Whisper API for transcription
+     [ ] Implement error handling for audio recording and transcription
+     [ ] Add loading state for transcription process
+     [ ] Update UI to show transcription progress
+
+122. Refactor LinkedIn Integration: ⏳ (To Do)
+     [ ] Remove existing LinkedIn posting functionality
+     [ ] Update postService.ts to remove LinkedIn-related functions
+     [ ] Remove LinkedIn-related UI elements and state
+     [ ] Update documentation to reflect removal of LinkedIn integration
+
+123. Optimize Audio Processing: ⏳ (To Do)
+     [ ] Research and implement audio compression before sending to server
+     [ ] Implement chunking for long audio files
+     [ ] Add progress indicator for audio upload and processing
+     [ ] Implement cancellation for ongoing audio processing
+
+124. Enhance Audio Playback: ⏳ (To Do)
+     [ ] Add audio playback functionality for recorded audio
+     [ ] Implement audio waveform visualization
+     [ ] Add ability to trim audio before transcription
+     [ ] Implement volume normalization for recorded audio
+
+125. Implement Transcription Review: ⏳ (To Do)
+     [ ] Create UI for reviewing and editing transcriptions
+     [ ] Implement word-level timestamps in transcriptions
+     [ ] Add ability to re-transcribe specific sections of audio
+     [ ] Implement confidence scores for transcribed words
+
+126. Implement OpenAI Whisper Integration: ✅
+     [✓] Set up OpenAI API client using the new API key
+     [✓] Create a service function to send audio data to Whisper API
+     [✓] Implement error handling for API calls
+     [✓] Update AudioRecorder component to use the new Whisper service
+     [✓] Add loading state while waiting for transcription
+     [✓] Create abstract OpenAI route for handling different OpenAI API calls
+     [ ] Test the integration with various audio inputs
+
+127. Migrate AI functionality to Vercel AI SDK: 🆕
+     [ ] Install Vercel AI SDK
+     [ ] Update AI-related components to use Vercel AI SDK
+     [ ] Refactor transcription logic to use Vercel AI SDK
+     [ ] Implement streaming for real-time transcription updates
+     [ ] Update error handling to use Vercel AI SDK's error handling mechanisms
+     [ ] Test and verify AI functionality with Vercel AI SDK
+     [ ] Update documentation to reflect the use of Vercel AI SDK
+
+128. Implement Local Storage for Audio Recordings: 🆕
+     [ ] Research browser storage options (localStorage, IndexedDB)
+     [ ] Implement storage mechanism for audio blobs
+     [ ] Add functions to save and retrieve audio recordings
+     [ ] Update AudioRecorder component to use local storage
+     [ ] Implement clean-up mechanism for old recordings
+     [ ] Add error handling for storage operations
+     [ ] Update UI to show locally stored recordings
+     [ ] Implement playback functionality for stored recordings
+
+129. Implement Enhanced Content Bank Interface: ⏳ (In Progress)
+     [✓] Update StoredRecording interface to include title, improved transcript, and tags
+     [✓] Modify ContentBank component to display new recording details
+     [✓] Implement AI service for generating titles
+     [✓] Implement AI service for generating improved transcripts
+     [✓] Implement AI service for suggesting tags
+     [✓] Update handleRecordingComplete to use new AI services
+     [✓] Add error handling for AI service calls
+     [✓] Implement loading states for AI processing
+     [✓] Display tags in the UI
+     [ ] Add ability to edit titles, improved transcripts, and tags
+
+130. Implement Content Bank Item Import for Posts: ✅
+     [✓] Created a new component for selecting content bank items
+     [✓] Implemented search/filter functionality for content bank items
+     [✓] Added an "Import to Post" button in the ContentBank component
+     [✓] Created a service function to fetch full details of a content bank item
+     [✓] Updated the CreatePostPage component to accept imported content
+     [✓] Implemented basic logic to merge imported transcription with existing post content
+     [✓] Implemented basic error handling for the import process
+     [✓] Implemented a basic loading state during import
+     [✓] Made the content bank selector a modal
+     [ ] Add UI for reviewing and editing the merged content
+     [ ] Implement undo functionality for imports
+     [ ] Refine error handling and user feedback
+     [ ] Update documentation
+
+131. Refactor CreatePostPage Component: ✅
+     [✓] Removed unused variables and functions
+     [✓] Updated useCreatePost hook to include all necessary state and functions
+     [✓] Refactored handleEditorUpdate to use the updated state management
+     [✓] Updated PostContent component props to match the new state structure
+     [✓] Removed LinkedIn-related functionality
+     [✓] Added error handling and loading state for undefined state
+     [✓] Added more detailed error handling and logging
+     [ ] Updated PostContent component to reflect new props structure
+     [ ] Updated TemplateSelectionModal component to reflect new props structure
+     [ ] Tested the refactored CreatePostPage component
+
+132. Investigate and Fix useCreatePost Hook: ✅
+     [✓] Reviewed useCreatePost hook implementation
+     [✓] Ensured proper initialization of state
+     [✓] Added error handling in the hook
+     [✓] Updated hook to return loading state
+     [ ] Tested hook with various scenarios
+     [ ] Updated documentation for useCreatePost hook
+
+133. Debug CreatePostPage Loading Issue: ✅
+     [✓] Added console logs in useCreatePost hook to track initialization
+     [✓] Updated CreatePostPage to use new useCreatePost structure
+     [✓] Implemented error boundary to catch and display any rendering errors
+     [ ] Checked for any errors in the browser console
+     [ ] Verified that all required components and hooks are properly imported
+     [ ] Tested the page in different browsers to isolate the issue
+     [ ] Used React DevTools to inspect component state and props
+
+134. Fix TipTapEditor Content Handling: ✅
+     [✓] Updated TipTapEditor to handle undefined or null content
+     [✓] Modified PostContent component to pass correct props to TipTapEditor
+     [✓] Updated CreatePostPage to ensure correct content prop is passed
+     [ ] Test content tab functionality
+     [ ] Implement error boundary for TipTapEditor component
+     [ ] Add loading state for TipTapEditor initialization
+
+135. Reintroduce Tabs in PostContent: ✅
+     [✓] Updated PostContent component to include tabs
+     [✓] Modified CreatePostPage to use updated PostContent component
+     [✓] Ensured all necessary props are passed to PostContent
+     [✓] Added text areas (TipTapEditor) for each tab
+     [✓] Added standard Textarea components for each tab
+     [✓] Added specific buttons for each tab
+     [✓] Refactored PostContent to use PostContentProps interface
+     [ ] Test tab functionality
+     [ ] Verify that content updates correctly for each tab
+     [ ] Implement smooth transitions between tabs
+     [ ] Ensure proper styling and layout for each tab
+     [ ] Decide on final UI (whether to keep both Textarea and TipTapEditor or choose one)
+
+136. Fix Select Template Button Functionality: ✅
+     [✓] Updated CreatePostPage to define handleSelectTemplate function
+     [✓] Passed handleSelectTemplate to PostContent component
+     [✓] Updated PostContent to use handleSelectTemplate prop correctly
+     [✓] Refactored CreatePostPage to use state consistently
+     [ ] Test Select Template button functionality
+     [ ] Verify that TemplateSelectionModal opens when button is clicked
+     [ ] Ensure template selection works as expected
+
+137. Refactor CreatePostPage for Consistency: 🆕
+     [✓] Removed local state and functions in favor of using state from useCreatePost
+     [✓] Updated all handler functions to use those provided by state
+     [✓] Simplified the component by removing unnecessary local logic
+     [ ] Test all functionality to ensure it works with the refactored component
+     [ ] Update any components that may be affected by these changes
+     [ ] Review and update documentation if necessary
+
+138. Fix Merge Functionality in CreatePostPage: ⏳ (In Progress)
+     [✓] Added handleMerge function in CreatePostPage component
+     [✓] Updated PostContent props to use the new handleMerge function
+     [ ] Implement proper merge logic (possibly using postService)
+     [ ] Test merge functionality
+     [ ] Add error handling for merge operation
+     [ ] Update UI to reflect merge status and results
+
+139. Refactor CreatePostPage for Consistency: ⏳ (In Progress)
+     [✓] Removed local state and functions in favor of using state from useCreatePost
+     [✓] Updated all handler functions to use those provided by state or implemented placeholders
+     [✓] Simplified component by removing unnecessary local logic
+     [✓] Added null checks for potentially undefined state properties
+     [ ] Implement missing functionality (suggestTags, shortlistTemplates, clear, importToPost)
+     [ ] Test all functionality to ensure it works with the refactored component
+     [ ] Update any components that may be affected by these changes
+     [ ] Review and update documentation if necessary
+
+140. Fix TemplateSelectionModal Props: 🆕
+     [✓] Updated CreatePostPage to pass correct props to TemplateSelectionModal
+     [✓] Removed 'templates' prop from TemplateSelectionModal
+     [✓] Added 'filteredPacks', 'filter', and 'setFilter' props to TemplateSelectionModal
+     [ ] Test TemplateSelectionModal functionality with new props
+     [ ] Update TemplateSelectionModal component if necessary to use new props
+     [ ] Ensure template selection process works correctly with filtered packs
+
+141. Implement Audio Recording and Transcription: ⏳ (To Do)
+     [ ] Implement audio recording functionality in AudioRecorder component
+     [ ] Set up backend endpoint for receiving audio data
+     [ ] Integrate OpenAI Whisper API for transcription
+     [ ] Implement error handling for audio recording and transcription
+     [ ] Add loading state for transcription process
+     [ ] Update UI to show transcription progress
+
+142. Refactor LinkedIn Integration: ⏳ (To Do)
+     [ ] Remove existing LinkedIn posting functionality
+     [ ] Update postService.ts to remove LinkedIn-related functions
+     [ ] Remove LinkedIn-related UI elements and state
+     [ ] Update documentation to reflect removal of LinkedIn integration
+
+143. Optimize Audio Processing: ⏳ (To Do)
+     [ ] Research and implement audio compression before sending to server
+     [ ] Implement chunking for long audio files
+     [ ] Add progress indicator for audio upload and processing
+     [ ] Implement cancellation for ongoing audio processing
+
+144. Enhance Audio Playback: ⏳ (To Do)
+     [ ] Add audio playback functionality for recorded audio
+     [ ] Implement audio waveform visualization
+     [ ] Add ability to trim audio before transcription
+     [ ] Implement volume normalization for recorded audio
+
+145. Implement Transcription Review: ⏳ (To Do)
+     [ ] Create UI for reviewing and editing transcriptions
+     [ ] Implement word-level timestamps in transcriptions
+     [ ] Add ability to re-transcribe specific sections of audio
+     [ ] Implement confidence scores for transcribed words
+
+146. Implement OpenAI Whisper Integration: ✅
+     [✓] Set up OpenAI API client using the new API key
+     [✓] Create a service function to send audio data to Whisper API
+     [✓] Implement error handling for API calls
+     [✓] Update AudioRecorder component to use the new Whisper service
+     [✓] Add loading state while waiting for transcription
+     [✓] Create abstract OpenAI route for handling different OpenAI API calls
+     [ ] Test the integration with various audio inputs
+
+147. Migrate AI functionality to Vercel AI SDK: 🆕
+     [ ] Install Vercel AI SDK
+     [ ] Update AI-related components to use Vercel AI SDK
+     [ ] Refactor transcription logic to use Vercel AI SDK
+     [ ] Implement streaming for real-time transcription updates
+     [ ] Update error handling to use Vercel AI SDK's error handling mechanisms
+     [ ] Test and verify AI functionality with Vercel AI SDK
+     [ ] Update documentation to reflect the use of Vercel AI SDK
+
+148. Implement Local Storage for Audio Recordings: 🆕
+     [ ] Research browser storage options (localStorage, IndexedDB)
+     [ ] Implement storage mechanism for audio blobs
+     [ ] Add functions to save and retrieve audio recordings
+     [ ] Update AudioRecorder component to use local storage
+     [ ] Implement clean-up mechanism for old recordings
+     [ ] Add error handling for storage operations
+     [ ] Update UI to show locally stored recordings
+     [ ] Implement playback functionality for stored recordings
+
+149. Implement Enhanced Content Bank Interface: ⏳ (In Progress)
+     [✓] Update StoredRecording interface to include title, improved transcript, and tags
+     [✓] Modify ContentBank component to display new recording details
+     [✓] Implement AI service for generating titles
+     [✓] Implement AI service for generating improved transcripts
+     [✓] Implement AI service for suggesting tags
+     [✓] Update handleRecordingComplete to use new AI services
+     [✓] Add error handling for AI service calls
+     [✓] Implement loading states for AI processing
+     [✓] Display tags in the UI
+     [ ] Add ability to edit titles, improved transcripts, and tags
+
+150. Implement Content Bank Item Import for Posts: ✅
+     [✓] Created a new component for selecting content bank items
+     [✓] Implemented search/filter functionality for content bank items
+     [✓] Added an "Import to Post" button in the ContentBank component
+     [✓] Created a service function to fetch full details of a content bank item
+     [✓] Updated the CreatePostPage component to accept imported content
+     [✓] Implemented basic logic to merge imported transcription with existing post content
+     [✓] Implemented basic error handling for the import process
+     [✓] Implemented a basic loading state during import
+     [✓] Made the content bank selector a modal
+     [ ] Add UI for reviewing and editing the merged content
+     [ ] Implement undo functionality for imports
+     [ ] Refine error handling and user feedback
+     [ ] Update documentation
+
+151. Refactor CreatePostPage Component: ✅
+     [✓] Removed unused variables and functions
+     [✓] Updated useCreatePost hook to include all necessary state and functions
+     [✓] Refactored handleEditorUpdate to use the updated state management
+     [✓] Updated PostContent component props to match the new state structure
+     [✓] Removed LinkedIn-related functionality
+     [✓] Added error handling and loading state for undefined state
+     [✓] Added more detailed error handling and logging
+     [ ] Updated PostContent component to reflect new props structure
+     [ ] Updated TemplateSelectionModal component to reflect new props structure
+     [ ] Tested the refactored CreatePostPage component
+
+152. Investigate and Fix useCreatePost Hook: ✅
+     [✓] Reviewed useCreatePost hook implementation
+     [✓] Ensured proper initialization of state
+     [✓] Added error handling in the hook
+     [✓] Updated hook to return loading state
+     [ ] Tested hook with various scenarios
+     [ ] Updated documentation for useCreatePost hook
+
+153. Debug CreatePostPage Loading Issue: ✅
+     [✓] Added console logs in useCreatePost hook to track initialization
+     [✓] Updated CreatePostPage to use new useCreatePost structure
+     [✓] Implemented error boundary to catch and display any rendering errors
+     [ ] Checked for any errors in the browser console
+     [ ] Verified that all required components and hooks are properly imported
+     [ ] Tested the page in different browsers to isolate the issue
+     [ ] Used React DevTools to inspect component state and props
+
+154. Fix TipTapEditor Content Handling: ✅
+     [✓] Updated TipTapEditor to handle undefined or null content
+     [✓] Modified PostContent component to pass correct props to TipTapEditor
+     [✓] Updated CreatePostPage to ensure correct content prop is passed
+     [ ] Test content tab functionality
+     [ ] Implement error boundary for TipTapEditor component
+     [ ] Add loading state for TipTapEditor initialization
+
+155. Reintroduce Tabs in PostContent: ✅
+     [✓] Updated PostContent component to include tabs
+     [✓] Modified CreatePostPage to use updated PostContent component
+     [✓] Ensured all necessary props are passed to PostContent
+     [✓] Added text areas (TipTapEditor) for each tab
+     [✓] Added standard Textarea components for each tab
+     [✓] Added specific buttons for each tab
+     [✓] Refactored PostContent to use PostContentProps interface
+     [ ] Test tab functionality
+     [ ] Verify that content updates correctly for each tab
+     [ ] Implement smooth transitions between tabs
+     [ ] Ensure proper styling and layout for each tab
+     [ ] Decide on final UI (whether to keep both Textarea and TipTapEditor or choose one)
+
+156. Fix Select Template Button Functionality: ✅
+     [✓] Updated CreatePostPage to define handleSelectTemplate function
+     [✓] Passed handleSelectTemplate to PostContent component
+     [✓] Updated PostContent to use handleSelectTemplate prop correctly
+     [✓] Refactored CreatePostPage to use state consistently
+     [ ] Test Select Template button functionality
+     [ ] Verify that TemplateSelectionModal opens when button is clicked
+     [ ] Ensure template selection works as expected
+
+157. Refactor CreatePostPage for Consistency: 🆕
+     [✓] Removed local state and functions in favor of using state from useCreatePost
+     [✓] Updated all handler functions to use those provided by state
+     [✓] Simplified the component by removing unnecessary local logic
+     [ ] Test all functionality to ensure it works with the refactored component
+     [ ] Update any components that may be affected by these changes
+     [ ] Review and update documentation if necessary
+
+158. Fix Merge Functionality in CreatePostPage: ⏳ (In Progress)
+     [✓] Added handleMerge function in CreatePostPage component
+     [✓] Updated PostContent props to use the new handleMerge function
+     [ ] Implement proper merge logic (possibly using postService)
+     [ ] Test merge functionality
+     [ ] Add error handling for merge operation
+     [ ] Update UI to reflect merge status and results
+
+159. Refactor CreatePostPage for Consistency: ⏳ (In Progress)
+     [✓] Removed local state and functions in favor of using state from useCreatePost
+     [✓] Updated all handler functions to use those provided by state or implemented placeholders
+     [✓] Simplified component by removing unnecessary local logic
+     [✓] Added null checks for potentially undefined state properties
+     [ ] Implement missing functionality (suggestTags, shortlistTemplates, clear, importToPost)
+     [ ] Test all functionality to ensure it works with the refactored component
+     [ ] Update any components that may be affected by these changes
+     [ ] Review and update documentation if necessary
+
+160. Fix TemplateSelectionModal Props: 🆕
+     [✓] Updated CreatePostPage to pass correct props to TemplateSelectionModal
+     [✓] Removed 'templates' prop from TemplateSelectionModal
+     [✓] Added 'filteredPacks', 'filter', and 'setFilter' props to TemplateSelectionModal
+     [ ] Test TemplateSelectionModal functionality with new props
+     [ ] Update TemplateSelectionModal component if necessary to use new props
+     [ ] Ensure template selection process works correctly with filtered packs
+
+161. Implement Audio Recording and Transcription: ⏳ (To Do)
+     [ ] Implement audio recording functionality in AudioRecorder component
+     [ ] Set up backend endpoint for receiving audio data
+     [ ] Integrate OpenAI Whisper API for transcription
+     [ ] Implement error handling for audio recording and transcription
+     [ ] Add loading state for transcription process
+     [ ] Update UI to show transcription progress
+
+162. Refactor LinkedIn Integration: ⏳ (To Do)
+     [ ] Remove existing LinkedIn posting functionality
+     [ ] Update postService.ts to remove LinkedIn-related functions
+     [ ] Remove LinkedIn-related UI elements and state
+     [ ] Update documentation to reflect removal of LinkedIn integration
+
+163. Optimize Audio Processing: ⏳ (To Do)
+     [ ] Research and implement audio compression before sending to server
+     [ ] Implement chunking for long audio files
+     [ ] Add progress indicator for audio upload and processing
+     [ ] Implement cancellation for ongoing audio processing
+
+164. Enhance Audio Playback: ⏳ (To Do)
+     [ ] Add audio playback functionality for recorded audio
+     [ ] Implement audio waveform visualization
+     [ ] Add ability to trim audio before transcription
+     [ ] Implement volume normalization for recorded audio
+
+165. Implement Transcription Review: ⏳ (To Do)
+     [ ] Create UI for reviewing and editing transcriptions
+     [ ] Implement word-level timestamps in transcriptions
+     [ ] Add ability to re-transcribe specific sections of audio
+     [ ] Implement confidence scores for transcribed words
