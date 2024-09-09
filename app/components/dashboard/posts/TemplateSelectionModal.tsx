@@ -125,7 +125,7 @@ const TemplateSelectionModal: React.FC<TemplateSelectionModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col p-0">
+      <DialogContent className="sm:max-w-[600px] h-[80vh] flex flex-col p-0">
         <DialogHeader className="px-6 py-4 sticky top-0 bg-background z-10 flex flex-row items-center justify-between">
           <div className="flex items-center">
             {stage !== "packs" && (
@@ -177,80 +177,84 @@ const TemplateSelectionModal: React.FC<TemplateSelectionModalProps> = ({
         </div>
 
         <ScrollArea className="flex-grow px-6 pb-6">
-          {stage === "packs" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {filteredPacks && filteredPacks.length > 0 ? (
-                filteredPacks.map((pack) => (
-                  <Card
-                    key={pack.id}
-                    className="cursor-pointer hover:bg-muted transition-colors"
-                    onClick={() => handlePackClick(pack)}
-                  >
-                    <div className="p-4 flex items-start">
-                      <span className="text-2xl mr-3 flex-shrink-0">
-                        {pack.emoji}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-semibold text-sm truncate">
-                          {pack.name}
-                        </h3>
-                        <p className="text-xs text-muted-foreground">
-                          {pack.templates.length} templates
-                        </p>
+          <div className="h-full">
+            {stage === "packs" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {filteredPacks && filteredPacks.length > 0 ? (
+                  filteredPacks.map((pack) => (
+                    <Card
+                      key={pack.id}
+                      className="cursor-pointer hover:bg-muted transition-colors"
+                      onClick={() => handlePackClick(pack)}
+                    >
+                      <div className="p-4 flex items-start">
+                        <span className="text-2xl mr-3 flex-shrink-0">
+                          {pack.emoji}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-semibold text-sm truncate">
+                            {pack.name}
+                          </h3>
+                          <p className="text-xs text-muted-foreground">
+                            {pack.templates.length} templates
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </Card>
-                ))
-              ) : (
-                <p>No packs available for the selected filter.</p>
-              )}
-            </div>
-          )}
-          {stage === "templates" && selectedPack && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {selectedPack.templates && selectedPack.templates.length > 0 ? (
-                filterTemplates(selectedPack.templates).map((template) => (
-                  <Card
-                    key={template.id}
-                    className="cursor-pointer hover:bg-muted transition-colors"
-                    onClick={() => handleTemplateClick(template)}
-                  >
-                    <div className="p-4 flex items-start">
-                      <span className="text-2xl mr-3 flex-shrink-0">
-                        {template.emoji}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-semibold text-sm truncate">
-                          {template.title || template.name}
-                        </h3>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {template.description}
-                        </p>
-                      </div>
-                    </div>
-                  </Card>
-                ))
-              ) : (
-                <p>No templates available for this pack and filter.</p>
-              )}
-            </div>
-          )}
-          {stage === "preview" && selectedTemplate && (
-            <div className="space-y-4">
-              <div className="flex items-center mb-4">
-                <span className="text-3xl mr-3">{selectedTemplate.emoji}</span>
-                <h2 className="text-xl font-semibold">
-                  {selectedTemplate.title || selectedTemplate.name}
-                </h2>
+                    </Card>
+                  ))
+                ) : (
+                  <p>No packs available for the selected filter.</p>
+                )}
               </div>
-              <MDEditor
-                value={selectedTemplate.body}
-                preview="preview"
-                hideToolbar
-                visibleDragbar={false}
-              />
-            </div>
-          )}
+            )}
+            {stage === "templates" && selectedPack && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {selectedPack.templates && selectedPack.templates.length > 0 ? (
+                  filterTemplates(selectedPack.templates).map((template) => (
+                    <Card
+                      key={template.id}
+                      className="cursor-pointer hover:bg-muted transition-colors"
+                      onClick={() => handleTemplateClick(template)}
+                    >
+                      <div className="p-4 flex items-start">
+                        <span className="text-2xl mr-3 flex-shrink-0">
+                          {template.emoji}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-semibold text-sm truncate">
+                            {template.title || template.name}
+                          </h3>
+                          <p className="text-xs text-muted-foreground line-clamp-2">
+                            {template.description}
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                  ))
+                ) : (
+                  <p>No templates available for this pack and filter.</p>
+                )}
+              </div>
+            )}
+            {stage === "preview" && selectedTemplate && (
+              <div className="space-y-4">
+                <div className="flex items-center mb-4">
+                  <span className="text-3xl mr-3">
+                    {selectedTemplate.emoji}
+                  </span>
+                  <h2 className="text-xl font-semibold">
+                    {selectedTemplate.title || selectedTemplate.name}
+                  </h2>
+                </div>
+                <MDEditor
+                  value={selectedTemplate.body}
+                  preview="preview"
+                  hideToolbar
+                  visibleDragbar={false}
+                />
+              </div>
+            )}
+          </div>
         </ScrollArea>
         {stage === "preview" && (
           <div className="flex justify-end p-4 bg-background border-t">

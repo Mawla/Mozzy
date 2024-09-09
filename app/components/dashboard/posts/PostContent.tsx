@@ -1,13 +1,18 @@
 import React from "react";
+import dynamic from "next/dynamic";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Loader2, Trash2 } from "lucide-react";
-import TipTapEditor from "@/app/components/TipTapEditor";
 import {
   TAB_NAMES,
   BUTTON_TEXTS,
   MESSAGES,
 } from "@/app/constants/editorConfig";
+
+// Use dynamic import for TipTapEditor
+const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
+  ssr: false,
+});
 
 interface PostContentProps {
   transcript: string;
@@ -24,6 +29,7 @@ interface PostContentProps {
   handleSuggestTags: () => void;
   handleShortlistTemplates: () => void;
   handleClear: () => void;
+  handleSuggestTemplate: () => void;
 }
 
 export const PostContent: React.FC<PostContentProps> = ({
@@ -41,6 +47,7 @@ export const PostContent: React.FC<PostContentProps> = ({
   handleSuggestTags,
   handleShortlistTemplates,
   handleClear,
+  handleSuggestTemplate,
 }) => {
   return (
     <div className="relative">
@@ -81,14 +88,17 @@ export const PostContent: React.FC<PostContentProps> = ({
               onUpdate={(newContent) => handleEditorUpdate(newContent)}
               placeholder="Enter your template here..."
             />
-            <div className="flex gap-2">
+            <div className="flex justify-between items-center">
               <Button onClick={handleSelectTemplate}>
                 {BUTTON_TEXTS.SELECT_TEMPLATE}
               </Button>
-              <Button onClick={handleShortlistTemplates}>
-                {BUTTON_TEXTS.SHORTLIST_TEMPLATES}
+              <Button onClick={handleSuggestTemplate}>
+                {BUTTON_TEXTS.SUGGEST_TEMPLATE}
               </Button>
             </div>
+            <Button onClick={handleShortlistTemplates}>
+              {BUTTON_TEXTS.SHORTLIST_TEMPLATES}
+            </Button>
           </div>
         </TabsContent>
         <TabsContent value={TAB_NAMES.MERGE}>

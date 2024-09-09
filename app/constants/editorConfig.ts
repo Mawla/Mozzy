@@ -6,11 +6,12 @@ export const TAB_NAMES = {
 
 export const BUTTON_TEXTS = {
   SELECT_TEMPLATE: "Select Template",
-  SUGGEST_TAGS: "Suggest Tags",
+  SUGGEST_TEMPLATE: "Suggest Template",
   SHORTLIST_TEMPLATES: "Shortlist Templates",
   CLEAR: "Clear",
   MERGE_CONTENT: "Merge Content and Template",
   POST_TO_LINKEDIN: "Post to LinkedIn",
+  SUGGEST_TAGS: "Suggest Tags", // Add this line
 };
 
 export const PLACEHOLDERS = {

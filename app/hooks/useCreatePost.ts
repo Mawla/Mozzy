@@ -275,7 +275,15 @@ export const useCreatePost = (): UseCreatePostReturn => {
     }
 
     setIsLoading(false);
-  }, [transcript, shortlistedTemplates]);
+  }, [
+    transcript,
+    shortlistedTemplates,
+    setSelectedTemplate,
+    setTitle,
+    setContent,
+    setSuggestedTemplates,
+    setProgressNotes,
+  ]);
 
   const handleMerge = useCallback(async () => {
     setIsMerging(true);

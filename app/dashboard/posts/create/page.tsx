@@ -82,6 +82,7 @@ const CreatePostPage = () => {
         handleSelectTemplate={handleSelectTemplate}
         handleSuggestTags={() => handleSuggestTags(transcript)}
         handleShortlistTemplates={handleShortlistTemplates}
+        handleSuggestTemplate={handleSuggestTemplate}
         handleClear={handleClear}
       />
       <div className="space-y-2">
