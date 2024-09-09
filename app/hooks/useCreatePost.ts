@@ -24,6 +24,7 @@ export interface UseCreatePostReturn {
   isLoading: boolean;
   suggestedTags: string[];
   tags: string[];
+  setTags: (tags: string[]) => void;
   shortlistedTemplates: Template[];
   suggestedTemplates: Template[];
   isPosting: boolean;
@@ -381,6 +382,7 @@ export const useCreatePost = (): UseCreatePostReturn => {
     isLoading,
     suggestedTags,
     tags,
+    setTags,
     shortlistedTemplates,
     suggestedTemplates,
     isPosting,

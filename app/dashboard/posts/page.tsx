@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,11 +20,16 @@ interface SavedPost {
 
 const PostsPage = () => {
   const [savedPosts, setSavedPosts] = useState<SavedPost[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     const posts = JSON.parse(localStorage.getItem("savedPosts") || "[]");
     setSavedPosts(posts);
   }, []);
+
+  const handlePostClick = (id: string) => {
+    router.push(`/dashboard/posts/${id}`);
+  };
 
   return (
     <div className="container mx-auto p-4 space-y-8">
@@ -35,7 +41,11 @@ const PostsPage = () => {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {savedPosts.map((post) => (
-          <Card key={post.id}>
+          <Card
+            key={post.id}
+            className="cursor-pointer hover:shadow-md transition-shadow duration-200"
+            onClick={() => handlePostClick(post.id)}
+          >
             <CardHeader>
               <CardTitle>{post.title}</CardTitle>
             </CardHeader>
@@ -50,9 +60,9 @@ const PostsPage = () => {
                   </Badge>
                 ))}
               </div>
-              <Link href={`/dashboard/posts/${post.id}`}>
-                <Button variant="outline">View Post</Button>
-              </Link>
+              <p className="text-sm text-gray-700 line-clamp-3">
+                {post.mergedContent}
+              </p>
             </CardContent>
           </Card>
         ))}

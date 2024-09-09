@@ -199,3 +199,24 @@
     [✓] Implement loading states for AI processing
     [✓] Display tags in the UI
     [ ] Add ability to edit titles, improved transcripts, and tags
+
+30. Implement Local Storage for Posts:
+    [✓] Update CreatePostPage to save posts to local storage
+    [✓] Replace 'Post to LinkedIn' button with 'Save' button
+    [✓] Modify PostContent component to handle saving
+    [✓] Update posts page to display list of saved posts
+    [✓] Add 'Save' button to the merge tab in PostContent
+    [✓] Create a view post page
+    [✓] Make post cards clickable to view post details
+    [✓] Use TipTap editor to display markdown content on the detail page
+    [✓] Standardize font sizes and improve layout consistency
+    [ ] Implement ability to edit saved posts
+    [ ] Add error handling and validation for saved posts
+
+31. Enhance TipTap Editor Component:
+    [✓] Add support for read-only mode
+    [✓] Adjust styling for consistency with application design
+    [✓] Restore responsive prose classes for proper styling
+    [✓] Add global CSS for improved TipTap editor styling
+    [ ] Implement additional markdown features (e.g., tables, code blocks)
+    [ ] Add custom styles for better markdown rendering

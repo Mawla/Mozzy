@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { useCreatePost } from "@/app/hooks/useCreatePost";
 import { PostHeader } from "@/app/components/dashboard/posts/PostHeader";
 import { PostContent } from "@/app/components/dashboard/posts/PostContent";
@@ -11,7 +11,15 @@ import ContentHubImportModal from "@/app/components/dashboard/posts/ContentHubIm
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
-const CreatePostPage = () => {
+interface CreatePostPageProps {
+  initialPost?: any;
+  isEditing?: boolean;
+}
+
+const CreatePostPage: React.FC<CreatePostPageProps> = ({
+  initialPost,
+  isEditing = false,
+}) => {
   const router = useRouter();
   const [isContentHubModalOpen, setIsContentHubModalOpen] = useState(false);
   const {
@@ -30,6 +38,7 @@ const CreatePostPage = () => {
     setMergedContent,
     progressNotes,
     tags,
+    setTags,
     filteredPacks,
     handleTemplateSelect,
     handleSuggestTags,
@@ -42,6 +51,23 @@ const CreatePostPage = () => {
     setFilter,
     handleImportTranscript,
   } = useCreatePost();
+
+  useEffect(() => {
+    if (initialPost) {
+      setTitle(initialPost.title);
+      setContent(initialPost.content);
+      setTranscript(initialPost.transcript);
+      setMergedContent(initialPost.mergedContent);
+      setTags(initialPost.tags);
+    }
+  }, [
+    initialPost,
+    setTitle,
+    setContent,
+    setTranscript,
+    setMergedContent,
+    setTags,
+  ]);
 
   const handleEditorUpdate = useCallback(
     (newContent: string) => {
@@ -61,21 +87,29 @@ const CreatePostPage = () => {
   };
 
   const handleSave = () => {
-    const newPost = {
-      id: Date.now().toString(),
+    const updatedPost = {
+      id: initialPost ? initialPost.id : Date.now().toString(),
       title,
       content,
       transcript,
       mergedContent,
       tags,
-      createdAt: new Date().toISOString(),
+      createdAt: initialPost ? initialPost.createdAt : new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
     const savedPosts = JSON.parse(localStorage.getItem("savedPosts") || "[]");
-    savedPosts.push(newPost);
-    localStorage.setItem("savedPosts", JSON.stringify(savedPosts));
 
+    if (isEditing) {
+      const index = savedPosts.findIndex((post) => post.id === updatedPost.id);
+      if (index !== -1) {
+        savedPosts[index] = updatedPost;
+      }
+    } else {
+      savedPosts.push(updatedPost);
+    }
+
+    localStorage.setItem("savedPosts", JSON.stringify(savedPosts));
     router.push("/dashboard/posts");
   };
 
@@ -92,7 +126,7 @@ const CreatePostPage = () => {
         content={content}
         mergedContent={mergedContent}
         activeTab={activeTab}
-        setActiveTab={setActiveTab as (tab: string) => void} // Type assertion here
+        setActiveTab={setActiveTab as (tab: string) => void}
         handleEditorUpdate={handleEditorUpdate}
         isMerging={isMerging}
         handleMerge={handleMerge}
