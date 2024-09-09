@@ -12,6 +12,7 @@ export const BUTTON_TEXTS = {
   MERGE_CONTENT: "Merge Content and Template",
   POST_TO_LINKEDIN: "Post to LinkedIn",
   SUGGEST_TAGS: "Suggest Tags", // Add this line
+  SAVE: "Save Post",
 };
 
 export const PLACEHOLDERS = {

@@ -9,7 +9,6 @@ import {
   MESSAGES,
 } from "@/app/constants/editorConfig";
 
-// Use dynamic import for TipTapEditor
 const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
   ssr: false,
 });
@@ -23,8 +22,7 @@ interface PostContentProps {
   handleEditorUpdate: (newContent: string) => void;
   isMerging: boolean;
   handleMerge: () => void;
-  handlePostToLinkedIn: () => void;
-  isPosting: boolean;
+  handleSave: () => void;
   handleSelectTemplate: () => void;
   handleSuggestTags: () => void;
   handleShortlistTemplates: () => void;
@@ -41,8 +39,7 @@ export const PostContent: React.FC<PostContentProps> = ({
   handleEditorUpdate,
   isMerging,
   handleMerge,
-  handlePostToLinkedIn,
-  isPosting,
+  handleSave,
   handleSelectTemplate,
   handleSuggestTags,
   handleShortlistTemplates,
@@ -124,14 +121,11 @@ export const PostContent: React.FC<PostContentProps> = ({
                 </Button>
               )}
               <Button
-                onClick={handlePostToLinkedIn}
-                disabled={!mergedContent || isPosting}
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                onClick={handleSave}
+                disabled={!mergedContent}
+                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
               >
-                {isPosting ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : null}
-                {BUTTON_TEXTS.POST_TO_LINKEDIN}
+                {BUTTON_TEXTS.SAVE}
               </Button>
             </div>
           </div>

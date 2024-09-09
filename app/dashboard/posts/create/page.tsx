@@ -9,8 +9,10 @@ import { LABELS } from "@/app/constants/editorConfig";
 import TemplateSelectionModal from "@/app/components/dashboard/posts/TemplateSelectionModal";
 import ContentHubImportModal from "@/app/components/dashboard/posts/ContentHubImportModal";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 const CreatePostPage = () => {
+  const router = useRouter();
   const [isContentHubModalOpen, setIsContentHubModalOpen] = useState(false);
   const {
     isTemplateModalOpen,
@@ -35,11 +37,9 @@ const CreatePostPage = () => {
     handleSuggestTemplate,
     handleMerge,
     handleClear,
-    handlePostToLinkedIn,
     handleSelectTemplate,
     filter,
     setFilter,
-    isPosting,
     handleImportTranscript,
   } = useCreatePost();
 
@@ -60,6 +60,25 @@ const CreatePostPage = () => {
     setIsContentHubModalOpen(true);
   };
 
+  const handleSave = () => {
+    const newPost = {
+      id: Date.now().toString(),
+      title,
+      content,
+      transcript,
+      mergedContent,
+      tags,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const savedPosts = JSON.parse(localStorage.getItem("savedPosts") || "[]");
+    savedPosts.push(newPost);
+    localStorage.setItem("savedPosts", JSON.stringify(savedPosts));
+
+    router.push("/dashboard/posts");
+  };
+
   return (
     <div className="container mx-auto p-4 space-y-8">
       <div className="flex justify-between items-center">
@@ -77,8 +96,7 @@ const CreatePostPage = () => {
         handleEditorUpdate={handleEditorUpdate}
         isMerging={isMerging}
         handleMerge={handleMerge}
-        handlePostToLinkedIn={handlePostToLinkedIn}
-        isPosting={isPosting}
+        handleSave={handleSave}
         handleSelectTemplate={handleSelectTemplate}
         handleSuggestTags={() => handleSuggestTags(transcript)}
         handleShortlistTemplates={handleShortlistTemplates}
