@@ -171,12 +171,15 @@
     [ ] Add loading state while waiting for transcription
     [ ] Test the integration with various audio inputs
 
-27. Implement Local Storage for Content Bank: ✅
-    [✓] Create utility functions for saving and retrieving recordings from local storage
-    [✓] Update ContentBank component to use local storage
-    [✓] Implement UI for displaying list of recordings
-    [✓] Add text area for viewing selected recording's transcript
-    [✓] Include audio player for selected recording
+27. Implement Ideas Section:
+    [✓] Create a new page for Ideas within the dashboard folder
+    [✓] Implement a services controller for Ideas using local storage
+    [✓] Create an API route for Ideas using local storage
+    [✓] Update the sidebar to include the Ideas section
+    [✓] Fix Sidebar component to properly import and use Lightbulb icon
+    [✓] Integrate Ideas section into the existing Sidebar component
+    [ ] Implement UI for displaying and managing ideas
+    [ ] Test the new Ideas functionality
 
 28. Enhance Content Bank UI: ⏳ (To Do)
     [ ] Implement search functionality for recordings

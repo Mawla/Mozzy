@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -8,14 +9,24 @@ import {
   FileText,
   LineChart,
   Settings,
-  Users, // Import the Users icon
+  Users,
+  Lightbulb,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const Sidebar = () => {
+const Sidebar: React.FC = () => {
   const pathname = usePathname();
+
+  const navItems = [
+    { icon: Home, name: "Dashboard", href: "/dashboard" },
+    { icon: FileText, name: "Posts", href: "/dashboard/posts" },
+    { icon: LineChart, name: "Content Bank", href: "/dashboard/analytics" },
+    { icon: Users, name: "ICP", href: "/dashboard/icp" },
+    { icon: Lightbulb, name: "Ideas", href: "/dashboard/ideas" },
+    { icon: Settings, name: "Settings", href: "/dashboard/settings" },
+  ];
 
   return (
     <div className="hidden border-r bg-muted/40 md:block">
@@ -32,36 +43,19 @@ const Sidebar = () => {
         </div>
         <div className="flex-1">
           <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-            <NavItem
-              href="/dashboard"
-              icon={Home}
-              label="Dashboard"
-              active={pathname === "/dashboard"}
-            />
-            <NavItem
-              href="/dashboard/posts"
-              icon={FileText}
-              label="Posts"
-              active={pathname.startsWith("/dashboard/posts")}
-            />
-            <NavItem
-              href="/dashboard/analytics"
-              icon={LineChart}
-              label="Content Bank"
-              active={pathname === "/dashboard/analytics"}
-            />
-            <NavItem
-              href="/dashboard/icp"
-              icon={Users}
-              label="ICP"
-              active={pathname === "/dashboard/icp"}
-            />
-            <NavItem
-              href="/dashboard/settings"
-              icon={Settings}
-              label="Settings"
-              active={pathname === "/dashboard/settings"}
-            />
+            {navItems.map((item) => (
+              <NavItem
+                key={item.name}
+                href={item.href}
+                icon={item.icon}
+                label={item.name}
+                active={
+                  item.href === "/dashboard/posts"
+                    ? pathname?.startsWith(item.href) ?? false
+                    : pathname === item.href
+                }
+              />
+            ))}
           </nav>
         </div>
         <div className="mt-auto p-4">
@@ -81,18 +75,20 @@ const Sidebar = () => {
   );
 };
 
-const NavItem = ({
-  href,
-  icon: Icon,
-  label,
-  badge,
-  active,
-}: {
+interface NavItemProps {
   href: string;
   icon: React.ElementType;
   label: string;
   badge?: string;
   active: boolean;
+}
+
+const NavItem: React.FC<NavItemProps> = ({
+  href,
+  icon: Icon,
+  label,
+  badge,
+  active,
 }) => (
   <Link
     href={href}
