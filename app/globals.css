@@ -60,12 +60,23 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
+}
+
+body {
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+* {
+  @apply border-border;
+}
+
+body {
+  @apply bg-background text-foreground;
 }
 
 /* Custom styles for MDXEditor to match the app theme */

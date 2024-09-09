@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { useCreatePost } from "@/app/hooks/useCreatePost";
 import { PostHeader } from "@/app/components/dashboard/posts/PostHeader";
 import { PostContent } from "@/app/components/dashboard/posts/PostContent";
@@ -7,8 +7,11 @@ import { ProgressNotes } from "@/app/components/dashboard/posts/ProgressNotes";
 import { Badge } from "@/components/ui/badge";
 import { LABELS } from "@/app/constants/editorConfig";
 import TemplateSelectionModal from "@/app/components/dashboard/posts/TemplateSelectionModal";
+import ContentHubImportModal from "@/app/components/dashboard/posts/ContentHubImportModal";
+import { Button } from "@/components/ui/button";
 
 const CreatePostPage = () => {
+  const [isContentHubModalOpen, setIsContentHubModalOpen] = useState(false);
   const {
     isTemplateModalOpen,
     setIsTemplateModalOpen,
@@ -37,6 +40,7 @@ const CreatePostPage = () => {
     filter,
     setFilter,
     isPosting,
+    handleImportTranscript,
   } = useCreatePost();
 
   const handleEditorUpdate = useCallback(
@@ -52,15 +56,24 @@ const CreatePostPage = () => {
     [activeTab, setTranscript, setContent, setMergedContent]
   );
 
+  const handleImportContent = () => {
+    setIsContentHubModalOpen(true);
+  };
+
   return (
     <div className="container mx-auto p-4 space-y-8">
-      <PostHeader title={title} setTitle={setTitle} />
+      <div className="flex justify-between items-center">
+        <PostHeader title={title} setTitle={setTitle} />
+        <Button onClick={handleImportContent} className="ml-4">
+          Import Content
+        </Button>
+      </div>
       <PostContent
         transcript={transcript}
         content={content}
         mergedContent={mergedContent}
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={setActiveTab as (tab: string) => void} // Type assertion here
         handleEditorUpdate={handleEditorUpdate}
         isMerging={isMerging}
         handleMerge={handleMerge}
@@ -89,6 +102,11 @@ const CreatePostPage = () => {
         onSelectTemplate={handleTemplateSelect}
         filter={filter}
         setFilter={setFilter}
+      />
+      <ContentHubImportModal
+        isOpen={isContentHubModalOpen}
+        onClose={() => setIsContentHubModalOpen(false)}
+        onImport={handleImportTranscript}
       />
     </div>
   );
