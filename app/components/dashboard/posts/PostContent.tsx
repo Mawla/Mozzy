@@ -2,7 +2,9 @@ import React from "react";
 import dynamic from "next/dynamic";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, Trash2, Tag } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import YouTubeBadge from "@/app/components/YouTubeBadge";
 import {
   TAB_NAMES,
   BUTTON_TEXTS,
@@ -28,6 +30,7 @@ interface PostContentProps {
   handleShortlistTemplates: () => void;
   handleClear: () => void;
   handleSuggestTemplate: () => void;
+  tags: string[];
 }
 
 export const PostContent: React.FC<PostContentProps> = ({
@@ -45,6 +48,7 @@ export const PostContent: React.FC<PostContentProps> = ({
   handleShortlistTemplates,
   handleClear,
   handleSuggestTemplate,
+  tags,
 }) => {
   return (
     <div className="relative">
@@ -68,11 +72,26 @@ export const PostContent: React.FC<PostContentProps> = ({
         </TabsList>
         <TabsContent value={TAB_NAMES.CONTENT}>
           <div className="space-y-4">
+            <div className="mb-4">
+              <YouTubeBadge />
+            </div>
             <TipTapEditor
               content={transcript}
               onUpdate={(newContent) => handleEditorUpdate(newContent)}
               placeholder="Enter your transcript here..."
             />
+            <div className="flex flex-wrap gap-2 mb-4">
+              {tags.map((tag, index) => (
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  className="py-1 px-2 rounded-full bg-gray-200 text-gray-800"
+                >
+                  <Tag className="w-3 h-3 mr-1" />
+                  {tag}
+                </Badge>
+              ))}
+            </div>
             <Button onClick={handleSuggestTags}>
               {BUTTON_TEXTS.SUGGEST_TAGS}
             </Button>
@@ -105,17 +124,17 @@ export const PostContent: React.FC<PostContentProps> = ({
               onUpdate={(newContent) => handleEditorUpdate(newContent)}
               placeholder="Merged content will appear here..."
             />
-            <div className="flex gap-2">
+            <div className="flex justify-end gap-2">
               {isMerging ? (
-                <div className="flex items-center justify-center p-4 bg-muted rounded-md flex-grow">
-                  <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                <div className="flex items-center justify-center p-2 bg-muted rounded-md">
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   <span>{MESSAGES.MERGING_CONTENT}</span>
                 </div>
               ) : (
                 <Button
                   onClick={handleMerge}
                   disabled={!transcript || !content}
-                  className="flex-grow bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
+                  variant="outline"
                 >
                   {BUTTON_TEXTS.MERGE_CONTENT}
                 </Button>
@@ -123,7 +142,7 @@ export const PostContent: React.FC<PostContentProps> = ({
               <Button
                 onClick={handleSave}
                 disabled={!mergedContent}
-                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-gray-800 hover:bg-gray-700 text-white"
               >
                 {BUTTON_TEXTS.SAVE}
               </Button>

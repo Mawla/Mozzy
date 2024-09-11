@@ -210,7 +210,7 @@
     [✓] Make post cards clickable to view post details
     [✓] Use TipTap editor to display markdown content on the detail page
     [✓] Standardize font sizes and improve layout consistency
-    [ ] Implement ability to edit saved posts
+    [✓] Implement ability to edit saved posts
     [ ] Add error handling and validation for saved posts
 
 31. Enhance TipTap Editor Component:
@@ -220,3 +220,44 @@
     [✓] Add global CSS for improved TipTap editor styling
     [ ] Implement additional markdown features (e.g., tables, code blocks)
     [ ] Add custom styles for better markdown rendering
+
+32. Implement Edit Post Functionality:
+    [✓] Create EditPostPage component
+    [✓] Modify CreatePostPage to handle both creation and editing
+    [✓] Update useCreatePost hook to include setTags
+    [✓] Update ViewPostPage to use correct edit link
+    [ ] Add validation for edited posts
+    [ ] Implement optimistic updates for better UX
+
+33. Implement YouTube Transcript Extraction Service Badge:
+    [✓] Add YouTube transcript extraction service badge to ContentHubImportModal
+    [✓] Add YouTube transcript extraction service badge to PostContent's Content tab
+    [✓] Style tags with rounded background and icon in PostContent component
+    [✓] Remove lower Tags section from CreatePostPage
+    [✓] Update tag styling to use rounded-full class for a more rounded appearance
+    [✓] Use a different shade of gray for tag badge backgrounds
+    [ ] Implement consistent styling for badges and tags across the application
+    [ ] Add hover effects and animations to improve user interaction
+    [ ] Ensure accessibility for all UI components
+
+34. Enhance UI Components:
+    [✓] Add YouTube transcript extraction service badge to ContentHubImportModal
+    [✓] Add YouTube transcript extraction service badge to PostContent's Content tab
+    [✓] Style tags with rounded background and icon in PostContent component
+    [✓] Remove lower Tags section from CreatePostPage
+    [✓] Update tag styling to use rounded-full class for a more rounded appearance
+    [✓] Use a different shade of gray for tag badge backgrounds
+    [✓] Update sidebar and header background colors for better contrast
+    [✓] Update button themes in merge tab to monochrome style
+    [✓] Standardize merge button width in PostContent
+    [✓] Create a reusable YouTubeBadge component
+    [✓] Update PostContent and ContentHubImportModal to use YouTubeBadge component
+    [ ] Implement consistent styling for badges and tags across the application
+    [ ] Add hover effects and animations to improve user interaction
+    [ ] Ensure accessibility for all UI components
+
+35. Improve Layout and Navigation:
+    [✓] Add header to dashboard layout
+    [ ] Implement breadcrumbs for better navigation
+    [ ] Create a responsive design for mobile devices
+    [ ] Add collapsible sidebar for smaller screens

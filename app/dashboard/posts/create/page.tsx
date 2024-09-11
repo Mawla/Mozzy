@@ -4,11 +4,9 @@ import { useCreatePost } from "@/app/hooks/useCreatePost";
 import { PostHeader } from "@/app/components/dashboard/posts/PostHeader";
 import { PostContent } from "@/app/components/dashboard/posts/PostContent";
 import { ProgressNotes } from "@/app/components/dashboard/posts/ProgressNotes";
-import { Badge } from "@/components/ui/badge";
-import { LABELS } from "@/app/constants/editorConfig";
+import { Button } from "@/components/ui/button";
 import TemplateSelectionModal from "@/app/components/dashboard/posts/TemplateSelectionModal";
 import ContentHubImportModal from "@/app/components/dashboard/posts/ContentHubImportModal";
-import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
 interface CreatePostPageProps {
@@ -101,7 +99,9 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
     const savedPosts = JSON.parse(localStorage.getItem("savedPosts") || "[]");
 
     if (isEditing) {
-      const index = savedPosts.findIndex((post) => post.id === updatedPost.id);
+      const index = savedPosts.findIndex(
+        (post: any) => post.id === updatedPost.id
+      );
       if (index !== -1) {
         savedPosts[index] = updatedPost;
       }
@@ -136,17 +136,8 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
         handleShortlistTemplates={handleShortlistTemplates}
         handleSuggestTemplate={handleSuggestTemplate}
         handleClear={handleClear}
+        tags={tags}
       />
-      <div className="space-y-2">
-        <label className="block text-sm font-medium">{LABELS.TAGS}</label>
-        <div className="flex flex-wrap gap-2">
-          {tags.map((tag, index) => (
-            <Badge key={index} variant="secondary">
-              {tag}
-            </Badge>
-          ))}
-        </div>
-      </div>
       <ProgressNotes progressNotes={progressNotes} />
       <TemplateSelectionModal
         isOpen={isTemplateModalOpen}

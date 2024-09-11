@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ContentItem } from "@/app/types/content";
 import ContentDetailModal from "./ContentDetailModal";
 import { contentBankService } from "@/app/services/contentBankService";
+import YouTubeBadge from "@/app/components/YouTubeBadge";
 
 interface ContentHubImportModalProps {
   isOpen: boolean;
@@ -71,6 +72,9 @@ const ContentHubImportModal: React.FC<ContentHubImportModalProps> = ({
             Import Content
           </DialogTitle>
         </DialogHeader>
+        <div className="mb-4">
+          <YouTubeBadge />
+        </div>
         <Input
           type="text"
           placeholder="Search content..."
