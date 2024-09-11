@@ -256,8 +256,39 @@
     [ ] Add hover effects and animations to improve user interaction
     [ ] Ensure accessibility for all UI components
 
-35. Improve Layout and Navigation:
+35. Improve Layout and Navigation: ⏳ (In Progress)
     [✓] Add header to dashboard layout
     [ ] Implement breadcrumbs for better navigation
     [ ] Create a responsive design for mobile devices
     [ ] Add collapsible sidebar for smaller screens
+
+36. Implement Ideal Customer Profile (ICP) Feature: ✅
+    [✓] Create ICP service using local storage
+    [✓] Implement API route for ICP
+    [✓] Create ICP page component with ICPInfo component as empty state
+    [✓] Add ICP section to sidebar
+    [✓] Implement UI for managing ICPs (create, edit, delete)
+    [✓] Remove embedded scroll and adjust layout
+    [✓] Update ICPInfo component to accept onCreateClick prop
+    [✓] Fix syntax errors in ICP page component
+    [✓] Ensure outer page scroll is used instead of embedded scroll
+    [✓] Refactor ICPForm into a separate component
+    [✓] Refactor ICPDetail into a separate component
+    [✓] Revert ICP page to use ICPInfo component as empty state
+    [✓] Fix ICPInfo rendering issue
+    [✓] Merge multiple return statements in ICPPage component
+    [ ] Test ICP functionality
+
+37. Enhance ICP Feature: ⏳ (In Progress)
+    [✓] Add form validation for ICP creation and editing
+    [✓] Implement error handling for ICP operations
+    [✓] Add confirmation dialog for ICP deletion
+    [✓] Improve UI/UX for ICP management (e.g., loading states, success messages)
+    [ ] Implement search and filter functionality for ICPs
+    [ ] Add pagination or infinite scroll for large numbers of ICPs
+    [✓] Remove embedded scroll from IcpFullPageFormUpdated component
+
+38. Optimize ICP Form Layout: ✅
+    [✓] Adjust IcpFullPageFormUpdated component to use natural page scroll
+    [✓] Improve responsiveness of the ICP form
+    [✓] Ensure consistent styling across different screen sizes
