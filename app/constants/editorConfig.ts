@@ -1,7 +1,7 @@
 export const TAB_NAMES = {
-  CONTENT: "content",
-  TEMPLATE: "template",
-  MERGE: "merge",
+  CONTENT: "Step 1: Add Content",
+  TEMPLATE: "Step 2: Select Templates",
+  MERGE: "Step 3: Generate Content",
 };
 
 export const BUTTON_TEXTS = {

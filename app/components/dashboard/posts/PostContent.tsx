@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { TAB_NAMES, BUTTON_TEXTS } from "@/app/constants/editorConfig";
-import { Template } from "@/utils/templateParser";
+import { Template } from "@/app/types/template";
 import { ContentTab } from "./ContentTab";
 import { TemplateTab } from "./TemplateTab";
 import { MergeTab } from "./MergeTab";
@@ -34,6 +34,7 @@ interface PostContentProps {
   selectedContentIndex: number | null;
   setSelectedContentIndex: (index: number | null) => void;
   removeTag: (tag: string) => void;
+  wordCount: number;
 }
 
 export const PostContent: React.FC<PostContentProps> = ({
@@ -62,6 +63,7 @@ export const PostContent: React.FC<PostContentProps> = ({
   selectedContentIndex,
   setSelectedContentIndex,
   removeTag,
+  wordCount,
 }) => {
   return (
     <div className="relative">
@@ -79,17 +81,22 @@ export const PostContent: React.FC<PostContentProps> = ({
         className="w-full mt-10"
       >
         <TabsList>
-          <TabsTrigger value={TAB_NAMES.CONTENT}>Content</TabsTrigger>
-          <TabsTrigger value={TAB_NAMES.TEMPLATE}>Template</TabsTrigger>
-          <TabsTrigger value={TAB_NAMES.MERGE}>Merge</TabsTrigger>
+          <TabsTrigger value={TAB_NAMES.CONTENT}>
+            {TAB_NAMES.CONTENT}
+          </TabsTrigger>
+          <TabsTrigger value={TAB_NAMES.TEMPLATE}>
+            {TAB_NAMES.TEMPLATE}
+          </TabsTrigger>
+          <TabsTrigger value={TAB_NAMES.MERGE}>{TAB_NAMES.MERGE}</TabsTrigger>
         </TabsList>
         <TabsContent value={TAB_NAMES.CONTENT}>
           <ContentTab
             transcript={transcript}
-            handleEditorUpdate={handleEditorUpdate}
+            handleEditorUpdate={(newContent) => handleEditorUpdate(newContent)}
             handleSuggestTags={handleSuggestTags}
             tags={tags}
             removeTag={removeTag}
+            wordCount={wordCount}
           />
         </TabsContent>
         <TabsContent value={TAB_NAMES.TEMPLATE}>

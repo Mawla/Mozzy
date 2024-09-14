@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Pack, Template } from "@/app/types/template";
 import { postService } from "@/app/services/postService";
+import { TAB_NAMES } from "@/app/constants/editorConfig";
 
 // Add this interface
 export interface UseCreatePostReturn {
@@ -15,8 +16,8 @@ export interface UseCreatePostReturn {
   setContent: (content: string) => void;
   transcript: string;
   setTranscript: (transcript: string) => void;
-  activeTab: "content" | "template" | "merge";
-  setActiveTab: (tab: "content" | "template" | "merge") => void;
+  activeTab: keyof typeof TAB_NAMES;
+  setActiveTab: (tab: keyof typeof TAB_NAMES) => void;
   isMerging: boolean;
   mergedContent: string;
   setMergedContent: (content: string) => void;
@@ -57,6 +58,10 @@ export interface UseCreatePostReturn {
   selectedContentIndex: number | null;
   setSelectedContentIndex: (index: number | null) => void;
   removeTag: (tagToRemove: string) => void;
+  apiError: string | null;
+  setApiError: (error: string | null) => void;
+  wordCount: number;
+  handleEditorUpdate: (newContent: string, index?: number) => void;
 }
 
 // Update the function signature to use the interface
@@ -70,8 +75,8 @@ export const useCreatePost = (): UseCreatePostReturn => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [transcript, setTranscript] = useState("");
-  const [activeTab, setActiveTab] = useState<"content" | "template" | "merge">(
-    "content"
+  const [activeTab, setActiveTab] = useState<keyof typeof TAB_NAMES>(
+    TAB_NAMES.CONTENT
   );
   const [isMerging, setIsMerging] = useState(false);
   const [mergedContent, setMergedContent] = useState("");
@@ -100,6 +105,10 @@ export const useCreatePost = (): UseCreatePostReturn => {
   const [selectedContentIndex, setSelectedContentIndex] = useState<
     number | null
   >(null);
+
+  const [apiError, setApiError] = useState<string | null>(null);
+
+  const [wordCount, setWordCount] = useState(0);
 
   const openTemplateModal = useCallback((index: number) => {
     setSelectedTemplateIndex(index);
@@ -310,11 +319,22 @@ export const useCreatePost = (): UseCreatePostReturn => {
   const handleSuggestTemplate = useCallback(async () => {
     setIsLoading(true);
     setProgressNotes("• Starting template suggestion process...");
+    setApiError(null); // Clear previous errors
 
     try {
+      // First, shortlist templates based on tags
+      const storedTags = postService.getSuggestedTagsFromLocalStorage();
+      const tagsToUse = storedTags.length > 0 ? storedTags : tags;
+      const allTemplates = packs.flatMap((pack) => pack.templates);
+      const shortlistedTemplates = await postService.shortlistTemplatesByTags(
+        tagsToUse,
+        allTemplates
+      );
+
+      // Then, suggest templates from the shortlisted ones
       const suggestedTemplates = await postService.chooseBestTemplate(
         transcript,
-        packs.flatMap((pack) => pack.templates)
+        shortlistedTemplates
       );
 
       if (suggestedTemplates.length > 0) {
@@ -329,7 +349,8 @@ export const useCreatePost = (): UseCreatePostReturn => {
 
         setProgressNotes(
           (prev) =>
-            `${prev}\n• Suggested templates added to selection:` +
+            `${prev}\n• Shortlisted templates based on tags.` +
+            `\n• Suggested templates added to selection:` +
             suggestedTemplates.map((t) => `\n  - ${t.name}`).join("") +
             (suggestedTitle ? `\n• Suggested title: "${suggestedTitle}"` : "")
         );
@@ -344,22 +365,31 @@ export const useCreatePost = (): UseCreatePostReturn => {
       setProgressNotes(
         (prev) => `${prev}\n• Error suggesting templates: ${error}`
       );
+      if (error instanceof Error) {
+        setApiError(`Anthropic API Error: ${error.message}`);
+      } else {
+        setApiError("An unknown error occurred");
+      }
     }
 
     setIsLoading(false);
   }, [
     transcript,
     packs,
+    tags,
     setSelectedTemplates,
     setTitle,
     setSuggestedTemplates,
     setProgressNotes,
     extractSuggestedTitle,
+    postService,
   ]);
 
   const handleMerge = useCallback(async () => {
     setIsMerging(true);
     setProgressNotes("• Starting content merge process...");
+    setApiError(null); // Clear previous errors
+
     try {
       const mergedResults = await postService.mergeMultipleContents(
         transcript,
@@ -403,11 +433,16 @@ export const useCreatePost = (): UseCreatePostReturn => {
             `${prev}\n• Content merged successfully for ${mergedResults.length} out of ${selectedTemplates.length} templates.`
         );
 
-        setActiveTab("merge");
+        setActiveTab(TAB_NAMES.MERGE);
       }
     } catch (error) {
       console.error("Error merging content:", error);
       setProgressNotes((prev) => `${prev}\n• Error merging content: ${error}`);
+      if (error instanceof Error) {
+        setApiError(`Anthropic API Error: ${error.message}`);
+      } else {
+        setApiError("An unknown error occurred");
+      }
     } finally {
       setIsMerging(false);
     }
@@ -510,6 +545,44 @@ export const useCreatePost = (): UseCreatePostReturn => {
     setTags((prevTags) => prevTags.filter((tag) => tag !== tagToRemove));
   }, []);
 
+  const calculateWordCount = useCallback((text: string) => {
+    const words = text.trim().split(/\s+/);
+    return words.length;
+  }, []);
+
+  useEffect(() => {
+    setWordCount(calculateWordCount(transcript));
+  }, [transcript, calculateWordCount]);
+
+  const handleEditorUpdate = useCallback(
+    (newContent: string, index?: number) => {
+      if (activeTab === TAB_NAMES.CONTENT) {
+        setTranscript(newContent);
+        setWordCount(calculateWordCount(newContent));
+      } else if (activeTab === TAB_NAMES.TEMPLATE) {
+        setContent(newContent);
+      } else if (activeTab === TAB_NAMES.MERGE) {
+        if (index !== undefined) {
+          setMergedContents((prev) => {
+            const newContents = [...prev];
+            newContents[index] = newContent;
+            return newContents;
+          });
+        } else {
+          setMergedContent(newContent);
+        }
+      }
+    },
+    [
+      activeTab,
+      setTranscript,
+      setContent,
+      setMergedContent,
+      setMergedContents,
+      calculateWordCount,
+    ]
+  );
+
   return {
     isTemplateModalOpen,
     setIsTemplateModalOpen,
@@ -562,5 +635,9 @@ export const useCreatePost = (): UseCreatePostReturn => {
     selectedContentIndex,
     setSelectedContentIndex,
     removeTag,
+    apiError,
+    setApiError,
+    wordCount,
+    handleEditorUpdate,
   };
 };

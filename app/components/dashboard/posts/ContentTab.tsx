@@ -17,6 +17,7 @@ interface ContentTabProps {
   handleSuggestTags: () => void;
   tags: string[];
   removeTag: (tag: string) => void;
+  wordCount: number; // Add this line
 }
 
 export const ContentTab: React.FC<ContentTabProps> = ({
@@ -25,6 +26,7 @@ export const ContentTab: React.FC<ContentTabProps> = ({
   handleSuggestTags,
   tags,
   removeTag,
+  wordCount, // Add this line
 }) => {
   return (
     <div className="space-y-4">
@@ -34,7 +36,13 @@ export const ContentTab: React.FC<ContentTabProps> = ({
         placeholder="Start typing or paste your transcript here..."
       />
       <div className="flex justify-between items-center">
-        <Button onClick={handleSuggestTags}>{BUTTON_TEXTS.SUGGEST_TAGS}</Button>
+        <div className="flex items-center space-x-4">
+          <Button onClick={handleSuggestTags}>
+            {BUTTON_TEXTS.SUGGEST_TAGS}
+          </Button>
+          <span className="text-sm text-gray-500">Words: {wordCount}</span>{" "}
+          {/* Add this line */}
+        </div>
         <div className="flex flex-wrap gap-2">
           {tags.map((tag) => (
             <div

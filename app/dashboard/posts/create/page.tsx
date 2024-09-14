@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import TemplateSelectionModal from "@/app/components/dashboard/posts/TemplateSelectionModal";
 import ContentHubImportModal from "@/app/components/dashboard/posts/ContentHubImportModal";
 import { useRouter } from "next/navigation";
+import ApiErrorMessage from "@/app/components/ApiErrorMessage";
 
 interface CreatePostPageProps {
   initialPost?: any;
@@ -59,6 +60,10 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
     selectedContentIndex,
     setSelectedContentIndex,
     removeTag,
+    apiError,
+    setApiError,
+    wordCount,
+    handleEditorUpdate,
   } = useCreatePost();
 
   useEffect(() => {
@@ -77,19 +82,6 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
     setMergedContent,
     setTags,
   ]);
-
-  const handleEditorUpdate = useCallback(
-    (newContent: string) => {
-      if (activeTab === "content") {
-        setTranscript(newContent);
-      } else if (activeTab === "template") {
-        setContent(newContent);
-      } else if (activeTab === "merge") {
-        setMergedContent(newContent);
-      }
-    },
-    [activeTab, setTranscript, setContent, setMergedContent]
-  );
 
   const handleImportContent = () => {
     setIsContentHubModalOpen(true);
@@ -158,6 +150,7 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
         selectedContentIndex={selectedContentIndex}
         setSelectedContentIndex={setSelectedContentIndex}
         removeTag={removeTag}
+        wordCount={wordCount}
       />
       <ProgressNotes progressNotes={progressNotes} />
       <TemplateSelectionModal
@@ -173,6 +166,9 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
         onClose={() => setIsContentHubModalOpen(false)}
         onImport={handleImportTranscript}
       />
+      {apiError && (
+        <ApiErrorMessage error={apiError} onClose={() => setApiError(null)} />
+      )}
     </div>
   );
 };
