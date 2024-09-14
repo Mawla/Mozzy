@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { BUTTON_TEXTS, MESSAGES } from "@/app/constants/editorConfig";
+import { Template } from "@/utils/templateParser";
 import dynamic from "next/dynamic";
+import { TemplateCardGrid } from "./TemplateCardGrid";
 
 const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
   ssr: false,
@@ -10,22 +12,16 @@ const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
 
 interface MergeTabProps {
   mergedContents: string[];
-  currentContentIndex: number;
-  handlePreviousContent: () => void;
-  handleNextContent: () => void;
   handleEditorUpdate: (newContent: string, index?: number) => void;
   isMerging: boolean;
   handleMerge: () => void;
   handleSave: () => void;
   transcript: string;
-  selectedTemplates: any[];
+  selectedTemplates: Template[];
 }
 
 export const MergeTab: React.FC<MergeTabProps> = ({
   mergedContents,
-  currentContentIndex,
-  handlePreviousContent,
-  handleNextContent,
   handleEditorUpdate,
   isMerging,
   handleMerge,
@@ -33,40 +29,42 @@ export const MergeTab: React.FC<MergeTabProps> = ({
   transcript,
   selectedTemplates,
 }) => {
+  const [selectedContentIndex, setSelectedContentIndex] = useState<
+    number | null
+  >(null);
+
+  useEffect(() => {
+    // Set the first template as selected when mergedContents are available
+    if (mergedContents.length > 0 && selectedContentIndex === null) {
+      setSelectedContentIndex(0);
+    }
+  }, [mergedContents, selectedContentIndex]);
+
   return (
     <div className="space-y-4">
-      {mergedContents && mergedContents.length > 0 ? (
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <Button
-              onClick={handlePreviousContent}
-              disabled={currentContentIndex === 0}
-            >
-              <ChevronLeft className="w-4 h-4 mr-2" />
-              Previous
-            </Button>
-            <span>
-              Content {currentContentIndex + 1} of {mergedContents.length}
-            </span>
-            <Button
-              onClick={handleNextContent}
-              disabled={currentContentIndex === mergedContents.length - 1}
-            >
-              Next
-              <ChevronRight className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-          <TipTapEditor
-            content={mergedContents[currentContentIndex] || ""}
-            onUpdate={(newContent) =>
-              handleEditorUpdate(newContent, currentContentIndex)
-            }
-            placeholder="Merged content will appear here..."
-          />
-        </div>
+      <TemplateCardGrid
+        templates={selectedTemplates}
+        maxTemplates={selectedTemplates.length}
+        onCardClick={setSelectedContentIndex}
+        selectedIndex={selectedContentIndex}
+      />
+
+      {selectedContentIndex !== null && mergedContents[selectedContentIndex] ? (
+        <TipTapEditor
+          content={mergedContents[selectedContentIndex]}
+          onUpdate={(newContent) =>
+            handleEditorUpdate(newContent, selectedContentIndex)
+          }
+          placeholder="Merged content will appear here..."
+        />
       ) : (
-        <p>No merged content available</p>
+        <div className="text-center p-4 bg-gray-100 rounded-md">
+          {mergedContents.length === 0
+            ? "No merged content available. Click 'Merge Content' to generate merged content."
+            : "Select a template to view its merged content."}
+        </div>
       )}
+
       <div className="flex justify-end gap-2">
         {isMerging ? (
           <div className="flex items-center justify-center p-2 bg-muted rounded-md">
@@ -76,11 +74,7 @@ export const MergeTab: React.FC<MergeTabProps> = ({
         ) : (
           <Button
             onClick={handleMerge}
-            disabled={
-              !transcript ||
-              !selectedTemplates ||
-              selectedTemplates.length === 0
-            }
+            disabled={!transcript || selectedTemplates.length === 0}
             variant="outline"
           >
             {BUTTON_TEXTS.MERGE_CONTENT}
@@ -88,7 +82,7 @@ export const MergeTab: React.FC<MergeTabProps> = ({
         )}
         <Button
           onClick={handleSave}
-          disabled={!mergedContents || mergedContents.length === 0}
+          disabled={mergedContents.length === 0}
           className="bg-gray-800 hover:bg-gray-700 text-white"
         >
           {BUTTON_TEXTS.SAVE}

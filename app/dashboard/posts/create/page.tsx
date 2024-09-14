@@ -32,7 +32,7 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
     activeTab,
     setActiveTab,
     isMerging,
-    mergedContent,
+    mergedContents,
     setMergedContent,
     progressNotes,
     tags,
@@ -98,7 +98,7 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
       title,
       content,
       transcript,
-      mergedContent,
+      mergedContents,
       tags,
       createdAt: initialPost ? initialPost.createdAt : new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -132,7 +132,7 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
       <PostContent
         transcript={transcript}
         content={content}
-        mergedContents={mergedContent}
+        mergedContents={mergedContents}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         handleEditorUpdate={handleEditorUpdate}

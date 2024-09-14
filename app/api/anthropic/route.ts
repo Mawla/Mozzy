@@ -111,9 +111,23 @@ export async function POST(request: NextRequest) {
             titlePrompt,
             50
           );
-          const parsedResponse = JSON.parse(titleResponse);
+          console.log("Raw title response:", titleResponse);
+          let parsedResponse;
+          try {
+            parsedResponse = JSON.parse(titleResponse);
+          } catch (parseError) {
+            console.error("Error parsing title response:", parseError);
+            return NextResponse.json(
+              {
+                error: "Failed to parse title response",
+                details: (parseError as Error).message,
+                rawResponse: titleResponse,
+              },
+              { status: 500 }
+            );
+          }
           console.log("Generated title:", parsedResponse.title);
-          return NextResponse.json({ title: parsedResponse.title });
+          return NextResponse.json({ suggestedTitle: parsedResponse.title });
         } catch (error) {
           console.error("Error generating title:", error);
           return NextResponse.json(
@@ -186,6 +200,53 @@ export async function POST(request: NextRequest) {
           );
         }
       }
+      case "suggestTitle": {
+        const { transcript } = data;
+        if (!transcript) {
+          return NextResponse.json(
+            { error: "Missing transcript" },
+            { status: 400 }
+          );
+        }
+        console.log(
+          "Generating title for transcript:",
+          transcript.slice(0, 100) + "..."
+        );
+        const titlePrompt = generateTitlePrompt(transcript);
+        console.log("Title prompt:", titlePrompt);
+        try {
+          const titleResponse = await anthropicHelper.getCompletion(
+            titlePrompt,
+            50
+          );
+          console.log("Raw title response:", titleResponse);
+          let parsedResponse;
+          try {
+            parsedResponse = JSON.parse(titleResponse);
+          } catch (parseError) {
+            console.error("Error parsing title response:", parseError);
+            return NextResponse.json(
+              {
+                error: "Failed to parse title response",
+                details: (parseError as Error).message,
+                rawResponse: titleResponse,
+              },
+              { status: 500 }
+            );
+          }
+          console.log("Generated title:", parsedResponse.title);
+          return NextResponse.json({ suggestedTitle: parsedResponse.title });
+        } catch (error) {
+          console.error("Error generating title:", error);
+          return NextResponse.json(
+            {
+              error: "Failed to generate title",
+              details: (error as Error).message,
+            },
+            { status: 500 }
+          );
+        }
+      }
       case "mergeMultipleContents": {
         const { transcript, templates } = data;
         if (!transcript || !templates || !Array.isArray(templates)) {
@@ -194,18 +255,39 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           );
         }
-        const mergedResults = await Promise.all(
-          templates.map(async (template) => {
-            const templateBody = template.body || ""; // Add this line to make template.body safe
-            const prompt = mergeTranscriptAndTemplatePrompt(
-              transcript,
-              templateBody
-            );
-            const response = await anthropicHelper.getCompletion(prompt);
-            return JSON.parse(response);
-          })
-        );
-        return NextResponse.json({ mergedResults });
+        try {
+          const mergedResults = await Promise.all(
+            templates.map(async (template) => {
+              const templateBody = template.body || "";
+              const prompt = mergeTranscriptAndTemplatePrompt(
+                transcript,
+                templateBody
+              );
+              const response = await anthropicHelper.getCompletion(prompt);
+              console.log("Raw merge response:", response);
+              try {
+                return JSON.parse(response);
+              } catch (parseError) {
+                console.error("Error parsing merge response:", parseError);
+                throw new Error(
+                  `Failed to parse merge response: ${
+                    (parseError as Error).message
+                  }`
+                );
+              }
+            })
+          );
+          return NextResponse.json({ mergedResults });
+        } catch (error) {
+          console.error("Error in mergeMultipleContents:", error);
+          return NextResponse.json(
+            {
+              error: "Failed to merge contents",
+              details: (error as Error).message,
+            },
+            { status: 500 }
+          );
+        }
       }
       default:
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });

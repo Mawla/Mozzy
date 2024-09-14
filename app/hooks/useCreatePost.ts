@@ -368,12 +368,20 @@ export const useCreatePost = (): UseCreatePostReturn => {
 
       // Suggest title based on transcript if not already set
       if (!title) {
-        const suggestedTitle = await postService.suggestTitle(transcript);
-        setTitle(suggestedTitle);
-        setProgressNotes(
-          (prev) =>
-            `${prev}\n• Content merged successfully.\n• Suggested title: "${suggestedTitle}"`
-        );
+        try {
+          const suggestedTitle = await postService.suggestTitle(transcript);
+          setTitle(suggestedTitle);
+          setProgressNotes(
+            (prev) =>
+              `${prev}\n• Content merged successfully.\n• Suggested title: "${suggestedTitle}"`
+          );
+        } catch (titleError) {
+          console.error("Error suggesting title:", titleError);
+          setProgressNotes(
+            (prev) =>
+              `${prev}\n• Content merged successfully.\n• Failed to suggest title: ${titleError}`
+          );
+        }
       } else {
         setProgressNotes(
           (prev) =>

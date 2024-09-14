@@ -97,9 +97,6 @@ export const PostContent: React.FC<PostContentProps> = ({
         <TabsContent value={TAB_NAMES.MERGE}>
           <MergeTab
             mergedContents={mergedContents}
-            currentContentIndex={currentContentIndex}
-            handlePreviousContent={handlePreviousContent}
-            handleNextContent={handleNextContent}
             handleEditorUpdate={handleEditorUpdate}
             isMerging={isMerging}
             handleMerge={handleMerge}

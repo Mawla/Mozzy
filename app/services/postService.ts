@@ -82,10 +82,14 @@ class PostService {
         }
       );
 
+      if (!response || !response.suggestedTitle) {
+        throw new Error("Invalid response from suggestTitle API");
+      }
+
       return response.suggestedTitle;
     } catch (error) {
       console.error("Error suggesting title:", error);
-      throw error;
+      throw new Error(`Failed to suggest title: ${(error as Error).message}`);
     }
   }
 
