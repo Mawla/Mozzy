@@ -54,6 +54,9 @@ export interface UseCreatePostReturn {
   handlePreviousContent: () => void;
   openTemplateModal: (index: number) => void;
   handleRemoveTemplate: (index: number) => void;
+  selectedContentIndex: number | null;
+  setSelectedContentIndex: (index: number | null) => void;
+  removeTag: (tagToRemove: string) => void;
 }
 
 // Update the function signature to use the interface
@@ -91,6 +94,10 @@ export const useCreatePost = (): UseCreatePostReturn => {
   const [currentContentIndex, setCurrentContentIndex] = useState(0);
 
   const [selectedTemplateIndex, setSelectedTemplateIndex] = useState<
+    number | null
+  >(null);
+
+  const [selectedContentIndex, setSelectedContentIndex] = useState<
     number | null
   >(null);
 
@@ -204,6 +211,13 @@ export const useCreatePost = (): UseCreatePostReturn => {
     console.log("mergedContent changed:", mergedContent);
   }, [mergedContent]);
 
+  useEffect(() => {
+    // Set the first template as selected when mergedContents are available
+    if (mergedContents.length > 0 && selectedContentIndex === null) {
+      setSelectedContentIndex(0);
+    }
+  }, [mergedContents, selectedContentIndex]);
+
   const handleSelectTemplate = useCallback((template: Template) => {
     setSelectedTemplates((prev) => {
       if (prev.length < 8 && !prev.some((t) => t.id === template.id)) {
@@ -313,7 +327,7 @@ export const useCreatePost = (): UseCreatePostReturn => {
             prev.length < 8 &&
             !prev.some((t) => t.id === result.bestFit!.id)
           ) {
-            return [...prev, result.bestFit!];
+            return [...prev, result.bestFit];
           }
           return prev;
         });
@@ -363,38 +377,45 @@ export const useCreatePost = (): UseCreatePostReturn => {
         selectedTemplates
       );
 
-      setMergedContents(mergedResults.map((result) => result.mergedContent));
-      setCurrentContentIndex(0);
-
-      // Suggest title based on transcript if not already set
-      if (!title) {
-        try {
-          const suggestedTitle = await postService.suggestTitle(transcript);
-          setTitle(suggestedTitle);
-          setProgressNotes(
-            (prev) =>
-              `${prev}\n• Content merged successfully.\n• Suggested title: "${suggestedTitle}"`
-          );
-        } catch (titleError) {
-          console.error("Error suggesting title:", titleError);
-          setProgressNotes(
-            (prev) =>
-              `${prev}\n• Content merged successfully.\n• Failed to suggest title: ${titleError}`
-          );
-        }
-      } else {
+      if (mergedResults.length === 0) {
         setProgressNotes(
           (prev) =>
-            `${prev}\n• Content merged successfully.\n• Existing title kept: "${title}"`
+            `${prev}\n• No content could be merged. Please try again or check your templates.`
         );
+      } else {
+        setMergedContents(mergedResults.map((result) => result.mergedContent));
+        setCurrentContentIndex(0);
+
+        // Suggest title based on transcript if not already set
+        if (!title) {
+          try {
+            const suggestedTitle = await postService.suggestTitle(transcript);
+            setTitle(suggestedTitle);
+            setProgressNotes(
+              (prev) =>
+                `${prev}\n• Content merged successfully.\n• Suggested title: "${suggestedTitle}"`
+            );
+          } catch (titleError) {
+            console.error("Error suggesting title:", titleError);
+            setProgressNotes(
+              (prev) =>
+                `${prev}\n• Content merged successfully.\n• Failed to suggest title: ${titleError}`
+            );
+          }
+        } else {
+          setProgressNotes(
+            (prev) =>
+              `${prev}\n• Content merged successfully.\n• Existing title kept: "${title}"`
+          );
+        }
+
+        setProgressNotes(
+          (prev) =>
+            `${prev}\n• Content merged successfully for ${mergedResults.length} out of ${selectedTemplates.length} templates.`
+        );
+
+        setActiveTab("merge");
       }
-
-      setProgressNotes(
-        (prev) =>
-          `${prev}\n• Content merged successfully with ${selectedTemplates.length} templates.`
-      );
-
-      setActiveTab("merge");
     } catch (error) {
       console.error("Error merging content:", error);
       setProgressNotes((prev) => `${prev}\n• Error merging content: ${error}`);
@@ -420,10 +441,14 @@ export const useCreatePost = (): UseCreatePostReturn => {
       setContent("");
       setTranscript("");
       setMergedContent("");
+      setMergedContents([]); // Clear the merged contents array
       setSelectedTemplate(null);
+      setSelectedTemplates([]); // Clear selected templates
       setTags([]);
       setSuggestedTags([]);
       setSuggestedTemplates([]);
+      setSelectedContentIndex(null); // Reset selected content index
+      setCurrentContentIndex(0); // Reset current content index
       setProgressNotes("• All post data cleared successfully.");
     } catch (error) {
       console.error("Error clearing post data:", error);
@@ -492,6 +517,10 @@ export const useCreatePost = (): UseCreatePostReturn => {
     });
   }, []);
 
+  const removeTag = useCallback((tagToRemove: string) => {
+    setTags((prevTags) => prevTags.filter((tag) => tag !== tagToRemove));
+  }, []);
+
   return {
     isTemplateModalOpen,
     setIsTemplateModalOpen,
@@ -541,5 +570,8 @@ export const useCreatePost = (): UseCreatePostReturn => {
     handlePreviousContent,
     openTemplateModal,
     handleRemoveTemplate,
+    selectedContentIndex,
+    setSelectedContentIndex,
+    removeTag,
   };
 };

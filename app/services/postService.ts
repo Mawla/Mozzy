@@ -67,9 +67,48 @@ class PostService {
 
       return response.mergedResults;
     } catch (error) {
-      console.error("Error merging multiple contents:", error);
-      throw error;
+      console.error("Error in mergeMultipleContents:", error);
+
+      if (error instanceof Error) {
+        const errorMessage = error.message;
+        if (errorMessage.includes("Failed to parse merge response")) {
+          const partialResults = this.parsePartialResults(errorMessage);
+          if (partialResults.length > 0) {
+            console.log("Returning partial results:", partialResults);
+            return partialResults;
+          }
+        }
+      }
+
+      // If no partial results could be parsed or it's a different error, return an empty array
+      console.warn(
+        "Returning empty array due to error in mergeMultipleContents"
+      );
+      return [];
     }
+  }
+
+  private parsePartialResults(
+    errorMessage: string
+  ): { mergedContent: string; suggestedTitle: string }[] {
+    const results: { mergedContent: string; suggestedTitle: string }[] = [];
+    const jsonRegex = /{[^{}]*}/g;
+    const matches = errorMessage.match(jsonRegex);
+
+    if (matches) {
+      for (const match of matches) {
+        try {
+          const result = JSON.parse(match);
+          if (result.mergedContent && result.suggestedTitle) {
+            results.push(result);
+          }
+        } catch (e) {
+          console.error("Failed to parse partial result:", e);
+        }
+      }
+    }
+
+    return results;
   }
 
   async suggestTitle(transcript: string): Promise<string> {
@@ -116,6 +155,9 @@ class PostService {
     localStorage.removeItem("content");
     localStorage.removeItem("merge");
     localStorage.removeItem("selectedTemplate");
+    localStorage.removeItem("mergedContents");
+    localStorage.removeItem("selectedTemplates");
+    localStorage.removeItem("suggestedTags");
     // Add any other items that need to be cleared
   }
 
@@ -123,9 +165,15 @@ class PostService {
     try {
       const { suggestedTags } = await this.callAPI<{ suggestedTags: string[] }>(
         "suggestTags",
-        { transcript }
+        {
+          transcript,
+          prompt:
+            "Please suggest only single-word or short-phrase tags for this transcript. Do not include any explanations or sentences. Return the tags as a JSON array of strings.",
+        }
       );
-      return suggestedTags;
+      return suggestedTags.filter(
+        (tag) => !tag.includes(" ") || tag.startsWith("#")
+      );
     } catch (error) {
       console.error("Error suggesting tags:", error);
       return [];
