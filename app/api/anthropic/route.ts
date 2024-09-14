@@ -257,33 +257,56 @@ export async function POST(request: NextRequest) {
           );
         }
         try {
-          const mergedResults = await Promise.all(
+          const mergeResults = await Promise.allSettled(
             templates.map(async (template) => {
-              const templateBody = template.body || "";
-              const prompt = mergeTranscriptAndTemplatePrompt(
-                transcript,
-                templateBody
-              );
-              const response = await anthropicHelper.getCompletion(prompt);
-              console.log("Raw merge response:", response);
               try {
-                return JSON.parse(response);
-              } catch (parseError) {
-                console.error("Error parsing merge response:", parseError);
-                throw new Error(
-                  `Failed to parse merge response: ${
-                    (parseError as Error).message
-                  }`
+                const templateBody = template.body || "";
+                const prompt = mergeTranscriptAndTemplatePrompt(
+                  transcript,
+                  templateBody
                 );
+                const response = await anthropicHelper.getCompletion(prompt);
+                return JSON.parse(response);
+              } catch (error) {
+                console.error(
+                  `Error merging content for template ${template.id}:`,
+                  error
+                );
+                return null;
               }
             })
           );
-          return NextResponse.json({ mergedResults });
+
+          const successfulMerges = mergeResults
+            .filter(
+              (result): result is PromiseFulfilledResult<any> =>
+                result.status === "fulfilled" && result.value !== null
+            )
+            .map((result) => result.value);
+
+          const failedMergesCount =
+            mergeResults.length - successfulMerges.length;
+
+          if (successfulMerges.length === 0) {
+            return NextResponse.json(
+              {
+                error: "Failed to merge any content",
+                details: `All ${failedMergesCount} merge attempts failed.`,
+              },
+              { status: 500 }
+            );
+          }
+
+          return NextResponse.json({
+            mergedResults: successfulMerges,
+            partialSuccess: failedMergesCount > 0,
+            failedMergesCount,
+          });
         } catch (error) {
           console.error("Error in mergeMultipleContents:", error);
           return NextResponse.json(
             {
-              error: "Failed to merge contents",
+              error: "Failed to process merge request",
               details: (error as Error).message,
             },
             { status: 500 }

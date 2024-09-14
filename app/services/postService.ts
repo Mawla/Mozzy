@@ -64,27 +64,21 @@ class PostService {
     try {
       const response = await this.callAPI<{
         mergedResults: { mergedContent: string; suggestedTitle: string }[];
+        partialSuccess: boolean;
+        failedMergesCount: number;
       }>("mergeMultipleContents", { transcript, templates });
+
+      console.log("API response:", response);
+
+      if (response.partialSuccess) {
+        console.warn(
+          `${response.failedMergesCount} merge(s) failed. Returning partial results.`
+        );
+      }
 
       return response.mergedResults;
     } catch (error) {
       console.error("Error in mergeMultipleContents:", error);
-
-      if (error instanceof Error) {
-        const errorMessage = error.message;
-        if (errorMessage.includes("Failed to parse merge response")) {
-          const partialResults = this.parsePartialResults(errorMessage);
-          if (partialResults.length > 0) {
-            console.log("Returning partial results:", partialResults);
-            return partialResults;
-          }
-        }
-      }
-
-      // If no partial results could be parsed or it's a different error, return an empty array
-      console.warn(
-        "Returning empty array due to error in mergeMultipleContents"
-      );
       return [];
     }
   }
