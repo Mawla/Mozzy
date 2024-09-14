@@ -11,6 +11,8 @@ export interface Template {
   isFavorite?: boolean;
   isSuggested?: boolean;
   isShortlisted?: boolean;
+  tags?: string[];
+  packId?: string;
 }
 
 export interface Pack {
@@ -32,7 +34,7 @@ export class TemplateParser {
     const packMap = new Map<string, Pack>();
 
     templates.forEach((template: Template) => {
-      const packId = template.packId;
+      const packId = template.packId || "default";
       if (!packMap.has(packId)) {
         packMap.set(packId, {
           id: packId,

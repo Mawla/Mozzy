@@ -25,7 +25,6 @@ export interface UseCreatePostReturn {
   suggestedTags: string[];
   tags: string[];
   setTags: (tags: string[]) => void;
-  shortlistedTemplates: Template[];
   suggestedTemplates: Template[];
   isPosting: boolean;
   filter: "all" | "recent" | "favorite" | "suggested" | "shortlisted";
@@ -42,7 +41,19 @@ export interface UseCreatePostReturn {
   handleClear: () => void;
   handlePostToLinkedIn: () => void;
   handleImportTranscript: (importedTranscript: string) => void;
-  handleSelectTemplate: () => void; // Rename from handleSelectPack
+  handleSelectTemplate: (template: Template) => void;
+  selectedTemplates: Template[];
+  mergedContents: string[];
+  handleTemplateDeselect: (templateId: string) => void;
+  extractSuggestedTitle: (template: Template | null) => string;
+  handleSave: () => void;
+  handleEditTemplate: (template: Template) => void;
+  handleUseTemplate: (template: Template) => void;
+  currentContentIndex: number;
+  handleNextContent: () => void;
+  handlePreviousContent: () => void;
+  openTemplateModal: (index: number) => void;
+  handleRemoveTemplate: (index: number) => void;
 }
 
 // Update the function signature to use the interface
@@ -65,9 +76,6 @@ export const useCreatePost = (): UseCreatePostReturn => {
   const [isLoading, setIsLoading] = useState(false);
   const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]); // Initialize as an empty array
-  const [shortlistedTemplates, setShortlistedTemplates] = useState<Template[]>(
-    []
-  );
   const [suggestedTemplates, setSuggestedTemplates] = useState<Template[]>([]);
   const [isPosting, setIsPosting] = useState(false);
 
@@ -76,6 +84,42 @@ export const useCreatePost = (): UseCreatePostReturn => {
     "all" | "recent" | "favorite" | "suggested" | "shortlisted"
   >("all");
   const [filteredPacks, setFilteredPacks] = useState<Pack[]>([]);
+
+  // Add new state for selected templates and merged contents
+  const [selectedTemplates, setSelectedTemplates] = useState<Template[]>([]);
+  const [mergedContents, setMergedContents] = useState<string[]>([]);
+  const [currentContentIndex, setCurrentContentIndex] = useState(0);
+
+  const [selectedTemplateIndex, setSelectedTemplateIndex] = useState<
+    number | null
+  >(null);
+
+  const openTemplateModal = useCallback((index: number) => {
+    setSelectedTemplateIndex(index);
+    setIsTemplateModalOpen(true);
+  }, []);
+
+  const handleTemplateSelect = useCallback(
+    (template: Template) => {
+      setSelectedTemplates((prev) => {
+        const newTemplates = [...prev];
+        if (selectedTemplateIndex !== null) {
+          newTemplates[selectedTemplateIndex] = template;
+        } else if (
+          newTemplates.length < 8 &&
+          !newTemplates.some((t) => t.id === template.id)
+        ) {
+          newTemplates.push(template);
+        }
+        return newTemplates;
+      });
+      setSelectedTemplate(template);
+      setContent(template.body || "");
+      setIsTemplateModalOpen(false);
+      setSelectedTemplateIndex(null);
+    },
+    [selectedTemplateIndex]
+  );
 
   // Add this useEffect to update filteredPacks when packs or filter changes
   useEffect(() => {
@@ -160,8 +204,16 @@ export const useCreatePost = (): UseCreatePostReturn => {
     console.log("mergedContent changed:", mergedContent);
   }, [mergedContent]);
 
-  const handleSelectTemplate = useCallback(() => {
-    setIsTemplateModalOpen(true);
+  const handleSelectTemplate = useCallback((template: Template) => {
+    setSelectedTemplates((prev) => {
+      if (prev.length < 8 && !prev.some((t) => t.id === template.id)) {
+        return [...prev, template];
+      }
+      return prev;
+    });
+    setSelectedTemplate(template);
+    setContent(template.body || "");
+    setIsTemplateModalOpen(false);
   }, []);
 
   const handlePackSelect = useCallback(
@@ -176,13 +228,9 @@ export const useCreatePost = (): UseCreatePostReturn => {
     [packs]
   );
 
-  const handleTemplateSelect = (template: Template) => {
-    setSelectedTemplate(template);
-    setTitle(template.title || "");
-    setContent(template.body || "");
-    postService.saveTemplateToLocalStorage(template);
-    setIsTemplateModalOpen(false);
-  };
+  const handleTemplateDeselect = useCallback((templateId: string) => {
+    setSelectedTemplates((prev) => prev.filter((t) => t.id !== templateId));
+  }, []);
 
   const handleSuggestTags = async (transcript: string) => {
     setIsLoading(true);
@@ -220,12 +268,20 @@ export const useCreatePost = (): UseCreatePostReturn => {
         allTemplates
       );
 
-      setShortlistedTemplates(shortlisted);
+      setSelectedTemplates((prev) => {
+        const newTemplates = shortlisted.filter(
+          (template) => !prev.some((t) => t.id === template.id)
+        );
+        return [...prev, ...newTemplates].slice(0, 8);
+      });
+
       setProgressNotes(
         (prev) =>
-          `${prev}\n• Shortlisted top ${
+          `${prev}\n• Shortlisted and added top ${
             shortlisted.length
-          } templates:\n  ${shortlisted.map((t) => `- ${t.name}`).join("\n  ")}`
+          } templates to selection:\n  ${shortlisted
+            .map((t) => `- ${t.name}`)
+            .join("\n  ")}`
       );
     } catch (error) {
       console.error("Error shortlisting templates:", error);
@@ -235,7 +291,11 @@ export const useCreatePost = (): UseCreatePostReturn => {
     }
 
     setIsLoading(false);
-  }, [tags, packs]);
+  }, [tags, packs, setSelectedTemplates]);
+
+  const extractSuggestedTitle = (template: Template | null): string => {
+    return template?.title || "";
+  };
 
   const handleSuggestTemplate = useCallback(async () => {
     setIsLoading(true);
@@ -244,23 +304,31 @@ export const useCreatePost = (): UseCreatePostReturn => {
     try {
       const result = await postService.chooseBestTemplate(
         transcript,
-        shortlistedTemplates
+        packs.flatMap((pack) => pack.templates)
       );
 
       if (result.bestFit) {
-        setSelectedTemplate(result.bestFit);
-        setTitle(result.bestFit.title || "");
-        setContent(result.bestFit.body || "");
-        postService.saveTemplateToLocalStorage(result.bestFit);
+        setSelectedTemplates((prev) => {
+          if (
+            prev.length < 8 &&
+            !prev.some((t) => t.id === result.bestFit!.id)
+          ) {
+            return [...prev, result.bestFit!];
+          }
+          return prev;
+        });
+        const suggestedTitle = extractSuggestedTitle(result.bestFit);
+        setTitle(suggestedTitle);
         setSuggestedTemplates([result.bestFit, ...result.optionalChoices]);
         setProgressNotes(
           (prev) =>
-            `${prev}\n• Best fit template: ${result.bestFit.name}` +
+            `${prev}\n• Best fit template added to selection: ${result.bestFit.name}` +
             (result.optionalChoices.length > 0
               ? `\n• Optional choices:\n  ${result.optionalChoices
                   .map((t) => `- ${t.name}`)
                   .join("\n  ")}`
-              : "\n• No optional choices available.")
+              : "\n• No optional choices available.") +
+            (suggestedTitle ? `\n• Suggested title: "${suggestedTitle}"` : "")
         );
       } else {
         setProgressNotes(
@@ -278,32 +346,33 @@ export const useCreatePost = (): UseCreatePostReturn => {
     setIsLoading(false);
   }, [
     transcript,
-    shortlistedTemplates,
-    setSelectedTemplate,
+    packs,
+    setSelectedTemplates,
     setTitle,
-    setContent,
     setSuggestedTemplates,
     setProgressNotes,
+    extractSuggestedTitle,
   ]);
 
   const handleMerge = useCallback(async () => {
     setIsMerging(true);
     setProgressNotes("• Starting content merge process...");
     try {
-      const { mergedContent: mergedResult, suggestedTitle } =
-        await postService.mergeContent(transcript, content);
-      setMergedContent(mergedResult);
+      const mergedResults = await postService.mergeMultipleContents(
+        transcript,
+        selectedTemplates
+      );
 
-      if (!title && suggestedTitle) {
+      setMergedContents(mergedResults.map((result) => result.mergedContent));
+      setCurrentContentIndex(0);
+
+      // Suggest title based on transcript if not already set
+      if (!title) {
+        const suggestedTitle = await postService.suggestTitle(transcript);
         setTitle(suggestedTitle);
         setProgressNotes(
           (prev) =>
             `${prev}\n• Content merged successfully.\n• Suggested title: "${suggestedTitle}"`
-        );
-      } else if (!title) {
-        setProgressNotes(
-          (prev) =>
-            `${prev}\n• Content merged successfully.\n• No title suggested. Please enter a title manually.`
         );
       } else {
         setProgressNotes(
@@ -312,6 +381,11 @@ export const useCreatePost = (): UseCreatePostReturn => {
         );
       }
 
+      setProgressNotes(
+        (prev) =>
+          `${prev}\n• Content merged successfully with ${selectedTemplates.length} templates.`
+      );
+
       setActiveTab("merge");
     } catch (error) {
       console.error("Error merging content:", error);
@@ -319,7 +393,17 @@ export const useCreatePost = (): UseCreatePostReturn => {
     } finally {
       setIsMerging(false);
     }
-  }, [transcript, content, title, setTitle, setActiveTab]);
+  }, [transcript, selectedTemplates, setActiveTab, title, setTitle]);
+
+  const handleNextContent = useCallback(() => {
+    setCurrentContentIndex((prevIndex) =>
+      Math.min(prevIndex + 1, mergedContents.length - 1)
+    );
+  }, [mergedContents]);
+
+  const handlePreviousContent = useCallback(() => {
+    setCurrentContentIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+  }, []);
 
   const handleClear = useCallback(async () => {
     try {
@@ -331,7 +415,6 @@ export const useCreatePost = (): UseCreatePostReturn => {
       setSelectedTemplate(null);
       setTags([]);
       setSuggestedTags([]);
-      setShortlistedTemplates([]);
       setSuggestedTemplates([]);
       setProgressNotes("• All post data cleared successfully.");
     } catch (error) {
@@ -361,6 +444,46 @@ export const useCreatePost = (): UseCreatePostReturn => {
     setProgressNotes("• Transcript imported successfully.");
   }, []);
 
+  const handleSave = useCallback(() => {
+    if (title && mergedContents.length > 0) {
+      postService.saveMultipleMergedContents(title, mergedContents);
+      setProgressNotes(
+        (prev) =>
+          `${prev}\n• Saved post with ${mergedContents.length} merged contents.`
+      );
+    } else {
+      setProgressNotes(
+        (prev) =>
+          `${prev}\n• Error: Cannot save post. Title or merged contents are missing.`
+      );
+    }
+  }, [title, mergedContents]);
+
+  const handleEditTemplate = useCallback((template: Template) => {
+    setSelectedTemplate(template);
+    setContent(template.body || "");
+    setIsTemplateModalOpen(true);
+  }, []);
+
+  const handleUseTemplate = useCallback((template: Template) => {
+    setSelectedTemplate(template);
+    setContent(template.body || "");
+    setSelectedTemplates((prev) => {
+      if (!prev.some((t) => t.id === template.id)) {
+        return [...prev.slice(0, 7), template].slice(0, 8);
+      }
+      return prev;
+    });
+  }, []);
+
+  const handleRemoveTemplate = useCallback((index: number) => {
+    setSelectedTemplates((prev) => {
+      const newTemplates = [...prev];
+      newTemplates.splice(index, 1);
+      return newTemplates;
+    });
+  }, []);
+
   return {
     isTemplateModalOpen,
     setIsTemplateModalOpen,
@@ -383,7 +506,6 @@ export const useCreatePost = (): UseCreatePostReturn => {
     suggestedTags,
     tags,
     setTags,
-    shortlistedTemplates,
     suggestedTemplates,
     isPosting,
     filter,
@@ -399,5 +521,17 @@ export const useCreatePost = (): UseCreatePostReturn => {
     handlePostToLinkedIn,
     handleImportTranscript,
     handleSelectTemplate,
+    selectedTemplates,
+    mergedContents,
+    handleTemplateDeselect,
+    extractSuggestedTitle,
+    handleSave,
+    handleEditTemplate,
+    handleUseTemplate,
+    currentContentIndex,
+    handleNextContent,
+    handlePreviousContent,
+    openTemplateModal,
+    handleRemoveTemplate,
   };
 };

@@ -56,6 +56,39 @@ class PostService {
     }
   }
 
+  async mergeMultipleContents(
+    transcript: string,
+    templates: Template[]
+  ): Promise<{ mergedContent: string; suggestedTitle: string }[]> {
+    try {
+      const response = await this.callAPI<{
+        mergedResults: { mergedContent: string; suggestedTitle: string }[];
+      }>("mergeMultipleContents", { transcript, templates });
+
+      return response.mergedResults;
+    } catch (error) {
+      console.error("Error merging multiple contents:", error);
+      throw error;
+    }
+  }
+
+  async suggestTitle(transcript: string): Promise<string> {
+    try {
+      const response = await this.callAPI<{ suggestedTitle: string }>(
+        "suggestTitle",
+        {
+          transcript,
+          prompt: "Please suggest a compelling title for this transcript.",
+        }
+      );
+
+      return response.suggestedTitle;
+    } catch (error) {
+      console.error("Error suggesting title:", error);
+      throw error;
+    }
+  }
+
   saveToLocalStorage(key: string, value: string): void {
     localStorage.setItem(key, value);
   }
@@ -107,7 +140,9 @@ class PostService {
     // Filter and sort templates
     const shortlistedTemplates = templates
       .map((template) => {
-        const templateTags = template.tags.map((tag) => tag.toLowerCase());
+        const templateTags = (template.tags || []).map((tag: string) =>
+          tag.toLowerCase()
+        );
         const matchingTags = normalizedTags.filter((tag) =>
           templateTags.includes(tag)
         );
@@ -192,6 +227,22 @@ class PostService {
       console.error("Error posting to LinkedIn:", error);
       throw error;
     }
+  }
+
+  saveMultipleMergedContents(title: string, mergedContents: string[]): void {
+    const post = {
+      title,
+      contents: mergedContents,
+      createdAt: new Date().toISOString(),
+    };
+    const savedPosts = this.getSavedPosts();
+    savedPosts.push(post);
+    localStorage.setItem("savedPosts", JSON.stringify(savedPosts));
+  }
+
+  getSavedPosts(): any[] {
+    const savedPosts = localStorage.getItem("savedPosts");
+    return savedPosts ? JSON.parse(savedPosts) : [];
   }
 }
 

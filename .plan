@@ -272,8 +272,8 @@
     [✓] Update ICPInfo component to accept onCreateClick prop
     [✓] Fix syntax errors in ICP page component
     [✓] Ensure outer page scroll is used instead of embedded scroll
-    [✓] Refactor ICPForm into a separate component
-    [✓] Refactor ICPDetail into a separate component
+    [✓] Refactor ICPFullPageFormUpdated component
+    [✓] Refactor ICPDetail component
     [✓] Revert ICP page to use ICPInfo component as empty state
     [✓] Fix ICPInfo rendering issue
     [✓] Merge multiple return statements in ICPPage component
@@ -292,3 +292,67 @@
     [✓] Adjust IcpFullPageFormUpdated component to use natural page scroll
     [✓] Improve responsiveness of the ICP form
     [✓] Ensure consistent styling across different screen sizes
+
+39. Implement Multi-Template Merge Feature: ⏳ (In Progress)
+    [✓] Update useCreatePost hook to handle multiple template selections
+    [✓] Modify PostContent component to allow selection of up to 8 templates
+    [✓] Update postService to handle merging with multiple templates
+    [✓] Implement UI for displaying multiple merged contents
+    [✓] Add functionality to save multiple merged contents
+    [✓] Update API route to handle multiple template merges
+    [✓] Add mergeMultipleContents case to anthropic API route
+    [✓] Update postService to use new mergeMultipleContents action
+    [✓] Remove separate merge API route
+    [✓] Implement error handling for multi-template merging
+    [✓] Add try-catch blocks in postService for multi-template merging
+    [✓] Implement error states in useCreatePost for merge failures
+    [✓] Display error messages in the UI for merge failures
+    [✓] Add loading states for multi-template merging process
+    [✓] Update TipTapEditor to handle multiple content displays
+    [✓] Make PostContent component null/empty safe for selectedTemplates
+    [✓] Review and update PostContent component for comprehensive null/empty safety
+    [✓] Update handleShortlistTemplates to set shortlisted templates as selected templates
+    [✓] Add card grid for selected templates in PostContent component
+    [✓] Implement edit, use, and remove functionality for selected templates
+    [✓] Fix issue with selected templates not being displayed
+    [✓] Update handleUseTemplate to add template to selectedTemplates
+    [✓] Make template.body safe in mergeMultipleContents API route
+    [✓] Remove duplicate useCreatePost function in useCreatePost.ts
+    [✓] Fix linter error in handleSuggestTemplate function
+    [✓] Display shortlisted templates in card grid on post page
+    [✓] Show a row of empty templates if no templates are selected
+    [✓] Display emoji and title within the card for each selected template
+    [✓] Remove "No templates selected" text and always show card grid
+    [✓] Merge shortlistedTemplates and selectedTemplates concepts
+    [✓] Add null check for selectedTemplates in PostContent component
+    [✓] Remove "No templates selected" text and re-add card grid
+    [✓] Add ghost view of 4 templates when no templates are selected
+    [✓] Update handleSelectTemplate to add selected template to selectedTemplates
+    [✓] Fix "Select Template" button functionality to open template modal
+    [ ] Implement navigation between multiple merged contents
+    [ ] Add UI elements for navigating between merged contents
+    [ ] Implement state for currently viewed merged content
+    [ ] Add functions to switch between different merged contents
+    [ ] Add option to select which merged contents to save
+    [ ] Implement checkboxes or similar UI for selecting contents to save
+    [ ] Update handleSave function to only save selected contents
+    [ ] Update posts list to handle multiple contents per post
+    [ ] Modify post list component to display multiple contents
+    [ ] Update post preview to show number of contents
+    [ ] Modify view post page to display multiple contents
+    [ ] Update view post page to handle multiple contents
+    [ ] Implement navigation between different contents on view page
+    [ ] Test multi-template merge functionality
+    [ ] Write unit tests for new functions in useCreatePost
+    [ ] Write integration tests for multi-template merging process
+    [ ] Perform manual testing of the entire feature
+    [ ] Update documentation to reflect new multi-template merge feature
+    [ ] Update README with information about multi-template merging
+    [ ] Add inline comments explaining new functions and components
+    [ ] Update any existing documentation about post creation process
+
+40. Refactor and Optimize Multi-Template Merge Feature: ⏳ (To Do)
+    [ ] Review and optimize performance of multi-template merging
+    [ ] Implement caching for merged contents to improve responsiveness
+    [ ] Refactor code for better maintainability and readability
+    [ ] Ensure all edge cases are handled properly

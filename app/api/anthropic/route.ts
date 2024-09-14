@@ -17,7 +17,8 @@ interface AnthropicRequest {
     | "chooseBestTemplate"
     | "generateTitle"
     | "generateImprovedTranscript"
-    | "generateSummary";
+    | "generateSummary"
+    | "mergeMultipleContents"; // Add this new action
   data: {
     transcript?: string;
     template?: string;
@@ -184,6 +185,27 @@ export async function POST(request: NextRequest) {
             { status: 500 }
           );
         }
+      }
+      case "mergeMultipleContents": {
+        const { transcript, templates } = data;
+        if (!transcript || !templates || !Array.isArray(templates)) {
+          return NextResponse.json(
+            { error: "Invalid input for mergeMultipleContents" },
+            { status: 400 }
+          );
+        }
+        const mergedResults = await Promise.all(
+          templates.map(async (template) => {
+            const templateBody = template.body || ""; // Add this line to make template.body safe
+            const prompt = mergeTranscriptAndTemplatePrompt(
+              transcript,
+              templateBody
+            );
+            const response = await anthropicHelper.getCompletion(prompt);
+            return JSON.parse(response);
+          })
+        );
+        return NextResponse.json({ mergedResults });
       }
       default:
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });

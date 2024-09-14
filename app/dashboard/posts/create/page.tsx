@@ -48,6 +48,14 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
     filter,
     setFilter,
     handleImportTranscript,
+    handleUseTemplate,
+    selectedTemplates,
+    handleTemplateDeselect,
+    currentContentIndex,
+    handleNextContent,
+    handlePreviousContent,
+    openTemplateModal,
+    handleRemoveTemplate,
   } = useCreatePost();
 
   useEffect(() => {
@@ -124,19 +132,27 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
       <PostContent
         transcript={transcript}
         content={content}
-        mergedContent={mergedContent}
+        mergedContents={mergedContent}
         activeTab={activeTab}
-        setActiveTab={setActiveTab as (tab: string) => void}
+        setActiveTab={setActiveTab}
         handleEditorUpdate={handleEditorUpdate}
         isMerging={isMerging}
         handleMerge={handleMerge}
         handleSave={handleSave}
-        handleSelectTemplate={handleSelectTemplate}
         handleSuggestTags={() => handleSuggestTags(transcript)}
         handleShortlistTemplates={handleShortlistTemplates}
         handleSuggestTemplate={handleSuggestTemplate}
         handleClear={handleClear}
         tags={tags}
+        selectedTemplates={selectedTemplates}
+        isTemplateModalOpen={isTemplateModalOpen}
+        setIsTemplateModalOpen={setIsTemplateModalOpen}
+        currentContentIndex={currentContentIndex}
+        handleNextContent={handleNextContent}
+        handlePreviousContent={handlePreviousContent}
+        openTemplateModal={openTemplateModal}
+        handleRemoveTemplate={handleRemoveTemplate}
+        handleSelectTemplate={handleTemplateSelect}
       />
       <ProgressNotes progressNotes={progressNotes} />
       <TemplateSelectionModal

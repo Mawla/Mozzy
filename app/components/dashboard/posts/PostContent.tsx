@@ -1,54 +1,61 @@
 import React from "react";
-import dynamic from "next/dynamic";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trash2, Tag } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import YouTubeBadge from "@/app/components/YouTubeBadge";
-import {
-  TAB_NAMES,
-  BUTTON_TEXTS,
-  MESSAGES,
-} from "@/app/constants/editorConfig";
-
-const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
-  ssr: false,
-});
+import { Trash2 } from "lucide-react";
+import { TAB_NAMES, BUTTON_TEXTS } from "@/app/constants/editorConfig";
+import { Template } from "@/utils/templateParser";
+import { ContentTab } from "./ContentTab";
+import { TemplateTab } from "./TemplateTab";
+import { MergeTab } from "./MergeTab";
 
 interface PostContentProps {
   transcript: string;
   content: string;
-  mergedContent: string;
+  mergedContents: string[];
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  handleEditorUpdate: (newContent: string) => void;
+  handleEditorUpdate: (newContent: string, index?: number) => void;
   isMerging: boolean;
   handleMerge: () => void;
   handleSave: () => void;
-  handleSelectTemplate: () => void;
   handleSuggestTags: () => void;
-  handleShortlistTemplates: () => void;
+  handleShortlistTemplates: () => Promise<void>;
   handleClear: () => void;
   handleSuggestTemplate: () => void;
   tags: string[];
+  selectedTemplates: Template[];
+  isTemplateModalOpen: boolean;
+  setIsTemplateModalOpen: (isOpen: boolean) => void;
+  currentContentIndex: number;
+  handleNextContent: () => void;
+  handlePreviousContent: () => void;
+  openTemplateModal: (index: number) => void;
+  handleRemoveTemplate: (index: number) => void;
 }
 
 export const PostContent: React.FC<PostContentProps> = ({
   transcript,
   content,
-  mergedContent,
+  mergedContents,
   activeTab,
   setActiveTab,
   handleEditorUpdate,
   isMerging,
   handleMerge,
   handleSave,
-  handleSelectTemplate,
   handleSuggestTags,
   handleShortlistTemplates,
   handleClear,
   handleSuggestTemplate,
   tags,
+  selectedTemplates,
+  isTemplateModalOpen,
+  setIsTemplateModalOpen,
+  currentContentIndex,
+  handleNextContent,
+  handlePreviousContent,
+  openTemplateModal,
+  handleRemoveTemplate,
 }) => {
   return (
     <div className="relative">
@@ -71,83 +78,35 @@ export const PostContent: React.FC<PostContentProps> = ({
           <TabsTrigger value={TAB_NAMES.MERGE}>Merge</TabsTrigger>
         </TabsList>
         <TabsContent value={TAB_NAMES.CONTENT}>
-          <div className="space-y-4">
-            <div className="mb-4">
-              <YouTubeBadge />
-            </div>
-            <TipTapEditor
-              content={transcript}
-              onUpdate={(newContent) => handleEditorUpdate(newContent)}
-              placeholder="Enter your transcript here..."
-            />
-            <div className="flex flex-wrap gap-2 mb-4">
-              {tags.map((tag, index) => (
-                <Badge
-                  key={index}
-                  variant="secondary"
-                  className="py-1 px-2 rounded-full bg-gray-200 text-gray-800"
-                >
-                  <Tag className="w-3 h-3 mr-1" />
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-            <Button onClick={handleSuggestTags}>
-              {BUTTON_TEXTS.SUGGEST_TAGS}
-            </Button>
-          </div>
+          <ContentTab
+            transcript={transcript}
+            handleEditorUpdate={handleEditorUpdate}
+            handleSuggestTags={handleSuggestTags}
+            tags={tags}
+          />
         </TabsContent>
         <TabsContent value={TAB_NAMES.TEMPLATE}>
-          <div className="space-y-4">
-            <TipTapEditor
-              content={content}
-              onUpdate={(newContent) => handleEditorUpdate(newContent)}
-              placeholder="Enter your template here..."
-            />
-            <div className="flex justify-between items-center">
-              <Button onClick={handleSelectTemplate}>
-                {BUTTON_TEXTS.SELECT_TEMPLATE}
-              </Button>
-              <Button onClick={handleSuggestTemplate}>
-                {BUTTON_TEXTS.SUGGEST_TEMPLATE}
-              </Button>
-            </div>
-            <Button onClick={handleShortlistTemplates}>
-              {BUTTON_TEXTS.SHORTLIST_TEMPLATES}
-            </Button>
-          </div>
+          <TemplateTab
+            selectedTemplates={selectedTemplates}
+            openTemplateModal={openTemplateModal}
+            handleSuggestTemplate={handleSuggestTemplate}
+            handleShortlistTemplates={handleShortlistTemplates}
+            handleRemoveTemplate={handleRemoveTemplate}
+          />
         </TabsContent>
         <TabsContent value={TAB_NAMES.MERGE}>
-          <div className="space-y-4">
-            <TipTapEditor
-              content={mergedContent || ""}
-              onUpdate={(newContent) => handleEditorUpdate(newContent)}
-              placeholder="Merged content will appear here..."
-            />
-            <div className="flex justify-end gap-2">
-              {isMerging ? (
-                <div className="flex items-center justify-center p-2 bg-muted rounded-md">
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  <span>{MESSAGES.MERGING_CONTENT}</span>
-                </div>
-              ) : (
-                <Button
-                  onClick={handleMerge}
-                  disabled={!transcript || !content}
-                  variant="outline"
-                >
-                  {BUTTON_TEXTS.MERGE_CONTENT}
-                </Button>
-              )}
-              <Button
-                onClick={handleSave}
-                disabled={!mergedContent}
-                className="bg-gray-800 hover:bg-gray-700 text-white"
-              >
-                {BUTTON_TEXTS.SAVE}
-              </Button>
-            </div>
-          </div>
+          <MergeTab
+            mergedContents={mergedContents}
+            currentContentIndex={currentContentIndex}
+            handlePreviousContent={handlePreviousContent}
+            handleNextContent={handleNextContent}
+            handleEditorUpdate={handleEditorUpdate}
+            isMerging={isMerging}
+            handleMerge={handleMerge}
+            handleSave={handleSave}
+            transcript={transcript}
+            selectedTemplates={selectedTemplates}
+          />
         </TabsContent>
       </Tabs>
     </div>
