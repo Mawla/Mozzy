@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Pack, Template } from "@/utils/templateParser";
+import { Pack, Template } from "@/app/types/template";
 import { postService } from "@/app/services/postService";
 
 // Add this interface
@@ -282,12 +282,8 @@ export const useCreatePost = (): UseCreatePostReturn => {
         allTemplates
       );
 
-      setSelectedTemplates((prev) => {
-        const newTemplates = shortlisted.filter(
-          (template) => !prev.some((t) => t.id === template.id)
-        );
-        return [...prev, ...newTemplates].slice(0, 8);
-      });
+      // Clear existing templates and set the new ones
+      setSelectedTemplates(shortlisted.slice(0, 8));
 
       setProgressNotes(
         (prev) =>
@@ -316,44 +312,37 @@ export const useCreatePost = (): UseCreatePostReturn => {
     setProgressNotes("• Starting template suggestion process...");
 
     try {
-      const result = await postService.chooseBestTemplate(
+      const suggestedTemplates = await postService.chooseBestTemplate(
         transcript,
         packs.flatMap((pack) => pack.templates)
       );
 
-      if (result.bestFit) {
-        setSelectedTemplates((prev) => {
-          if (
-            prev.length < 8 &&
-            !prev.some((t) => t.id === result.bestFit!.id)
-          ) {
-            return [...prev, result.bestFit];
-          }
-          return prev;
-        });
-        const suggestedTitle = extractSuggestedTitle(result.bestFit);
-        setTitle(suggestedTitle);
-        setSuggestedTemplates([result.bestFit, ...result.optionalChoices]);
+      if (suggestedTemplates.length > 0) {
+        // Clear existing templates and set the new ones
+        setSelectedTemplates(suggestedTemplates.slice(0, 8));
+        setSuggestedTemplates(suggestedTemplates);
+
+        const suggestedTitle = extractSuggestedTitle(suggestedTemplates[0]);
+        if (suggestedTitle) {
+          setTitle(suggestedTitle);
+        }
+
         setProgressNotes(
           (prev) =>
-            `${prev}\n• Best fit template added to selection: ${result.bestFit.name}` +
-            (result.optionalChoices.length > 0
-              ? `\n• Optional choices:\n  ${result.optionalChoices
-                  .map((t) => `- ${t.name}`)
-                  .join("\n  ")}`
-              : "\n• No optional choices available.") +
+            `${prev}\n• Suggested templates added to selection:` +
+            suggestedTemplates.map((t) => `\n  - ${t.name}`).join("") +
             (suggestedTitle ? `\n• Suggested title: "${suggestedTitle}"` : "")
         );
       } else {
         setProgressNotes(
           (prev) =>
-            `${prev}\n• No best fit template found. Please select a template manually.`
+            `${prev}\n• No suitable templates found. Please select templates manually.`
         );
       }
     } catch (error) {
-      console.error("Error suggesting template:", error);
+      console.error("Error suggesting templates:", error);
       setProgressNotes(
-        (prev) => `${prev}\n• Error suggesting template: ${error}`
+        (prev) => `${prev}\n• Error suggesting templates: ${error}`
       );
     }
 
