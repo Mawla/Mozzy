@@ -2,9 +2,10 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { BUTTON_TEXTS, MESSAGES } from "@/app/constants/editorConfig";
-import { Template } from "@/utils/templateParser";
 import dynamic from "next/dynamic";
 import { TemplateCardGrid } from "./TemplateCardGrid";
+import { TweetPreview } from "./TweetPreview";
+import { Template } from "@/app/types/template";
 
 const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
   ssr: false,
@@ -53,13 +54,20 @@ export const MergeTab: React.FC<MergeTabProps> = ({
         }
       />
 
-      <TipTapEditor
-        content={editorContent}
-        onUpdate={(newContent) =>
-          handleEditorUpdate(newContent, selectedContentIndex || undefined)
-        }
-        placeholder={placeholderMessage}
-      />
+      <div className="flex space-x-4">
+        <div className="w-1/2">
+          <TipTapEditor
+            content={editorContent}
+            onUpdate={(newContent) =>
+              handleEditorUpdate(newContent, selectedContentIndex || undefined)
+            }
+            placeholder={placeholderMessage}
+          />
+        </div>
+        <div className="w-1/2">
+          <TweetPreview content={editorContent} />
+        </div>
+      </div>
 
       <div className="flex justify-end gap-2">
         {isMerging ? (

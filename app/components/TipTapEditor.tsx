@@ -17,7 +17,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
 }) => {
   const editor = useEditor({
     extensions: [StarterKit],
-    content: content,
+    content: "",
     editable,
     onUpdate: ({ editor }) => {
       const htmlContent = editor.getHTML();
@@ -35,7 +35,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
   });
 
   useEffect(() => {
-    if (editor && content !== editor.getHTML()) {
+    if (editor && content !== undefined) {
       editor.commands.setContent(
         content
           .split("\n")
