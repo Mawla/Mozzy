@@ -8,7 +8,7 @@ import {
   generateImprovedTranscriptPrompt,
   generateSummaryPrompt,
 } from "@/prompts/anthropicPrompts";
-import { Template } from "@/utils/templateParser";
+import { Template } from "@/app/types/template";
 
 interface AnthropicRequest {
   action:
@@ -36,7 +36,7 @@ interface SuggestTagsResponse {
 }
 
 interface ChooseBestTemplateResponse {
-  bestTemplateResponse: string;
+  bestTemplatesResponse: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -85,12 +85,13 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           );
         }
-        const templatePrompt = chooseBestTemplatePrompt(transcript, templates);
-        const bestTemplateResponse = await anthropicHelper.getCompletion(
-          templatePrompt
+        const prompt = chooseBestTemplatePrompt(transcript, templates);
+        const chooseBestTemplateResponse = await anthropicHelper.getCompletion(
+          prompt
         );
-        const response: ChooseBestTemplateResponse = { bestTemplateResponse };
-        return NextResponse.json(response);
+        return NextResponse.json({
+          bestTemplatesResponse: chooseBestTemplateResponse,
+        });
       }
       case "generateTitle": {
         const { transcript } = data;

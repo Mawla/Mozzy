@@ -5,6 +5,7 @@ import { Tag } from "lucide-react";
 import YouTubeBadge from "@/app/components/YouTubeBadge";
 import { BUTTON_TEXTS } from "@/app/constants/editorConfig";
 import dynamic from "next/dynamic";
+import { X } from "lucide-react";
 
 const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
   ssr: false,
@@ -15,6 +16,7 @@ interface ContentTabProps {
   handleEditorUpdate: (newContent: string) => void;
   handleSuggestTags: () => void;
   tags: string[];
+  removeTag: (tag: string) => void;
 }
 
 export const ContentTab: React.FC<ContentTabProps> = ({
@@ -22,34 +24,34 @@ export const ContentTab: React.FC<ContentTabProps> = ({
   handleEditorUpdate,
   handleSuggestTags,
   tags,
+  removeTag,
 }) => {
   return (
     <div className="space-y-4">
-      <div className="mb-4">
-        <YouTubeBadge />
-      </div>
       <TipTapEditor
-        content={transcript || ""}
+        content={transcript}
         onUpdate={(newContent) => handleEditorUpdate(newContent)}
-        placeholder="Enter your transcript here..."
+        placeholder="Start typing or paste your transcript here..."
       />
-      <div className="flex flex-wrap gap-2 mb-4">
-        {tags && tags.length > 0 ? (
-          tags.map((tag, index) => (
-            <Badge
-              key={index}
-              variant="secondary"
-              className="py-1 px-2 rounded-full bg-gray-200 text-gray-800"
+      <div className="flex justify-between items-center">
+        <Button onClick={handleSuggestTags}>{BUTTON_TEXTS.SUGGEST_TAGS}</Button>
+        <div className="flex flex-wrap gap-2">
+          {tags.map((tag) => (
+            <div
+              key={tag}
+              className="bg-gray-200 text-gray-800 px-2 py-1 rounded-full text-sm flex items-center group"
             >
-              <Tag className="w-3 h-3 mr-1" />
               {tag}
-            </Badge>
-          ))
-        ) : (
-          <p>No tags available</p>
-        )}
+              <button
+                onClick={() => removeTag(tag)}
+                className="ml-1 text-gray-500 hover:text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
-      <Button onClick={handleSuggestTags}>{BUTTON_TEXTS.SUGGEST_TAGS}</Button>
     </div>
   );
 };

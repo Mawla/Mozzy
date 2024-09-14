@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, X } from "lucide-react";
-import { Template } from "@/utils/templateParser";
+import { Template } from "@/app/types/template";
 import { Button } from "@/components/ui/button";
 
 interface TemplateCardGridProps {
@@ -9,7 +9,7 @@ interface TemplateCardGridProps {
   maxTemplates: number;
   onCardClick: (index: number) => void;
   onRemove?: (index: number) => void;
-  selectedIndex?: number;
+  selectedIndexes?: number[];
 }
 
 export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
@@ -17,7 +17,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
   maxTemplates,
   onCardClick,
   onRemove,
-  selectedIndex,
+  selectedIndexes = [],
 }) => {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
@@ -29,7 +29,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
             className={`flex flex-col ${
               template ? "" : "opacity-50"
             } cursor-pointer relative group ${
-              selectedIndex === index ? "ring-2 ring-primary" : ""
+              selectedIndexes.includes(index) ? "ring-2 ring-primary" : ""
             }`}
             onClick={() => onCardClick(index)}
           >

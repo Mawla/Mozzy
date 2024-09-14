@@ -1,4 +1,5 @@
-import { Pack, Template, TemplateParser } from "@/utils/templateParser";
+import { Pack, Template } from "@/app/types/template";
+import { TemplateParser } from "@/utils/templateParser";
 
 class PostService {
   getPacks(): Pack[] {
@@ -214,45 +215,35 @@ class PostService {
   async chooseBestTemplate(
     transcript: string,
     templates: Template[]
-  ): Promise<{ bestFit: Template | null; optionalChoices: Template[] }> {
+  ): Promise<Template[]> {
     try {
       const response = await this.callAPI<{
-        bestTemplateResponse: string;
+        bestTemplatesResponse: string;
       }>("chooseBestTemplate", { transcript, templates });
 
       console.log("API response:", response);
 
       // Parse the inner JSON string
-      const parsedResponse = JSON.parse(response.bestTemplateResponse);
+      const parsedResponse = JSON.parse(response.bestTemplatesResponse);
 
       console.log("Parsed response:", parsedResponse);
 
-      // Extract template and choices from the parsed response
-      const bestFitId = parsedResponse.template;
-      const optionalChoiceIds = parsedResponse.choices || [];
+      // Extract template IDs from the parsed response
+      const templateIds = parsedResponse.templates || [];
 
-      // Find the best fit template from the list of templates
-      const bestFitTemplate = templates.find(
-        (template) => template.id === bestFitId
-      );
-
-      // Find the optional choice templates from the list of templates
-      const optionalChoiceTemplates = optionalChoiceIds
+      // Find the suggested templates from the list of templates
+      const suggestedTemplates = templateIds
         .map((id: string) => templates.find((template) => template.id === id))
         .filter(Boolean) as Template[];
 
-      console.log("Best fit template:", bestFitTemplate);
-      console.log("Optional choices:", optionalChoiceTemplates);
+      console.log("Suggested templates:", suggestedTemplates);
 
-      // Return the best fit template and the optional choices
-      return {
-        bestFit: bestFitTemplate || null,
-        optionalChoices: optionalChoiceTemplates,
-      };
+      // Return the suggested templates (up to 8)
+      return suggestedTemplates.slice(0, 8);
     } catch (error) {
-      console.error("Error choosing best template:", error);
-      // Return null for bestFit and an empty array for optionalChoices in case of an error
-      return { bestFit: null, optionalChoices: [] };
+      console.error("Error choosing best templates:", error);
+      // Return an empty array in case of an error
+      return [];
     }
   }
 

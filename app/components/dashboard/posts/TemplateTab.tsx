@@ -1,6 +1,6 @@
 import React from "react";
 import { BUTTON_TEXTS } from "@/app/constants/editorConfig";
-import { Template } from "@/utils/templateParser";
+import { Template } from "@/app/types/template";
 import { Button } from "@/components/ui/button";
 import { TemplateCardGrid } from "./TemplateCardGrid";
 

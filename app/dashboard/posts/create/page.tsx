@@ -56,6 +56,9 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
     handlePreviousContent,
     openTemplateModal,
     handleRemoveTemplate,
+    selectedContentIndex,
+    setSelectedContentIndex,
+    removeTag,
   } = useCreatePost();
 
   useEffect(() => {
@@ -152,7 +155,9 @@ const CreatePostPage: React.FC<CreatePostPageProps> = ({
         handlePreviousContent={handlePreviousContent}
         openTemplateModal={openTemplateModal}
         handleRemoveTemplate={handleRemoveTemplate}
-        handleSelectTemplate={handleTemplateSelect}
+        selectedContentIndex={selectedContentIndex}
+        setSelectedContentIndex={setSelectedContentIndex}
+        removeTag={removeTag}
       />
       <ProgressNotes progressNotes={progressNotes} />
       <TemplateSelectionModal

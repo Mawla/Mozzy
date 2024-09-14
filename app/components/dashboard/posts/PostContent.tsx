@@ -31,6 +31,9 @@ interface PostContentProps {
   handlePreviousContent: () => void;
   openTemplateModal: (index: number) => void;
   handleRemoveTemplate: (index: number) => void;
+  selectedContentIndex: number | null;
+  setSelectedContentIndex: (index: number | null) => void;
+  removeTag: (tag: string) => void;
 }
 
 export const PostContent: React.FC<PostContentProps> = ({
@@ -56,6 +59,9 @@ export const PostContent: React.FC<PostContentProps> = ({
   handlePreviousContent,
   openTemplateModal,
   handleRemoveTemplate,
+  selectedContentIndex,
+  setSelectedContentIndex,
+  removeTag,
 }) => {
   return (
     <div className="relative">
@@ -83,6 +89,7 @@ export const PostContent: React.FC<PostContentProps> = ({
             handleEditorUpdate={handleEditorUpdate}
             handleSuggestTags={handleSuggestTags}
             tags={tags}
+            removeTag={removeTag}
           />
         </TabsContent>
         <TabsContent value={TAB_NAMES.TEMPLATE}>
@@ -103,6 +110,8 @@ export const PostContent: React.FC<PostContentProps> = ({
             handleSave={handleSave}
             transcript={transcript}
             selectedTemplates={selectedTemplates}
+            selectedContentIndex={selectedContentIndex}
+            setSelectedContentIndex={setSelectedContentIndex}
           />
         </TabsContent>
       </Tabs>

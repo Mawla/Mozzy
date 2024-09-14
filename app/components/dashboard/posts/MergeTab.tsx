@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { BUTTON_TEXTS, MESSAGES } from "@/app/constants/editorConfig";
@@ -18,6 +18,8 @@ interface MergeTabProps {
   handleSave: () => void;
   transcript: string;
   selectedTemplates: Template[];
+  selectedContentIndex: number | null;
+  setSelectedContentIndex: (index: number | null) => void;
 }
 
 export const MergeTab: React.FC<MergeTabProps> = ({
@@ -28,42 +30,36 @@ export const MergeTab: React.FC<MergeTabProps> = ({
   handleSave,
   transcript,
   selectedTemplates,
+  selectedContentIndex,
+  setSelectedContentIndex,
 }) => {
-  const [selectedContentIndex, setSelectedContentIndex] = useState<
-    number | null
-  >(null);
-
-  useEffect(() => {
-    // Set the first template as selected when mergedContents are available
-    if (mergedContents.length > 0 && selectedContentIndex === null) {
-      setSelectedContentIndex(0);
-    }
-  }, [mergedContents, selectedContentIndex]);
+  const editorContent =
+    selectedContentIndex !== null
+      ? mergedContents[selectedContentIndex] || ""
+      : "";
+  const placeholderMessage =
+    mergedContents.length === 0
+      ? "No merged content available. Click 'Merge Content' to generate merged content."
+      : "Select a template to view its merged content.";
 
   return (
     <div className="space-y-4">
       <TemplateCardGrid
         templates={selectedTemplates}
         maxTemplates={selectedTemplates.length}
-        onCardClick={setSelectedContentIndex}
-        selectedIndex={selectedContentIndex}
+        onCardClick={(index) => setSelectedContentIndex(index)}
+        selectedIndexes={
+          selectedContentIndex !== null ? [selectedContentIndex] : []
+        }
       />
 
-      {selectedContentIndex !== null && mergedContents[selectedContentIndex] ? (
-        <TipTapEditor
-          content={mergedContents[selectedContentIndex]}
-          onUpdate={(newContent) =>
-            handleEditorUpdate(newContent, selectedContentIndex)
-          }
-          placeholder="Merged content will appear here..."
-        />
-      ) : (
-        <div className="text-center p-4 bg-gray-100 rounded-md">
-          {mergedContents.length === 0
-            ? "No merged content available. Click 'Merge Content' to generate merged content."
-            : "Select a template to view its merged content."}
-        </div>
-      )}
+      <TipTapEditor
+        content={editorContent}
+        onUpdate={(newContent) =>
+          handleEditorUpdate(newContent, selectedContentIndex || undefined)
+        }
+        placeholder={placeholderMessage}
+      />
 
       <div className="flex justify-end gap-2">
         {isMerging ? (

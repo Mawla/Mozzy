@@ -17,5 +17,6 @@ export interface Template {
   id: string;
   name: string;
   content: string;
+  description: string;
   // Add other template properties as needed
 }
