@@ -15,10 +15,10 @@ interface CreatePostPageProps {
   isEditing?: boolean;
 }
 
-const CreatePostPage: React.FC<CreatePostPageProps> = ({
+const CreatePostPage = ({
   initialPost,
   isEditing = false,
-}) => {
+}: CreatePostPageProps = {}) => {
   const router = useRouter();
   const [isContentHubModalOpen, setIsContentHubModalOpen] = useState(false);
   const {
