@@ -61,10 +61,16 @@ class PostService {
   async mergeMultipleContents(
     transcript: string,
     templates: Template[]
-  ): Promise<{ mergedContent: string; suggestedTitle: string }[]> {
+  ): Promise<
+    { mergedContent: string; suggestedTitle: string; templateId: string }[]
+  > {
     try {
       const response = await this.callAPI<{
-        mergedResults: { mergedContent: string; suggestedTitle: string }[];
+        mergedResults: {
+          mergedContent: string;
+          suggestedTitle: string;
+          templateId: string;
+        }[];
         partialSuccess: boolean;
         failedMergesCount: number;
       }>("mergeMultipleContents", { transcript, templates });
@@ -124,8 +130,15 @@ class PostService {
       return response.suggestedTitle;
     } catch (error) {
       console.error("Error suggesting title:", error);
-      throw new Error(`Failed to suggest title: ${(error as Error).message}`);
+      // Provide a fallback title generation mechanism
+      return this.generateFallbackTitle(transcript);
     }
+  }
+
+  private generateFallbackTitle(transcript: string): string {
+    // Simple fallback: Use the first few words of the transcript as the title
+    const words = transcript.split(" ").slice(0, 5);
+    return words.join(" ") + "...";
   }
 
   saveToLocalStorage(key: string, value: string): void {
@@ -444,7 +457,15 @@ class PostService {
       acc[result.templateId] = result.mergedContent;
       return acc;
     }, {} as { [templateId: string]: string });
-    const suggestedTitle = await this.suggestTitle(content);
+
+    let suggestedTitle;
+    try {
+      suggestedTitle = await this.suggestTitle(content);
+    } catch (error) {
+      console.error("Error suggesting title, using fallback:", error);
+      suggestedTitle = this.generateFallbackTitle(content);
+    }
+
     return { mergedContents, suggestedTitle };
   }
 }

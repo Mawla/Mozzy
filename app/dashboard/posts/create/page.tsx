@@ -1,29 +1,54 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useCallback } from "react";
 import { useCreatePost } from "@/app/hooks/useCreatePost";
 import { PostHeader } from "@/app/components/dashboard/posts/PostHeader";
 import { PostContent } from "@/app/components/dashboard/posts/PostContent";
 import { ProgressNotes } from "@/app/components/dashboard/posts/ProgressNotes";
 import { Button } from "@/components/ui/button";
-import TemplateSelectionModal from "@/app/components/dashboard/posts/TemplateSelectionModal";
 import ContentHubImportModal from "@/app/components/dashboard/posts/ContentHubImportModal";
 import ApiErrorMessage from "@/app/components/ApiErrorMessage";
 import { Trash2 } from "lucide-react";
 import { BUTTON_TEXTS } from "@/app/constants/editorConfig";
+import { postService } from "@/app/services/postService";
+import { useState } from "react";
+import debounce from "lodash/debounce";
+import { Post } from "@/app/types/post";
 
 const CreatePostPage = () => {
   const { post, updatePost, progressNotes, apiError } = useCreatePost();
-
-  // Manage ContentHubModal state locally
   const [isContentHubModalOpen, setIsContentHubModalOpen] = useState(false);
 
+  const debouncedSavePost = useCallback(
+    debounce((postToSave: Post) => {
+      postService.saveToLocalStorage("post", JSON.stringify(postToSave));
+    }, 500),
+    []
+  );
+
+  useEffect(() => {
+    if (post) {
+      debouncedSavePost(post);
+    }
+  }, [post, debouncedSavePost]);
+
   const handleClear = () => {
-    updatePost({ content: "", title: "" });
+    if (post) {
+      updatePost({
+        ...post,
+        content: "",
+        title: "",
+      });
+    }
   };
 
   const handleImportTranscript = (transcript: string) => {
-    updatePost({ content: transcript });
-    setIsContentHubModalOpen(false); // Close the modal after import
+    if (post) {
+      updatePost({
+        ...post,
+        content: transcript,
+      });
+    }
+    setIsContentHubModalOpen(false);
   };
 
   return (
@@ -31,7 +56,7 @@ const CreatePostPage = () => {
       <div className="flex justify-between items-center">
         <PostHeader
           title={post?.title || ""}
-          setTitle={(title) => updatePost({ title })}
+          setTitle={(title) => post && updatePost({ ...post, title })}
         />
         <Button onClick={() => setIsContentHubModalOpen(true)} className="ml-4">
           Import Content
@@ -50,11 +75,12 @@ const CreatePostPage = () => {
       <ContentHubImportModal
         isOpen={isContentHubModalOpen}
         onClose={() => setIsContentHubModalOpen(false)}
+        onImport={handleImportTranscript}
       />
-      {apiError && (
+      {apiError && post && (
         <ApiErrorMessage
           error={apiError}
-          onClose={() => updatePost({ apiError: null })}
+          onClose={() => updatePost({ ...post, apiError: null } as Post)}
         />
       )}
     </div>

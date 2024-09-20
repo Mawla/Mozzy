@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { BUTTON_TEXTS } from "@/app/constants/editorConfig";
@@ -13,18 +13,22 @@ export const ContentTab: React.FC = () => {
   const { post, updatePost, handleSuggestTagsAndTemplates, wordCount } =
     useCreatePost();
 
-  useEffect(() => {
-    console.log("Content updated:", post?.content);
-  }, [post?.content]);
-
   const handleEditorUpdate = (newContent: string) => {
-    updatePost({ content: newContent });
+    if (post) {
+      updatePost({
+        ...post,
+        content: newContent,
+      });
+    }
   };
 
   const removeTag = (tagToRemove: string) => {
     if (post && post.tags) {
       const updatedTags = post.tags.filter((tag) => tag !== tagToRemove);
-      updatePost({ tags: updatedTags });
+      updatePost({
+        ...post,
+        tags: updatedTags,
+      });
     }
   };
 
@@ -32,7 +36,7 @@ export const ContentTab: React.FC = () => {
     <div className="space-y-4">
       <TipTapEditor
         content={post?.content || ""}
-        onUpdate={(newContent) => handleEditorUpdate(newContent)}
+        onUpdate={handleEditorUpdate}
         placeholder="Start typing or paste your transcript here..."
       />
       <div className="flex justify-between items-center">

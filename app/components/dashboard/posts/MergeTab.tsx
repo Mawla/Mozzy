@@ -23,11 +23,14 @@ export const MergeTab: React.FC = () => {
   } = useCreatePost();
 
   const handleEditorUpdate = (newContent: string) => {
-    if (post && selectedContentIndex !== null) {
+    if (post && post.templates && selectedContentIndex !== null) {
       const updatedMergedContents = { ...post.mergedContents };
       updatedMergedContents[post.templates[selectedContentIndex].id] =
         newContent;
-      updatePost({ mergedContents: updatedMergedContents });
+      updatePost({
+        ...post,
+        mergedContents: updatedMergedContents,
+      });
     }
   };
 

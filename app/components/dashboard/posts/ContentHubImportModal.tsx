@@ -16,11 +16,13 @@ import { useCreatePost } from "@/app/hooks/useCreatePost";
 interface ContentHubImportModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onImport: (transcript: string) => void;
 }
 
 const ContentHubImportModal: React.FC<ContentHubImportModalProps> = ({
   isOpen,
   onClose,
+  onImport,
 }) => {
   const { post, updatePost } = useCreatePost();
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,10 +53,14 @@ const ContentHubImportModal: React.FC<ContentHubImportModalProps> = ({
 
   const handleImport = () => {
     if (selectedItem && selectedItem.transcript) {
-      updatePost({
-        content: selectedItem.transcript,
-        title: selectedItem.title, // Optionally update the title as well
-      });
+      if (post) {
+        updatePost({
+          ...post,
+          content: selectedItem.transcript,
+          title: selectedItem.title,
+        });
+      }
+      onImport(selectedItem.transcript);
       setSelectedItem(null);
       onClose();
     }

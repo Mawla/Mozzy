@@ -6,7 +6,7 @@ import { Post } from "@/app/types/post";
 
 interface UseCreatePostReturn {
   post: Post | null;
-  updatePost: (updatedFields: Partial<Post>) => void;
+  updatePost: (updatedPost: Post) => void;
   isTemplateModalOpen: boolean;
   setIsTemplateModalOpen: (isOpen: boolean) => void;
   packs: Pack[];
@@ -35,7 +35,6 @@ interface UseCreatePostReturn {
   setSelectedContentIndex: React.Dispatch<React.SetStateAction<number | null>>;
   apiError: string | null;
   wordCount: number;
-  // Add any other properties or methods that are returned by useCreatePost
 }
 
 export const useCreatePost = (): UseCreatePostReturn => {
@@ -64,13 +63,10 @@ export const useCreatePost = (): UseCreatePostReturn => {
   const [apiError, setApiError] = useState<string | null>(null);
   const [wordCount, setWordCount] = useState(0);
 
-  const updatePost = useCallback((updatedFields: Partial<Post>) => {
-    setPost((prevPost) => {
-      if (!prevPost) {
-        return updatedFields as Post;
-      }
-      return { ...prevPost, ...updatedFields };
-    });
+  const updatePost = useCallback((updatedPost: Post) => {
+    setPost(updatedPost);
+    postService.saveToLocalStorage("post", JSON.stringify(updatedPost));
+    setWordCount(updatedPost.content.trim().split(/\s+/).length);
   }, []);
 
   useEffect(() => {
@@ -81,19 +77,34 @@ export const useCreatePost = (): UseCreatePostReturn => {
 
         const savedPost = postService.getFromLocalStorage("post");
         if (savedPost) {
-          setPost(JSON.parse(savedPost));
+          const parsedPost = JSON.parse(savedPost);
+          setPost(parsedPost);
+          setWordCount(parsedPost.content.trim().split(/\s+/).length);
         } else {
           const savedTranscript = postService.getFromLocalStorage("transcript");
           const savedContent = postService.getFromLocalStorage("content");
           if (savedTranscript || savedContent) {
-            updatePost({ content: savedTranscript || savedContent || "" });
+            const content = savedTranscript || savedContent || "";
+            const newPost: Post = {
+              id: Date.now().toString(),
+              title: "",
+              content,
+              tags: [],
+              tweetThreadContent: [],
+              transcript: content,
+              mergedContents: {},
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              templateIds: [],
+              templates: [],
+            };
+            updatePost(newPost);
           }
         }
 
         const savedTags = postService.getSuggestedTagsFromLocalStorage();
-        if (savedTags.length > 0) {
-          setSuggestedTags(savedTags);
-          updatePost({ tags: savedTags });
+        if (savedTags.length > 0 && post) {
+          updatePost({ ...post, tags: savedTags });
         }
 
         setProgressNotes("Loaded saved data from storage.");
@@ -102,6 +113,7 @@ export const useCreatePost = (): UseCreatePostReturn => {
         setProgressNotes(
           "Error loading saved data. Please try refreshing the page."
         );
+        setApiError("Failed to load initial data");
         setPacks([]);
       }
     };
@@ -110,20 +122,23 @@ export const useCreatePost = (): UseCreatePostReturn => {
   }, [updatePost]);
 
   const handleSuggestTagsAndTemplates = async () => {
+    if (!post) return;
     setIsLoading(true);
     setProgressNotes("Starting tag and template suggestion process...");
+    setApiError(null);
 
     try {
       const allTemplates = packs.flatMap((pack) => pack.templates);
       const { suggestedTags, suggestedTemplates } =
-        await postService.suggestTagsAndTemplates(
-          post?.content || "",
-          allTemplates
-        );
+        await postService.suggestTagsAndTemplates(post.content, allTemplates);
 
       setSuggestedTags(suggestedTags);
       setSuggestedTemplates(suggestedTemplates);
-      updatePost({ tags: suggestedTags, templates: suggestedTemplates });
+      updatePost({
+        ...post,
+        tags: suggestedTags,
+        templates: suggestedTemplates,
+      });
 
       setProgressNotes(
         (prev) => `${prev}\n• Suggested tags and templates successfully.`
@@ -140,6 +155,7 @@ export const useCreatePost = (): UseCreatePostReturn => {
   };
 
   const handleMerge = async () => {
+    if (!post) return;
     setIsMerging(true);
     setProgressNotes("Starting content merge process...");
     setApiError(null);
@@ -147,18 +163,22 @@ export const useCreatePost = (): UseCreatePostReturn => {
     try {
       const { mergedContents, suggestedTitle } =
         await postService.mergeContentsAndSuggestTitle(
-          post?.content || "",
-          post?.templates || []
+          post.content,
+          post.templates || []
         );
 
-      updatePost({ mergedContents, title: post?.title || suggestedTitle });
+      updatePost({
+        ...post,
+        mergedContents,
+        title: post.title || suggestedTitle,
+      });
       setCurrentContentIndex(0);
 
       setProgressNotes(
         (prev) =>
           `${prev}\n• Content merged successfully.\n• ${
-            post?.title ? "Existing title kept" : "Suggested title"
-          }: "${post?.title || suggestedTitle}"`
+            post.title ? "Existing title kept" : "Suggested title"
+          }: "${post.title || suggestedTitle}"`
       );
 
       setActiveTab(TAB_NAMES.MERGE);
@@ -176,7 +196,7 @@ export const useCreatePost = (): UseCreatePostReturn => {
 
     try {
       const savedPost = await postService.createOrUpdatePost(post);
-      setPost(savedPost);
+      updatePost(savedPost);
       setProgressNotes((prev) => `${prev}\n• Saved post successfully.`);
     } catch (error) {
       console.error("Error saving post:", error);
@@ -184,8 +204,6 @@ export const useCreatePost = (): UseCreatePostReturn => {
       setApiError("Failed to save post");
     }
   };
-
-  // ... (keep other handler functions, updating them to use updatePost where necessary)
 
   return {
     post,
@@ -214,6 +232,5 @@ export const useCreatePost = (): UseCreatePostReturn => {
     setSelectedContentIndex,
     apiError,
     wordCount,
-    // Add any other properties or methods that you want to expose
   };
 };

@@ -270,6 +270,18 @@ export async function POST(request: NextRequest) {
           );
         }
       }
+      case AnthropicAction.SUGGEST_TITLE: {
+        const { transcript } = data;
+        if (!transcript) {
+          return NextResponse.json(
+            { error: "Missing transcript" },
+            { status: 400 }
+          );
+        }
+        // Implement title suggestion logic here
+        const suggestedTitle = await suggestTitleLogic(transcript);
+        return NextResponse.json({ suggestedTitle });
+      }
       default:
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
@@ -280,4 +292,11 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+async function suggestTitleLogic(transcript: string): Promise<string> {
+  // Implement your title suggestion logic here
+  // This could involve calling an AI service, using NLP, etc.
+  // For now, let's return a simple placeholder
+  return `Title for: ${transcript.slice(0, 50)}...`;
 }
