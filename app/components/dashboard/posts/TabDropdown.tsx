@@ -1,6 +1,6 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
-import { TAB_NAMES } from "@/app/constants/editorConfig";
+import { TAB_NAMES, TabName } from "@/app/constants/editorConfig";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,16 +8,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { useCreatePost } from "@/app/hooks/useCreatePost";
 
 interface TabDropdownProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
+  activeTab: TabName;
+  setActiveTab: (tab: keyof typeof TAB_NAMES) => void;
 }
 
-export const TabDropdown: React.FC<TabDropdownProps> = ({
-  activeTab,
-  setActiveTab,
-}) => {
+export const TabDropdown = ({ activeTab, setActiveTab }: TabDropdownProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -28,7 +26,10 @@ export const TabDropdown: React.FC<TabDropdownProps> = ({
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
         {Object.values(TAB_NAMES).map((tab) => (
-          <DropdownMenuItem key={tab} onClick={() => setActiveTab(tab)}>
+          <DropdownMenuItem
+            key={tab}
+            onClick={() => setActiveTab(tab as keyof typeof TAB_NAMES)}
+          >
             {tab}
           </DropdownMenuItem>
         ))}

@@ -72,43 +72,6 @@ const ViewPostPage = ({ params }: { params: { id: string } }) => {
         )}
       </div>
 
-      {post && (
-        <div className="bg-gray-100 p-4 rounded-md">
-          <h2 className="text-xl font-semibold mb-2">Loaded Post Details</h2>
-          <p>
-            <strong>Title:</strong> {post.title}
-          </p>
-          <p>
-            <strong>Created At:</strong>{" "}
-            {new Date(post.createdAt).toLocaleString()}
-          </p>
-          <p>
-            <strong>Updated At:</strong>{" "}
-            {new Date(post.updatedAt).toLocaleString()}
-          </p>
-          <p>
-            <strong>Tags:</strong> {post.tags.join(", ")}
-          </p>
-          <p>
-            <strong>Word Count:</strong> {post.content.split(/\s+/).length}
-          </p>
-
-          <h3 className="text-lg font-semibold mt-4 mb-2">Merged Contents:</h3>
-          {Object.entries(post.mergedContents).map(([templateId, content]) => (
-            <div key={templateId} className="mb-4">
-              <h4 className="font-medium">
-                Template:{" "}
-                {post.templates?.find((t) => t.id === templateId)?.name ||
-                  "Unknown"}
-              </h4>
-              <p className="text-sm text-gray-600 mt-1">
-                {content.substring(0, 100)}...
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
-
       <PostContent post={post} isViewMode={false} onSave={handleSave} />
     </div>
   );

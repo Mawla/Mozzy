@@ -7,12 +7,27 @@ import { TemplateTab } from "./TemplateTab";
 import { MergeTab } from "./MergeTab";
 import { useCreatePost } from "@/app/hooks/useCreatePost";
 import { TAB_NAMES } from "@/app/constants/editorConfig";
+import { Post } from "@/app/types/post"; // Adjust the import path as needed
+import { TabDropdown } from "./TabDropdown";
 
-export const PostContent: React.FC = () => {
+interface PostContentProps {
+  post: Post | null;
+  updatePost: (updatedPost: Post) => void;
+}
+
+export const PostContent: React.FC<PostContentProps> = ({
+  post,
+  updatePost,
+}) => {
   const { activeTab, setActiveTab } = useCreatePost();
 
   return (
     <div className="space-y-4">
+      {/* Mobile Dropdown */}
+      <div className="sm:hidden">
+        <TabDropdown activeTab={activeTab} setActiveTab={setActiveTab} />
+      </div>
+
       <div className="relative">
         <Tabs
           value={activeTab}

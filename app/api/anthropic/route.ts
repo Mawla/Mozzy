@@ -19,6 +19,7 @@ enum AnthropicAction {
   GENERATE_IMPROVED_TRANSCRIPT = "generateImprovedTranscript",
   GENERATE_SUMMARY = "generateSummary",
   MERGE_MULTIPLE_CONTENTS = "mergeMultipleContents",
+  SUGGEST_TITLE = "suggestTitle",
 }
 
 interface AnthropicRequest {

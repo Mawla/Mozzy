@@ -171,20 +171,25 @@ export const useCreatePost = (): UseCreatePostReturn => {
           post.templates || []
         );
 
-      console.log("Merged contents:", mergedContents); // Add this log
+      console.log("Merged contents:", mergedContents);
 
-      updatePost({
+      const updatedPost = {
         ...post,
         mergedContents,
         title: post.title || suggestedTitle,
-      });
+      };
+
+      updatePost(updatedPost);
       setCurrentContentIndex(0);
+
+      // Save the updated post to localStorage
+      postService.saveToLocalStorage("post", JSON.stringify(updatedPost));
 
       setProgressNotes(
         (prev) =>
           `${prev}\n• Content merged successfully.\n• ${
             post.title ? "Existing title kept" : "Suggested title"
-          }: "${post.title || suggestedTitle}"`
+          }: "${updatedPost.title}"\n• Merged content saved.`
       );
 
       setActiveTab(TAB_NAMES.MERGE);
