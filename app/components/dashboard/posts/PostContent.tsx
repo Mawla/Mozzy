@@ -7,6 +7,7 @@ import { Template } from "@/app/types/template";
 import { ContentTab } from "./ContentTab";
 import { TemplateTab } from "./TemplateTab";
 import { MergeTab } from "./MergeTab";
+import { TabDropdown } from "./TabDropdown";
 
 interface PostContentProps {
   transcript: string;
@@ -66,62 +67,69 @@ export const PostContent: React.FC<PostContentProps> = ({
   wordCount,
 }) => {
   return (
-    <div className="relative">
-      <Button
-        onClick={handleClear}
-        className="absolute top-0 right-0 z-10 text-destructive"
-        variant="ghost"
-      >
-        <Trash2 className="w-4 h-4 mr-2" />
-        {BUTTON_TEXTS.CLEAR}
-      </Button>
-      <Tabs
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="w-full mt-10"
-      >
-        <TabsList>
-          <TabsTrigger value={TAB_NAMES.CONTENT}>
-            {TAB_NAMES.CONTENT}
-          </TabsTrigger>
-          <TabsTrigger value={TAB_NAMES.TEMPLATE}>
-            {TAB_NAMES.TEMPLATE}
-          </TabsTrigger>
-          <TabsTrigger value={TAB_NAMES.MERGE}>{TAB_NAMES.MERGE}</TabsTrigger>
-        </TabsList>
-        <TabsContent value={TAB_NAMES.CONTENT}>
-          <ContentTab
-            transcript={transcript}
-            handleEditorUpdate={(newContent) => handleEditorUpdate(newContent)}
-            handleSuggestTags={handleSuggestTags}
-            tags={tags}
-            removeTag={removeTag}
-            wordCount={wordCount}
-          />
-        </TabsContent>
-        <TabsContent value={TAB_NAMES.TEMPLATE}>
-          <TemplateTab
-            selectedTemplates={selectedTemplates}
-            openTemplateModal={openTemplateModal}
-            handleSuggestTemplate={handleSuggestTemplate}
-            handleShortlistTemplates={handleShortlistTemplates}
-            handleRemoveTemplate={handleRemoveTemplate}
-          />
-        </TabsContent>
-        <TabsContent value={TAB_NAMES.MERGE}>
-          <MergeTab
-            mergedContents={mergedContents}
-            handleEditorUpdate={handleEditorUpdate}
-            isMerging={isMerging}
-            handleMerge={handleMerge}
-            handleSave={handleSave}
-            transcript={transcript}
-            selectedTemplates={selectedTemplates}
-            selectedContentIndex={selectedContentIndex}
-            setSelectedContentIndex={setSelectedContentIndex}
-          />
-        </TabsContent>
-      </Tabs>
+    <div className="space-y-4">
+      {/* Mobile Dropdown */}
+      <div className="sm:hidden">
+        <TabDropdown activeTab={activeTab} setActiveTab={setActiveTab} />
+      </div>
+
+      <div className="relative">
+        <Button
+          onClick={handleClear}
+          className="absolute top-0 right-0 z-10 text-destructive"
+          variant="ghost"
+        >
+          <Trash2 className="w-4 h-4 mr-2" />
+          {BUTTON_TEXTS.CLEAR}
+        </Button>
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="w-full mt-10"
+        >
+          <TabsList className="hidden sm:flex">
+            {Object.values(TAB_NAMES).map((tab) => (
+              <TabsTrigger key={tab} value={tab}>
+                {tab}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          <TabsContent value={TAB_NAMES.CONTENT}>
+            <ContentTab
+              transcript={transcript}
+              handleEditorUpdate={(newContent) =>
+                handleEditorUpdate(newContent)
+              }
+              handleSuggestTags={handleSuggestTags}
+              tags={tags}
+              removeTag={removeTag}
+              wordCount={wordCount}
+            />
+          </TabsContent>
+          <TabsContent value={TAB_NAMES.TEMPLATE}>
+            <TemplateTab
+              selectedTemplates={selectedTemplates}
+              openTemplateModal={openTemplateModal}
+              handleSuggestTemplate={handleSuggestTemplate}
+              handleShortlistTemplates={handleShortlistTemplates}
+              handleRemoveTemplate={handleRemoveTemplate}
+            />
+          </TabsContent>
+          <TabsContent value={TAB_NAMES.MERGE}>
+            <MergeTab
+              mergedContents={mergedContents}
+              handleEditorUpdate={handleEditorUpdate}
+              isMerging={isMerging}
+              handleMerge={handleMerge}
+              handleSave={handleSave}
+              transcript={transcript}
+              selectedTemplates={selectedTemplates}
+              selectedContentIndex={selectedContentIndex}
+              setSelectedContentIndex={setSelectedContentIndex}
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 };
