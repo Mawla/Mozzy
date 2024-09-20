@@ -9,6 +9,8 @@ import TemplateSelectionModal from "@/app/components/dashboard/posts/TemplateSel
 import ContentHubImportModal from "@/app/components/dashboard/posts/ContentHubImportModal";
 import { useRouter } from "next/navigation";
 import ApiErrorMessage from "@/app/components/ApiErrorMessage";
+import { Trash2 } from "lucide-react";
+import { BUTTON_TEXTS } from "@/app/constants/editorConfig";
 
 interface CreatePostPageProps {
   initialPost?: any;
@@ -123,6 +125,14 @@ const CreatePostPage = ({
         <Button onClick={handleImportContent} className="ml-4">
           Import Content
         </Button>
+        <Button
+          onClick={handleClear}
+          className="ml-4 text-destructive"
+          variant="ghost"
+        >
+          <Trash2 className="w-4 h-4 mr-2" />
+          {BUTTON_TEXTS.CLEAR}
+        </Button>
       </div>
       <PostContent
         transcript={transcript}
@@ -137,7 +147,6 @@ const CreatePostPage = ({
         handleSuggestTags={() => handleSuggestTags(transcript)}
         handleShortlistTemplates={handleShortlistTemplates}
         handleSuggestTemplate={handleSuggestTemplate}
-        handleClear={handleClear}
         tags={tags}
         selectedTemplates={selectedTemplates}
         isTemplateModalOpen={isTemplateModalOpen}

@@ -21,7 +21,6 @@ interface PostContentProps {
   handleSave: () => void;
   handleSuggestTags: () => void;
   handleShortlistTemplates: () => Promise<void>;
-  handleClear: () => void;
   handleSuggestTemplate: () => void;
   tags: string[];
   selectedTemplates: Template[];
@@ -50,7 +49,6 @@ export const PostContent: React.FC<PostContentProps> = ({
   handleSave,
   handleSuggestTags,
   handleShortlistTemplates,
-  handleClear,
   handleSuggestTemplate,
   tags,
   selectedTemplates,
@@ -74,14 +72,6 @@ export const PostContent: React.FC<PostContentProps> = ({
       </div>
 
       <div className="relative">
-        <Button
-          onClick={handleClear}
-          className="absolute top-0 right-0 z-10 text-destructive"
-          variant="ghost"
-        >
-          <Trash2 className="w-4 h-4 mr-2" />
-          {BUTTON_TEXTS.CLEAR}
-        </Button>
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}

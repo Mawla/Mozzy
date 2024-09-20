@@ -54,8 +54,8 @@ export const MergeTab: React.FC<MergeTabProps> = ({
         }
       />
 
-      <div className="flex space-x-4">
-        <div className="w-1/2">
+      <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+        <div className="w-full sm:w-1/2">
           <TipTapEditor
             content={editorContent}
             onUpdate={(newContent) =>
@@ -64,7 +64,7 @@ export const MergeTab: React.FC<MergeTabProps> = ({
             placeholder={placeholderMessage}
           />
         </div>
-        <div className="w-1/2">
+        <div className="w-full sm:w-1/2">
           <TweetPreview content={editorContent} />
         </div>
       </div>
