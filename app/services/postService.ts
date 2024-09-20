@@ -1,5 +1,6 @@
 import { Pack, Template } from "@/app/types/template";
 import { TemplateParser } from "@/utils/templateParser";
+import { Post } from "@/app/types/post";
 
 class PostService {
   getPacks(): Pack[] {
@@ -266,20 +267,185 @@ class PostService {
     }
   }
 
-  saveMultipleMergedContents(title: string, mergedContents: string[]): void {
-    const post = {
+  saveMultipleMergedContents(
+    title: string,
+    mergedContents: { [templateId: string]: string },
+    transcript: string,
+    templateIds: string[],
+    templates: Template[]
+  ): void {
+    const post: Post = {
+      id: Date.now().toString(),
       title,
-      contents: mergedContents,
+      content: transcript, // Keep the original transcript as content
+      tags: [],
+      tweetThreadContent: [],
+      transcript,
+      mergedContents,
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      templateIds,
+      templates,
     };
     const savedPosts = this.getSavedPosts();
     savedPosts.push(post);
     localStorage.setItem("savedPosts", JSON.stringify(savedPosts));
   }
 
-  getSavedPosts(): any[] {
+  getSavedPosts(): Post[] {
     const savedPosts = localStorage.getItem("savedPosts");
     return savedPosts ? JSON.parse(savedPosts) : [];
+  }
+
+  handleSave(post: Partial<Post>): void {
+    const savedPosts = this.getSavedPosts();
+    const now = new Date().toISOString();
+
+    if (post.id) {
+      // Update existing post
+      const existingPostIndex = savedPosts.findIndex((p) => p.id === post.id);
+      if (existingPostIndex !== -1) {
+        savedPosts[existingPostIndex] = {
+          ...savedPosts[existingPostIndex],
+          ...post,
+          updatedAt: now,
+        };
+      }
+    } else {
+      // Add new post
+      const newPost: Post = {
+        id: Date.now().toString(),
+        title: post.title || "",
+        content: post.transcript || "", // Use transcript as content for new posts
+        tags: post.tags || [],
+        tweetThreadContent: post.tweetThreadContent || [],
+        transcript: post.transcript || "",
+        mergedContents: post.mergedContents || {},
+        createdAt: now,
+        updatedAt: now,
+        templateIds: post.templateIds || [],
+        templates: post.templates || [],
+      };
+      savedPosts.push(newPost);
+    }
+
+    localStorage.setItem("savedPosts", JSON.stringify(savedPosts));
+  }
+
+  getPosts(): Post[] {
+    const savedPosts = localStorage.getItem("savedPosts");
+    return savedPosts ? JSON.parse(savedPosts) : [];
+  }
+
+  getPostById(id: string): Post | null {
+    const posts = this.getPosts();
+    const post = posts.find((p: Post) => p.id === id);
+
+    if (post) {
+      // Fetch templates for the post
+      const templates = this.getTemplatesForPost(post.templateIds);
+      console.log("Templates fetched for post:", templates); // Add this log
+      return { ...post, templates };
+    }
+
+    return null;
+  }
+
+  private getTemplatesForPost(templateIds: string[] | undefined): Template[] {
+    if (!templateIds || templateIds.length === 0) {
+      return [];
+    }
+    // Fetch templates from the actual source (e.g., API or database)
+    const allTemplates = this.getPacks().flatMap((pack) => pack.templates);
+    return allTemplates.filter((template) => templateIds.includes(template.id));
+  }
+
+  deletePost(id: string): void {
+    const savedPosts = this.getSavedPosts();
+    const updatedPosts = savedPosts.filter((p) => p.id !== id);
+    localStorage.setItem("savedPosts", JSON.stringify(updatedPosts));
+  }
+
+  async createOrUpdatePost(postData: Partial<Post>): Promise<Post> {
+    const now = new Date().toISOString();
+    let post: Post;
+
+    if (postData.id) {
+      // Update existing post
+      const existingPost = this.getPostById(postData.id);
+      if (!existingPost) {
+        throw new Error("Post not found");
+      }
+      post = {
+        ...existingPost,
+        ...postData,
+        updatedAt: now,
+      };
+    } else {
+      // Create new post
+      post = {
+        id: Date.now().toString(),
+        title: postData.title || "",
+        content: postData.content || "",
+        tags: postData.tags || [],
+        tweetThreadContent: postData.tweetThreadContent || [],
+        transcript: postData.transcript || "",
+        mergedContents: postData.mergedContents || {},
+        createdAt: now,
+        updatedAt: now,
+        templateIds: postData.templateIds || [],
+        templates: postData.templates || [],
+      };
+    }
+
+    this.savePost(post);
+    return post;
+  }
+
+  private savePost(post: Post): void {
+    const savedPosts = this.getSavedPosts();
+    const existingIndex = savedPosts.findIndex((p) => p.id === post.id);
+    if (existingIndex !== -1) {
+      savedPosts[existingIndex] = post;
+    } else {
+      savedPosts.push(post);
+    }
+    localStorage.setItem("savedPosts", JSON.stringify(savedPosts));
+  }
+
+  async suggestTagsAndTemplates(
+    content: string,
+    allTemplates: Template[]
+  ): Promise<{
+    suggestedTags: string[];
+    suggestedTemplates: Template[];
+  }> {
+    const suggestedTags = await this.suggestTags(content);
+    const shortlistedTemplates = await this.shortlistTemplatesByTags(
+      suggestedTags,
+      allTemplates
+    );
+    const suggestedTemplates = await this.chooseBestTemplate(
+      content,
+      shortlistedTemplates
+    );
+    return { suggestedTags, suggestedTemplates };
+  }
+
+  async mergeContentsAndSuggestTitle(
+    content: string,
+    templates: Template[]
+  ): Promise<{
+    mergedContents: { [templateId: string]: string };
+    suggestedTitle: string;
+  }> {
+    const mergeResults = await this.mergeMultipleContents(content, templates);
+    const mergedContents = mergeResults.reduce((acc, result) => {
+      acc[result.templateId] = result.mergedContent;
+      return acc;
+    }, {} as { [templateId: string]: string });
+    const suggestedTitle = await this.suggestTitle(content);
+    return { mergedContents, suggestedTitle };
   }
 }
 

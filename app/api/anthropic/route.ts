@@ -10,15 +10,19 @@ import {
 } from "@/prompts/anthropicPrompts";
 import { Template } from "@/app/types/template";
 
+// Define an enum for actions
+enum AnthropicAction {
+  MERGE_CONTENT = "mergeContent",
+  SUGGEST_TAGS = "suggestTags",
+  CHOOSE_BEST_TEMPLATE = "chooseBestTemplate",
+  GENERATE_TITLE = "generateTitle",
+  GENERATE_IMPROVED_TRANSCRIPT = "generateImprovedTranscript",
+  GENERATE_SUMMARY = "generateSummary",
+  MERGE_MULTIPLE_CONTENTS = "mergeMultipleContents",
+}
+
 interface AnthropicRequest {
-  action:
-    | "mergeContent"
-    | "suggestTags"
-    | "chooseBestTemplate"
-    | "generateTitle"
-    | "generateImprovedTranscript"
-    | "generateSummary"
-    | "mergeMultipleContents"; // Add this new action
+  action: AnthropicAction;
   data: {
     transcript?: string;
     template?: string;
@@ -47,7 +51,7 @@ export async function POST(request: NextRequest) {
     const anthropicHelper = AnthropicHelper.getInstance();
 
     switch (action) {
-      case "mergeContent": {
+      case AnthropicAction.MERGE_CONTENT: {
         const { transcript, template } = data;
         if (!transcript || !template) {
           return NextResponse.json(
@@ -63,7 +67,7 @@ export async function POST(request: NextRequest) {
         const parsedResult: MergeContentResponse = JSON.parse(mergeResult);
         return NextResponse.json(parsedResult);
       }
-      case "suggestTags": {
+      case AnthropicAction.SUGGEST_TAGS: {
         const { transcript } = data;
         if (!transcript) {
           return NextResponse.json(
@@ -77,7 +81,7 @@ export async function POST(request: NextRequest) {
         const response: SuggestTagsResponse = { suggestedTags };
         return NextResponse.json(response);
       }
-      case "chooseBestTemplate": {
+      case AnthropicAction.CHOOSE_BEST_TEMPLATE: {
         const { transcript, templates } = data;
         if (!transcript || !templates) {
           return NextResponse.json(
@@ -93,7 +97,7 @@ export async function POST(request: NextRequest) {
           bestTemplatesResponse: chooseBestTemplateResponse,
         });
       }
-      case "generateTitle": {
+      case AnthropicAction.GENERATE_TITLE: {
         const { transcript } = data;
         if (!transcript) {
           return NextResponse.json(
@@ -128,7 +132,7 @@ export async function POST(request: NextRequest) {
             );
           }
           console.log("Generated title:", parsedResponse.title);
-          return NextResponse.json({ suggestedTitle: parsedResponse.title });
+          return NextResponse.json({ generatedTitle: parsedResponse.title });
         } catch (error) {
           console.error("Error generating title:", error);
           return NextResponse.json(
@@ -140,7 +144,7 @@ export async function POST(request: NextRequest) {
           );
         }
       }
-      case "generateImprovedTranscript": {
+      case AnthropicAction.GENERATE_IMPROVED_TRANSCRIPT: {
         const { transcript } = data;
         if (!transcript) {
           return NextResponse.json(
@@ -168,7 +172,7 @@ export async function POST(request: NextRequest) {
           );
         }
       }
-      case "generateSummary": {
+      case AnthropicAction.GENERATE_SUMMARY: {
         const { transcript } = data;
         if (!transcript) {
           return NextResponse.json(
@@ -201,54 +205,7 @@ export async function POST(request: NextRequest) {
           );
         }
       }
-      case "suggestTitle": {
-        const { transcript } = data;
-        if (!transcript) {
-          return NextResponse.json(
-            { error: "Missing transcript" },
-            { status: 400 }
-          );
-        }
-        console.log(
-          "Generating title for transcript:",
-          transcript.slice(0, 100) + "..."
-        );
-        const titlePrompt = generateTitlePrompt(transcript);
-        console.log("Title prompt:", titlePrompt);
-        try {
-          const titleResponse = await anthropicHelper.getCompletion(
-            titlePrompt,
-            50
-          );
-          console.log("Raw title response:", titleResponse);
-          let parsedResponse;
-          try {
-            parsedResponse = JSON.parse(titleResponse);
-          } catch (parseError) {
-            console.error("Error parsing title response:", parseError);
-            return NextResponse.json(
-              {
-                error: "Failed to parse title response",
-                details: (parseError as Error).message,
-                rawResponse: titleResponse,
-              },
-              { status: 500 }
-            );
-          }
-          console.log("Generated title:", parsedResponse.title);
-          return NextResponse.json({ suggestedTitle: parsedResponse.title });
-        } catch (error) {
-          console.error("Error generating title:", error);
-          return NextResponse.json(
-            {
-              error: "Failed to generate title",
-              details: (error as Error).message,
-            },
-            { status: 500 }
-          );
-        }
-      }
-      case "mergeMultipleContents": {
+      case AnthropicAction.MERGE_MULTIPLE_CONTENTS: {
         const { transcript, templates } = data;
         if (!transcript || !templates || !Array.isArray(templates)) {
           return NextResponse.json(

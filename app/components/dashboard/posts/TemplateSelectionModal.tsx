@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Pack, Template } from "@/types/post";
+import { Pack, Template } from "@/app/types/template";
 import dynamic from "next/dynamic";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";

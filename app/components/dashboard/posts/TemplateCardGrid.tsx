@@ -5,7 +5,7 @@ import { Template } from "@/app/types/template";
 import { Button } from "@/components/ui/button";
 
 interface TemplateCardGridProps {
-  templates: Template[];
+  templates: Template[] | null | undefined;
   maxTemplates: number;
   onCardClick: (index: number) => void;
   onRemove?: (index: number) => void;
@@ -19,10 +19,12 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
   onRemove,
   selectedIndexes = [],
 }) => {
+  const safeTemplates = templates || [];
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
       {[...Array(maxTemplates)].map((_, index) => {
-        const template = templates[index];
+        const template = safeTemplates[index];
         return (
           <Card
             key={template ? template.id : `empty-${index}`}

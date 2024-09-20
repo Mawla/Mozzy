@@ -2,7 +2,9 @@ export const TAB_NAMES = {
   CONTENT: "Step 1: Add Content",
   TEMPLATE: "Step 2: Select Templates",
   MERGE: "Step 3: Generate Content",
-};
+} as const;
+
+export type TabName = keyof typeof TAB_NAMES;
 
 export const BUTTON_TEXTS = {
   SELECT_TEMPLATE: "Select Template",

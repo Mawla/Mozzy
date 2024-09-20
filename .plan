@@ -262,7 +262,7 @@
     [ ] Create a responsive design for mobile devices
     [ ] Add collapsible sidebar for smaller screens
 
-36. Implement Ideal Customer Profile (ICP) Feature: ✅
+36. Implement Ideal Customer Profile (ICP) Feature:
     [✓] Create ICP service using local storage
     [✓] Implement API route for ICP
     [✓] Create ICP page component with ICPInfo component as empty state
@@ -293,7 +293,7 @@
     [✓] Improve responsiveness of the ICP form
     [✓] Ensure consistent styling across different screen sizes
 
-39. Implement Multi-Template Merge Feature: ⏳ (In Progress)
+39. Implement Multi-Template Merge Feature: ✅
     [✓] Update useCreatePost hook to handle multiple template selections
     [✓] Modify PostContent component to allow selection of up to 8 templates
     [✓] Update postService to handle merging with multiple templates
@@ -324,11 +324,15 @@
     [✓] Display emoji and title within the card for each selected template
     [✓] Remove "No templates selected" text and always show card grid
     [✓] Merge shortlistedTemplates and selectedTemplates concepts
-    [✓] Add null check for selectedTemplates in PostContent component
+    [ ] Add null check for selectedTemplates in PostContent component
     [✓] Remove "No templates selected" text and re-add card grid
     [✓] Add ghost view of 4 templates when no templates are selected
     [✓] Update handleSelectTemplate to add selected template to selectedTemplates
-    [✓] Fix "Select Template" button functionality to open template modal
+    [✓] Refactor ContentTab and MergeTab to use useCreatePost directly
+    [✓] Move createNewPost function to useCreatePost.ts and import in PostContent.tsx
+    [✓] Update app/dashboard/posts/create/page.tsx to remove unnecessary prop passing
+    [✓] Simplify PostContent component to only expect an optional post parameter
+    [✓] Update ContentTab and MergeTab to accept optional post prop
     [ ] Implement navigation between multiple merged contents
     [ ] Add UI elements for navigating between merged contents
     [ ] Implement state for currently viewed merged content

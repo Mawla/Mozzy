@@ -1,22 +1,15 @@
+import { Template } from "./template";
+
 export interface Post {
+  id: string;
   title: string;
   content: string;
-  transcript: string;
-  mergedContent: string;
   tags: string[];
-  suggestedTags: string[];
-}
-
-export interface Pack {
-  id: string;
-  name: string;
-  // Add other pack properties as needed
-}
-
-export interface Template {
-  id: string;
-  name: string;
-  content: string;
-  description: string;
-  // Add other template properties as needed
+  tweetThreadContent: string[];
+  transcript: string;
+  mergedContents: { [templateId: string]: string };
+  createdAt: string;
+  updatedAt: string;
+  templateIds: string[];
+  templates?: Template[];
 }

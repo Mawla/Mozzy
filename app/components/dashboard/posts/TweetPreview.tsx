@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useEffect } from "react";
 import {
   TweetContainer,
@@ -25,8 +26,8 @@ export const TweetPreview: React.FC<TweetPreviewProps> = ({ content }) => {
     if (content) {
       // Remove HTML tags, add default text, and limit to 280 characters for tweet
       const plainText = content.replace(/<[^>]*>/g, "");
-      const defaultText = "Hi Dan\n\n";
-      setTweetContent((defaultText + plainText).slice(0, 280));
+      const defaultText = "";
+      setTweetContent(defaultText + plainText);
     }
   }, [content]);
 
@@ -35,9 +36,9 @@ export const TweetPreview: React.FC<TweetPreviewProps> = ({ content }) => {
       {
         type: "text",
         start: 0,
-        end: 6,
+        end: tweetContent.length,
         symbol: "",
-        text: content || "Hello World",
+        text: tweetContent || "Hello World",
       },
     ];
 

@@ -11,18 +11,18 @@ import { ContentItem } from "@/app/types/content";
 import ContentDetailModal from "./ContentDetailModal";
 import { contentBankService } from "@/app/services/contentBankService";
 import YouTubeBadge from "@/app/components/YouTubeBadge";
+import { useCreatePost } from "@/app/hooks/useCreatePost";
 
 interface ContentHubImportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onImport: (transcript: string) => void;
 }
 
 const ContentHubImportModal: React.FC<ContentHubImportModalProps> = ({
   isOpen,
   onClose,
-  onImport,
 }) => {
+  const { post, updatePost } = useCreatePost();
   const [searchTerm, setSearchTerm] = useState("");
   const [contentItems, setContentItems] = useState<ContentItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<ContentItem[]>([]);
@@ -51,7 +51,10 @@ const ContentHubImportModal: React.FC<ContentHubImportModalProps> = ({
 
   const handleImport = () => {
     if (selectedItem && selectedItem.transcript) {
-      onImport(selectedItem.transcript);
+      updatePost({
+        content: selectedItem.transcript,
+        title: selectedItem.title, // Optionally update the title as well
+      });
       setSelectedItem(null);
       onClose();
     }

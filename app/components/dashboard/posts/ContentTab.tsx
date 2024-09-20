@@ -1,50 +1,49 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tag } from "lucide-react";
-import YouTubeBadge from "@/app/components/YouTubeBadge";
+import { X } from "lucide-react";
 import { BUTTON_TEXTS } from "@/app/constants/editorConfig";
 import dynamic from "next/dynamic";
-import { X } from "lucide-react";
+import { useCreatePost } from "@/app/hooks/useCreatePost";
 
 const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
   ssr: false,
 });
 
-interface ContentTabProps {
-  transcript: string;
-  handleEditorUpdate: (newContent: string) => void;
-  handleSuggestTags: () => void;
-  tags: string[];
-  removeTag: (tag: string) => void;
-  wordCount: number; // Add this line
-}
+export const ContentTab: React.FC = () => {
+  const { post, updatePost, handleSuggestTagsAndTemplates, wordCount } =
+    useCreatePost();
 
-export const ContentTab: React.FC<ContentTabProps> = ({
-  transcript,
-  handleEditorUpdate,
-  handleSuggestTags,
-  tags,
-  removeTag,
-  wordCount, // Add this line
-}) => {
+  useEffect(() => {
+    console.log("Content updated:", post?.content);
+  }, [post?.content]);
+
+  const handleEditorUpdate = (newContent: string) => {
+    updatePost({ content: newContent });
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    if (post && post.tags) {
+      const updatedTags = post.tags.filter((tag) => tag !== tagToRemove);
+      updatePost({ tags: updatedTags });
+    }
+  };
+
   return (
     <div className="space-y-4">
       <TipTapEditor
-        content={transcript}
+        content={post?.content || ""}
         onUpdate={(newContent) => handleEditorUpdate(newContent)}
         placeholder="Start typing or paste your transcript here..."
       />
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
-          <Button onClick={handleSuggestTags}>
+          <Button onClick={handleSuggestTagsAndTemplates}>
             {BUTTON_TEXTS.SUGGEST_TAGS}
           </Button>
-          <span className="text-sm text-gray-500">Words: {wordCount}</span>{" "}
-          {/* Add this line */}
+          <span className="text-sm text-gray-500">Words: {wordCount}</span>
         </div>
         <div className="flex flex-wrap gap-2">
-          {tags.map((tag) => (
+          {post?.tags?.map((tag: string) => (
             <div
               key={tag}
               className="bg-gray-200 text-gray-800 px-2 py-1 rounded-full text-sm flex items-center group"

@@ -1,80 +1,24 @@
+"use client";
+
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
-import { TAB_NAMES, BUTTON_TEXTS } from "@/app/constants/editorConfig";
-import { Template } from "@/app/types/template";
 import { ContentTab } from "./ContentTab";
 import { TemplateTab } from "./TemplateTab";
 import { MergeTab } from "./MergeTab";
-import { TabDropdown } from "./TabDropdown";
+import { useCreatePost } from "@/app/hooks/useCreatePost";
+import { TAB_NAMES } from "@/app/constants/editorConfig";
 
-interface PostContentProps {
-  transcript: string;
-  content: string;
-  mergedContents: string[];
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
-  handleEditorUpdate: (newContent: string, index?: number) => void;
-  isMerging: boolean;
-  handleMerge: () => void;
-  handleSave: () => void;
-  handleSuggestTags: () => void;
-  handleShortlistTemplates: () => Promise<void>;
-  handleSuggestTemplate: () => void;
-  tags: string[];
-  selectedTemplates: Template[];
-  isTemplateModalOpen: boolean;
-  setIsTemplateModalOpen: (isOpen: boolean) => void;
-  currentContentIndex: number;
-  handleNextContent: () => void;
-  handlePreviousContent: () => void;
-  openTemplateModal: (index: number) => void;
-  handleRemoveTemplate: (index: number) => void;
-  selectedContentIndex: number | null;
-  setSelectedContentIndex: (index: number | null) => void;
-  removeTag: (tag: string) => void;
-  wordCount: number;
-}
+export const PostContent: React.FC = () => {
+  const { activeTab, setActiveTab } = useCreatePost();
 
-export const PostContent: React.FC<PostContentProps> = ({
-  transcript,
-  content,
-  mergedContents,
-  activeTab,
-  setActiveTab,
-  handleEditorUpdate,
-  isMerging,
-  handleMerge,
-  handleSave,
-  handleSuggestTags,
-  handleShortlistTemplates,
-  handleSuggestTemplate,
-  tags,
-  selectedTemplates,
-  isTemplateModalOpen,
-  setIsTemplateModalOpen,
-  currentContentIndex,
-  handleNextContent,
-  handlePreviousContent,
-  openTemplateModal,
-  handleRemoveTemplate,
-  selectedContentIndex,
-  setSelectedContentIndex,
-  removeTag,
-  wordCount,
-}) => {
   return (
     <div className="space-y-4">
-      {/* Mobile Dropdown */}
-      <div className="sm:hidden">
-        <TabDropdown activeTab={activeTab} setActiveTab={setActiveTab} />
-      </div>
-
       <div className="relative">
         <Tabs
           value={activeTab}
-          onValueChange={setActiveTab}
+          onValueChange={(value) =>
+            setActiveTab(value as keyof typeof TAB_NAMES)
+          }
           className="w-full mt-10"
         >
           <TabsList className="hidden sm:flex">
@@ -85,38 +29,13 @@ export const PostContent: React.FC<PostContentProps> = ({
             ))}
           </TabsList>
           <TabsContent value={TAB_NAMES.CONTENT}>
-            <ContentTab
-              transcript={transcript}
-              handleEditorUpdate={(newContent) =>
-                handleEditorUpdate(newContent)
-              }
-              handleSuggestTags={handleSuggestTags}
-              tags={tags}
-              removeTag={removeTag}
-              wordCount={wordCount}
-            />
+            <ContentTab />
           </TabsContent>
           <TabsContent value={TAB_NAMES.TEMPLATE}>
-            <TemplateTab
-              selectedTemplates={selectedTemplates}
-              openTemplateModal={openTemplateModal}
-              handleSuggestTemplate={handleSuggestTemplate}
-              handleShortlistTemplates={handleShortlistTemplates}
-              handleRemoveTemplate={handleRemoveTemplate}
-            />
+            <TemplateTab />
           </TabsContent>
           <TabsContent value={TAB_NAMES.MERGE}>
-            <MergeTab
-              mergedContents={mergedContents}
-              handleEditorUpdate={handleEditorUpdate}
-              isMerging={isMerging}
-              handleMerge={handleMerge}
-              handleSave={handleSave}
-              transcript={transcript}
-              selectedTemplates={selectedTemplates}
-              selectedContentIndex={selectedContentIndex}
-              setSelectedContentIndex={setSelectedContentIndex}
-            />
+            <MergeTab />
           </TabsContent>
         </Tabs>
       </div>
