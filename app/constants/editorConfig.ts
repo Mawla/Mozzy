@@ -1,7 +1,7 @@
 export const TAB_NAMES = {
-  CONTENT: "CONTENT",
-  TEMPLATE: "TEMPLATE",
-  MERGE: "MERGE",
+  CONTENT: "Step 1: Add Content",
+  TEMPLATE: "Step 2: Select Templates",
+  MERGE: "Step 3: Generate Content",
 } as const;
 
 export type TabName = (typeof TAB_NAMES)[keyof typeof TAB_NAMES];

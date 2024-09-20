@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { BUTTON_TEXTS, MESSAGES } from "@/app/constants/editorConfig";
@@ -22,24 +22,52 @@ export const MergeTab: React.FC = () => {
     setSelectedContentIndex,
   } = useCreatePost();
 
+  const [editorContent, setEditorContent] = useState("");
+
+  const mergedContents = useMemo(
+    () => post?.mergedContents || {},
+    [post?.mergedContents]
+  );
+  const templates = useMemo(() => post?.templates || [], [post?.templates]);
+
   const handleEditorUpdate = (newContent: string) => {
-    if (post && post.templates && selectedContentIndex !== null) {
-      const updatedMergedContents = { ...post.mergedContents };
-      updatedMergedContents[post.templates[selectedContentIndex].id] =
-        newContent;
-      updatePost({
-        ...post,
-        mergedContents: updatedMergedContents,
-      });
+    if (post && templates.length > 0 && selectedContentIndex !== null) {
+      const selectedTemplate = templates[selectedContentIndex];
+      if (selectedTemplate && selectedTemplate.id) {
+        const updatedMergedContents = { ...mergedContents };
+        updatedMergedContents[selectedTemplate.id] = newContent;
+        updatePost({
+          ...post,
+          mergedContents: updatedMergedContents,
+        });
+        console.log("Updated mergedContents:", updatedMergedContents);
+      } else {
+        console.error("Selected template or template ID is undefined");
+      }
+    } else {
+      console.error("Unable to update merged content: missing required data");
     }
+    setEditorContent(newContent);
   };
 
-  const mergedContents = post?.mergedContents || {};
-  const templates = post?.templates || [];
-  const editorContent =
-    selectedContentIndex !== null && templates[selectedContentIndex]
-      ? mergedContents[templates[selectedContentIndex].id] || ""
-      : "";
+  useEffect(() => {
+    if (selectedContentIndex === null && templates.length > 0) {
+      setSelectedContentIndex(0);
+    }
+  }, [templates, selectedContentIndex, setSelectedContentIndex]);
+
+  useEffect(() => {
+    if (selectedContentIndex !== null && templates[selectedContentIndex]) {
+      const templateId = templates[selectedContentIndex].id;
+      if (templateId) {
+        const content = mergedContents[templateId] || "";
+        setEditorContent(content);
+      } else {
+        console.error("Selected template ID is undefined");
+      }
+    }
+  }, [selectedContentIndex, templates, mergedContents]);
+
   const placeholderMessage =
     Object.keys(mergedContents).length === 0
       ? "No merged content available. Click 'Merge Content' to generate merged content."
@@ -47,13 +75,17 @@ export const MergeTab: React.FC = () => {
 
   const contentToMerge = post?.content || "";
 
+  const handleTemplateClick = (index: number) => {
+    setSelectedContentIndex(index);
+  };
+
   return (
     <div className="space-y-4">
       {templates.length > 0 && (
         <TemplateCardGrid
           templates={templates}
           maxTemplates={templates.length}
-          onCardClick={(index) => setSelectedContentIndex(index)}
+          onCardClick={handleTemplateClick}
           selectedIndexes={
             selectedContentIndex !== null ? [selectedContentIndex] : []
           }

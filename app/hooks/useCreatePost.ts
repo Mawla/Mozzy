@@ -35,6 +35,10 @@ interface UseCreatePostReturn {
   setSelectedContentIndex: React.Dispatch<React.SetStateAction<number | null>>;
   apiError: string | null;
   wordCount: number;
+  // Add these new properties
+  handleRemoveTemplate: (index: number) => void;
+  handleTemplateSelection: (selectedTemplate: Template) => void;
+  handleShortlistTemplates: () => Promise<void>;
 }
 
 export const useCreatePost = (): UseCreatePostReturn => {
@@ -167,6 +171,8 @@ export const useCreatePost = (): UseCreatePostReturn => {
           post.templates || []
         );
 
+      console.log("Merged contents:", mergedContents); // Add this log
+
       updatePost({
         ...post,
         mergedContents,
@@ -205,6 +211,50 @@ export const useCreatePost = (): UseCreatePostReturn => {
     }
   };
 
+  const handleRemoveTemplate = useCallback(
+    (index: number) => {
+      if (post) {
+        const updatedTemplates = [...(post.templates || [])];
+        updatedTemplates.splice(index, 1);
+        updatePost({
+          ...post,
+          templates: updatedTemplates,
+          templateIds: updatedTemplates.map((t) => t.id),
+        });
+      }
+    },
+    [post, updatePost]
+  );
+
+  const handleTemplateSelection = useCallback(
+    (selectedTemplate: Template) => {
+      if (post) {
+        const updatedTemplates = [...(post.templates || []), selectedTemplate];
+        updatePost({
+          ...post,
+          templates: updatedTemplates,
+          templateIds: updatedTemplates.map((t) => t.id),
+        });
+      }
+    },
+    [post, updatePost]
+  );
+
+  const handleShortlistTemplates = useCallback(async () => {
+    if (post) {
+      const allTemplates = packs.flatMap((pack) => pack.templates);
+      const shortlistedTemplates = await postService.shortlistTemplatesByTags(
+        post.tags,
+        allTemplates
+      );
+      updatePost({
+        ...post,
+        templates: shortlistedTemplates,
+        templateIds: shortlistedTemplates.map((t) => t.id),
+      });
+    }
+  }, [post, packs, updatePost]);
+
   return {
     post,
     updatePost,
@@ -232,5 +282,8 @@ export const useCreatePost = (): UseCreatePostReturn => {
     setSelectedContentIndex,
     apiError,
     wordCount,
+    handleRemoveTemplate,
+    handleTemplateSelection,
+    handleShortlistTemplates,
   };
 };

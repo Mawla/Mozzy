@@ -7,23 +7,17 @@ import { useCreatePost } from "@/app/hooks/useCreatePost";
 export const TemplateTab: React.FC = () => {
   const {
     post,
-    updatePost,
     handleSuggestTagsAndTemplates,
+    handleShortlistTemplates,
+    handleRemoveTemplate,
+    handleTemplateSelection,
     isLoading,
     setIsTemplateModalOpen,
   } = useCreatePost();
 
   const selectedTemplates = post?.templates || [];
 
-  const handleRemoveTemplate = (index: number) => {
-    if (post) {
-      const updatedTemplates = [...post.templates];
-      updatedTemplates.splice(index, 1);
-      updatePost({ templates: updatedTemplates });
-    }
-  };
-
-  const openTemplateModal = (index: number) => {
+  const openTemplateModal = () => {
     setIsTemplateModalOpen(true);
   };
 
@@ -40,7 +34,7 @@ export const TemplateTab: React.FC = () => {
         <Button onClick={handleSuggestTagsAndTemplates} disabled={isLoading}>
           {isLoading ? "Suggesting..." : BUTTON_TEXTS.SUGGEST_TEMPLATE}
         </Button>
-        <Button onClick={handleSuggestTagsAndTemplates} disabled={isLoading}>
+        <Button onClick={handleShortlistTemplates} disabled={isLoading}>
           {isLoading ? "Shortlisting..." : BUTTON_TEXTS.SHORTLIST_TEMPLATES}
         </Button>
       </div>

@@ -61,21 +61,15 @@ class PostService {
   async mergeMultipleContents(
     transcript: string,
     templates: Template[]
-  ): Promise<
-    { mergedContent: string; suggestedTitle: string; templateId: string }[]
-  > {
+  ): Promise<{ mergedContent: string; suggestedTitle: string }[]> {
     try {
       const response = await this.callAPI<{
-        mergedResults: {
-          mergedContent: string;
-          suggestedTitle: string;
-          templateId: string;
-        }[];
+        mergedResults: { mergedContent: string; suggestedTitle: string }[];
         partialSuccess: boolean;
         failedMergesCount: number;
       }>("mergeMultipleContents", { transcript, templates });
 
-      console.log("API response:", response);
+      console.log("API response for mergeMultipleContents:", response);
 
       if (response.partialSuccess) {
         console.warn(
@@ -453,10 +447,19 @@ class PostService {
     suggestedTitle: string;
   }> {
     const mergeResults = await this.mergeMultipleContents(content, templates);
-    const mergedContents = mergeResults.reduce((acc, result) => {
-      acc[result.templateId] = result.mergedContent;
+    console.log("Merge results:", mergeResults);
+
+    const mergedContents = mergeResults.reduce((acc, result, index) => {
+      const templateId = templates[index]?.id;
+      if (templateId) {
+        acc[templateId] = result.mergedContent;
+      } else {
+        console.error(`Missing template ID for index ${index}:`, result);
+      }
       return acc;
     }, {} as { [templateId: string]: string });
+
+    console.log("Processed mergedContents:", mergedContents);
 
     let suggestedTitle;
     try {
