@@ -3,6 +3,7 @@ import { Pack, Template } from "@/app/types/template";
 import { postService } from "@/app/services/postService";
 import { TAB_NAMES, TabName } from "@/app/constants/editorConfig";
 import { Post } from "@/app/types/post";
+import { useParams } from "next/navigation";
 
 interface UseCreatePostReturn {
   post: Post | null;
@@ -12,7 +13,7 @@ interface UseCreatePostReturn {
   packs: Pack[];
   selectedPack: Pack | null;
   activeTab: TabName;
-  setActiveTab: React.Dispatch<React.SetStateAction<TabName>>;
+  setActiveTab: (tab: TabName) => void;
   isMerging: boolean;
   progressNotes: string;
   isLoading: boolean;
@@ -35,13 +36,16 @@ interface UseCreatePostReturn {
   setSelectedContentIndex: React.Dispatch<React.SetStateAction<number | null>>;
   apiError: string | null;
   wordCount: number;
-  // Add these new properties
   handleRemoveTemplate: (index: number) => void;
   handleTemplateSelection: (selectedTemplate: Template) => void;
   handleShortlistTemplates: () => Promise<void>;
+  clearLocalStorage: () => void;
 }
 
 export const useCreatePost = (): UseCreatePostReturn => {
+  const params = useParams();
+  const postId = params?.id as string | undefined;
+
   const [post, setPost] = useState<Post | null>(null);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [packs, setPacks] = useState<Pack[]>([]);
@@ -73,49 +77,61 @@ export const useCreatePost = (): UseCreatePostReturn => {
     setWordCount(updatedPost.content.trim().split(/\s+/).length);
   }, []);
 
+  const clearLocalStorage = useCallback(() => {
+    postService.clearPostData();
+  }, []);
+
   useEffect(() => {
     const loadInitialData = async () => {
       try {
         const loadedPacks = postService.getPacks();
         setPacks(loadedPacks);
 
-        const savedPost = postService.getFromLocalStorage("post");
-        if (savedPost) {
-          const parsedPost = JSON.parse(savedPost);
-          setPost(parsedPost);
-          setWordCount(parsedPost.content.trim().split(/\s+/).length);
+        let loadedPost: Post | null = null;
+
+        if (postId) {
+          // Load post by ID if available
+          loadedPost = postService.getPostById(postId);
+          if (!loadedPost) {
+            throw new Error(`Post with ID ${postId} not found`);
+          }
         } else {
-          const savedTranscript = postService.getFromLocalStorage("transcript");
-          const savedContent = postService.getFromLocalStorage("content");
-          if (savedTranscript || savedContent) {
-            const content = savedTranscript || savedContent || "";
+          // Load post from local storage if available
+          const savedPost = postService.getFromLocalStorage("post");
+          if (savedPost) {
+            loadedPost = JSON.parse(savedPost);
+          } else {
+            // Create a new post
             const newPost: Post = {
               id: Date.now().toString(),
               title: "",
-              content,
+              content: "",
               tags: [],
               tweetThreadContent: [],
-              transcript: content,
+              transcript: "",
               mergedContents: {},
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
               templateIds: [],
               templates: [],
             };
-            updatePost(newPost);
+            loadedPost = newPost;
+
+            // Save the new post to local storage
+            postService.saveToLocalStorage("post", JSON.stringify(newPost));
           }
         }
 
-        const savedTags = postService.getSuggestedTagsFromLocalStorage();
-        if (savedTags.length > 0 && post) {
-          updatePost({ ...post, tags: savedTags });
+        if (loadedPost) {
+          setPost(loadedPost);
+          setWordCount(loadedPost.content.trim().split(/\s+/).length);
         }
 
-        setProgressNotes("Loaded saved data from storage.");
+        setProgressNotes("Loaded post data.");
       } catch (error) {
         console.error("Error loading initial data:", error);
         setProgressNotes(
-          "Error loading saved data. Please try refreshing the page."
+          "Error loading post data. Please try refreshing the page."
         );
         setApiError("Failed to load initial data");
         setPacks([]);
@@ -123,7 +139,13 @@ export const useCreatePost = (): UseCreatePostReturn => {
     };
 
     loadInitialData();
-  }, [updatePost]);
+  }, [postId]);
+
+  useEffect(() => {
+    if (post) {
+      postService.saveToLocalStorage("post", JSON.stringify(post));
+    }
+  }, [post]);
 
   const handleSuggestTagsAndTemplates = async () => {
     if (!post) return;
@@ -263,6 +285,7 @@ export const useCreatePost = (): UseCreatePostReturn => {
   return {
     post,
     updatePost,
+    clearLocalStorage,
     isTemplateModalOpen,
     setIsTemplateModalOpen,
     packs,

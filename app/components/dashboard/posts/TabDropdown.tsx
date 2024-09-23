@@ -12,7 +12,7 @@ import { useCreatePost } from "@/app/hooks/useCreatePost";
 
 interface TabDropdownProps {
   activeTab: TabName;
-  setActiveTab: (tab: keyof typeof TAB_NAMES) => void;
+  setActiveTab: (tab: TabName) => void;
 }
 
 export const TabDropdown = ({ activeTab, setActiveTab }: TabDropdownProps) => {
@@ -28,7 +28,7 @@ export const TabDropdown = ({ activeTab, setActiveTab }: TabDropdownProps) => {
         {Object.values(TAB_NAMES).map((tab) => (
           <DropdownMenuItem
             key={tab}
-            onClick={() => setActiveTab(tab as keyof typeof TAB_NAMES)}
+            onClick={() => setActiveTab(tab as TabName)}
           >
             {tab}
           </DropdownMenuItem>

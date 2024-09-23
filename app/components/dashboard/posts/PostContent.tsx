@@ -6,7 +6,7 @@ import { ContentTab } from "./ContentTab";
 import { TemplateTab } from "./TemplateTab";
 import { MergeTab } from "./MergeTab";
 import { useCreatePost } from "@/app/hooks/useCreatePost";
-import { TAB_NAMES } from "@/app/constants/editorConfig";
+import { TAB_NAMES, TabName } from "@/app/constants/editorConfig";
 import { Post } from "@/app/types/post"; // Adjust the import path as needed
 import { TabDropdown } from "./TabDropdown";
 
@@ -31,9 +31,7 @@ export const PostContent: React.FC<PostContentProps> = ({
       <div className="relative">
         <Tabs
           value={activeTab}
-          onValueChange={(value) =>
-            setActiveTab(value as keyof typeof TAB_NAMES)
-          }
+          onValueChange={(value) => setActiveTab(value as TabName)} // Update type to match expected type
           className="w-full mt-10"
         >
           <TabsList className="hidden sm:flex">

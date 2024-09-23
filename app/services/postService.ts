@@ -152,7 +152,8 @@ class PostService {
     return savedTemplate ? JSON.parse(savedTemplate) : null;
   }
 
-  async clearPostData(): Promise<void> {
+  clearPostData(): void {
+    localStorage.removeItem("post");
     localStorage.removeItem("transcript");
     localStorage.removeItem("template");
     localStorage.removeItem("content");
@@ -161,7 +162,6 @@ class PostService {
     localStorage.removeItem("mergedContents");
     localStorage.removeItem("selectedTemplates");
     localStorage.removeItem("suggestedTags");
-    // Add any other items that need to be cleared
   }
 
   async suggestTags(transcript: string): Promise<string[]> {

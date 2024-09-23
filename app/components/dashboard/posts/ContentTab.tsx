@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { BUTTON_TEXTS } from "@/app/constants/editorConfig";
@@ -13,11 +13,11 @@ export const ContentTab: React.FC = () => {
   const { post, updatePost, handleSuggestTagsAndTemplates, wordCount } =
     useCreatePost();
 
-  const handleEditorUpdate = (newContent: string) => {
+  const handleContentImported = (content: string) => {
     if (post) {
       updatePost({
         ...post,
-        content: newContent,
+        content,
       });
     }
   };
@@ -31,6 +31,26 @@ export const ContentTab: React.FC = () => {
       });
     }
   };
+
+  // useEffect(() => {
+  //   if (post?.content) {
+  //     if (post) {
+  //       updatePost({
+  //         ...post,
+  //         content: post?.content,
+  //       });
+  //     }
+  //   }
+  // }, [post, updatePost]);
+
+  function handleEditorUpdate(content: string): void {
+    if (post) {
+      updatePost({
+        ...post,
+        content: content,
+      });
+    }
+  }
 
   return (
     <div className="space-y-4">

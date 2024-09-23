@@ -163,15 +163,26 @@
     [ ] Add ability to re-transcribe specific sections of audio
     [ ] Implement confidence scores for transcribed words
 
-26. Implement OpenAI Whisper Integration: ⏳ (To Do)
-    [ ] Set up OpenAI API client using the new API key
-    [ ] Create a service function to send audio data to Whisper API
-    [ ] Implement error handling for API calls
-    [ ] Update AudioRecorder component to use the new Whisper service
-    [ ] Add loading state while waiting for transcription
+26. Implement OpenAI Whisper Integration: ✅
+    [✓] Set up OpenAI API client using the new API key
+    [✓] Create a service function to send audio data to Whisper API
+    [✓] Implement error handling for API calls
+    [✓] Update AudioRecorder component to use the new Whisper service
+    [✓] Add loading state while waiting for transcription
+    [✓] Create abstract OpenAI route for handling different OpenAI API calls
     [ ] Test the integration with various audio inputs
 
-27. Implement Ideas Section:
+27. Fix linter error in useCreatePost hook: ✅
+    [✓] Ensure `loadedPost` is not null before using it
+
+28. Trigger re-render of ContentTab editor when content is imported: ✅
+    [✓] Add state management to trigger re-render
+    [✓] Update ContentHubImportModal to trigger re-render
+    [✓] Ensure state changes propagate correctly to ContentTab
+    [✓] Add a state change in ContentHubImportModal to force re-render
+    [✓] Ensure ContentTab listens to the correct state changes
+
+29. Implement Ideas Section:
     [✓] Create a new page for Ideas within the dashboard folder
     [✓] Implement a services controller for Ideas using local storage
     [✓] Create an API route for Ideas using local storage
@@ -181,14 +192,14 @@
     [ ] Implement UI for displaying and managing ideas
     [ ] Test the new Ideas functionality
 
-28. Enhance Content Bank UI: ⏳ (To Do)
+30. Enhance Content Bank UI: ⏳ (To Do)
     [ ] Implement search functionality for recordings
     [ ] Add ability to edit transcripts
     [ ] Implement pagination or infinite scroll for large numbers of recordings
     [ ] Add sorting options (e.g., by date, length of transcript)
     [ ] Implement delete functionality for recordings
 
-29. Implement Enhanced Content Bank Interface: ⏳ (In Progress)
+31. Implement Enhanced Content Bank Interface: ⏳ (In Progress)
     [✓] Update StoredRecording interface to include title, improved transcript, and tags
     [✓] Modify ContentBank component to display new recording details
     [✓] Implement AI service for generating titles
@@ -200,7 +211,7 @@
     [✓] Display tags in the UI
     [ ] Add ability to edit titles, improved transcripts, and tags
 
-30. Implement Local Storage for Posts:
+32. Implement Local Storage for Posts:
     [✓] Update CreatePostPage to save posts to local storage
     [✓] Replace 'Post to LinkedIn' button with 'Save' button
     [✓] Modify PostContent component to handle saving
@@ -213,7 +224,7 @@
     [✓] Implement ability to edit saved posts
     [ ] Add error handling and validation for saved posts
 
-31. Enhance TipTap Editor Component:
+33. Enhance TipTap Editor Component:
     [✓] Add support for read-only mode
     [✓] Adjust styling for consistency with application design
     [✓] Restore responsive prose classes for proper styling
@@ -221,15 +232,15 @@
     [ ] Implement additional markdown features (e.g., tables, code blocks)
     [ ] Add custom styles for better markdown rendering
 
-32. Implement Edit Post Functionality:
+34. Implement Edit Post Functionality:
     [✓] Create EditPostPage component
-    [✓] Modify CreatePostPage to handle both creation and editing
+    [ ] Modify CreatePostPage to handle both creation and editing
     [✓] Update useCreatePost hook to include setTags
     [✓] Update ViewPostPage to use correct edit link
     [ ] Add validation for edited posts
     [ ] Implement optimistic updates for better UX
 
-33. Implement YouTube Transcript Extraction Service Badge:
+35. Implement YouTube Transcript Extraction Service Badge:
     [✓] Add YouTube transcript extraction service badge to ContentHubImportModal
     [✓] Add YouTube transcript extraction service badge to PostContent's Content tab
     [✓] Style tags with rounded background and icon in PostContent component
@@ -240,7 +251,7 @@
     [ ] Add hover effects and animations to improve user interaction
     [ ] Ensure accessibility for all UI components
 
-34. Enhance UI Components:
+36. Enhance UI Components:
     [✓] Add YouTube transcript extraction service badge to ContentHubImportModal
     [✓] Add YouTube transcript extraction service badge to PostContent's Content tab
     [✓] Style tags with rounded background and icon in PostContent component
@@ -256,13 +267,13 @@
     [ ] Add hover effects and animations to improve user interaction
     [ ] Ensure accessibility for all UI components
 
-35. Improve Layout and Navigation: ⏳ (In Progress)
+37. Improve Layout and Navigation: ⏳ (In Progress)
     [✓] Add header to dashboard layout
     [ ] Implement breadcrumbs for better navigation
     [ ] Create a responsive design for mobile devices
     [ ] Add collapsible sidebar for smaller screens
 
-36. Implement Ideal Customer Profile (ICP) Feature:
+38. Implement Ideal Customer Profile (ICP) Feature:
     [✓] Create ICP service using local storage
     [✓] Implement API route for ICP
     [✓] Create ICP page component with ICPInfo component as empty state
@@ -270,7 +281,7 @@
     [✓] Implement UI for managing ICPs (create, edit, delete)
     [✓] Remove embedded scroll and adjust layout
     [✓] Update ICPInfo component to accept onCreateClick prop
-    [✓] Fix syntax errors in ICP page component
+    [] Fix syntax errors in ICP page component
     [✓] Ensure outer page scroll is used instead of embedded scroll
     [✓] Refactor ICPFullPageFormUpdated component
     [✓] Refactor ICPDetail component
@@ -279,7 +290,7 @@
     [✓] Merge multiple return statements in ICPPage component
     [ ] Test ICP functionality
 
-37. Enhance ICP Feature: ⏳ (In Progress)
+39. Enhance ICP Feature: ⏳ (In Progress)
     [✓] Add form validation for ICP creation and editing
     [✓] Implement error handling for ICP operations
     [✓] Add confirmation dialog for ICP deletion
@@ -288,12 +299,12 @@
     [ ] Add pagination or infinite scroll for large numbers of ICPs
     [✓] Remove embedded scroll from IcpFullPageFormUpdated component
 
-38. Optimize ICP Form Layout: ✅
+40. Optimize ICP Form Layout: ✅
     [✓] Adjust IcpFullPageFormUpdated component to use natural page scroll
     [✓] Improve responsiveness of the ICP form
     [✓] Ensure consistent styling across different screen sizes
 
-39. Implement Multi-Template Merge Feature: ✅
+41. Implement Multi-Template Merge Feature: ✅
     [✓] Update useCreatePost hook to handle multiple template selections
     [✓] Modify PostContent component to allow selection of up to 8 templates
     [✓] Update postService to handle merging with multiple templates
@@ -355,7 +366,7 @@
     [ ] Add inline comments explaining new functions and components
     [ ] Update any existing documentation about post creation process
 
-40. Refactor and Optimize Multi-Template Merge Feature: ⏳ (To Do)
+42. Refactor and Optimize Multi-Template Merge Feature: ⏳ (To Do)
     [ ] Review and optimize performance of multi-template merging
     [ ] Implement caching for merged contents to improve responsiveness
     [ ] Refactor code for better maintainability and readability
