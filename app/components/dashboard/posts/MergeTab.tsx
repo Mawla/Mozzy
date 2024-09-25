@@ -5,23 +5,19 @@ import { BUTTON_TEXTS, MESSAGES } from "@/app/constants/editorConfig";
 import dynamic from "next/dynamic";
 import { TemplateCardGrid } from "./TemplateCardGrid";
 import { TweetPreview } from "./TweetPreview";
-import { useCreatePost } from "@/app/hooks/useCreatePost";
+import { usePost } from "@/app/providers/PostProvider";
 
 const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
   ssr: false,
 });
 
 export const MergeTab: React.FC = () => {
-  const {
-    post,
-    updatePost,
-    isMerging,
-    handleMerge,
-    handleSave,
-    selectedContentIndex,
-    setSelectedContentIndex,
-  } = useCreatePost();
+  const { post, updatePost, handleMerge, handleSave } = usePost();
 
+  const [isMerging, setIsMerging] = useState(false);
+  const [selectedContentIndex, setSelectedContentIndex] = useState<
+    number | null
+  >(null);
   const [editorContent, setEditorContent] = useState("");
 
   const mergedContents = useMemo(
@@ -54,7 +50,7 @@ export const MergeTab: React.FC = () => {
     if (selectedContentIndex === null && templates.length > 0) {
       setSelectedContentIndex(0);
     }
-  }, [templates, selectedContentIndex, setSelectedContentIndex]);
+  }, [templates, selectedContentIndex]);
 
   useEffect(() => {
     if (selectedContentIndex !== null && templates[selectedContentIndex]) {
@@ -77,6 +73,12 @@ export const MergeTab: React.FC = () => {
 
   const handleTemplateClick = (index: number) => {
     setSelectedContentIndex(index);
+  };
+
+  const handleMergeClick = async () => {
+    setIsMerging(true);
+    await handleMerge();
+    setIsMerging(false);
   };
 
   return (
@@ -113,7 +115,7 @@ export const MergeTab: React.FC = () => {
           </div>
         ) : (
           <Button
-            onClick={handleMerge}
+            onClick={handleMergeClick}
             disabled={!contentToMerge || templates.length === 0}
             variant="outline"
           >

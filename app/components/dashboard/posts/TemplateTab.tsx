@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { BUTTON_TEXTS } from "@/app/constants/editorConfig";
 import { Button } from "@/components/ui/button";
 import { TemplateCardGrid } from "./TemplateCardGrid";
-import { useCreatePost } from "@/app/hooks/useCreatePost";
+import { usePost } from "@/app/providers/PostProvider";
+import TemplateSelectionModal from "./TemplateSelectionModal";
+import { postService } from "@/app/services/postService";
 
 export const TemplateTab: React.FC = () => {
   const {
@@ -11,14 +13,27 @@ export const TemplateTab: React.FC = () => {
     handleShortlistTemplates,
     handleRemoveTemplate,
     handleTemplateSelection,
-    isLoading,
-    setIsTemplateModalOpen,
-  } = useCreatePost();
+  } = usePost();
+
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [filteredPacks, setFilteredPacks] = useState(postService.getPacks());
+  const [filter, setFilter] = useState<
+    "all" | "recent" | "favorite" | "suggested" | "shortlisted"
+  >("all");
 
   const selectedTemplates = post?.templates || [];
 
   const openTemplateModal = () => {
     setIsTemplateModalOpen(true);
+  };
+
+  const handleFilterChange = (
+    newFilter: "all" | "recent" | "favorite" | "suggested" | "shortlisted"
+  ) => {
+    setFilter(newFilter);
+    // Here you would implement the logic to filter the packs based on the selected filter
+    // For now, we'll just use all packs
+    setFilteredPacks(postService.getPacks());
   };
 
   return (
@@ -31,13 +46,22 @@ export const TemplateTab: React.FC = () => {
       />
 
       <div className="flex justify-between items-center">
-        <Button onClick={handleSuggestTagsAndTemplates} disabled={isLoading}>
-          {isLoading ? "Suggesting..." : BUTTON_TEXTS.SUGGEST_TEMPLATE}
+        <Button onClick={handleSuggestTagsAndTemplates}>
+          {BUTTON_TEXTS.SUGGEST_TEMPLATE}
         </Button>
-        <Button onClick={handleShortlistTemplates} disabled={isLoading}>
-          {isLoading ? "Shortlisting..." : BUTTON_TEXTS.SHORTLIST_TEMPLATES}
+        <Button onClick={handleShortlistTemplates}>
+          {BUTTON_TEXTS.SHORTLIST_TEMPLATES}
         </Button>
       </div>
+
+      <TemplateSelectionModal
+        isOpen={isTemplateModalOpen}
+        onClose={() => setIsTemplateModalOpen(false)}
+        filteredPacks={filteredPacks}
+        onSelectTemplate={handleTemplateSelection}
+        filter={filter}
+        setFilter={handleFilterChange}
+      />
     </div>
   );
 };

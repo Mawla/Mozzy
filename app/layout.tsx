@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css"; // Ensure this import is present
 import "@/app/styles/tiptap.css";
+import { PostProvider } from "@/app/providers/PostProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,8 +17,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.className}>
-      <body>{children}</body>
+    <html lang="en">
+      <body>
+        <PostProvider>{children}</PostProvider>
+      </body>
     </html>
   );
 }

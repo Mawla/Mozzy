@@ -1,25 +1,15 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ContentTab } from "./ContentTab";
 import { TemplateTab } from "./TemplateTab";
 import { MergeTab } from "./MergeTab";
-import { useCreatePost } from "@/app/hooks/useCreatePost";
 import { TAB_NAMES, TabName } from "@/app/constants/editorConfig";
-import { Post } from "@/app/types/post"; // Adjust the import path as needed
 import { TabDropdown } from "./TabDropdown";
 
-interface PostContentProps {
-  post: Post | null;
-  updatePost: (updatedPost: Post) => void;
-}
-
-export const PostContent: React.FC<PostContentProps> = ({
-  post,
-  updatePost,
-}) => {
-  const { activeTab, setActiveTab } = useCreatePost();
+export const PostContent: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<TabName>(TAB_NAMES.CONTENT);
 
   return (
     <div className="space-y-4">
@@ -31,7 +21,7 @@ export const PostContent: React.FC<PostContentProps> = ({
       <div className="relative">
         <Tabs
           value={activeTab}
-          onValueChange={(value) => setActiveTab(value as TabName)} // Update type to match expected type
+          onValueChange={(value) => setActiveTab(value as TabName)}
           className="w-full mt-10"
         >
           <TabsList className="hidden sm:flex">

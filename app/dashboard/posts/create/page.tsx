@@ -1,6 +1,6 @@
 "use client";
-import React, { useEffect, useCallback } from "react";
-import { useCreatePost } from "@/app/hooks/useCreatePost";
+import React from "react";
+import { usePost } from "@/app/providers/PostProvider";
 import { PostHeader } from "@/app/components/dashboard/posts/PostHeader";
 import { PostContent } from "@/app/components/dashboard/posts/PostContent";
 import { ProgressNotes } from "@/app/components/dashboard/posts/ProgressNotes";
@@ -9,35 +9,19 @@ import ContentHubImportModal from "@/app/components/dashboard/posts/ContentHubIm
 import ApiErrorMessage from "@/app/components/ApiErrorMessage";
 import { Trash2 } from "lucide-react";
 import { BUTTON_TEXTS } from "@/app/constants/editorConfig";
-import { postService } from "@/app/services/postService";
 import { useState } from "react";
-import debounce from "lodash/debounce";
-import { Post } from "@/app/types/post";
 
 const CreatePostPage = () => {
-  const { post, updatePost, progressNotes, apiError } = useCreatePost();
+  const { post, updatePost, clearLocalStorage, handleSave } = usePost();
   const [isContentHubModalOpen, setIsContentHubModalOpen] = useState(false);
-
-  const debouncedSavePost = useCallback(
-    debounce((postToSave: Post) => {
-      postService.saveToLocalStorage("post", JSON.stringify(postToSave));
-    }, 500),
-    []
-  );
-
-  useEffect(() => {
-    if (post) {
-      debouncedSavePost(post);
-    }
-  }, [post, debouncedSavePost]);
+  const [progressNotes, setProgressNotes] = useState("");
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const handleClear = () => {
-    if (post) {
-      updatePost({
-        ...post,
-        content: "",
-        title: "",
-      });
+    if (window.confirm("Are you sure you want to clear all data?")) {
+      clearLocalStorage();
+      setProgressNotes("");
+      setApiError(null);
     }
   };
 
@@ -70,19 +54,17 @@ const CreatePostPage = () => {
           {BUTTON_TEXTS.CLEAR}
         </Button>
       </div>
-      <PostContent post={post} updatePost={updatePost} />
+      <PostContent />
       <ProgressNotes progressNotes={progressNotes} />
       <ContentHubImportModal
         isOpen={isContentHubModalOpen}
         onClose={() => setIsContentHubModalOpen(false)}
         onImport={handleImportTranscript}
       />
-      {apiError && post && (
-        <ApiErrorMessage
-          error={apiError}
-          onClose={() => updatePost({ ...post, apiError: null } as Post)}
-        />
+      {apiError && (
+        <ApiErrorMessage error={apiError} onClose={() => setApiError(null)} />
       )}
+      <Button onClick={handleSave}>Save Post</Button>
     </div>
   );
 };

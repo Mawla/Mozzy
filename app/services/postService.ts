@@ -304,40 +304,37 @@ class PostService {
     return savedPosts ? JSON.parse(savedPosts) : [];
   }
 
-  handleSave(post: Partial<Post>): void {
-    const savedPosts = this.getSavedPosts();
-    const now = new Date().toISOString();
-
-    if (post.id) {
-      // Update existing post
+  handleSave = async (post: Post): Promise<Post> => {
+    try {
+      // Update or add the post to local storage
+      const savedPosts = this.getSavedPosts();
       const existingPostIndex = savedPosts.findIndex((p) => p.id === post.id);
+
       if (existingPostIndex !== -1) {
+        // Update existing post
         savedPosts[existingPostIndex] = {
           ...savedPosts[existingPostIndex],
           ...post,
-          updatedAt: now,
         };
+      } else {
+        // Add new post
+        savedPosts.push(post);
       }
-    } else {
-      // Add new post
-      const newPost: Post = {
-        id: Date.now().toString(),
-        title: post.title || "",
-        content: post.transcript || "", // Use transcript as content for new posts
-        tags: post.tags || [],
-        tweetThreadContent: post.tweetThreadContent || [],
-        transcript: post.transcript || "",
-        mergedContents: post.mergedContents || {},
-        createdAt: now,
-        updatedAt: now,
-        templateIds: post.templateIds || [],
-        templates: post.templates || [],
-      };
-      savedPosts.push(newPost);
-    }
 
-    localStorage.setItem("savedPosts", JSON.stringify(savedPosts));
-  }
+      localStorage.setItem("savedPosts", JSON.stringify(savedPosts));
+
+      // Update the post's updatedAt timestamp
+      const updatedPost = {
+        ...post,
+        updatedAt: new Date().toISOString(),
+      };
+
+      return updatedPost;
+    } catch (error) {
+      console.error("Error saving post:", error);
+      throw error;
+    }
+  };
 
   getPosts(): Post[] {
     const savedPosts = localStorage.getItem("savedPosts");
@@ -371,53 +368,6 @@ class PostService {
     const savedPosts = this.getSavedPosts();
     const updatedPosts = savedPosts.filter((p) => p.id !== id);
     localStorage.setItem("savedPosts", JSON.stringify(updatedPosts));
-  }
-
-  async createOrUpdatePost(postData: Partial<Post>): Promise<Post> {
-    const now = new Date().toISOString();
-    let post: Post;
-
-    if (postData.id) {
-      // Update existing post
-      const existingPost = this.getPostById(postData.id);
-      if (!existingPost) {
-        throw new Error("Post not found");
-      }
-      post = {
-        ...existingPost,
-        ...postData,
-        updatedAt: now,
-      };
-    } else {
-      // Create new post
-      post = {
-        id: Date.now().toString(),
-        title: postData.title || "",
-        content: postData.content || "",
-        tags: postData.tags || [],
-        tweetThreadContent: postData.tweetThreadContent || [],
-        transcript: postData.transcript || "",
-        mergedContents: postData.mergedContents || {},
-        createdAt: now,
-        updatedAt: now,
-        templateIds: postData.templateIds || [],
-        templates: postData.templates || [],
-      };
-    }
-
-    this.savePost(post);
-    return post;
-  }
-
-  private savePost(post: Post): void {
-    const savedPosts = this.getSavedPosts();
-    const existingIndex = savedPosts.findIndex((p) => p.id === post.id);
-    if (existingIndex !== -1) {
-      savedPosts[existingIndex] = post;
-    } else {
-      savedPosts.push(post);
-    }
-    localStorage.setItem("savedPosts", JSON.stringify(savedPosts));
   }
 
   async suggestTagsAndTemplates(
@@ -471,6 +421,71 @@ class PostService {
 
     return { mergedContents, suggestedTitle };
   }
+
+  handleSuggestTagsAndTemplates = async (
+    post: Post | null,
+    updatePost: (updates: Partial<Post>) => void
+  ) => {
+    if (!post) return;
+    try {
+      const allTemplates = this.getPacks().flatMap((pack) => pack.templates);
+      const { suggestedTags, suggestedTemplates } =
+        await this.suggestTagsAndTemplates(post.content, allTemplates);
+      updatePost({ tags: suggestedTags, templates: suggestedTemplates });
+    } catch (error) {
+      console.error("Error suggesting tags and templates:", error);
+    }
+  };
+
+  handleMerge = async (
+    post: Post | null,
+    updatePost: (updates: Partial<Post>) => void
+  ) => {
+    if (!post) return;
+    try {
+      const { mergedContents, suggestedTitle } =
+        await this.mergeContentsAndSuggestTitle(
+          post.content,
+          post.templates || []
+        );
+      updatePost({ mergedContents, title: post.title || suggestedTitle });
+    } catch (error) {
+      console.error("Error merging content:", error);
+    }
+  };
+
+  handleShortlistTemplates = async (
+    post: Post | null,
+    updatePost: (updates: Partial<Post>) => void
+  ) => {
+    if (!post) return;
+    try {
+      const allTemplates = this.getPacks().flatMap((pack) => pack.templates);
+      const shortlistedTemplates = await this.shortlistTemplatesByTags(
+        post.tags,
+        allTemplates
+      );
+      updatePost({
+        templates: shortlistedTemplates,
+        templateIds: shortlistedTemplates.map((t) => t.id),
+      });
+    } catch (error) {
+      console.error("Error shortlisting templates:", error);
+    }
+  };
+
+  clearLocalStorage = () => {
+    localStorage.removeItem("post");
+    localStorage.removeItem("transcript");
+    localStorage.removeItem("template");
+    localStorage.removeItem("content");
+    localStorage.removeItem("merge");
+    localStorage.removeItem("selectedTemplate");
+    localStorage.removeItem("mergedContents");
+    localStorage.removeItem("selectedTemplates");
+    localStorage.removeItem("suggestedTags");
+  };
+  // ... (rest of the code remains unchanged)
 }
 
 export const postService = new PostService();

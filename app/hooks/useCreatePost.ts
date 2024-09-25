@@ -13,7 +13,7 @@ interface UseCreatePostReturn {
   packs: Pack[];
   selectedPack: Pack | null;
   activeTab: TabName;
-  setActiveTab: (tab: TabName) => void;
+  setActiveTab: (tab: TabName) => void; // Update type to match expected type
   isMerging: boolean;
   progressNotes: string;
   isLoading: boolean;

@@ -1,56 +1,33 @@
-import React, { useEffect } from "react";
+import React, { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { BUTTON_TEXTS } from "@/app/constants/editorConfig";
 import dynamic from "next/dynamic";
-import { useCreatePost } from "@/app/hooks/useCreatePost";
+import { usePost } from "@/app/providers/PostProvider";
 
 const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
   ssr: false,
 });
 
 export const ContentTab: React.FC = () => {
-  const { post, updatePost, handleSuggestTagsAndTemplates, wordCount } =
-    useCreatePost();
+  const { post, updatePost, handleSuggestTagsAndTemplates } = usePost();
 
-  const handleContentImported = (content: string) => {
+  const wordCount = useMemo(() => {
+    return post?.content.trim().split(/\s+/).length || 0;
+  }, [post?.content]);
+
+  const handleEditorUpdate = (content: string) => {
     if (post) {
-      updatePost({
-        ...post,
-        content,
-      });
+      updatePost({ content });
     }
   };
 
   const removeTag = (tagToRemove: string) => {
     if (post && post.tags) {
       const updatedTags = post.tags.filter((tag) => tag !== tagToRemove);
-      updatePost({
-        ...post,
-        tags: updatedTags,
-      });
+      updatePost({ tags: updatedTags });
     }
   };
-
-  // useEffect(() => {
-  //   if (post?.content) {
-  //     if (post) {
-  //       updatePost({
-  //         ...post,
-  //         content: post?.content,
-  //       });
-  //     }
-  //   }
-  // }, [post, updatePost]);
-
-  function handleEditorUpdate(content: string): void {
-    if (post) {
-      updatePost({
-        ...post,
-        content: content,
-      });
-    }
-  }
 
   return (
     <div className="space-y-4">
