@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -39,6 +39,25 @@ export function AudioRecorder({
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isReviewing, setIsReviewing] = useState(false);
 
+  const handleTranscribe = useCallback(async () => {
+    if (audioBlob) {
+      setIsTranscribing(true);
+      try {
+        const url = URL.createObjectURL(audioBlob);
+        setAudioUrl(url);
+
+        const transcribedText = await transcribeAudio(audioBlob);
+        setTranscript(transcribedText);
+        setIsReviewing(true);
+      } catch (error) {
+        console.error("Error transcribing audio:", error);
+        setTranscript("Error transcribing audio. Please try again.");
+      } finally {
+        setIsTranscribing(false);
+      }
+    }
+  }, [audioBlob]);
+
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     if (isRecording && !isPaused) {
@@ -57,7 +76,7 @@ export function AudioRecorder({
     if (!isRecording && audioBlob) {
       handleTranscribe();
     }
-  }, [isRecording, audioBlob]);
+  }, [isRecording, audioBlob, handleTranscribe]);
 
   const handleToggleRecording = async () => {
     if (isRecording) {
@@ -68,25 +87,6 @@ export function AudioRecorder({
       setTranscript("");
       setAudioUrl(null);
       setIsReviewing(false);
-    }
-  };
-
-  const handleTranscribe = async () => {
-    if (audioBlob) {
-      setIsTranscribing(true);
-      try {
-        const url = URL.createObjectURL(audioBlob);
-        setAudioUrl(url);
-
-        const transcribedText = await transcribeAudio(audioBlob);
-        setTranscript(transcribedText);
-        setIsReviewing(true);
-      } catch (error) {
-        console.error("Error transcribing audio:", error);
-        setTranscript("Error transcribing audio. Please try again.");
-      } finally {
-        setIsTranscribing(false);
-      }
     }
   };
 
