@@ -31,7 +31,11 @@ export async function GET() {
   } catch (error) {
     console.error("Error reading alltemplates.json:", error);
     return NextResponse.json(
-      { error: `Error fetching templates: ${error.message}` },
+      {
+        error: `Error fetching templates: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      },
       { status: 500 }
     );
   }

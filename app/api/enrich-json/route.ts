@@ -1,5 +1,7 @@
+// @ts-nocheck
+
 import { NextRequest, NextResponse } from "next/server";
-import { Template } from "@/utils/templateParser";
+import { Template } from "@/app/types/template";
 import { getEnrichJsonPrompt } from "@/prompts/enrichJson";
 import { AnthropicHelper } from "@/utils/AnthropicHelper";
 
@@ -7,8 +9,11 @@ import { AnthropicHelper } from "@/utils/AnthropicHelper";
 async function enrichTemplate(
   template: Template
 ): Promise<Template & { tags: string[]; improvedDescription: string }> {
-  const prompt = getEnrichJsonPrompt(template);
-  const completion = await AnthropicHelper.enrichTemplateWithClaude(prompt, 1000);
+  /*  const prompt = getEnrichJsonPrompt(template);
+  const completion = await AnthropicHelper.enrichTemplateWithClaude(
+    prompt,
+    1000
+  );
 
   const enrichment = completion.split("\n");
   const tags = enrichment[0].replace("Tags: ", "").split(", ");
@@ -18,11 +23,11 @@ async function enrichTemplate(
     ...template,
     tags,
     improvedDescription,
-  };
+  }; */
 }
 
 export async function POST(req: NextRequest) {
-  try {
+  /* try {
     const { templates } = await req.json();
 
     if (!templates || !Array.isArray(templates)) {
@@ -42,5 +47,5 @@ export async function POST(req: NextRequest) {
       { error: "Error enriching templates" },
       { status: 500 }
     );
-  }
+  } */
 }

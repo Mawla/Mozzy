@@ -26,15 +26,11 @@ export const TemplateTab: React.FC = () => {
 
   useEffect(() => {
     setIsClient(true);
-    console.log("TemplateTab mounted, post:", post);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    console.log("Current post:", post);
     console.log("Current post templates:", post?.templates);
-    console.log("Current post templateIds:", post?.templateIds);
-  }, [post]);
+  }, [post?.templates]);
 
   const openTemplateModal = () => {
     setIsTemplateModalOpen(true);
@@ -50,24 +46,12 @@ export const TemplateTab: React.FC = () => {
   };
 
   const handleTemplateRemove = (index: number) => {
-    console.log("Removing template at index:", index);
     handleRemoveTemplate(index);
   };
 
   const handleTemplateSelect = (template: Template) => {
-    console.log("Selected template:", template);
     handleTemplateSelection(template);
     setIsTemplateModalOpen(false);
-  };
-
-  const handleSuggestTemplates = async () => {
-    console.log("Suggesting templates...");
-    await handleSuggestTagsAndTemplates();
-  };
-
-  const handleShortlist = async () => {
-    console.log("Shortlisting templates...");
-    await handleShortlistTemplates();
   };
 
   return (
@@ -82,10 +66,10 @@ export const TemplateTab: React.FC = () => {
           />
 
           <div className="flex justify-between items-center">
-            <Button onClick={handleSuggestTemplates}>
+            <Button onClick={handleSuggestTagsAndTemplates}>
               {BUTTON_TEXTS.SUGGEST_TEMPLATE}
             </Button>
-            <Button onClick={handleShortlist}>
+            <Button onClick={handleShortlistTemplates}>
               {BUTTON_TEXTS.SHORTLIST_TEMPLATES}
             </Button>
           </div>
