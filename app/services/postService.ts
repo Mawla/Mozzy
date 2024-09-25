@@ -343,25 +343,11 @@ class PostService {
 
   getPostById(id: string): Post | null {
     const posts = this.getPosts();
-    const post = posts.find((p: Post) => p.id === id);
-
+    const post = posts.find((p) => p.id === id);
     if (post) {
-      // Fetch templates for the post
-      const templates = this.getTemplatesForPost(post.templateIds);
-      console.log("Templates fetched for post:", templates); // Add this log
-      return { ...post, templates };
+      return post;
     }
-
     return null;
-  }
-
-  private getTemplatesForPost(templateIds: string[] | undefined): Template[] {
-    if (!templateIds || templateIds.length === 0) {
-      return [];
-    }
-    // Fetch templates from the actual source (e.g., API or database)
-    const allTemplates = this.getPacks().flatMap((pack) => pack.templates);
-    return allTemplates.filter((template) => templateIds.includes(template.id));
   }
 
   deletePost(id: string): void {
@@ -485,7 +471,43 @@ class PostService {
     localStorage.removeItem("selectedTemplates");
     localStorage.removeItem("suggestedTags");
   };
-  // ... (rest of the code remains unchanged)
+
+  savePostToLocalStorage(post: Post): void {
+    const posts = this.getPosts();
+    const index = posts.findIndex((p) => p.id === post.id);
+    if (index !== -1) {
+      posts[index] = post;
+    } else {
+      posts.push(post);
+    }
+    localStorage.setItem("posts", JSON.stringify(posts));
+  }
+
+  getPostFromLocalStorage(id: string): Post | null {
+    const posts = this.getPosts();
+    return posts.find((p) => p.id === id) || null;
+  }
+
+  createNewPost(): Post {
+    const newPost: Post = {
+      id: Date.now().toString(),
+      title: "",
+      content: "",
+      tags: [],
+      tweetThreadContent: [],
+      transcript: "",
+      mergedContents: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      templateIds: [],
+      templates: [],
+    };
+    // Instead of modifying existing posts, we'll add this new post to the list
+    const existingPosts = this.getPosts();
+    existingPosts.push(newPost);
+    localStorage.setItem("savedPosts", JSON.stringify(existingPosts));
+    return newPost;
+  }
 }
 
 export const postService = new PostService();

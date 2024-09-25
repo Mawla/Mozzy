@@ -11,10 +11,11 @@ export const BUTTON_TEXTS = {
   SUGGEST_TEMPLATE: "Suggest Template",
   SHORTLIST_TEMPLATES: "Shortlist Templates",
   CLEAR: "Clear",
-  MERGE_CONTENT: "Merge Content and Template",
+  MERGE_CONTENT: "Merge Content",
   POST_TO_LINKEDIN: "Post to LinkedIn",
-  SUGGEST_TAGS: "Suggest Tags", // Add this line
-  SAVE: "Save Post",
+  SUGGEST_TAGS: "Suggest Tags",
+  SAVE: "Save",
+  NEW_POST: "New Post", // Add this line
 };
 
 export const PLACEHOLDERS = {

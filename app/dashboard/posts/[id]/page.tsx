@@ -72,7 +72,7 @@ const ViewPostPage = ({ params }: { params: { id: string } }) => {
         )}
       </div>
 
-      <PostContent post={post} isViewMode={false} onSave={handleSave} />
+      <PostContent />
     </div>
   );
 };

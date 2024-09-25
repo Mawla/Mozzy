@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { usePost } from "@/app/providers/PostProvider";
 import { PostHeader } from "@/app/components/dashboard/posts/PostHeader";
 import { PostContent } from "@/app/components/dashboard/posts/PostContent";
@@ -7,23 +7,19 @@ import { ProgressNotes } from "@/app/components/dashboard/posts/ProgressNotes";
 import { Button } from "@/components/ui/button";
 import ContentHubImportModal from "@/app/components/dashboard/posts/ContentHubImportModal";
 import ApiErrorMessage from "@/app/components/ApiErrorMessage";
-import { Trash2 } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { BUTTON_TEXTS } from "@/app/constants/editorConfig";
 import { useState } from "react";
 
 const CreatePostPage = () => {
-  const { post, updatePost, clearLocalStorage, handleSave } = usePost();
+  const { post, updatePost, createNewPost, handleSave } = usePost();
   const [isContentHubModalOpen, setIsContentHubModalOpen] = useState(false);
   const [progressNotes, setProgressNotes] = useState("");
   const [apiError, setApiError] = useState<string | null>(null);
 
-  const handleClear = () => {
-    if (window.confirm("Are you sure you want to clear all data?")) {
-      clearLocalStorage();
-      setProgressNotes("");
-      setApiError(null);
-    }
-  };
+  useEffect(() => {
+    createNewPost();
+  }, [createNewPost]);
 
   const handleImportTranscript = (transcript: string) => {
     if (post) {
@@ -44,14 +40,6 @@ const CreatePostPage = () => {
         />
         <Button onClick={() => setIsContentHubModalOpen(true)} className="ml-4">
           Import Content
-        </Button>
-        <Button
-          onClick={handleClear}
-          className="ml-4 text-destructive"
-          variant="ghost"
-        >
-          <Trash2 className="w-4 h-4 mr-2" />
-          {BUTTON_TEXTS.CLEAR}
         </Button>
       </div>
       <PostContent />

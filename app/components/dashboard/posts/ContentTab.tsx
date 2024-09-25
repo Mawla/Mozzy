@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { BUTTON_TEXTS } from "@/app/constants/editorConfig";
@@ -7,10 +7,16 @@ import { usePost } from "@/app/providers/PostProvider";
 
 const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
   ssr: false,
+  loading: () => <p>Loading editor...</p>,
 });
 
 export const ContentTab: React.FC = () => {
   const { post, updatePost, handleSuggestTagsAndTemplates } = usePost();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const wordCount = useMemo(() => {
     return post?.content.trim().split(/\s+/).length || 0;
@@ -31,11 +37,13 @@ export const ContentTab: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      <TipTapEditor
-        content={post?.content || ""}
-        onUpdate={handleEditorUpdate}
-        placeholder="Start typing or paste your transcript here..."
-      />
+      {isClient && (
+        <TipTapEditor
+          content={post?.content || ""}
+          onUpdate={handleEditorUpdate}
+          placeholder="Start typing or paste your transcript here..."
+        />
+      )}
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <Button onClick={handleSuggestTagsAndTemplates}>

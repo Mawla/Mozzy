@@ -1,33 +1,23 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
-interface SavedPost {
-  id: string;
-  title: string;
-  content: string;
-  transcript: string;
-  mergedContent: string;
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-}
+import { usePost } from "@/app/providers/PostProvider";
 
 const PostsPage = () => {
-  const [savedPosts, setSavedPosts] = useState<SavedPost[]>([]);
   const router = useRouter();
+  const { posts, loadPost, loadPosts } = usePost();
 
   useEffect(() => {
-    const posts = JSON.parse(localStorage.getItem("savedPosts") || "[]");
-    setSavedPosts(posts);
-  }, []);
+    loadPosts();
+  }, [loadPosts]);
 
   const handlePostClick = (id: string) => {
+    loadPost(id);
     router.push(`/dashboard/posts/${id}`);
   };
 
@@ -40,7 +30,7 @@ const PostsPage = () => {
         </Link>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {savedPosts.map((post) => (
+        {posts.map((post) => (
           <Card
             key={post.id}
             className="cursor-pointer hover:shadow-md transition-shadow duration-200"
@@ -61,7 +51,7 @@ const PostsPage = () => {
                 ))}
               </div>
               <p className="text-sm text-gray-700 line-clamp-3">
-                {post.mergedContent}
+                {post.content}
               </p>
             </CardContent>
           </Card>

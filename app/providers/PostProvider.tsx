@@ -14,6 +14,8 @@ import { Template } from "@/app/types/template";
 interface PostContextType {
   post: Post | null;
   updatePost: (updates: Partial<Post>) => void;
+  createNewPost: () => void;
+  loadPost: (id: string) => void;
   handleSuggestTagsAndTemplates: () => Promise<void>;
   handleMerge: () => Promise<void>;
   handleSave: () => Promise<void>;
@@ -22,6 +24,8 @@ interface PostContextType {
   handleRemoveTemplate: (index: number) => void;
   handleTemplateSelection: (selectedTemplate: Template) => void;
   handleShortlistTemplates: () => Promise<void>;
+  posts: Post[];
+  loadPosts: () => void;
 }
 
 const PostContext = createContext<PostContextType | undefined>(undefined);
@@ -39,44 +43,30 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [post, setPost] = useState<Post | null>(null);
   const [wordCount, setWordCount] = useState(0);
+  const [posts, setPosts] = useState<Post[]>([]);
 
-  useEffect(() => {
-    const loadInitialPost = async () => {
-      const savedPost = postService.getFromLocalStorage("post");
-      if (savedPost) {
-        const loadedPost = JSON.parse(savedPost);
-        setPost(loadedPost);
-        setWordCount(loadedPost.content.trim().split(/\s+/).length);
-      } else {
-        const newPost: Post = {
-          id: Date.now().toString(),
-          title: "",
-          content: "",
-          tags: [],
-          tweetThreadContent: [],
-          transcript: "",
-          mergedContents: {},
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          templateIds: [],
-          templates: [],
-        };
-        setPost(newPost);
-        postService.saveToLocalStorage("post", JSON.stringify(newPost));
-      }
-    };
-
-    loadInitialPost();
+  const loadPost = useCallback((id: string) => {
+    const loadedPost = postService.getPostById(id);
+    if (loadedPost) {
+      setPost(loadedPost);
+      setWordCount(loadedPost.content.trim().split(/\s+/).length);
+    }
   }, []);
 
   const updatePost = useCallback((updates: Partial<Post>) => {
     setPost((prevPost) => {
       if (!prevPost) return null;
       const updatedPost = { ...prevPost, ...updates };
-      postService.saveToLocalStorage("post", JSON.stringify(updatedPost));
+      postService.savePostToLocalStorage(updatedPost);
       setWordCount(updatedPost.content.trim().split(/\s+/).length);
       return updatedPost;
     });
+  }, []);
+
+  const createNewPost = useCallback(() => {
+    const newPost = postService.createNewPost();
+    setPost(newPost);
+    setWordCount(0);
   }, []);
 
   const handleSuggestTagsAndTemplates = async () => {
@@ -167,11 +157,22 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [post, updatePost]);
 
+  const loadPosts = useCallback(() => {
+    const loadedPosts = postService.getPosts();
+    setPosts(loadedPosts);
+  }, []);
+
+  useEffect(() => {
+    loadPosts();
+  }, [loadPosts]);
+
   return (
     <PostContext.Provider
       value={{
         post,
         updatePost,
+        createNewPost,
+        loadPost,
         handleSuggestTagsAndTemplates,
         handleMerge,
         handleSave,
@@ -180,6 +181,8 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({
         handleRemoveTemplate,
         handleTemplateSelection,
         handleShortlistTemplates,
+        posts,
+        loadPosts,
       }}
     >
       {children}

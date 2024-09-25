@@ -9,6 +9,7 @@ import { usePost } from "@/app/providers/PostProvider";
 
 const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
   ssr: false,
+  loading: () => <p>Loading editor...</p>,
 });
 
 export const MergeTab: React.FC = () => {
@@ -19,12 +20,22 @@ export const MergeTab: React.FC = () => {
     number | null
   >(null);
   const [editorContent, setEditorContent] = useState("");
+  const [isClient, setIsClient] = useState(false);
 
   const mergedContents = useMemo(
     () => post?.mergedContents || {},
     [post?.mergedContents]
   );
   const templates = useMemo(() => post?.templates || [], [post?.templates]);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    console.log("Current templates:", templates);
+    console.log("Current mergedContents:", mergedContents);
+  }, [templates, mergedContents]);
 
   const handleEditorUpdate = (newContent: string) => {
     if (post && templates.length > 0 && selectedContentIndex !== null) {
@@ -96,11 +107,13 @@ export const MergeTab: React.FC = () => {
 
       <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
         <div className="w-full sm:w-1/2">
-          <TipTapEditor
-            content={editorContent}
-            onUpdate={(newContent) => handleEditorUpdate(newContent)}
-            placeholder={placeholderMessage}
-          />
+          {isClient && (
+            <TipTapEditor
+              content={editorContent}
+              onUpdate={(newContent) => handleEditorUpdate(newContent)}
+              placeholder={placeholderMessage}
+            />
+          )}
         </div>
         <div className="w-full sm:w-1/2">
           <TweetPreview content={editorContent} />
