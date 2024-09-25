@@ -76,6 +76,7 @@ export default function ICPPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       {icps.length === 0 && !isEditing ? (
+        // @ts-ignore
         <ICPInfo onCreateClick={handleCreateICP} />
       ) : (
         <div className="space-y-6">

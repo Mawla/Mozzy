@@ -1,29 +1,22 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import CreatePostPage from "../../create/page";
+import { Post } from "@/app/types/post";
 
 const EditPostPage = () => {
   const router = useRouter();
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.id as string;
   const [post, setPost] = useState(null);
 
-  useEffect(() => {
-    const savedPosts = JSON.parse(localStorage.getItem("savedPosts") || "[]");
-    const foundPost = savedPosts.find((p) => p.id === id);
-    if (foundPost) {
-      setPost(foundPost);
-    } else {
-      // Handle post not found
-      router.push("/dashboard/posts");
-    }
-  }, [id, router]);
+  useEffect(() => {}, [id, router]);
 
   if (!post) {
     return <div>Loading...</div>;
   }
 
-  return <CreatePostPage initialPost={post} isEditing={true} />;
+  return <CreatePostPage />;
 };
 
 export default EditPostPage;

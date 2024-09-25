@@ -18,10 +18,9 @@ export const RemoveFieldModal: React.FC<RemoveFieldModalProps> = ({
   sampleTemplate,
 }) => {
   const [selectedField, setSelectedField] = useState<string>("");
-
-  const allFields = [
-    ...new Set([...Object.keys(samplePack), ...Object.keys(sampleTemplate)]),
-  ];
+  const allFields = Array.from(
+    new Set([...Object.keys(samplePack), ...Object.keys(sampleTemplate)])
+  );
 
   return (
     <Transition appear show={isOpen} as={Fragment}>

@@ -6,8 +6,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Pack } from "@/utils/templateParser";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Pack } from "@/app/types/template";
 
 interface PackSelectionModalProps {
   isOpen: boolean;

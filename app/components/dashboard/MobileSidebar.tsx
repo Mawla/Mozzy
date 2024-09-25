@@ -29,7 +29,7 @@ const MobileSidebar = () => {
           href="/dashboard/posts"
           icon={FileText}
           label="Posts"
-          active={pathname.startsWith("/dashboard/posts")}
+          active={pathname?.startsWith("/dashboard/posts") ?? false}
         />
         <NavItem
           href="/dashboard/analytics"
