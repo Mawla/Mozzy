@@ -56,10 +56,7 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({
   const updatePost = useCallback((updates: Partial<Post>) => {
     setPost((prevPost) => {
       if (!prevPost) return null;
-      const updatedPost = { ...prevPost, ...updates };
-      postService.savePostToLocalStorage(updatedPost);
-      setWordCount(updatedPost.content.trim().split(/\s+/).length);
-      return updatedPost;
+      return { ...prevPost, ...updates };
     });
   }, []);
 

@@ -8,6 +8,7 @@ import {
   generateImprovedTranscriptPrompt,
   generateSummaryPrompt,
 } from "@/prompts/anthropicPrompts";
+import { refinePodcastTranscriptPrompt } from "@/prompts/refinePodcastTranscript";
 import { Template } from "@/app/types/template";
 
 // Define an enum for actions
@@ -20,6 +21,7 @@ enum AnthropicAction {
   GENERATE_SUMMARY = "generateSummary",
   MERGE_MULTIPLE_CONTENTS = "mergeMultipleContents",
   SUGGEST_TITLE = "suggestTitle",
+  REFINE_PODCAST_TRANSCRIPT = "refinePodcastTranscript",
 }
 
 interface AnthropicRequest {
@@ -282,6 +284,60 @@ export async function POST(request: NextRequest) {
         // Implement title suggestion logic here
         const suggestedTitle = await suggestTitleLogic(transcript);
         return NextResponse.json({ suggestedTitle });
+      }
+      case AnthropicAction.REFINE_PODCAST_TRANSCRIPT: {
+        const { transcript } = data;
+        if (!transcript) {
+          return NextResponse.json(
+            { error: "Missing transcript" },
+            { status: 400 }
+          );
+        }
+        const refinePrompt = refinePodcastTranscriptPrompt(transcript);
+        try {
+          const refinedTranscriptResponse = await anthropicHelper.getCompletion(
+            refinePrompt
+          );
+          console.log("Raw API response:", refinedTranscriptResponse);
+          let refinedContent;
+          try {
+            const parsedResponse = JSON.parse(refinedTranscriptResponse);
+            refinedContent = parsedResponse.refinedContent;
+          } catch (parseError) {
+            console.error("Error parsing refined transcript:", parseError);
+            console.log("Attempting to extract refined content using regex");
+            const contentMatch = refinedTranscriptResponse.match(
+              /"refinedContent"\s*:\s*"((?:.|\n)*?)(?:"\s*}|$)/
+            );
+            if (contentMatch && contentMatch[1]) {
+              refinedContent = contentMatch[1]
+                .replace(/\\"/g, '"')
+                .replace(/\\n/g, "\n");
+            } else {
+              console.error("Failed to extract refined content using regex");
+              refinedContent = refinedTranscriptResponse
+                .replace(/^{[\s\S]*?"refinedContent"\s*:\s*"/, "")
+                .replace(/"\s*}$/, "");
+            }
+          }
+          if (!refinedContent) {
+            console.error("Invalid response structure");
+            return NextResponse.json(
+              { error: "Invalid response structure from API" },
+              { status: 500 }
+            );
+          }
+          return NextResponse.json({ refinedContent });
+        } catch (error) {
+          console.error("Error refining podcast transcript:", error);
+          return NextResponse.json(
+            {
+              error: "Failed to refine podcast transcript",
+              details: (error as Error).message,
+            },
+            { status: 500 }
+          );
+        }
       }
       default:
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });

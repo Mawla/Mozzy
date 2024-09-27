@@ -4,6 +4,8 @@ import { X } from "lucide-react";
 import { BUTTON_TEXTS } from "@/app/constants/editorConfig";
 import dynamic from "next/dynamic";
 import { usePost } from "@/app/providers/PostProvider";
+import { toast } from "react-hot-toast";
+import { postService } from "@/app/services/postService";
 
 const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
   ssr: false,
@@ -13,6 +15,7 @@ const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
 export const ContentTab: React.FC = () => {
   const { post, updatePost, handleSuggestTagsAndTemplates } = usePost();
   const [isClient, setIsClient] = useState(false);
+  const [isRefining, setIsRefining] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -35,6 +38,33 @@ export const ContentTab: React.FC = () => {
     }
   };
 
+  const handleRefinePodcastTranscript = async () => {
+    if (!post?.content) {
+      toast.error("No content to refine");
+      return;
+    }
+
+    setIsRefining(true);
+    try {
+      const refinedContent = await postService.refinePodcastTranscript(
+        post.content
+      );
+      updatePost({ transcript: refinedContent, content: refinedContent });
+      toast.success("Transcript refined successfully");
+    } catch (error) {
+      console.error("Error refining transcript:", error);
+      let errorMessage = "Failed to refine transcript";
+      if (error instanceof Error) {
+        errorMessage += `: ${error.message}`;
+      }
+      toast.error(errorMessage, {
+        duration: 5000, // Show the error message for 5 seconds
+      });
+    } finally {
+      setIsRefining(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {isClient && (
@@ -48,6 +78,9 @@ export const ContentTab: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Button onClick={handleSuggestTagsAndTemplates}>
             {BUTTON_TEXTS.SUGGEST_TAGS}
+          </Button>
+          <Button onClick={handleRefinePodcastTranscript} disabled={isRefining}>
+            {isRefining ? "Refining..." : "Refine Transcript"}
           </Button>
           <span className="text-sm text-gray-500">Words: {wordCount}</span>
         </div>

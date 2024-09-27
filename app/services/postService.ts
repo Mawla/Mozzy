@@ -508,6 +508,26 @@ class PostService {
     localStorage.setItem("savedPosts", JSON.stringify(existingPosts));
     return newPost;
   }
+
+  async refinePodcastTranscript(transcript: string): Promise<string> {
+    try {
+      const response = await this.callAPI<{ refinedContent: string }>(
+        "refinePodcastTranscript",
+        {
+          transcript,
+        }
+      );
+
+      if (!response.refinedContent) {
+        throw new Error("Invalid response from refinePodcastTranscript API");
+      }
+
+      return response.refinedContent;
+    } catch (error) {
+      console.error("Error refining podcast transcript:", error);
+      throw error;
+    }
+  }
 }
 
 export const postService = new PostService();
