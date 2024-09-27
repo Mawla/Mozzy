@@ -1,6 +1,7 @@
 import { Pack, Template } from "@/app/types/template";
 import { TemplateParser } from "@/utils/templateParser";
 import { Post } from "@/app/types/post";
+import { refinePodcastTranscriptPrompt } from "@/prompts/refinePodcastTranscript";
 
 class PostService {
   getPacks(): Pack[] {
@@ -509,20 +510,111 @@ class PostService {
     return newPost;
   }
 
-  async refinePodcastTranscript(transcript: string): Promise<string> {
-    try {
-      const response = await this.callAPI<{ refinedContent: string }>(
-        "refinePodcastTranscript",
-        {
-          transcript,
+  private chunkText(text: string, maxTokens: number = 4000): string[] {
+    const words = text.split(/\s+/);
+    const chunks: string[] = [];
+    let currentChunk: string[] = [];
+
+    for (const word of words) {
+      if (currentChunk.length + 1 > maxTokens) {
+        chunks.push(currentChunk.join(" "));
+        currentChunk = [];
+      }
+      currentChunk.push(word);
+    }
+
+    if (currentChunk.length > 0) {
+      chunks.push(currentChunk.join(" "));
+    }
+
+    return chunks;
+  }
+
+  private async processChunks(
+    chunks: string[],
+    additionalInstructions: string
+  ): Promise<string[]> {
+    let refinedChunks: string[] = [];
+
+    for (let i = 0; i < chunks.length; i++) {
+      console.log(`Processing chunk ${i + 1} of ${chunks.length}`);
+      try {
+        const chunkPrompt = refinePodcastTranscriptPrompt(
+          chunks[i],
+          additionalInstructions,
+          i + 1,
+          chunks.length
+        );
+
+        console.log(`Sending API request for chunk ${i + 1}`);
+        const response = await this.callAPI<{ refinedContent: string }>(
+          "refinePodcastTranscript",
+          {
+            prompt: chunkPrompt,
+          }
+        );
+
+        console.log(`Received API response for chunk ${i + 1}`);
+
+        if (!response.refinedContent) {
+          throw new Error(
+            `Invalid response from refinePodcastTranscript API for chunk ${
+              i + 1
+            }`
+          );
         }
+
+        refinedChunks.push(response.refinedContent);
+        console.log(`Successfully processed chunk ${i + 1}`);
+      } catch (error) {
+        console.error(`Error processing chunk ${i + 1}:`, error);
+        throw error; // Re-throw the error to be caught in the calling function
+      }
+    }
+
+    return refinedChunks;
+  }
+
+  async refinePodcastTranscript(
+    transcript: string,
+    additionalInstructions: string
+  ): Promise<string> {
+    try {
+      const chunks = this.chunkText(transcript);
+      const refinedChunks = await this.processChunks(
+        chunks,
+        additionalInstructions
       );
 
-      if (!response.refinedContent) {
-        throw new Error("Invalid response from refinePodcastTranscript API");
+      // Combine refined chunks
+      const combinedRefinedContent = refinedChunks.join("\n\n");
+
+      // If there were multiple chunks, send a final request to ensure coherence
+      if (chunks.length > 1) {
+        const finalPrompt = refinePodcastTranscriptPrompt(
+          combinedRefinedContent,
+          additionalInstructions,
+          1, // Treat as a single chunk for final refinement
+          1 // Treat as a single chunk for final refinement
+        );
+
+        const finalResponse = await this.callAPI<{ refinedContent: string }>(
+          "refinePodcastTranscript",
+          {
+            prompt: finalPrompt,
+          }
+        );
+
+        if (!finalResponse.refinedContent) {
+          throw new Error(
+            "Invalid response from final refinePodcastTranscript API call"
+          );
+        }
+
+        return finalResponse.refinedContent;
       }
 
-      return response.refinedContent;
+      return combinedRefinedContent;
     } catch (error) {
       console.error("Error refining podcast transcript:", error);
       throw error;

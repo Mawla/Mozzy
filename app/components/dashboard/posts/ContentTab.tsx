@@ -16,6 +16,7 @@ export const ContentTab: React.FC = () => {
   const { post, updatePost, handleSuggestTagsAndTemplates } = usePost();
   const [isClient, setIsClient] = useState(false);
   const [isRefining, setIsRefining] = useState(false);
+  const [additionalInstructions, setAdditionalInstructions] = useState("");
 
   useEffect(() => {
     setIsClient(true);
@@ -29,6 +30,10 @@ export const ContentTab: React.FC = () => {
     if (post) {
       updatePost({ content });
     }
+  };
+
+  const handleInstructionsUpdate = (instructions: string) => {
+    setAdditionalInstructions(instructions);
   };
 
   const removeTag = (tagToRemove: string) => {
@@ -47,7 +52,8 @@ export const ContentTab: React.FC = () => {
     setIsRefining(true);
     try {
       const refinedContent = await postService.refinePodcastTranscript(
-        post.content
+        post.content,
+        additionalInstructions
       );
       updatePost({ transcript: refinedContent, content: refinedContent });
       toast.success("Transcript refined successfully");
@@ -68,11 +74,21 @@ export const ContentTab: React.FC = () => {
   return (
     <div className="space-y-4">
       {isClient && (
-        <TipTapEditor
-          content={post?.content || ""}
-          onUpdate={handleEditorUpdate}
-          placeholder="Start typing or paste your transcript here..."
-        />
+        <>
+          <TipTapEditor
+            content={post?.content || ""}
+            onUpdate={handleEditorUpdate}
+            placeholder="Start typing or paste your transcript here..."
+          />
+          <h3 className="text-lg font-semibold mt-4 mb-2">
+            Additional Instructions
+          </h3>
+          <TipTapEditor
+            content={additionalInstructions}
+            onUpdate={handleInstructionsUpdate}
+            placeholder="Enter additional instructions for refining the transcript..."
+          />
+        </>
       )}
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">

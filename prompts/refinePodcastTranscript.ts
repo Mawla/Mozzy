@@ -1,7 +1,38 @@
-export const refinePodcastTranscriptPrompt = (transcript: string) => `
-Provide a detailed and comprehensive refinement of the following podcast transcript, focusing on the key points, insights, and stories shared by the guest. Please follow these guidelines:
+export const refinePodcastTranscriptPrompt = (
+  transcript: string,
+  additionalInstructions: string,
+  chunkNumber: number,
+  totalChunks: number
+): string => {
+  const isFirstChunk = chunkNumber === 1;
+  const isLastChunk = chunkNumber === totalChunks;
+  const isSingleChunk = totalChunks === 1;
 
-1. Maintain a substantial length, aiming for at least 2000-3000 words or more, depending on the content richness of the transcript.
+  return `
+Provide a detailed and comprehensive refinement of the following ${
+    isSingleChunk
+      ? "podcast transcript"
+      : `transcript chunk (${chunkNumber} of ${totalChunks})`
+  }, focusing on the key points, insights, and stories shared by the guest. 
+
+${
+  isFirstChunk || isSingleChunk
+    ? `IMPORTANT: Prioritize the following additional instructions when refining the transcript:
+${additionalInstructions}`
+    : "Continue refining the transcript based on previous instructions."
+}
+
+${
+  isFirstChunk || isSingleChunk
+    ? "After addressing the above instructions, please"
+    : "Please"
+} follow these general guidelines:
+
+1. ${
+    isFirstChunk || isSingleChunk
+      ? "Maintain a substantial length, aiming for at least 2000-3000 words or more, depending on the content richness of the transcript."
+      : "Maintain consistency with previous chunks in terms of style and depth."
+  }
 2. Remove irrelevant small talk and tangents, but preserve the essence and flow of the conversation.
 3. Identify and elaborate on the main topics discussed, providing context and explanations where necessary.
 4. Extract and expand on key advice, insights, or opinions shared by the guest, including their reasoning and examples.
@@ -10,13 +41,21 @@ Provide a detailed and comprehensive refinement of the following podcast transcr
 7. Summarize the guest's perspective on their industry or area of expertise, including challenges, trends, and predictions.
 8. Note any book recommendations, tools, resources, or influential figures mentioned.
 9. Capture the guest's key messages, philosophies, or primary pieces of advice, explaining their significance.
-10. Organize the content into clear sections: Introduction, Main Discussion Points, Notable Stories and Anecdotes, Industry Insights, and Conclusion.
+10. ${
+    isFirstChunk || isSingleChunk
+      ? "Organize the content into clear sections: Introduction, Main Discussion Points, Notable Stories and Anecdotes, Industry Insights, and Conclusion."
+      : "Maintain the organizational structure established in previous chunks."
+  }
 11. Use direct quotes from the guest where appropriate to maintain their voice and add authenticity.
 12. Include relevant context or background information that helps understand the guest's experiences or insights.
 
-Please ensure the refined content is coherent, well-structured, and captures the depth and breadth of the conversation while maintaining the guest's voice and key messages. The goal is to provide a rich, informative, and engaging representation of the podcast episode.
+${
+  isLastChunk || isSingleChunk
+    ? "Ensure the refined content is coherent, well-structured, and captures the depth and breadth of the conversation while maintaining the guest's voice and key messages. The goal is to provide a rich, informative, and engaging representation of the podcast episode."
+    : `Ensure this chunk (${chunkNumber} of ${totalChunks}) flows smoothly from the previous content and leaves room for continuation in the next chunk.`
+}
 
-Transcript:
+Transcript ${isSingleChunk ? "" : `Chunk ${chunkNumber} of ${totalChunks}`}:
 ${transcript}
 
 Provide your response in the following JSON format:
@@ -26,3 +65,4 @@ Provide your response in the following JSON format:
 
 Only include the JSON object in your response, without any additional text.
 `;
+};

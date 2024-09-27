@@ -30,6 +30,7 @@ interface AnthropicRequest {
     transcript?: string;
     template?: string;
     templates?: Template[];
+    prompt?: string;
   };
 }
 
@@ -286,19 +287,19 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ suggestedTitle });
       }
       case AnthropicAction.REFINE_PODCAST_TRANSCRIPT: {
-        const { transcript } = data;
-        if (!transcript) {
+        const { prompt } = data;
+        if (!prompt) {
           return NextResponse.json(
-            { error: "Missing transcript" },
+            { error: "Missing prompt" },
             { status: 400 }
           );
         }
-        const refinePrompt = refinePodcastTranscriptPrompt(transcript);
         try {
           const refinedTranscriptResponse = await anthropicHelper.getCompletion(
-            refinePrompt
+            prompt,
+            4096
           );
-          console.log("Raw API response:", refinedTranscriptResponse);
+          console.log("Full API response:", refinedTranscriptResponse);
           let refinedContent;
           try {
             const parsedResponse = JSON.parse(refinedTranscriptResponse);
