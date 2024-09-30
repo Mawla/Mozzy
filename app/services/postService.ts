@@ -2,6 +2,23 @@ import { Pack, Template } from "@/app/types/template";
 import { TemplateParser } from "@/utils/templateParser";
 import { Post } from "@/app/types/post";
 import { refinePodcastTranscriptPrompt } from "@/prompts/refinePodcastTranscript";
+import { create } from "zustand";
+
+// Define a store for loading state
+interface LoadingState {
+  isLoading: boolean;
+  progress: number;
+  message: string;
+  setLoading: (isLoading: boolean, progress?: number, message?: string) => void;
+}
+
+export const useLoadingStore = create<LoadingState>((set) => ({
+  isLoading: false,
+  progress: 0,
+  message: "",
+  setLoading: (isLoading, progress = 0, message = "") =>
+    set({ isLoading, progress, message }),
+}));
 
 const callAPI = async <T>(action: string, data: any): Promise<T> => {
   try {
@@ -91,18 +108,6 @@ export const postService = {
     const posts = this.getPosts();
     const updatedPosts = posts.filter((post) => post.id !== id);
     localStorage.setItem("posts", JSON.stringify(updatedPosts));
-  },
-
-  clearLocalStorage(): void {
-    localStorage.removeItem("post");
-    localStorage.removeItem("transcript");
-    localStorage.removeItem("template");
-    localStorage.removeItem("content");
-    localStorage.removeItem("merge");
-    localStorage.removeItem("selectedTemplate");
-    localStorage.removeItem("mergedContents");
-    localStorage.removeItem("selectedTemplates");
-    localStorage.removeItem("suggestedTags");
   },
 
   async suggestTags(transcript: string): Promise<string[]> {
@@ -285,35 +290,6 @@ export const postService = {
     }
   },
 
-  saveToLocalStorage(key: string, value: string): void {
-    localStorage.setItem(key, value);
-  },
-
-  getFromLocalStorage(key: string): string | null {
-    return localStorage.getItem(key);
-  },
-
-  saveTemplateToLocalStorage(template: Template): void {
-    localStorage.setItem("selectedTemplate", JSON.stringify(template));
-  },
-
-  getTemplateFromLocalStorage(): Template | null {
-    const savedTemplate = localStorage.getItem("selectedTemplate");
-    return savedTemplate ? JSON.parse(savedTemplate) : null;
-  },
-
-  clearPostData(): void {
-    localStorage.removeItem("post");
-    localStorage.removeItem("transcript");
-    localStorage.removeItem("template");
-    localStorage.removeItem("content");
-    localStorage.removeItem("merge");
-    localStorage.removeItem("selectedTemplate");
-    localStorage.removeItem("mergedContents");
-    localStorage.removeItem("selectedTemplates");
-    localStorage.removeItem("suggestedTags");
-  },
-
   async chooseBestTemplate(
     transcript: string,
     templates: Template[]
@@ -349,70 +325,16 @@ export const postService = {
     }
   },
 
-  saveSuggestedTagsToLocalStorage(tags: string[]): void {
-    console.log("Saving tags to localStorage:", tags); // Debug log
-    localStorage.setItem("suggestedTags", JSON.stringify(tags));
-  },
-
-  getSuggestedTagsFromLocalStorage(): string[] {
-    const savedTags = localStorage.getItem("suggestedTags");
-    return savedTags ? JSON.parse(savedTags) : [];
-  },
-
-  async postToLinkedIn(title: string, content: string): Promise<void> {
-    try {
-      const response = await callAPI<{ success: boolean }>("postToLinkedIn", {
-        title,
-        content,
-      });
-      if (!response.success) {
-        throw new Error("Failed to post to LinkedIn");
-      }
-    } catch (error) {
-      console.error("Error posting to LinkedIn:", error);
-      throw error;
-    }
-  },
-
-  saveMultipleMergedContents(
-    title: string,
-    mergedContents: { [templateId: string]: string },
-    transcript: string,
-    templateIds: string[],
-    templates: Template[]
-  ): void {
-    const post: Post = {
-      id: Date.now().toString(),
-      title,
-      content: transcript, // Keep the original transcript as content
-      tags: [],
-      tweetThreadContent: [],
-      transcript,
-      mergedContents,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      templateIds,
-      templates,
-    };
-    const posts = this.getPosts();
-    posts.push(post);
-    localStorage.setItem("posts", JSON.stringify(posts));
-  },
-
-  savePostToLocalStorage(post: Post): void {
-    const posts = this.getPosts();
-    const index = posts.findIndex((p) => p.id === post.id);
-    if (index !== -1) {
-      posts[index] = post;
-    } else {
-      posts.push(post);
-    }
-    localStorage.setItem("posts", JSON.stringify(posts));
-  },
-
-  getPostFromLocalStorage(id: string): Post | null {
-    const posts = this.getPosts();
-    return posts.find((p) => p.id === id) || null;
+  clearPostData(): void {
+    localStorage.removeItem("post");
+    localStorage.removeItem("transcript");
+    localStorage.removeItem("template");
+    localStorage.removeItem("content");
+    localStorage.removeItem("merge");
+    localStorage.removeItem("selectedTemplate");
+    localStorage.removeItem("mergedContents");
+    localStorage.removeItem("selectedTemplates");
+    localStorage.removeItem("suggestedTags");
   },
 
   async refinePodcastTranscript(
@@ -420,15 +342,25 @@ export const postService = {
     additionalInstructions: string
   ): Promise<string> {
     try {
+      useLoadingStore
+        .getState()
+        .setLoading(true, 0, "Preparing transcript for refinement...");
+
       const chunks = this.chunkText(transcript);
       const refinedChunks = await this.processChunks(
         chunks,
         additionalInstructions
       );
 
+      useLoadingStore
+        .getState()
+        .setLoading(true, 90, "Combining refined chunks...");
       const combinedRefinedContent = refinedChunks.join("\n\n");
 
       if (chunks.length > 1) {
+        useLoadingStore
+          .getState()
+          .setLoading(true, 95, "Performing final refinement...");
         const finalPrompt = refinePodcastTranscriptPrompt(
           combinedRefinedContent,
           additionalInstructions,
@@ -449,40 +381,17 @@ export const postService = {
           );
         }
 
+        useLoadingStore.getState().setLoading(false);
         return finalResponse.refinedContent;
       }
 
+      useLoadingStore.getState().setLoading(false);
       return combinedRefinedContent;
     } catch (error) {
+      useLoadingStore.getState().setLoading(false);
       console.error("Error refining podcast transcript:", error);
       throw error;
     }
-  },
-
-  bulkDeletePosts(ids: string[]): void {
-    let posts = this.getPosts();
-    posts = posts.filter((post) => !ids.includes(post.id));
-    localStorage.setItem("posts", JSON.stringify(posts));
-  },
-
-  chunkText(text: string, maxTokens: number = 4000): string[] {
-    const words = text.split(/\s+/);
-    const chunks: string[] = [];
-    let currentChunk: string[] = [];
-
-    for (const word of words) {
-      if (currentChunk.length + 1 > maxTokens) {
-        chunks.push(currentChunk.join(" "));
-        currentChunk = [];
-      }
-      currentChunk.push(word);
-    }
-
-    if (currentChunk.length > 0) {
-      chunks.push(currentChunk.join(" "));
-    }
-
-    return chunks;
   },
 
   async processChunks(
@@ -494,6 +403,14 @@ export const postService = {
     for (let i = 0; i < chunks.length; i++) {
       console.log(`Processing chunk ${i + 1} of ${chunks.length}`);
       try {
+        useLoadingStore
+          .getState()
+          .setLoading(
+            true,
+            (i / chunks.length) * 100,
+            `Processing chunk ${i + 1} of ${chunks.length}`
+          );
+
         const chunkPrompt = refinePodcastTranscriptPrompt(
           chunks[i],
           additionalInstructions,
@@ -528,5 +445,31 @@ export const postService = {
     }
 
     return refinedChunks;
+  },
+
+  bulkDeletePosts(ids: string[]): void {
+    let posts = this.getPosts();
+    posts = posts.filter((post) => !ids.includes(post.id));
+    localStorage.setItem("posts", JSON.stringify(posts));
+  },
+
+  chunkText(text: string, maxTokens: number = 4000): string[] {
+    const words = text.split(/\s+/);
+    const chunks: string[] = [];
+    let currentChunk: string[] = [];
+
+    for (const word of words) {
+      if (currentChunk.length + 1 > maxTokens) {
+        chunks.push(currentChunk.join(" "));
+        currentChunk = [];
+      }
+      currentChunk.push(word);
+    }
+
+    if (currentChunk.length > 0) {
+      chunks.push(currentChunk.join(" "));
+    }
+
+    return chunks;
   },
 };

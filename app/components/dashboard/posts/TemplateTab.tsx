@@ -2,20 +2,19 @@ import React, { useState, useEffect } from "react";
 import { BUTTON_TEXTS } from "@/app/constants/editorConfig";
 import { Button } from "@/components/ui/button";
 import { TemplateCardGrid } from "./TemplateCardGrid";
-import { usePost } from "@/app/providers/PostProvider";
+import { usePostStore } from "@/app/stores/postStore";
 import TemplateSelectionModal from "./TemplateSelectionModal";
 import { postService } from "@/app/services/postService";
 import { Template } from "@/app/types/template";
 
 export const TemplateTab: React.FC = () => {
   const {
-    post,
-    updatePost,
+    currentPost,
     handleSuggestTagsAndTemplates,
     handleShortlistTemplates,
     handleRemoveTemplate,
     handleTemplateSelection,
-  } = usePost();
+  } = usePostStore();
 
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [filteredPacks, setFilteredPacks] = useState(postService.getPacks());
@@ -29,8 +28,8 @@ export const TemplateTab: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    console.log("Current post templates:", post?.templates);
-  }, [post?.templates]);
+    console.log("Current post templates:", currentPost?.templates);
+  }, [currentPost?.templates]);
 
   const openTemplateModal = () => {
     setIsTemplateModalOpen(true);
@@ -59,7 +58,7 @@ export const TemplateTab: React.FC = () => {
       {isClient && (
         <>
           <TemplateCardGrid
-            templates={post?.templates || []}
+            templates={currentPost?.templates || []}
             maxTemplates={8}
             onCardClick={openTemplateModal}
             onRemove={handleTemplateRemove}

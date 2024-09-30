@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { BUTTON_TEXTS } from "@/app/constants/editorConfig";
 import dynamic from "next/dynamic";
-import { usePost } from "@/app/providers/PostProvider";
+import { usePostStore } from "@/app/stores/postStore"; // Updated import
 import { toast } from "react-hot-toast";
 import { postService } from "@/app/services/postService";
 
@@ -13,7 +13,8 @@ const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
 });
 
 export const ContentTab: React.FC = () => {
-  const { post, updatePost, handleSuggestTagsAndTemplates } = usePost();
+  const { currentPost, updatePost, handleSuggestTagsAndTemplates } =
+    usePostStore(); // Updated to use usePostStore
   const [isClient, setIsClient] = useState(false);
   const [isRefining, setIsRefining] = useState(false);
   const [additionalInstructions, setAdditionalInstructions] = useState("");
@@ -22,13 +23,11 @@ export const ContentTab: React.FC = () => {
     setIsClient(true);
   }, []);
 
-  // **Move useMemo above the conditional return**
   const wordCount = useMemo(() => {
-    return post?.content.trim().split(/\s+/).length || 0;
-  }, [post?.content]);
+    return currentPost?.content.trim().split(/\s+/).length || 0;
+  }, [currentPost?.content]);
 
-  // **Add this null check after hooks**
-  if (!post) {
+  if (!currentPost) {
     return <p>Loading content...</p>;
   }
 
@@ -41,14 +40,16 @@ export const ContentTab: React.FC = () => {
   };
 
   const removeTag = (tagToRemove: string) => {
-    if (post && post.tags) {
-      const updatedTags = post.tags.filter((tag) => tag !== tagToRemove);
+    if (currentPost && currentPost.tags) {
+      const updatedTags = currentPost.tags.filter(
+        (tag: string) => tag !== tagToRemove
+      );
       updatePost({ tags: updatedTags });
     }
   };
 
   const handleRefinePodcastTranscript = async () => {
-    if (!post?.content) {
+    if (!currentPost?.content) {
       toast.error("No content to refine");
       return;
     }
@@ -56,7 +57,7 @@ export const ContentTab: React.FC = () => {
     setIsRefining(true);
     try {
       const refinedContent = await postService.refinePodcastTranscript(
-        post.content,
+        currentPost.content,
         additionalInstructions
       );
       updatePost({ transcript: refinedContent, content: refinedContent });
@@ -80,7 +81,7 @@ export const ContentTab: React.FC = () => {
       {isClient && (
         <>
           <TipTapEditor
-            content={post?.content || ""}
+            content={currentPost?.content || ""}
             placeholder="Start typing or paste your transcript here..."
             height="400px" // Main content editor height
             onUpdate={handleEditorUpdate}
@@ -107,7 +108,7 @@ export const ContentTab: React.FC = () => {
           <span className="text-sm text-gray-500">Words: {wordCount}</span>
         </div>
         <div className="flex flex-wrap gap-2">
-          {post?.tags?.map((tag: string) => (
+          {currentPost?.tags?.map((tag: string) => (
             <div
               key={tag}
               className="bg-gray-200 text-gray-800 px-2 py-1 rounded-full text-sm flex items-center group"

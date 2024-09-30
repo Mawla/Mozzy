@@ -1,37 +1,33 @@
 "use client";
-import React, { useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { PostContent } from "@/app/components/dashboard/posts/PostContent";
-import { PostHeader } from "@/app/components/dashboard/posts/PostHeader";
-import { usePost } from "@/app/providers/PostProvider";
 
-const PostPage: React.FC = () => {
-  const params = useParams();
+import React, { useEffect } from "react";
+import { usePostStore } from "@/app/stores/postStore";
+import { PostHeader } from "@/app/components/dashboard/posts/PostHeader";
+import { PostContent } from "@/app/components/dashboard/posts/PostContent";
+import { useRouter } from "next/navigation";
+
+export default function PostPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const id = params?.id as string;
-  const { loadPost, post, handleSave, updatePost, deletePost } = usePost();
+  const { loadPost, currentPost, updatePost, deletePost, handleSave } =
+    usePostStore();
 
   useEffect(() => {
-    if (id) {
-      loadPost(id);
-    }
-  }, [id, loadPost]);
+    loadPost(params.id);
+  }, [params.id, loadPost]);
 
-  const handleDelete = async () => {
-    if (confirm("Are you sure you want to delete this post?")) {
-      await deletePost(id);
-      router.push("/dashboard/posts");
-    }
-  };
-
-  if (!post) {
+  if (!currentPost) {
     return <div>Loading...</div>;
   }
 
+  const handleDelete = async () => {
+    await deletePost(currentPost.id);
+    router.push("/dashboard/posts");
+  };
+
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto px-4 py-8">
       <PostHeader
-        title={post.title}
+        title={currentPost.title}
         setTitle={(title) => updatePost({ title })}
         onSave={handleSave}
         onDelete={handleDelete}
@@ -39,6 +35,4 @@ const PostPage: React.FC = () => {
       <PostContent />
     </div>
   );
-};
-
-export default PostPage;
+}

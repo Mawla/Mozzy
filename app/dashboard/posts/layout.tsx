@@ -1,10 +1,9 @@
 import React from "react";
-import { PostProvider } from "@/app/providers/PostProvider";
 
-export default function PostsLayout({
+export default function PostLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <PostProvider>{children}</PostProvider>;
+  return <>{children}</>;
 }

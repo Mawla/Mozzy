@@ -9,8 +9,6 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="flex h-screen bg-gray-50">
-      {" "}
-      {/* Updated background color */}
       <Sidebar />
       <div className="flex flex-col flex-1 overflow-hidden">
         <Header />

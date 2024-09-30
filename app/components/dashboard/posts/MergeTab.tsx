@@ -5,7 +5,7 @@ import { BUTTON_TEXTS, MESSAGES } from "@/app/constants/editorConfig";
 import dynamic from "next/dynamic";
 import { TemplateCardGrid } from "./TemplateCardGrid";
 import { TweetPreview } from "./TweetPreview";
-import { usePost } from "@/app/providers/PostProvider";
+import { usePostStore } from "@/app/stores/postStore";
 
 const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
   ssr: false,
@@ -13,7 +13,7 @@ const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
 });
 
 export const MergeTab: React.FC = () => {
-  const { post, updatePost, handleMerge, handleSave } = usePost();
+  const { currentPost, updatePost, handleMerge, handleSave } = usePostStore();
 
   const [isMerging, setIsMerging] = useState(false);
   const [selectedContentIndex, setSelectedContentIndex] = useState<
@@ -23,10 +23,13 @@ export const MergeTab: React.FC = () => {
   const [isClient, setIsClient] = useState(false);
 
   const mergedContents = useMemo(
-    () => post?.mergedContents || {},
-    [post?.mergedContents]
+    () => currentPost?.mergedContents || {},
+    [currentPost?.mergedContents]
   );
-  const templates = useMemo(() => post?.templates || [], [post?.templates]);
+  const templates = useMemo(
+    () => currentPost?.templates || [],
+    [currentPost?.templates]
+  );
 
   useEffect(() => {
     setIsClient(true);
@@ -38,13 +41,13 @@ export const MergeTab: React.FC = () => {
   }, [templates, mergedContents]);
 
   const handleEditorUpdate = (newContent: string) => {
-    if (post && templates.length > 0 && selectedContentIndex !== null) {
+    if (currentPost && templates.length > 0 && selectedContentIndex !== null) {
       const selectedTemplate = templates[selectedContentIndex];
       if (selectedTemplate && selectedTemplate.id) {
         const updatedMergedContents = { ...mergedContents };
         updatedMergedContents[selectedTemplate.id] = newContent;
         updatePost({
-          ...post,
+          ...currentPost,
           mergedContents: updatedMergedContents,
         });
         console.log("Updated mergedContents:", updatedMergedContents);
@@ -80,7 +83,7 @@ export const MergeTab: React.FC = () => {
       ? "No merged content available. Click 'Merge Content' to generate merged content."
       : "Select a template to view its merged content.";
 
-  const contentToMerge = post?.content || "";
+  const contentToMerge = currentPost?.content || "";
 
   const handleTemplateClick = (index: number) => {
     setSelectedContentIndex(index);
