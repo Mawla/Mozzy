@@ -1,36 +1,16 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Extension } from "@tiptap/core";
+import OrderedList from "@tiptap/extension-ordered-list";
 
-// Custom extension to preserve whitespace
-const PreserveWhitespace = Extension.create({
-  name: "preserveWhitespace",
-  addOptions() {
+// Custom extension to preserve whitespace and line breaks
+const PreserveLineBreaks = Extension.create({
+  name: "preserveLineBreaks",
+  addNodeView() {
     return {
-      types: ["paragraph", "heading"],
+      dom: document.createElement("br"),
     };
-  },
-  addGlobalAttributes() {
-    return [
-      {
-        types: this.options.types,
-        attributes: {
-          whitespace: {
-            default: "pre-wrap",
-            parseHTML: (element) => element.style.whiteSpace,
-            renderHTML: (attributes) => {
-              if (!attributes.whitespace) {
-                return {};
-              }
-              return {
-                style: `white-space: ${attributes.whitespace}`,
-              };
-            },
-          },
-        },
-      },
-    ];
   },
 });
 
@@ -49,14 +29,19 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
 }) => {
   const editor = useEditor({
     extensions: [
-      StarterKit,
-      PreserveWhitespace.configure({
-        types: ["paragraph", "heading"],
+      StarterKit.configure({
+        orderedList: false, // Disable the default ordered list to use our custom configuration
+      }),
+      PreserveLineBreaks,
+      OrderedList.configure({
+        keepMarks: true,
+        keepAttributes: false,
       }),
     ],
     content: content,
     onUpdate: ({ editor }) => {
-      onUpdate(editor.getHTML());
+      const html = editor.getHTML();
+      onUpdate(html);
     },
     editorProps: {
       attributes: {
@@ -64,13 +49,28 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
           "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none",
       },
     },
+    parseOptions: {
+      preserveWhitespace: "full",
+    },
   });
 
+  const updateContent = useCallback(
+    (newContent: string) => {
+      if (editor && newContent !== editor.getHTML()) {
+        // Preserve line breaks and convert them to <br> tags
+        const contentWithLineBreaks = newContent
+          .split("\n")
+          .map((line) => line.trim())
+          .join("<br>\n");
+        editor.commands.setContent(contentWithLineBreaks, false);
+      }
+    },
+    [editor]
+  );
+
   useEffect(() => {
-    if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content);
-    }
-  }, [content, editor]);
+    updateContent(content);
+  }, [content, updateContent]);
 
   return (
     <div
@@ -84,18 +84,21 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
           line-height: 1.5;
           white-space: pre-wrap !important;
         }
-        .ProseMirror p,
-        .ProseMirror h1,
-        .ProseMirror h2,
-        .ProseMirror h3,
-        .ProseMirror h4,
-        .ProseMirror h5,
-        .ProseMirror h6 {
-          margin: 0;
+        .ProseMirror p {
+          margin: 0 0 1em 0;
           white-space: pre-wrap !important;
         }
-        .ProseMirror * {
-          outline: none !important;
+        .ProseMirror br {
+          display: block;
+          content: "";
+          margin-top: 0.5em;
+        }
+        .ProseMirror ol {
+          list-style-type: decimal;
+          padding-left: 1.5em;
+        }
+        .ProseMirror ol li {
+          margin-bottom: 0.5em;
         }
       `}</style>
       <EditorContent editor={editor} className="prose max-w-none h-full" />
