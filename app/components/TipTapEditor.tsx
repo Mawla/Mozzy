@@ -1,6 +1,38 @@
 import React, { useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { Extension } from "@tiptap/core";
+
+// Custom extension to preserve whitespace
+const PreserveWhitespace = Extension.create({
+  name: "preserveWhitespace",
+  addOptions() {
+    return {
+      types: ["paragraph", "heading"],
+    };
+  },
+  addGlobalAttributes() {
+    return [
+      {
+        types: this.options.types,
+        attributes: {
+          whitespace: {
+            default: "pre-wrap",
+            parseHTML: (element) => element.style.whiteSpace,
+            renderHTML: (attributes) => {
+              if (!attributes.whitespace) {
+                return {};
+              }
+              return {
+                style: `white-space: ${attributes.whitespace}`,
+              };
+            },
+          },
+        },
+      },
+    ];
+  },
+});
 
 interface TipTapEditorProps {
   content: string;
@@ -16,7 +48,12 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
   height = "400px",
 }) => {
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [
+      StarterKit,
+      PreserveWhitespace.configure({
+        types: ["paragraph", "heading"],
+      }),
+    ],
     content: content,
     onUpdate: ({ editor }) => {
       onUpdate(editor.getHTML());
@@ -30,34 +67,39 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
   });
 
   useEffect(() => {
-    if (editor && content !== undefined) {
-      editor.commands.setContent(
-        content
-          .split("\n")
-          .map((line) => `<p>${line}</p>`)
-          .join("")
-      );
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content);
     }
   }, [content, editor]);
 
   return (
-    <div className="border border-gray-200 rounded-md p-4 bg-white h-[400px] overflow-y-auto relative">
+    <div
+      className={`border border-gray-200 rounded-md p-4 bg-white h-[${height}] overflow-y-auto relative`}
+    >
       <style jsx global>{`
         .ProseMirror {
           outline: none !important;
           height: 100%;
           font-size: 16px;
           line-height: 1.5;
+          white-space: pre-wrap !important;
         }
-        .ProseMirror p {
+        .ProseMirror p,
+        .ProseMirror h1,
+        .ProseMirror h2,
+        .ProseMirror h3,
+        .ProseMirror h4,
+        .ProseMirror h5,
+        .ProseMirror h6 {
           margin: 0;
+          white-space: pre-wrap !important;
         }
         .ProseMirror * {
           outline: none !important;
         }
       `}</style>
       <EditorContent editor={editor} className="prose max-w-none h-full" />
-      {(!content || content === "<p></p>") && (
+      {editor && !editor.getText() && (
         <p className="text-gray-400 absolute top-[1.2rem] left-[1.2rem] pointer-events-none text-base">
           {placeholder}
         </p>

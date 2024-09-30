@@ -22,14 +22,18 @@ export const ContentTab: React.FC = () => {
     setIsClient(true);
   }, []);
 
+  // **Move useMemo above the conditional return**
   const wordCount = useMemo(() => {
     return post?.content.trim().split(/\s+/).length || 0;
   }, [post?.content]);
 
+  // **Add this null check after hooks**
+  if (!post) {
+    return <p>Loading content...</p>;
+  }
+
   const handleEditorUpdate = (content: string) => {
-    if (post) {
-      updatePost({ content });
-    }
+    updatePost({ content });
   };
 
   const handleInstructionsUpdate = (instructions: string) => {
