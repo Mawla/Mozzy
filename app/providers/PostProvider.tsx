@@ -10,6 +10,7 @@ import React, {
 import { Post } from "@/app/types/post";
 import { postService } from "@/app/services/postService";
 import { Template } from "@/app/types/template";
+import { useRouter } from "next/navigation";
 
 interface PostContextType {
   post: Post | null;
@@ -26,6 +27,7 @@ interface PostContextType {
   handleShortlistTemplates: () => Promise<void>;
   posts: Post[];
   loadPosts: () => void;
+  deletePost: (id: string) => Promise<void>;
 }
 
 const PostContext = createContext<PostContextType | undefined>(undefined);
@@ -44,6 +46,14 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({
   const [post, setPost] = useState<Post | null>(null);
   const [wordCount, setWordCount] = useState(0);
   const [posts, setPosts] = useState<Post[]>([]);
+  const router = useRouter();
+
+  const updatePost = useCallback((updates: Partial<Post>) => {
+    setPost((prevPost) => {
+      if (!prevPost) return null;
+      return { ...prevPost, ...updates };
+    });
+  }, []);
 
   const loadPost = useCallback((id: string) => {
     const loadedPost = postService.getPostById(id);
@@ -53,25 +63,40 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
-  const updatePost = useCallback((updates: Partial<Post>) => {
-    setPost((prevPost) => {
-      if (!prevPost) return null;
-      return { ...prevPost, ...updates };
-    });
-  }, []);
-
   const createNewPost = useCallback(() => {
     const newPost = postService.createNewPost();
     setPost(newPost);
     setWordCount(0);
   }, []);
 
+  const handleSave = async () => {
+    if (!post) return;
+    try {
+      const savedPost = await postService.handleSave(post);
+      updatePost(savedPost);
+    } catch (error) {
+      console.error("Error saving post:", error);
+      // Add error handling here
+    }
+  };
+
+  const deletePost = async (id: string) => {
+    try {
+      await postService.deletePost(id);
+      setPosts((prevPosts) => prevPosts.filter((post) => post.id !== id));
+      setPost(null);
+      router.push("/dashboard/posts");
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    }
+  };
+
   const handleSuggestTagsAndTemplates = async () => {
     if (!post) return;
     try {
       const allTemplates = postService
         .getPacks()
-        .flatMap((pack) => pack.templates);
+        .flatMap((pack) => pack.templates || []);
       const { suggestedTags, suggestedTemplates } =
         await postService.suggestTagsAndTemplates(post.content, allTemplates);
       updatePost({ tags: suggestedTags, templates: suggestedTemplates });
@@ -91,17 +116,6 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({
       updatePost({ mergedContents, title: post.title || suggestedTitle });
     } catch (error) {
       console.error("Error merging content:", error);
-    }
-  };
-
-  const handleSave = async () => {
-    if (!post) return;
-    try {
-      const savedPost = await postService.handleSave(post);
-      updatePost(savedPost);
-    } catch (error) {
-      console.error("Error saving post:", error);
-      // You might want to add some error handling here, e.g., showing an error message to the user
     }
   };
 
@@ -180,6 +194,7 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({
         handleShortlistTemplates,
         posts,
         loadPosts,
+        deletePost,
       }}
     >
       {children}
