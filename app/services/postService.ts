@@ -295,36 +295,32 @@ class PostService {
       templateIds,
       templates,
     };
-    const savedPosts = this.getSavedPosts();
-    savedPosts.push(post);
-    localStorage.setItem("savedPosts", JSON.stringify(savedPosts));
+    const posts = this.getPosts();
+    posts.push(post);
+    localStorage.setItem("posts", JSON.stringify(posts));
   }
 
-  getSavedPosts(): Post[] {
-    const savedPosts = localStorage.getItem("savedPosts");
-    return savedPosts ? JSON.parse(savedPosts) : [];
+  getPosts(): Post[] {
+    const posts = localStorage.getItem("posts");
+    return posts ? JSON.parse(posts) : [];
   }
 
   handleSave = async (post: Post): Promise<Post> => {
     try {
-      // Update or add the post to local storage
-      const savedPosts = this.getSavedPosts();
-      const existingPostIndex = savedPosts.findIndex((p) => p.id === post.id);
+      const posts = this.getPosts();
+      const existingPostIndex = posts.findIndex((p) => p.id === post.id);
 
       if (existingPostIndex !== -1) {
-        // Update existing post
-        savedPosts[existingPostIndex] = {
-          ...savedPosts[existingPostIndex],
+        posts[existingPostIndex] = {
+          ...posts[existingPostIndex],
           ...post,
         };
       } else {
-        // Add new post
-        savedPosts.push(post);
+        posts.push(post);
       }
 
-      localStorage.setItem("savedPosts", JSON.stringify(savedPosts));
+      localStorage.setItem("posts", JSON.stringify(posts));
 
-      // Update the post's updatedAt timestamp
       const updatedPost = {
         ...post,
         updatedAt: new Date().toISOString(),
@@ -337,24 +333,15 @@ class PostService {
     }
   };
 
-  getPosts(): Post[] {
-    const savedPosts = localStorage.getItem("savedPosts");
-    return savedPosts ? JSON.parse(savedPosts) : [];
-  }
-
   getPostById(id: string): Post | null {
     const posts = this.getPosts();
-    const post = posts.find((p) => p.id === id);
-    if (post) {
-      return post;
-    }
-    return null;
+    return posts.find((p) => p.id === id) || null;
   }
 
   deletePost(id: string): void {
-    const savedPosts = this.getSavedPosts();
-    const updatedPosts = savedPosts.filter((p) => p.id !== id);
-    localStorage.setItem("savedPosts", JSON.stringify(updatedPosts));
+    const posts = this.getPosts();
+    const updatedPosts = posts.filter((p) => p.id !== id);
+    localStorage.setItem("posts", JSON.stringify(updatedPosts));
   }
 
   async suggestTagsAndTemplates(
@@ -503,10 +490,9 @@ class PostService {
       templateIds: [],
       templates: [],
     };
-    // Instead of modifying existing posts, we'll add this new post to the list
-    const existingPosts = this.getPosts();
-    existingPosts.push(newPost);
-    localStorage.setItem("savedPosts", JSON.stringify(existingPosts));
+    const posts = this.getPosts();
+    posts.push(newPost);
+    localStorage.setItem("posts", JSON.stringify(posts));
     return newPost;
   }
 
@@ -619,6 +605,12 @@ class PostService {
       console.error("Error refining podcast transcript:", error);
       throw error;
     }
+  }
+
+  bulkDeletePosts(ids: string[]): void {
+    let posts = this.getPosts();
+    posts = posts.filter((post) => !ids.includes(post.id));
+    localStorage.setItem("posts", JSON.stringify(posts));
   }
 }
 

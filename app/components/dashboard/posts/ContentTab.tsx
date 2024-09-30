@@ -77,8 +77,9 @@ export const ContentTab: React.FC = () => {
         <>
           <TipTapEditor
             content={post?.content || ""}
-            onUpdate={handleEditorUpdate}
             placeholder="Start typing or paste your transcript here..."
+            height="400px" // Main content editor height
+            onUpdate={handleEditorUpdate}
           />
           <h3 className="text-lg font-semibold mt-4 mb-2">
             Additional Instructions
@@ -87,6 +88,7 @@ export const ContentTab: React.FC = () => {
             content={additionalInstructions}
             onUpdate={handleInstructionsUpdate}
             placeholder="Enter additional instructions for refining the transcript..."
+            height="80px" // 20% of the original 400px height
           />
         </>
       )}

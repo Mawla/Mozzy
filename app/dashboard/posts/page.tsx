@@ -1,64 +1,9 @@
-"use client";
+import { PostsListing } from "@/app/components/dashboard/posts/PostsListing";
 
-import React, { useEffect } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { usePost } from "@/app/providers/PostProvider";
-
-const PostsPage = () => {
-  const router = useRouter();
-  const { posts, loadPost, loadPosts } = usePost();
-
-  useEffect(() => {
-    loadPosts();
-  }, [loadPosts]);
-
-  const handlePostClick = (id: string) => {
-    loadPost(id);
-    router.push(`/dashboard/posts/${id}`);
-  };
-
+export default function PostsPage() {
   return (
-    <div className="container mx-auto p-4 space-y-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Posts</h1>
-        <Link href="/dashboard/posts/create">
-          <Button>Create New Post</Button>
-        </Link>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {posts.map((post) => (
-          <Card
-            key={post.id}
-            className="cursor-pointer hover:shadow-md transition-shadow duration-200"
-            onClick={() => handlePostClick(post.id)}
-          >
-            <CardHeader>
-              <CardTitle>{post.title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-500 mb-2">
-                Created: {new Date(post.createdAt).toLocaleDateString()}
-              </p>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {post.tags.map((tag, index) => (
-                  <Badge key={index} variant="secondary">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-              <p className="text-sm text-gray-700 line-clamp-3">
-                {post.content}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+    <div className="container mx-auto p-4">
+      <PostsListing />
     </div>
   );
-};
-
-export default PostsPage;
+}

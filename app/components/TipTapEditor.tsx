@@ -6,30 +6,25 @@ interface TipTapEditorProps {
   content: string;
   onUpdate: (content: string) => void;
   placeholder?: string;
-  editable?: boolean;
+  height?: string;
 }
 
 const TipTapEditor: React.FC<TipTapEditorProps> = ({
   content,
   onUpdate,
   placeholder = "Start typing...",
-  editable = true,
+  height = "400px",
 }) => {
   const editor = useEditor({
     extensions: [StarterKit],
-    content: "",
-    editable,
+    content: content,
     onUpdate: ({ editor }) => {
-      const htmlContent = editor.getHTML();
-      const plainText = htmlContent
-        .replace(/<p>/g, "")
-        .replace(/<\/p>/g, "\n\n")
-        .trim();
-      onUpdate(plainText);
+      onUpdate(editor.getHTML());
     },
     editorProps: {
       attributes: {
-        class: "outline-none h-full",
+        class:
+          "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none",
       },
     },
   });
