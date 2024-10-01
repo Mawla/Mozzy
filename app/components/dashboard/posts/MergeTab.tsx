@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { TemplateCardGrid } from "./TemplateCardGrid";
 import { TweetPreview } from "./TweetPreview";
 import { usePostStore } from "@/app/stores/postStore";
+import { useToast } from "@/app/hooks/useToast";
 
 const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
   ssr: false,
@@ -14,6 +15,10 @@ const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
 
 export const MergeTab: React.FC = () => {
   const { currentPost, updatePost, handleMerge, handleSave } = usePostStore();
+  const { toast } = useToast();
+  const [currentMergingIndex, setCurrentMergingIndex] = useState<number | null>(
+    null
+  );
 
   const [isMerging, setIsMerging] = useState(false);
   const [selectedContentIndex, setSelectedContentIndex] = useState<
@@ -92,29 +97,47 @@ export const MergeTab: React.FC = () => {
   const handleMergeClick = async () => {
     if (!currentPost) {
       console.error("No current post selected");
+      toast({
+        description: "No post selected for merging.",
+        variant: "destructive",
+      });
       return;
     }
 
     setIsMerging(true);
     try {
       console.log("Starting merge process from MergeTab");
-      await handleMerge(currentPost.id); // Pass the post ID
-      console.log("Merge process completed");
+      for (let i = 0; i < templates.length; i++) {
+        setCurrentMergingIndex(i);
+        await handleMerge(currentPost.id, i);
+        console.log(`Merged content for template ${i + 1}`);
 
-      // After merging, update the local state by fetching the updated post
-      const updatedPost = usePostStore.getState().currentPost;
-      console.log("Updated post after merge:", updatedPost);
-      if (updatedPost && updatedPost.mergedContents) {
-        const firstMergedContent = Object.values(updatedPost.mergedContents)[0];
-        setEditorContent(firstMergedContent || "");
-        console.log("Editor content updated:", firstMergedContent);
-      } else {
-        console.error("No merged content available after merge operation");
+        // Update the local state after each merge
+        const updatedPost = usePostStore.getState().currentPost;
+        if (updatedPost && updatedPost.mergedContents) {
+          const templateId = templates[i].id;
+          if (templateId && updatedPost.mergedContents[templateId]) {
+            setEditorContent(updatedPost.mergedContents[templateId]);
+            setSelectedContentIndex(i);
+            toast({
+              description: `Template ${i + 1} content has been merged.`,
+            });
+          }
+        }
       }
+      console.log("Merge process completed for all templates");
+      toast({
+        description: "All templates have been merged successfully.",
+      });
     } catch (error) {
       console.error("Error during merge:", error);
+      toast({
+        description: "An error occurred while merging content.",
+        variant: "destructive",
+      });
     } finally {
       setIsMerging(false);
+      setCurrentMergingIndex(null);
     }
   };
 
@@ -123,8 +146,15 @@ export const MergeTab: React.FC = () => {
       console.log("Starting save process from MergeTab");
       await handleSave();
       console.log("Save process completed");
+      toast({
+        description: "Your post has been saved.",
+      });
     } catch (error) {
       console.error("Error during save:", error);
+      toast({
+        description: "An error occurred while saving the post.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -138,6 +168,7 @@ export const MergeTab: React.FC = () => {
           selectedIndexes={
             selectedContentIndex !== null ? [selectedContentIndex] : []
           }
+          currentMergingIndex={currentMergingIndex}
         />
       )}
 
@@ -160,7 +191,9 @@ export const MergeTab: React.FC = () => {
         {isMerging ? (
           <div className="flex items-center justify-center p-2 bg-muted rounded-md">
             <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            <span>{MESSAGES.MERGING_CONTENT}</span>
+            <span>{`${MESSAGES.MERGING_CONTENT} (${
+              currentMergingIndex !== null ? currentMergingIndex + 1 : 0
+            }/${templates.length})`}</span>
           </div>
         ) : (
           <Button

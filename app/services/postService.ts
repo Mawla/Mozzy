@@ -195,16 +195,15 @@ export const postService = {
 
   async mergeContent(
     transcript: string,
-    template: string,
+    template: Template,
     metadata: ContentMetadata
-  ): Promise<{ mergedContent: string; suggestedTitle: string }> {
+  ): Promise<string> {
     try {
-      const result = await AnthropicActions.mergeContent(
+      return await AnthropicActions.mergeContent(
         transcript,
         template,
         metadata
       );
-      return result;
     } catch (error) {
       console.error("Error merging content:", error);
       throw error;

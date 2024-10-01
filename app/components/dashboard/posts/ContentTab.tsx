@@ -3,10 +3,10 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { BUTTON_TEXTS } from "@/app/constants/editorConfig";
 import dynamic from "next/dynamic";
-import { usePostStore } from "@/app/stores/postStore"; // Updated import
-import { toast } from "react-hot-toast";
+import { usePostStore } from "@/app/stores/postStore";
 import { postService } from "@/app/services/postService";
 import { ContentMetadataDisplay } from "./ContentMetadataDisplay";
+import { useToast } from "@/app/hooks/useToast";
 
 const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
   ssr: false,
@@ -14,7 +14,8 @@ const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
 });
 
 export const ContentTab: React.FC = () => {
-  const { currentPost, updatePost, suggestTemplates } = usePostStore(); // Updated function name
+  const { currentPost, updatePost, suggestTemplates } = usePostStore();
+  const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
   const [isRefining, setIsRefining] = useState(false);
   const [isGeneratingMetadata, setIsGeneratingMetadata] = useState(false);
@@ -51,7 +52,10 @@ export const ContentTab: React.FC = () => {
 
   const handleRefinePodcastTranscript = async () => {
     if (!currentPost?.content) {
-      toast.error("No content to refine");
+      toast({
+        description: "No content to refine",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -62,15 +66,18 @@ export const ContentTab: React.FC = () => {
         additionalInstructions
       );
       updatePost({ transcript: refinedContent, content: refinedContent });
-      toast.success("Transcript refined successfully");
+      toast({
+        description: "Transcript refined successfully",
+      });
     } catch (error) {
       console.error("Error refining transcript:", error);
       let errorMessage = "Failed to refine transcript";
       if (error instanceof Error) {
         errorMessage += `: ${error.message}`;
       }
-      toast.error(errorMessage, {
-        duration: 5000, // Show the error message for 5 seconds
+      toast({
+        description: errorMessage,
+        variant: "destructive",
       });
     } finally {
       setIsRefining(false);
@@ -79,7 +86,10 @@ export const ContentTab: React.FC = () => {
 
   const handleGenerateMetadata = async () => {
     if (!currentPost?.content) {
-      toast.error("No content to generate metadata from");
+      toast({
+        description: "No content to generate metadata from",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -87,10 +97,15 @@ export const ContentTab: React.FC = () => {
     try {
       const metadata = await postService.suggestTags(currentPost.content);
       updatePost({ metadata });
-      toast.success("Metadata generated successfully");
+      toast({
+        description: "Metadata generated successfully",
+      });
     } catch (error) {
       console.error("Error generating metadata:", error);
-      toast.error("Failed to generate metadata");
+      toast({
+        description: "Failed to generate metadata",
+        variant: "destructive",
+      });
     } finally {
       setIsGeneratingMetadata(false);
     }

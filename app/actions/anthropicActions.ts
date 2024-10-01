@@ -21,16 +21,17 @@ const anthropicHelper = AnthropicHelper.getInstance();
 
 export async function mergeContent(
   transcript: string,
-  template: string,
+  template: Template,
   metadata: ContentMetadata
-) {
+): Promise<string> {
   const mergePrompt = mergeTranscriptAndTemplatePrompt(
     transcript,
-    template,
+    template.body || "",
     metadata
   );
   const mergeResult = await anthropicHelper.getCompletion(mergePrompt);
-  return JSON.parse(mergeResult);
+  const parsedResult = JSON.parse(mergeResult);
+  return parsedResult.mergedContent;
 }
 
 export async function suggestTags(

@@ -22,7 +22,7 @@ interface PostActions {
   deletePost: (id: string) => Promise<void>;
   generateMetadata: () => Promise<void>;
   suggestTemplates: () => Promise<void>;
-  handleMerge: (postId: string) => Promise<void>;
+  handleMerge: (postId: string, templateIndex: number) => Promise<void>;
   handleSave: () => Promise<void>;
   handleRemoveTemplate: (index: number) => void;
   handleTemplateSelection: (selectedTemplate: Template) => void;
@@ -125,10 +125,46 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
     });
   },
 
-  handleMerge: async (postId: string) => {
-    await postService.handleMerge(postId);
-    const updatedPost = postService.getPostById(postId);
-    set({ currentPost: updatedPost });
+  handleMerge: async (postId: string, templateIndex: number) => {
+    try {
+      const post = get().posts.find((p) => p.id === postId);
+      if (!post) throw new Error("Post not found");
+
+      const template = post.templates?.[templateIndex];
+      if (!template) throw new Error("Template not found");
+
+      // Merge content for the specific template
+      const mergedContent = await postService.mergeContent(
+        post.content,
+        template,
+        post.metadata || {
+          categories: [],
+          tags: [],
+          topics: [],
+          keyPeople: [],
+          industries: [],
+          contentType: [],
+        }
+      );
+
+      // Update the post with the new merged content
+      const updatedMergedContents = {
+        ...post.mergedContents,
+        [template.id]: mergedContent,
+      };
+      const updatedPost = { ...post, mergedContents: updatedMergedContents };
+
+      // Update the posts array and currentPost
+      set((state) => ({
+        posts: state.posts.map((p) => (p.id === postId ? updatedPost : p)),
+        currentPost: updatedPost,
+      }));
+
+      console.log(`Content merged for template ${templateIndex + 1}`);
+    } catch (error) {
+      console.error("Error in handleMerge:", error);
+      throw error;
+    }
   },
 
   handleSave: async () => {
