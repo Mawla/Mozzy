@@ -3,6 +3,7 @@ import { TemplateParser } from "@/utils/templateParser";
 import { Post } from "@/app/types/post";
 import { refinePodcastTranscriptPrompt } from "@/prompts/refinePodcastTranscript";
 import { create } from "zustand";
+import { suggestTagsPrompt } from "@/prompts/tagPrompt";
 
 // Define a store for loading state
 interface LoadingState {
@@ -116,8 +117,7 @@ export const postService = {
         "suggestTags",
         {
           transcript,
-          prompt:
-            "Please suggest only single-word or short-phrase tags for this transcript. Do not include any explanations or sentences. Return the tags as a JSON array of strings.",
+          prompt: suggestTagsPrompt(transcript),
         }
       );
       return suggestedTags.filter(
