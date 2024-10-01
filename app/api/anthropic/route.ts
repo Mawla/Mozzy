@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { AnthropicHelper } from "@/utils/AnthropicHelper";
 import {
   mergeTranscriptAndTemplatePrompt,
-  suggestTagsPrompt,
-  chooseBestTemplatePrompt,
   generateTitlePrompt,
   generateImprovedTranscriptPrompt,
   generateSummaryPrompt,
 } from "@/prompts/anthropicPrompts";
 import { refinePodcastTranscriptPrompt } from "@/prompts/refinePodcastTranscript";
 import { Template } from "@/app/types/template";
+import { suggestTagsPrompt } from "@/prompts/tagPrompt";
+import { chooseBestTemplatePrompt } from "@/prompts/shortlistPrompt";
 
 // Define an enum for actions
 enum AnthropicAction {

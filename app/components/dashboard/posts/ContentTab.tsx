@@ -1,48 +1,129 @@
-import React, { useState } from "react";
-import { usePostStore } from "@/app/stores/postStore";
-import { postService } from "@/app/services/postService";
+import React, { useMemo, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { X } from "lucide-react";
+import { BUTTON_TEXTS } from "@/app/constants/editorConfig";
+import dynamic from "next/dynamic";
+import { usePostStore } from "@/app/stores/postStore"; // Updated import
+import { toast } from "react-hot-toast";
+import { postService } from "@/app/services/postService";
+
+const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
+  ssr: false,
+  loading: () => <p>Loading editor...</p>,
+});
 
 export const ContentTab: React.FC = () => {
-  const { currentPost, updatePost } = usePostStore();
-  const [transcript, setTranscript] = useState(currentPost.transcript || "");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { currentPost, updatePost, handleSuggestTagsAndTemplates } =
+    usePostStore(); // Updated to use usePostStore
+  const [isClient, setIsClient] = useState(false);
+  const [isRefining, setIsRefining] = useState(false);
+  const [additionalInstructions, setAdditionalInstructions] = useState("");
 
-  const handleTranscriptChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
-    setTranscript(e.target.value);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const wordCount = useMemo(() => {
+    return currentPost?.content.trim().split(/\s+/).length || 0;
+  }, [currentPost?.content]);
+
+  if (!currentPost) {
+    return <p>Loading content...</p>;
+  }
+
+  const handleEditorUpdate = (content: string) => {
+    updatePost({ content });
   };
 
-  const handleCreatePost = async () => {
-    setIsLoading(true);
-    setError(null);
+  const handleInstructionsUpdate = (instructions: string) => {
+    setAdditionalInstructions(instructions);
+  };
 
+  const removeTag = (tagToRemove: string) => {
+    if (currentPost && currentPost.tags) {
+      const updatedTags = currentPost.tags.filter(
+        (tag: string) => tag !== tagToRemove
+      );
+      updatePost({ tags: updatedTags });
+    }
+  };
+
+  const handleRefinePodcastTranscript = async () => {
+    if (!currentPost?.content) {
+      toast.error("No content to refine");
+      return;
+    }
+
+    setIsRefining(true);
     try {
-      const newPost = await postService.createPost(transcript);
-      updatePost(newPost);
-    } catch (err) {
-      console.error("Error creating post:", err);
-      setError("Failed to create post. Please try again.");
+      const refinedContent = await postService.refinePodcastTranscript(
+        currentPost.content,
+        additionalInstructions
+      );
+      updatePost({ transcript: refinedContent, content: refinedContent });
+      toast.success("Transcript refined successfully");
+    } catch (error) {
+      console.error("Error refining transcript:", error);
+      let errorMessage = "Failed to refine transcript";
+      if (error instanceof Error) {
+        errorMessage += `: ${error.message}`;
+      }
+      toast.error(errorMessage, {
+        duration: 5000, // Show the error message for 5 seconds
+      });
     } finally {
-      setIsLoading(false);
+      setIsRefining(false);
     }
   };
 
   return (
     <div className="space-y-4">
-      <Textarea
-        value={transcript}
-        onChange={handleTranscriptChange}
-        placeholder="Enter your transcript here..."
-        rows={10}
-      />
-      <Button onClick={handleCreatePost} disabled={isLoading}>
-        {isLoading ? "Creating..." : "Create Post"}
-      </Button>
-      {error && <p className="text-red-500">{error}</p>}
+      {isClient && (
+        <>
+          <TipTapEditor
+            content={currentPost?.content || ""}
+            placeholder="Start typing or paste your transcript here..."
+            height="400px" // Main content editor height
+            onUpdate={handleEditorUpdate}
+          />
+          <h3 className="text-lg font-semibold mt-4 mb-2">
+            Additional Instructions
+          </h3>
+          <TipTapEditor
+            content={additionalInstructions}
+            onUpdate={handleInstructionsUpdate}
+            placeholder="Enter additional instructions for refining the transcript..."
+            height="80px" // 20% of the original 400px height
+          />
+        </>
+      )}
+      <div className="flex justify-between items-center">
+        <div className="flex items-center space-x-4">
+          <Button onClick={handleSuggestTagsAndTemplates}>
+            {BUTTON_TEXTS.SUGGEST_TAGS}
+          </Button>
+          <Button onClick={handleRefinePodcastTranscript} disabled={isRefining}>
+            {isRefining ? "Refining..." : "Refine Transcript"}
+          </Button>
+          <span className="text-sm text-gray-500">Words: {wordCount}</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {currentPost?.tags?.map((tag: string) => (
+            <div
+              key={tag}
+              className="bg-gray-200 text-gray-800 px-2 py-1 rounded-full text-sm flex items-center group"
+            >
+              {tag}
+              <button
+                onClick={() => removeTag(tag)}
+                className="ml-1 text-gray-500 hover:text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
