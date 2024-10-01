@@ -2,25 +2,9 @@ import { Pack, Template } from "@/app/types/template";
 import { TemplateParser } from "@/utils/templateParser";
 import { Post } from "@/app/types/post";
 import { refinePodcastTranscriptPrompt } from "@/prompts/refinePodcastTranscript";
-import { create } from "zustand";
 import * as AnthropicActions from "@/app/actions/anthropicActions";
 import { ContentMetadata } from "@/app/types/contentMetadata";
-
-// Define a store for loading state
-interface LoadingState {
-  isLoading: boolean;
-  progress: number;
-  message: string;
-  setLoading: (isLoading: boolean, progress?: number, message?: string) => void;
-}
-
-export const useLoadingStore = create<LoadingState>((set) => ({
-  isLoading: false,
-  progress: 0,
-  message: "",
-  setLoading: (isLoading, progress = 0, message = "") =>
-    set({ isLoading, progress, message }),
-}));
+import { useLoadingStore } from "@/app/stores/loadingStore";
 
 export const postService = {
   getPacks(): Pack[] {
@@ -285,9 +269,8 @@ export const postService = {
     additionalInstructions: string
   ): Promise<string> {
     try {
-      useLoadingStore
-        .getState()
-        .setLoading(true, 0, "Preparing transcript for refinement...");
+      const { setLoading } = useLoadingStore.getState();
+      setLoading(true, 0, "Preparing transcript for refinement...");
 
       const chunks = this.chunkText(transcript);
       const refinedChunks = await this.processChunks(
@@ -295,15 +278,11 @@ export const postService = {
         additionalInstructions
       );
 
-      useLoadingStore
-        .getState()
-        .setLoading(true, 90, "Combining refined chunks...");
+      setLoading(true, 90, "Combining refined chunks...");
       const combinedRefinedContent = refinedChunks.join("\n\n");
 
       if (chunks.length > 1) {
-        useLoadingStore
-          .getState()
-          .setLoading(true, 95, "Performing final refinement...");
+        setLoading(true, 95, "Performing final refinement...");
         const finalPrompt = refinePodcastTranscriptPrompt(
           combinedRefinedContent,
           additionalInstructions,
@@ -314,14 +293,14 @@ export const postService = {
         const finalRefinedContent =
           await AnthropicActions.refinePodcastTranscript(finalPrompt);
 
-        useLoadingStore.getState().setLoading(false);
+        setLoading(false, 100, "Refinement complete");
         return finalRefinedContent;
       }
 
-      useLoadingStore.getState().setLoading(false);
+      setLoading(false, 100, "Refinement complete");
       return combinedRefinedContent;
     } catch (error) {
-      useLoadingStore.getState().setLoading(false);
+      useLoadingStore.getState().setLoading(false, 0, "Refinement failed");
       console.error("Error refining podcast transcript:", error);
       throw error;
     }
@@ -332,17 +311,16 @@ export const postService = {
     additionalInstructions: string
   ): Promise<string[]> {
     let refinedChunks: string[] = [];
+    const { setLoading } = useLoadingStore.getState();
 
     for (let i = 0; i < chunks.length; i++) {
       console.log(`Processing chunk ${i + 1} of ${chunks.length}`);
       try {
-        useLoadingStore
-          .getState()
-          .setLoading(
-            true,
-            (i / chunks.length) * 100,
-            `Processing chunk ${i + 1} of ${chunks.length}`
-          );
+        setLoading(
+          true,
+          ((i + 1) / chunks.length) * 100,
+          `Processing chunk ${i + 1} of ${chunks.length}`
+        );
 
         const chunkPrompt = refinePodcastTranscriptPrompt(
           chunks[i],

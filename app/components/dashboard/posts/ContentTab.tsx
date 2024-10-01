@@ -1,12 +1,13 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { BUTTON_TEXTS } from "@/app/constants/editorConfig";
 import dynamic from "next/dynamic";
 import { usePostStore } from "@/app/stores/postStore";
 import { postService } from "@/app/services/postService";
 import { ContentMetadataDisplay } from "./ContentMetadataDisplay";
 import { useToast } from "@/app/hooks/useToast";
+import { useLoadingStore } from "@/app/stores/loadingStore"; // Make sure this import is correct
 
 const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
   ssr: false,
@@ -16,6 +17,7 @@ const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
 export const ContentTab: React.FC = () => {
   const { currentPost, updatePost, suggestTemplates } = usePostStore();
   const { toast } = useToast();
+  const { isLoading, progress, loadingMessage } = useLoadingStore();
   const [isClient, setIsClient] = useState(false);
   const [isRefining, setIsRefining] = useState(false);
   const [isGeneratingMetadata, setIsGeneratingMetadata] = useState(false);
@@ -136,18 +138,36 @@ export const ContentTab: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Button
             onClick={handleGenerateMetadata}
-            disabled={isGeneratingMetadata}
+            disabled={isGeneratingMetadata || isLoading}
           >
             {isGeneratingMetadata ? "Generating..." : "Generate Metadata"}
           </Button>
-          <Button onClick={suggestTemplates}>Suggest Templates</Button>{" "}
-          {/* Updated function name */}
-          <Button onClick={handleRefinePodcastTranscript} disabled={isRefining}>
+          <Button onClick={suggestTemplates} disabled={isLoading}>
+            Suggest Templates
+          </Button>
+          <Button
+            onClick={handleRefinePodcastTranscript}
+            disabled={isRefining || isLoading}
+          >
             {isRefining ? "Refining..." : "Refine Transcript"}
           </Button>
           <span className="text-sm text-gray-500">Words: {wordCount}</span>
         </div>
       </div>
+      {isLoading && (
+        <div className="mt-4 p-4 bg-gray-100 rounded-md">
+          <div className="flex items-center">
+            <Loader2 className="animate-spin mr-2" />
+            <span>{loadingMessage}</span>
+          </div>
+          <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5">
+            <div
+              className="bg-blue-600 h-2.5 rounded-full"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+        </div>
+      )}
       {currentPost.metadata && (
         <div className="mt-6">
           <h3 className="text-lg font-semibold mb-2">Content Metadata</h3>
