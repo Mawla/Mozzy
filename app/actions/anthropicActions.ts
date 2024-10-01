@@ -12,6 +12,7 @@ import { chooseBestTemplatePrompt } from "@/prompts/shortlistPrompt";
 import { Template } from "@/app/types/template";
 import { getSimilarTemplatesPrompt } from "@/prompts/similarTemplatesPrompt";
 import { extractJsonArrayFromString } from "@/utils/regexUtils";
+import { extractJsonFieldFromString } from "@/utils/regexUtils";
 
 const anthropicHelper = AnthropicHelper.getInstance();
 
@@ -65,20 +66,48 @@ export async function generateSummary(transcript: string) {
 export async function mergeMultipleContents(
   transcript: string,
   templates: Template[]
-) {
+): Promise<{
+  mergedResults: { templateId: string; mergedContent: string }[];
+  partialSuccess: boolean;
+  failedMergesCount: number;
+}> {
   const mergeResults = await Promise.all(
     templates.map(async (template) => {
       const templateBody = template.body || "";
       const prompt = mergeTranscriptAndTemplatePrompt(transcript, templateBody);
       const response = await anthropicHelper.getCompletion(prompt);
-      return JSON.parse(response);
+
+      // {{ edit_start }}
+      let mergedContent: string | null = null;
+      try {
+        const parsedResponse = JSON.parse(response);
+        mergedContent = parsedResponse.mergedContent;
+      } catch (parseError) {
+        console.error("Error parsing JSON response:", parseError);
+        mergedContent = extractJsonFieldFromString(response, "mergedContent");
+        if (!mergedContent) {
+          console.error(
+            "Failed to extract 'mergedContent' using regex fallback."
+          );
+        }
+      }
+      // {{ edit_end }}
+
+      return {
+        templateId: template.id,
+        mergedContent: mergedContent,
+      };
     })
   );
 
   return {
     mergedResults: mergeResults,
-    partialSuccess: mergeResults.some((result) => result === null),
-    failedMergesCount: mergeResults.filter((result) => result === null).length,
+    partialSuccess: mergeResults.some(
+      (result) => result.mergedContent === null
+    ),
+    failedMergesCount: mergeResults.filter(
+      (result) => result.mergedContent === null
+    ).length,
   };
 }
 

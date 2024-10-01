@@ -90,9 +90,42 @@ export const MergeTab: React.FC = () => {
   };
 
   const handleMergeClick = async () => {
+    if (!currentPost) {
+      console.error("No current post selected");
+      return;
+    }
+
     setIsMerging(true);
-    await handleMerge();
-    setIsMerging(false);
+    try {
+      console.log("Starting merge process from MergeTab");
+      await handleMerge(currentPost.id); // Pass the post ID
+      console.log("Merge process completed");
+
+      // After merging, update the local state by fetching the updated post
+      const updatedPost = usePostStore.getState().currentPost;
+      console.log("Updated post after merge:", updatedPost);
+      if (updatedPost && updatedPost.mergedContents) {
+        const firstMergedContent = Object.values(updatedPost.mergedContents)[0];
+        setEditorContent(firstMergedContent || "");
+        console.log("Editor content updated:", firstMergedContent);
+      } else {
+        console.error("No merged content available after merge operation");
+      }
+    } catch (error) {
+      console.error("Error during merge:", error);
+    } finally {
+      setIsMerging(false);
+    }
+  };
+
+  const handleSaveClick = async () => {
+    try {
+      console.log("Starting save process from MergeTab");
+      await handleSave();
+      console.log("Save process completed");
+    } catch (error) {
+      console.error("Error during save:", error);
+    }
   };
 
   return (
@@ -139,7 +172,7 @@ export const MergeTab: React.FC = () => {
           </Button>
         )}
         <Button
-          onClick={handleSave}
+          onClick={handleSaveClick}
           disabled={Object.keys(mergedContents).length === 0}
           className="bg-gray-800 hover:bg-gray-700 text-white"
         >

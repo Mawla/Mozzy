@@ -20,7 +20,7 @@ interface PostActions {
   createNewPost: () => void;
   deletePost: (id: string) => Promise<void>;
   handleSuggestTagsAndTemplates: () => Promise<void>;
-  handleMerge: () => Promise<void>;
+  handleMerge: (postId: string) => Promise<void>;
   handleSave: () => Promise<void>;
   handleRemoveTemplate: (index: number) => void;
   handleTemplateSelection: (selectedTemplate: Template) => void;
@@ -118,30 +118,21 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
     }
   },
 
-  handleMerge: async () => {
-    const { currentPost } = get();
-    if (!currentPost) return;
-    try {
-      const { mergedContents, suggestedTitle } =
-        await postService.mergeContentsAndSuggestTitle(
-          currentPost.content,
-          currentPost.templates || []
-        );
-      get().updatePost({
-        mergedContents,
-        title: currentPost.title || suggestedTitle,
-      });
-    } catch (error) {
-      console.error("Error merging content:", error);
-    }
+  handleMerge: async (postId: string) => {
+    await postService.handleMerge(postId);
+    const updatedPost = postService.getPostById(postId);
+    set({ currentPost: updatedPost });
   },
 
   handleSave: async () => {
     const { currentPost } = get();
     if (!currentPost) return;
     try {
+      console.log("Saving post:", currentPost);
       const savedPost = await postService.handleSave(currentPost);
+      console.log("Post saved. Returned post:", savedPost);
       get().updatePost(savedPost);
+      console.log("Store updated after save. Current post:", get().currentPost);
     } catch (error) {
       console.error("Error saving post:", error);
     }

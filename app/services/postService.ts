@@ -59,6 +59,7 @@ export const postService = {
 
   async handleSave(post: Post): Promise<Post> {
     try {
+      console.log("Handling save for post:", post);
       const posts = this.getPosts();
       const existingPostIndex = posts.findIndex((p) => p.id === post.id);
 
@@ -76,7 +77,9 @@ export const postService = {
         });
       }
 
+      console.log("Saving posts to localStorage:", posts);
       localStorage.setItem("posts", JSON.stringify(posts));
+      console.log("Posts saved to localStorage");
       return post;
     } catch (error) {
       console.error("Error saving post:", error);
@@ -164,15 +167,14 @@ export const postService = {
     mergedContents: { [templateId: string]: string };
     suggestedTitle: string;
   }> {
-    const mergeResults = await this.mergeMultipleContents(content, templates);
-    console.log("Merge results:", mergeResults);
+    const mergeResponse = await this.mergeMultipleContents(content, templates);
+    console.log("Merge response:", mergeResponse);
 
-    const mergedContents = mergeResults.reduce((acc, result, index) => {
-      const templateId = templates[index]?.id;
-      if (templateId) {
-        acc[templateId] = result.mergedContent;
+    const mergedContents = mergeResponse.mergedResults.reduce((acc, result) => {
+      if (result.templateId && result.mergedContent) {
+        acc[result.templateId] = result.mergedContent;
       } else {
-        console.error(`Missing template ID for index ${index}:`, result);
+        console.error(`Missing template ID or merged content:`, result);
       }
       return acc;
     }, {} as { [templateId: string]: string });
@@ -211,16 +213,24 @@ export const postService = {
   async mergeMultipleContents(
     transcript: string,
     templates: Template[]
-  ): Promise<{ mergedContent: string; suggestedTitle: string }[]> {
+  ): Promise<{
+    mergedResults: { templateId: string; mergedContent: string }[];
+    partialSuccess: boolean;
+    failedMergesCount: number;
+  }> {
     try {
       const response = await AnthropicActions.mergeMultipleContents(
         transcript,
         templates
       );
-      return response.mergedResults;
+      return response;
     } catch (error) {
       console.error("Error in mergeMultipleContents:", error);
-      return [];
+      return {
+        mergedResults: [],
+        partialSuccess: true,
+        failedMergesCount: templates.length,
+      };
     }
   },
 
@@ -380,4 +390,31 @@ export const postService = {
 
     return chunks;
   },
+
+  // {{ edit_start }}
+  async handleMerge(postId: string): Promise<void> {
+    try {
+      const post = this.getPostById(postId);
+      if (!post) throw new Error("Post not found");
+
+      const { mergedContents, suggestedTitle } =
+        await this.mergeContentsAndSuggestTitle(
+          post.content,
+          post.templates ?? [] // Ensure templates is always an array
+        );
+
+      const updatedPost = {
+        ...post,
+        mergedContents,
+        title: suggestedTitle,
+        updatedAt: new Date().toISOString(),
+      };
+
+      await this.handleSave(updatedPost);
+    } catch (error) {
+      console.error("Error handling merge:", error);
+      throw error;
+    }
+  },
+  // {{ edit_end }}
 };
