@@ -39,6 +39,7 @@ Guidelines:
 - Consider the relevance of each metadata aspect when making matches.
 - Return the 10 most relevant template IDs, ordered from most to least relevant.
 - If fewer than 10 templates are suitable, include only those that are relevant.
+- Don't include the same template ID more than once.
 - Provide a brief explanation for each selected template, highlighting which aspects of the metadata it matches.
 
 Only include the JSON object in your response, without any additional text.

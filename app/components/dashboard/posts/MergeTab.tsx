@@ -1,12 +1,17 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Download } from "lucide-react"; // Add Download icon
 import { BUTTON_TEXTS, MESSAGES } from "@/app/constants/editorConfig";
 import dynamic from "next/dynamic";
 import { TemplateCardGrid } from "./TemplateCardGrid";
 import { TweetPreview } from "./TweetPreview";
 import { usePostStore } from "@/app/stores/postStore";
 import { useToast } from "@/app/hooks/useToast";
+import { useLoadingStore } from "@/app/stores/loadingStore";
+import { generatePDF } from "@/app/utils/pdfGenerator";
+import { createRoot } from "react-dom/client";
+import html2canvas from "html2canvas";
+import { saveAs } from "file-saver";
 
 const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
   ssr: false,
@@ -16,11 +21,10 @@ const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
 export const MergeTab: React.FC = () => {
   const { currentPost, updatePost, handleMerge, handleSave } = usePostStore();
   const { toast } = useToast();
+  const { isLoading, progress, loadingMessage } = useLoadingStore();
   const [currentMergingIndex, setCurrentMergingIndex] = useState<number | null>(
     null
   );
-
-  const [isMerging, setIsMerging] = useState(false);
   const [selectedContentIndex, setSelectedContentIndex] = useState<
     number | null
   >(null);
@@ -104,39 +108,47 @@ export const MergeTab: React.FC = () => {
       return;
     }
 
-    setIsMerging(true);
     try {
       console.log("Starting merge process from MergeTab");
       for (let i = 0; i < templates.length; i++) {
         setCurrentMergingIndex(i);
-        await handleMerge(currentPost.id, i);
-        console.log(`Merged content for template ${i + 1}`);
+        try {
+          await handleMerge(currentPost.id, i);
+          console.log(`Merged content for template ${i + 1}`);
 
-        // Update the local state after each merge
-        const updatedPost = usePostStore.getState().currentPost;
-        if (updatedPost && updatedPost.mergedContents) {
-          const templateId = templates[i].id;
-          if (templateId && updatedPost.mergedContents[templateId]) {
-            setEditorContent(updatedPost.mergedContents[templateId]);
-            setSelectedContentIndex(i);
-            toast({
-              description: `Template ${i + 1} content has been merged.`,
-            });
+          // Update the local state after each merge
+          const updatedPost = usePostStore.getState().currentPost;
+          if (updatedPost && updatedPost.mergedContents) {
+            const templateId = templates[i].id;
+            if (templateId && updatedPost.mergedContents[templateId]) {
+              setEditorContent(updatedPost.mergedContents[templateId]);
+              setSelectedContentIndex(i);
+              toast({
+                description: `Template ${i + 1} content has been merged.`,
+              });
+            }
           }
+        } catch (mergeError) {
+          console.error(`Error merging template ${i + 1}:`, mergeError);
+          toast({
+            description: `Failed to merge template ${
+              i + 1
+            }. Skipping to next template.`,
+            variant: "destructive",
+          });
         }
       }
       console.log("Merge process completed for all templates");
       toast({
-        description: "All templates have been merged successfully.",
+        description: "All templates have been processed.",
       });
     } catch (error) {
-      console.error("Error during merge:", error);
+      console.error("Error during merge process:", error);
       toast({
-        description: "An error occurred while merging content.",
+        description: "An error occurred during the merge process.",
         variant: "destructive",
       });
     } finally {
-      setIsMerging(false);
       setCurrentMergingIndex(null);
     }
   };
@@ -153,6 +165,69 @@ export const MergeTab: React.FC = () => {
       console.error("Error during save:", error);
       toast({
         description: "An error occurred while saving the post.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const tweetPreviewRef = useRef<HTMLDivElement>(null);
+
+  const handleExport = async () => {
+    if (!currentPost) {
+      toast({
+        description: "No post to export.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const tweetPreviews = await Promise.all(
+        Object.entries(mergedContents).map(async ([templateId, content]) => {
+          const template = templates.find((t) => t.id === templateId);
+
+          // Create a container for the TweetPreview
+          const tweetPreviewElement = document.createElement("div");
+          tweetPreviewElement.style.width = "300px";
+          document.body.appendChild(tweetPreviewElement);
+
+          // Use createRoot to render the TweetPreview component
+          const root = createRoot(tweetPreviewElement);
+          root.render(<TweetPreview content={content} />);
+
+          // Wait for any asynchronous rendering to complete
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
+          // Capture the rendered tweet preview
+          const canvas = await html2canvas(tweetPreviewElement);
+
+          // Clean up
+          root.unmount();
+          document.body.removeChild(tweetPreviewElement);
+
+          return {
+            templateName: template?.name || "Unknown Template",
+            content: content,
+            previewImage: canvas.toDataURL("image/png"),
+          };
+        })
+      );
+
+      const pdfBlob = await generatePDF(
+        currentPost.title || "Untitled Post",
+        tweetPreviews
+      );
+
+      // Use file-saver to save the PDF
+      saveAs(pdfBlob, `${currentPost.title || "Untitled_Post"}_tweets.pdf`);
+
+      toast({
+        description: "PDF exported and saved successfully.",
+      });
+    } catch (error) {
+      console.error("Error exporting PDF:", error);
+      toast({
+        description: "Failed to export PDF.",
         variant: "destructive",
       });
     }
@@ -187,29 +262,43 @@ export const MergeTab: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex justify-end gap-2">
-        {isMerging ? (
-          <div className="flex items-center justify-center p-2 bg-muted rounded-md">
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            <span>{`${MESSAGES.MERGING_CONTENT} (${
-              currentMergingIndex !== null ? currentMergingIndex + 1 : 0
-            }/${templates.length})`}</span>
+      {isLoading && (
+        <div className="mt-4 p-4 bg-gray-100 rounded-md">
+          <div className="flex items-center">
+            <Loader2 className="animate-spin mr-2" />
+            <span>{loadingMessage}</span>
           </div>
-        ) : (
-          <Button
-            onClick={handleMergeClick}
-            disabled={!contentToMerge || templates.length === 0}
-            variant="outline"
-          >
-            {BUTTON_TEXTS.MERGE_CONTENT}
-          </Button>
-        )}
+          <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5">
+            <div
+              className="bg-blue-600 h-2.5 rounded-full"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+        </div>
+      )}
+
+      <div className="flex justify-end gap-2">
+        <Button
+          onClick={handleMergeClick}
+          disabled={!contentToMerge || templates.length === 0 || isLoading}
+          variant="outline"
+        >
+          {isLoading ? MESSAGES.MERGING_CONTENT : BUTTON_TEXTS.MERGE_CONTENT}
+        </Button>
         <Button
           onClick={handleSaveClick}
-          disabled={Object.keys(mergedContents).length === 0}
+          disabled={Object.keys(mergedContents).length === 0 || isLoading}
           className="bg-gray-800 hover:bg-gray-700 text-white"
         >
           {BUTTON_TEXTS.SAVE}
+        </Button>
+        <Button
+          onClick={handleExport}
+          disabled={Object.keys(mergedContents).length === 0 || isLoading}
+          variant="outline"
+        >
+          <Download className="mr-2 h-4 w-4" />
+          Export PDF
         </Button>
       </div>
     </div>

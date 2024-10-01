@@ -30,8 +30,24 @@ export async function mergeContent(
     metadata
   );
   const mergeResult = await anthropicHelper.getCompletion(mergePrompt);
-  const parsedResult = JSON.parse(mergeResult);
-  return parsedResult.mergedContent;
+
+  let mergedContent: string | null = null;
+  try {
+    const parsedResult = JSON.parse(mergeResult);
+    mergedContent = parsedResult.mergedContent;
+  } catch (parseError) {
+    console.error("Error parsing JSON response:", parseError);
+    mergedContent = extractJsonFieldFromString(mergeResult, "mergedContent");
+  }
+
+  if (!mergedContent) {
+    console.error(
+      "Failed to extract 'mergedContent' using both JSON parsing and regex fallback."
+    );
+    throw new Error("Failed to parse merged content");
+  }
+
+  return mergedContent;
 }
 
 export async function suggestTags(
@@ -95,28 +111,26 @@ export async function mergeMultipleContents(
         templateBody,
         metadata
       );
-      const response = await anthropicHelper.getCompletion(prompt);
-
-      // {{ edit_start }}
-      let mergedContent: string | null = null;
       try {
-        const parsedResponse = JSON.parse(response);
-        mergedContent = parsedResponse.mergedContent;
-      } catch (parseError) {
-        console.error("Error parsing JSON response:", parseError);
-        mergedContent = extractJsonFieldFromString(response, "mergedContent");
-        if (!mergedContent) {
-          console.error(
-            "Failed to extract 'mergedContent' using regex fallback."
-          );
-        }
+        const mergedContent = await mergeContent(
+          transcript,
+          template,
+          metadata
+        );
+        return {
+          templateId: template.id,
+          mergedContent,
+        };
+      } catch (error) {
+        console.error(
+          `Error merging content for template ${template.id}:`,
+          error
+        );
+        return {
+          templateId: template.id,
+          mergedContent: null,
+        };
       }
-      // {{ edit_end }}
-
-      return {
-        templateId: template.id,
-        mergedContent: mergedContent,
-      };
     })
   );
 

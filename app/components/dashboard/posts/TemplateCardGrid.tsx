@@ -27,7 +27,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {safeTemplates.slice(0, maxTemplates).map((template, index) => (
         <div
-          key={template ? template.id : `empty-${index}`}
+          key={template ? `${template.id}-${index}` : `empty-${index}`}
           className={`relative cursor-pointer p-4 border rounded-lg ${
             selectedIndexes.includes(index)
               ? "border-blue-500"

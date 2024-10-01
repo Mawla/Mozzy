@@ -127,11 +127,26 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
 
   handleMerge: async (postId: string, templateIndex: number) => {
     try {
-      const post = get().posts.find((p) => p.id === postId);
-      if (!post) throw new Error("Post not found");
+      const { posts, currentPost } = get();
+      let post = posts.find((p) => p.id === postId);
 
-      const template = post.templates?.[templateIndex];
-      if (!template) throw new Error("Template not found");
+      if (!post) {
+        if (currentPost && currentPost.id === postId) {
+          post = currentPost;
+        } else {
+          throw new Error("Post not found");
+        }
+      }
+
+      const templates = post.templates || [];
+      if (templateIndex < 0 || templateIndex >= templates.length) {
+        throw new Error(`Invalid template index: ${templateIndex}`);
+      }
+
+      const template = templates[templateIndex];
+      if (!template) {
+        throw new Error(`Template at index ${templateIndex} is undefined`);
+      }
 
       // Merge content for the specific template
       const mergedContent = await postService.mergeContent(
@@ -157,7 +172,8 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
       // Update the posts array and currentPost
       set((state) => ({
         posts: state.posts.map((p) => (p.id === postId ? updatedPost : p)),
-        currentPost: updatedPost,
+        currentPost:
+          state.currentPost?.id === postId ? updatedPost : state.currentPost,
       }));
 
       console.log(`Content merged for template ${templateIndex + 1}`);

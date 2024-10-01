@@ -143,6 +143,9 @@ export const postService = {
     mergedContents: { [templateId: string]: string };
     suggestedTitle: string;
   }> {
+    const { setLoading } = useLoadingStore.getState();
+    setLoading(true, 0, "Starting merge process...");
+
     const mergeResponse = await this.mergeMultipleContents(
       content,
       templates,
@@ -161,6 +164,7 @@ export const postService = {
 
     console.log("Processed mergedContents:", mergedContents);
 
+    setLoading(true, 90, "Generating title...");
     let suggestedTitle;
     try {
       suggestedTitle = await this.suggestTitle(content);
@@ -169,6 +173,7 @@ export const postService = {
       suggestedTitle = this.generateFallbackTitle(content);
     }
 
+    setLoading(false, 100, "Merge process completed");
     return { mergedContents, suggestedTitle };
   },
 
@@ -203,20 +208,47 @@ export const postService = {
     partialSuccess: boolean;
     failedMergesCount: number;
   }> {
+    const { setLoading } = useLoadingStore.getState();
+    const totalTemplates = templates.length;
+
     try {
-      const response = await AnthropicActions.mergeMultipleContents(
-        transcript,
-        templates,
-        metadata
-      );
-      return response;
+      const mergedResults = [];
+      let failedMergesCount = 0;
+
+      for (let i = 0; i < totalTemplates; i++) {
+        const template = templates[i];
+        setLoading(
+          true,
+          (i / totalTemplates) * 100,
+          `Merging template ${i + 1} of ${totalTemplates}`
+        );
+
+        try {
+          const mergedContent = await AnthropicActions.mergeContent(
+            transcript,
+            template,
+            metadata
+          );
+          mergedResults.push({ templateId: template.id, mergedContent });
+        } catch (error) {
+          console.error(`Error merging content for template ${i + 1}:`, error);
+          mergedResults.push({ templateId: template.id, mergedContent: null });
+          failedMergesCount++;
+        }
+      }
+
+      const partialSuccess =
+        failedMergesCount > 0 && failedMergesCount < totalTemplates;
+
+      return {
+        mergedResults,
+        partialSuccess,
+        failedMergesCount,
+      };
     } catch (error) {
       console.error("Error in mergeMultipleContents:", error);
-      return {
-        mergedResults: [],
-        partialSuccess: true,
-        failedMergesCount: templates.length,
-      };
+      setLoading(false, 0, "Merge process failed");
+      throw error;
     }
   },
 
@@ -374,6 +406,9 @@ export const postService = {
   },
 
   async handleMerge(postId: string): Promise<void> {
+    const { setLoading } = useLoadingStore.getState();
+    setLoading(true, 0, "Starting merge process...");
+
     try {
       const post = this.getPostById(postId);
       if (!post) throw new Error("Post not found");
@@ -400,8 +435,10 @@ export const postService = {
       };
 
       await this.handleSave(updatedPost);
+      setLoading(false, 100, "Merge process completed");
     } catch (error) {
       console.error("Error handling merge:", error);
+      setLoading(false, 0, "Merge process failed");
       throw error;
     }
   },
