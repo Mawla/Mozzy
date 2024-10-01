@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import { StandardFonts } from "pdf-lib";
 
 interface TweetPreview {
   templateName: string;
@@ -22,6 +23,8 @@ const TWEET_STYLE = {
   lineHeight: 6,
 };
 
+const FONT_NAME = "TwitterFont";
+
 export const generatePDF = async (
   title: string,
   tweetPreviews: TweetPreview[]
@@ -31,6 +34,11 @@ export const generatePDF = async (
     PAGE_CONFIG.unit,
     PAGE_CONFIG.format
   );
+
+  // Add the custom font
+  pdf.addFont(StandardFonts.Helvetica, FONT_NAME, "normal");
+  pdf.setFont(FONT_NAME);
+
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
 
