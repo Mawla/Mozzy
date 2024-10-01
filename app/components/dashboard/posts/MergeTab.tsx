@@ -182,35 +182,14 @@ export const MergeTab: React.FC = () => {
     }
 
     try {
-      const tweetPreviews = await Promise.all(
-        Object.entries(mergedContents).map(async ([templateId, content]) => {
+      const tweetPreviews = Object.entries(mergedContents).map(
+        ([templateId, content]) => {
           const template = templates.find((t) => t.id === templateId);
-
-          // Create a container for the TweetPreview
-          const tweetPreviewElement = document.createElement("div");
-          tweetPreviewElement.style.width = "300px";
-          document.body.appendChild(tweetPreviewElement);
-
-          // Use createRoot to render the TweetPreview component
-          const root = createRoot(tweetPreviewElement);
-          root.render(<TweetPreview content={content} />);
-
-          // Wait for any asynchronous rendering to complete
-          await new Promise((resolve) => setTimeout(resolve, 100));
-
-          // Capture the rendered tweet preview
-          const canvas = await html2canvas(tweetPreviewElement);
-
-          // Clean up
-          root.unmount();
-          document.body.removeChild(tweetPreviewElement);
-
           return {
             templateName: template?.name || "Unknown Template",
             content: content,
-            previewImage: canvas.toDataURL("image/png"),
           };
-        })
+        }
       );
 
       const pdfBlob = await generatePDF(
@@ -218,11 +197,17 @@ export const MergeTab: React.FC = () => {
         tweetPreviews
       );
 
-      // Use file-saver to save the PDF
+      // Create a URL for the Blob
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+
+      // Open the PDF in a new tab
+      window.open(pdfUrl, "_blank");
+
+      // Save the PDF
       saveAs(pdfBlob, `${currentPost.title || "Untitled_Post"}_tweets.pdf`);
 
       toast({
-        description: "PDF exported and saved successfully.",
+        description: "PDF exported, saved, and opened in a new tab.",
       });
     } catch (error) {
       console.error("Error exporting PDF:", error);
