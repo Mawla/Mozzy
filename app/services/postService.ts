@@ -110,24 +110,32 @@ export const postService = {
       tag.replace("#", "").toLowerCase()
     );
 
-    const shortlistedTemplates = templates
-      .map((template) => {
-        const templateTags = (template.tags || []).map((tag: string) =>
-          tag.toLowerCase()
-        );
-        const matchingTags = normalizedTags.filter((tag) =>
-          templateTags.includes(tag)
-        );
-        return { template, matchCount: matchingTags.length };
-      })
-      .filter((item) => item.matchCount > 0)
-      .sort((a, b) => b.matchCount - a.matchCount)
-      .slice(0, 10)
-      .map((item) => item.template);
+    if (normalizedTags.length === 0) {
+      return templates.slice(0, 10); // Return all templates (up to 10) if no tags are provided
+    }
 
-    return shortlistedTemplates.length > 0
-      ? shortlistedTemplates
-      : templates.slice(0, 10);
+    // {{ edit_start }}
+    try {
+      const templatesWithTags = templates.map((template) => ({
+        id: template.id,
+        tags: template.tags || [],
+      }));
+
+      const similarTemplateIds = await AnthropicActions.getSimilarTemplates(
+        normalizedTags,
+        templatesWithTags
+      );
+
+      const shortlistedTemplates = similarTemplateIds
+        .map((id) => templates.find((template) => template.id === id))
+        .filter((template): template is Template => template !== undefined);
+
+      return shortlistedTemplates;
+    } catch (error) {
+      console.error("Error getting similar templates:", error);
+      return [];
+    }
+    // {{ edit_end }}
   },
 
   async suggestTagsAndTemplates(

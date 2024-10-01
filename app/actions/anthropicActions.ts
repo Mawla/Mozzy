@@ -10,6 +10,8 @@ import {
 import { suggestTagsPrompt } from "@/prompts/tagPrompt";
 import { chooseBestTemplatePrompt } from "@/prompts/shortlistPrompt";
 import { Template } from "@/app/types/template";
+import { getSimilarTemplatesPrompt } from "@/prompts/similarTemplatesPrompt";
+import { extractJsonArrayFromString } from "@/utils/regexUtils";
 
 const anthropicHelper = AnthropicHelper.getInstance();
 
@@ -110,3 +112,27 @@ function extractRefinedContent(response: string): string {
     throw new Error("Failed to extract refined content");
   }
 }
+
+// {{ edit_start }}
+export async function getSimilarTemplates(
+  tags: string[],
+  templates: { id: string; tags: string[] }[]
+): Promise<string[]> {
+  const prompt = getSimilarTemplatesPrompt(tags, templates);
+
+  try {
+    const response = await anthropicHelper.getCompletion(prompt, 4096);
+    try {
+      const parsedResponse = JSON.parse(response);
+      return parsedResponse.similarTemplateIds;
+    } catch (parseError) {
+      console.error("Error parsing JSON response:", parseError);
+      // Fallback to regex matching if JSON parsing fails
+      return extractJsonArrayFromString(response, "similarTemplateIds");
+    }
+  } catch (error) {
+    console.error("Error fetching similar templates from Anthropic:", error);
+    return [];
+  }
+}
+// {{ edit_end }}
