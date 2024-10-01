@@ -1,4 +1,5 @@
 import { Template } from "./template";
+import { ContentMetadata } from "./contentMetadata";
 
 export interface Post {
   id: string;
@@ -12,4 +13,5 @@ export interface Post {
   updatedAt: string;
   templateIds: string[];
   templates?: Template[];
+  metadata?: ContentMetadata;
 }

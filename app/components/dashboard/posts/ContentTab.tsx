@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { usePostStore } from "@/app/stores/postStore"; // Updated import
 import { toast } from "react-hot-toast";
 import { postService } from "@/app/services/postService";
+import { ContentMetadataDisplay } from "./ContentMetadataDisplay";
 
 const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
   ssr: false,
@@ -13,10 +14,10 @@ const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
 });
 
 export const ContentTab: React.FC = () => {
-  const { currentPost, updatePost, handleSuggestTagsAndTemplates } =
-    usePostStore(); // Updated to use usePostStore
+  const { currentPost, updatePost, suggestTemplates } = usePostStore(); // Updated function name
   const [isClient, setIsClient] = useState(false);
   const [isRefining, setIsRefining] = useState(false);
+  const [isGeneratingMetadata, setIsGeneratingMetadata] = useState(false);
   const [additionalInstructions, setAdditionalInstructions] = useState("");
 
   useEffect(() => {
@@ -76,6 +77,25 @@ export const ContentTab: React.FC = () => {
     }
   };
 
+  const handleGenerateMetadata = async () => {
+    if (!currentPost?.content) {
+      toast.error("No content to generate metadata from");
+      return;
+    }
+
+    setIsGeneratingMetadata(true);
+    try {
+      const metadata = await postService.suggestTags(currentPost.content);
+      updatePost({ metadata });
+      toast.success("Metadata generated successfully");
+    } catch (error) {
+      console.error("Error generating metadata:", error);
+      toast.error("Failed to generate metadata");
+    } finally {
+      setIsGeneratingMetadata(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {isClient && (
@@ -99,31 +119,26 @@ export const ContentTab: React.FC = () => {
       )}
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
-          <Button onClick={handleSuggestTagsAndTemplates}>
-            {BUTTON_TEXTS.SUGGEST_TAGS}
+          <Button
+            onClick={handleGenerateMetadata}
+            disabled={isGeneratingMetadata}
+          >
+            {isGeneratingMetadata ? "Generating..." : "Generate Metadata"}
           </Button>
+          <Button onClick={suggestTemplates}>Suggest Templates</Button>{" "}
+          {/* Updated function name */}
           <Button onClick={handleRefinePodcastTranscript} disabled={isRefining}>
             {isRefining ? "Refining..." : "Refine Transcript"}
           </Button>
           <span className="text-sm text-gray-500">Words: {wordCount}</span>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {currentPost?.tags?.map((tag: string) => (
-            <div
-              key={tag}
-              className="bg-gray-200 text-gray-800 px-2 py-1 rounded-full text-sm flex items-center group"
-            >
-              {tag}
-              <button
-                onClick={() => removeTag(tag)}
-                className="ml-1 text-gray-500 hover:text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <X size={14} />
-              </button>
-            </div>
-          ))}
-        </div>
       </div>
+      {currentPost.metadata && (
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold mb-2">Content Metadata</h3>
+          <ContentMetadataDisplay metadata={currentPost.metadata} />
+        </div>
+      )}
     </div>
   );
 };

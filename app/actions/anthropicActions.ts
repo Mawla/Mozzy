@@ -11,28 +11,42 @@ import { suggestTagsPrompt } from "@/prompts/tagPrompt";
 import { chooseBestTemplatePrompt } from "@/prompts/shortlistPrompt";
 import { Template } from "@/app/types/template";
 import { getSimilarTemplatesPrompt } from "@/prompts/similarTemplatesPrompt";
-import { extractJsonArrayFromString } from "@/utils/regexUtils";
-import { extractJsonFieldFromString } from "@/utils/regexUtils";
+import {
+  extractJsonArrayFromString,
+  extractJsonFieldFromString,
+} from "@/utils/regexUtils";
+import { ContentMetadata } from "@/app/types/contentMetadata";
 
 const anthropicHelper = AnthropicHelper.getInstance();
 
-export async function mergeContent(transcript: string, template: string) {
-  const mergePrompt = mergeTranscriptAndTemplatePrompt(transcript, template);
+export async function mergeContent(
+  transcript: string,
+  template: string,
+  metadata: ContentMetadata
+) {
+  const mergePrompt = mergeTranscriptAndTemplatePrompt(
+    transcript,
+    template,
+    metadata
+  );
   const mergeResult = await anthropicHelper.getCompletion(mergePrompt);
   return JSON.parse(mergeResult);
 }
 
-export async function suggestTags(transcript: string) {
+export async function suggestTags(
+  transcript: string
+): Promise<ContentMetadata> {
   const tagsPrompt = suggestTagsPrompt(transcript);
   const tagsResult = await anthropicHelper.getCompletion(tagsPrompt);
-  return tagsResult.split(",").map((tag) => tag.trim());
+  return JSON.parse(tagsResult);
 }
 
 export async function chooseBestTemplate(
   transcript: string,
+  metadata: ContentMetadata,
   templates: Template[]
 ) {
-  const prompt = chooseBestTemplatePrompt(transcript, templates);
+  const prompt = chooseBestTemplatePrompt(transcript, metadata, templates);
   return await anthropicHelper.getCompletion(prompt);
 }
 
@@ -65,16 +79,21 @@ export async function generateSummary(transcript: string) {
 
 export async function mergeMultipleContents(
   transcript: string,
-  templates: Template[]
+  templates: Template[],
+  metadata: ContentMetadata
 ): Promise<{
-  mergedResults: { templateId: string; mergedContent: string }[];
+  mergedResults: { templateId: string; mergedContent: string | null }[];
   partialSuccess: boolean;
   failedMergesCount: number;
 }> {
   const mergeResults = await Promise.all(
     templates.map(async (template) => {
       const templateBody = template.body || "";
-      const prompt = mergeTranscriptAndTemplatePrompt(transcript, templateBody);
+      const prompt = mergeTranscriptAndTemplatePrompt(
+        transcript,
+        templateBody,
+        metadata
+      );
       const response = await anthropicHelper.getCompletion(prompt);
 
       // {{ edit_start }}
@@ -144,10 +163,10 @@ function extractRefinedContent(response: string): string {
 
 // {{ edit_start }}
 export async function getSimilarTemplates(
-  tags: string[],
-  templates: { id: string; tags: string[] }[]
+  metadata: ContentMetadata,
+  templates: Template[]
 ): Promise<string[]> {
-  const prompt = getSimilarTemplatesPrompt(tags, templates);
+  const prompt = getSimilarTemplatesPrompt(metadata, templates);
 
   try {
     const response = await anthropicHelper.getCompletion(prompt, 4096);

@@ -4,6 +4,7 @@ import { Post } from "@/app/types/post";
 import { refinePodcastTranscriptPrompt } from "@/prompts/refinePodcastTranscript";
 import { create } from "zustand";
 import * as AnthropicActions from "@/app/actions/anthropicActions";
+import { ContentMetadata } from "@/app/types/contentMetadata";
 
 // Define a store for loading state
 interface LoadingState {
@@ -93,40 +94,30 @@ export const postService = {
     localStorage.setItem("posts", JSON.stringify(updatedPosts));
   },
 
-  async suggestTags(transcript: string): Promise<string[]> {
+  async suggestTags(transcript: string): Promise<ContentMetadata> {
     try {
-      const suggestedTags = await AnthropicActions.suggestTags(transcript);
-      return suggestedTags.filter(
-        (tag) => !tag.includes(" ") || tag.startsWith("#")
-      );
+      return await AnthropicActions.suggestTags(transcript);
     } catch (error) {
       console.error("Error suggesting tags:", error);
-      return [];
+      return {
+        categories: [],
+        tags: [],
+        topics: [],
+        keyPeople: [],
+        industries: [],
+        contentType: [],
+      };
     }
   },
 
   async shortlistTemplatesByTags(
-    tags: string[],
+    metadata: ContentMetadata,
     templates: Template[]
   ): Promise<Template[]> {
-    const normalizedTags = tags.map((tag) =>
-      tag.replace("#", "").toLowerCase()
-    );
-
-    if (normalizedTags.length === 0) {
-      return templates.slice(0, 10); // Return all templates (up to 10) if no tags are provided
-    }
-
-    // {{ edit_start }}
     try {
-      const templatesWithTags = templates.map((template) => ({
-        id: template.id,
-        tags: template.tags || [],
-      }));
-
       const similarTemplateIds = await AnthropicActions.getSimilarTemplates(
-        normalizedTags,
-        templatesWithTags
+        metadata,
+        templates
       );
 
       const shortlistedTemplates = similarTemplateIds
@@ -138,40 +129,45 @@ export const postService = {
       console.error("Error getting similar templates:", error);
       return [];
     }
-    // {{ edit_end }}
   },
 
   async suggestTagsAndTemplates(
     content: string,
     allTemplates: Template[]
   ): Promise<{
-    suggestedTags: string[];
+    suggestedMetadata: ContentMetadata;
     suggestedTemplates: Template[];
   }> {
-    const suggestedTags = await this.suggestTags(content);
+    const suggestedMetadata = await this.suggestTags(content);
     const shortlistedTemplates = await this.shortlistTemplatesByTags(
-      suggestedTags,
+      suggestedMetadata,
       allTemplates
     );
     const suggestedTemplates = await this.chooseBestTemplate(
       content,
+      suggestedMetadata,
       shortlistedTemplates
     );
-    return { suggestedTags, suggestedTemplates };
+    return { suggestedMetadata, suggestedTemplates };
   },
 
   async mergeContentsAndSuggestTitle(
     content: string,
-    templates: Template[]
+    templates: Template[],
+    metadata: ContentMetadata
   ): Promise<{
     mergedContents: { [templateId: string]: string };
     suggestedTitle: string;
   }> {
-    const mergeResponse = await this.mergeMultipleContents(content, templates);
+    const mergeResponse = await this.mergeMultipleContents(
+      content,
+      templates,
+      metadata
+    );
     console.log("Merge response:", mergeResponse);
 
     const mergedContents = mergeResponse.mergedResults.reduce((acc, result) => {
-      if (result.templateId && result.mergedContent) {
+      if (result.templateId && result.mergedContent !== null) {
         acc[result.templateId] = result.mergedContent;
       } else {
         console.error(`Missing template ID or merged content:`, result);
@@ -199,10 +195,15 @@ export const postService = {
 
   async mergeContent(
     transcript: string,
-    template: string
+    template: string,
+    metadata: ContentMetadata
   ): Promise<{ mergedContent: string; suggestedTitle: string }> {
     try {
-      const result = await AnthropicActions.mergeContent(transcript, template);
+      const result = await AnthropicActions.mergeContent(
+        transcript,
+        template,
+        metadata
+      );
       return result;
     } catch (error) {
       console.error("Error merging content:", error);
@@ -212,16 +213,18 @@ export const postService = {
 
   async mergeMultipleContents(
     transcript: string,
-    templates: Template[]
+    templates: Template[],
+    metadata: ContentMetadata
   ): Promise<{
-    mergedResults: { templateId: string; mergedContent: string }[];
+    mergedResults: { templateId: string; mergedContent: string | null }[];
     partialSuccess: boolean;
     failedMergesCount: number;
   }> {
     try {
       const response = await AnthropicActions.mergeMultipleContents(
         transcript,
-        templates
+        templates,
+        metadata
       );
       return response;
     } catch (error) {
@@ -245,11 +248,13 @@ export const postService = {
 
   async chooseBestTemplate(
     transcript: string,
+    metadata: ContentMetadata,
     templates: Template[]
   ): Promise<Template[]> {
     try {
       const bestTemplatesResponse = await AnthropicActions.chooseBestTemplate(
         transcript,
+        metadata,
         templates
       );
       const parsedResponse = JSON.parse(bestTemplatesResponse);
@@ -391,7 +396,6 @@ export const postService = {
     return chunks;
   },
 
-  // {{ edit_start }}
   async handleMerge(postId: string): Promise<void> {
     try {
       const post = this.getPostById(postId);
@@ -400,7 +404,15 @@ export const postService = {
       const { mergedContents, suggestedTitle } =
         await this.mergeContentsAndSuggestTitle(
           post.content,
-          post.templates ?? [] // Ensure templates is always an array
+          post.templates ?? [],
+          post.metadata ?? {
+            categories: [],
+            tags: [],
+            topics: [],
+            keyPeople: [],
+            industries: [],
+            contentType: [],
+          }
         );
 
       const updatedPost = {
@@ -416,5 +428,4 @@ export const postService = {
       throw error;
     }
   },
-  // {{ edit_end }}
 };

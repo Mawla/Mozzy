@@ -1,16 +1,26 @@
 import { Template } from "@/app/types/template";
+import { ContentMetadata } from "@/app/types/contentMetadata";
 
 export const mergeTranscriptAndTemplatePrompt = (
   transcript: string,
-  template: string
+  template: string,
+  metadata: ContentMetadata
 ) => `
-Merge the following transcript and template:
+Merge the following transcript and template, taking into account the provided content metadata:
 
 Transcript:
 ${transcript}
 
-Template:Plea
+Template:
 ${template}
+
+Content Metadata:
+Categories: ${metadata.categories.join(", ")}
+Tags: ${metadata.tags.join(", ")}
+Topics: ${metadata.topics.join(", ")}
+Key People: ${metadata.keyPeople.join(", ")}
+Industries: ${metadata.industries.join(", ")}
+Content Type: ${metadata.contentType.join(", ")}
 
 Please provide the merged content and a suggested title in the following JSON format:
 {
@@ -21,6 +31,7 @@ Please provide the merged content and a suggested title in the following JSON fo
 Guidelines:
 - Follow the template format closely, but feel free to add or remove sections as needed.
 - Reduce and reorder the transcript content as needed to fit the template.
+- Use the content metadata to guide the merging process and ensure relevance.
 - Don't invent content but feel free to rephrase and reorder the transcript content to fit the template.
 - Make sure the final output makes sense and is coherent, doesn't include any missing words or sentences.
 - Make sure the final output doesn't include any placeholders like {Topic Expert} or {Expert Quote}, etc.
@@ -33,6 +44,7 @@ Guidelines:
   - Use single line breaks to separate paragraphs within sections.
   - Emphasize important points by surrounding words with asterisks.
 - Keep the content concise and engaging, suitable for a LinkedIn post.
+- Incorporate relevant metadata (e.g., key people, industries, topics) naturally into the content.
 
 Only include the JSON object in your response, without any additional text.
 `;
