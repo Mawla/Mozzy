@@ -46,7 +46,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none",
+          "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none",
       },
     },
     parseOptions: {
@@ -110,5 +110,4 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
     </div>
   );
 };
-
 export default TipTapEditor;

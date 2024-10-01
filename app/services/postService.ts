@@ -3,7 +3,7 @@ import { TemplateParser } from "@/utils/templateParser";
 import { Post } from "@/app/types/post";
 import { refinePodcastTranscriptPrompt } from "@/prompts/refinePodcastTranscript";
 import { create } from "zustand";
-import { suggestTagsPrompt } from "@/prompts/tagPrompt";
+import * as AnthropicActions from "@/app/actions/anthropicActions";
 
 // Define a store for loading state
 interface LoadingState {
@@ -20,27 +20,6 @@ export const useLoadingStore = create<LoadingState>((set) => ({
   setLoading: (isLoading, progress = 0, message = "") =>
     set({ isLoading, progress, message }),
 }));
-
-const callAPI = async <T>(action: string, data: any): Promise<T> => {
-  try {
-    const response = await fetch("/api/anthropic", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ action, data }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to ${action}`);
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error(`Error in ${action} API call:`, error);
-    throw error;
-  }
-};
 
 export const postService = {
   getPacks(): Pack[] {
@@ -113,13 +92,7 @@ export const postService = {
 
   async suggestTags(transcript: string): Promise<string[]> {
     try {
-      const { suggestedTags } = await callAPI<{ suggestedTags: string[] }>(
-        "suggestTags",
-        {
-          transcript,
-          prompt: suggestTagsPrompt(transcript),
-        }
-      );
+      const suggestedTags = await AnthropicActions.suggestTags(transcript);
       return suggestedTags.filter(
         (tag) => !tag.includes(" ") || tag.startsWith("#")
       );
@@ -219,24 +192,8 @@ export const postService = {
     template: string
   ): Promise<{ mergedContent: string; suggestedTitle: string }> {
     try {
-      const response = await callAPI<{
-        mergedContent: string;
-        suggestedTitle: string;
-      }>("mergeContent", {
-        transcript,
-        template,
-        prompt:
-          "Please merge the provided transcript and template. Also, suggest a compelling title for the merged content.",
-      });
-
-      if (!response.mergedContent || !response.suggestedTitle) {
-        throw new Error("Invalid response from mergeContent API");
-      }
-
-      return {
-        mergedContent: response.mergedContent,
-        suggestedTitle: response.suggestedTitle,
-      };
+      const result = await AnthropicActions.mergeContent(transcript, template);
+      return result;
     } catch (error) {
       console.error("Error merging content:", error);
       throw error;
@@ -248,20 +205,10 @@ export const postService = {
     templates: Template[]
   ): Promise<{ mergedContent: string; suggestedTitle: string }[]> {
     try {
-      const response = await callAPI<{
-        mergedResults: { mergedContent: string; suggestedTitle: string }[];
-        partialSuccess: boolean;
-        failedMergesCount: number;
-      }>("mergeMultipleContents", { transcript, templates });
-
-      console.log("API response for mergeMultipleContents:", response);
-
-      if (response.partialSuccess) {
-        console.warn(
-          `${response.failedMergesCount} merge(s) failed. Returning partial results.`
-        );
-      }
-
+      const response = await AnthropicActions.mergeMultipleContents(
+        transcript,
+        templates
+      );
       return response.mergedResults;
     } catch (error) {
       console.error("Error in mergeMultipleContents:", error);
@@ -271,19 +218,7 @@ export const postService = {
 
   async suggestTitle(transcript: string): Promise<string> {
     try {
-      const response = await callAPI<{ suggestedTitle: string }>(
-        "suggestTitle",
-        {
-          transcript,
-          prompt: "Please suggest a compelling title for this transcript.",
-        }
-      );
-
-      if (!response || !response.suggestedTitle) {
-        throw new Error("Invalid response from suggestTitle API");
-      }
-
-      return response.suggestedTitle;
+      return await AnthropicActions.suggestTitle(transcript);
     } catch (error) {
       console.error("Error suggesting title:", error);
       return this.generateFallbackTitle(transcript);
@@ -295,32 +230,18 @@ export const postService = {
     templates: Template[]
   ): Promise<Template[]> {
     try {
-      const response = await callAPI<{
-        bestTemplatesResponse: string;
-      }>("chooseBestTemplate", { transcript, templates });
-
-      console.log("API response:", response);
-
-      // Parse the inner JSON string
-      const parsedResponse = JSON.parse(response.bestTemplatesResponse);
-
-      console.log("Parsed response:", parsedResponse);
-
-      // Extract template IDs from the parsed response
+      const bestTemplatesResponse = await AnthropicActions.chooseBestTemplate(
+        transcript,
+        templates
+      );
+      const parsedResponse = JSON.parse(bestTemplatesResponse);
       const templateIds = parsedResponse.templates || [];
-
-      // Find the suggested templates from the list of templates
       const suggestedTemplates = templateIds
         .map((id: string) => templates.find((template) => template.id === id))
         .filter(Boolean) as Template[];
-
-      console.log("Suggested templates:", suggestedTemplates);
-
-      // Return the suggested templates (up to 8)
       return suggestedTemplates.slice(0, 8);
     } catch (error) {
       console.error("Error choosing best templates:", error);
-      // Return an empty array in case of an error
       return [];
     }
   },
@@ -368,21 +289,11 @@ export const postService = {
           1
         );
 
-        const finalResponse = await callAPI<{ refinedContent: string }>(
-          "refinePodcastTranscript",
-          {
-            prompt: finalPrompt,
-          }
-        );
-
-        if (!finalResponse.refinedContent) {
-          throw new Error(
-            "Invalid response from final refinePodcastTranscript API call"
-          );
-        }
+        const finalRefinedContent =
+          await AnthropicActions.refinePodcastTranscript(finalPrompt);
 
         useLoadingStore.getState().setLoading(false);
-        return finalResponse.refinedContent;
+        return finalRefinedContent;
       }
 
       useLoadingStore.getState().setLoading(false);
@@ -419,24 +330,13 @@ export const postService = {
         );
 
         console.log(`Sending API request for chunk ${i + 1}`);
-        const response = await callAPI<{ refinedContent: string }>(
-          "refinePodcastTranscript",
-          {
-            prompt: chunkPrompt,
-          }
+        const refinedContent = await AnthropicActions.refinePodcastTranscript(
+          chunkPrompt
         );
 
         console.log(`Received API response for chunk ${i + 1}`);
 
-        if (!response.refinedContent) {
-          throw new Error(
-            `Invalid response from refinePodcastTranscript API for chunk ${
-              i + 1
-            }`
-          );
-        }
-
-        refinedChunks.push(response.refinedContent);
+        refinedChunks.push(refinedContent);
         console.log(`Successfully processed chunk ${i + 1}`);
       } catch (error) {
         console.error(`Error processing chunk ${i + 1}:`, error);
