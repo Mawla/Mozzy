@@ -30,7 +30,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        orderedList: false, // Disable the default ordered list to use our custom configuration
+        orderedList: false,
       }),
       PreserveLineBreaks,
       OrderedList.configure({
@@ -46,12 +46,13 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none",
+          "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none w-full h-full",
       },
     },
     parseOptions: {
       preserveWhitespace: "full",
     },
+    autofocus: false,
   });
 
   const updateContent = useCallback(
@@ -72,9 +73,16 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
     updateContent(content);
   }, [content, updateContent]);
 
+  const handleContainerClick = useCallback(() => {
+    if (editor) {
+      editor.chain().focus().run();
+    }
+  }, [editor]);
+
   return (
     <div
-      className={`border border-gray-200 rounded-md p-4 bg-white h-[${height}] overflow-y-auto relative`}
+      className={`border border-gray-200 rounded-md p-4 bg-white h-[${height}] overflow-y-auto relative cursor-text`}
+      onClick={handleContainerClick}
     >
       <style jsx global>{`
         .ProseMirror {
@@ -83,6 +91,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
           font-size: 16px;
           line-height: 1.5;
           white-space: pre-wrap !important;
+          cursor: text;
         }
         .ProseMirror p {
           margin: 0 0 1em 0;

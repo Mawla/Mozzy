@@ -18,6 +18,10 @@ const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
   loading: () => <p>Loading editor...</p>,
 });
 
+interface MergeError extends Error {
+  message: string;
+}
+
 export const MergeTab: React.FC = () => {
   const { currentPost, updatePost, handleMerge, handleSave } = usePostStore();
   const { toast } = useToast();
@@ -108,44 +112,76 @@ export const MergeTab: React.FC = () => {
       return;
     }
 
+    if (!templates.length) {
+      toast({
+        description: "No templates available for merging.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       console.log("Starting merge process from MergeTab");
+      console.log("Number of templates:", templates.length);
+
       for (let i = 0; i < templates.length; i++) {
+        debugger;
+        const template = templates[i];
+        if (!template || !template.id) {
+          console.error(`Invalid template at index ${i}`);
+          continue;
+        }
+
         setCurrentMergingIndex(i);
         try {
+          console.log(`Attempting to merge template ${i}:`, template);
+          // Ensure the template index exists before calling handleMerge
+          if (i >= templates.length) {
+            throw new Error(`Template index ${i} is out of bounds`);
+          }
+
           await handleMerge(currentPost.id, i);
-          console.log(`Merged content for template ${i + 1}`);
+          console.log(`Successfully merged content for template ${i + 1}`);
 
           // Update the local state after each merge
           const updatedPost = usePostStore.getState().currentPost;
-          if (updatedPost && updatedPost.mergedContents) {
-            const templateId = templates[i].id;
-            if (templateId && updatedPost.mergedContents[templateId]) {
-              setEditorContent(updatedPost.mergedContents[templateId]);
+          if (updatedPost?.mergedContents && template.id) {
+            const mergedContent = updatedPost.mergedContents[template.id];
+            if (mergedContent) {
+              setEditorContent(mergedContent);
               setSelectedContentIndex(i);
               toast({
                 description: `Template ${i + 1} content has been merged.`,
               });
+            } else {
+              console.warn(
+                `No merged content found for template ${template.id}`
+              );
             }
           }
-        } catch (mergeError) {
-          console.error(`Error merging template ${i + 1}:`, mergeError);
+        } catch (err) {
+          const mergeError = err as MergeError;
+          console.error(`Error merging template ${i}:`, mergeError);
           toast({
-            description: `Failed to merge template ${
-              i + 1
-            }. Skipping to next template.`,
+            description: `Failed to merge template ${i + 1}${
+              mergeError.message ? `: ${mergeError.message}` : ""
+            }`,
             variant: "destructive",
           });
         }
       }
+
       console.log("Merge process completed for all templates");
       toast({
         description: "All templates have been processed.",
       });
-    } catch (error) {
+    } catch (err) {
+      const error = err as MergeError;
       console.error("Error during merge process:", error);
       toast({
-        description: "An error occurred during the merge process.",
+        description: error.message
+          ? `Merge process failed: ${error.message}`
+          : "Merge process failed",
         variant: "destructive",
       });
     } finally {
@@ -218,6 +254,60 @@ export const MergeTab: React.FC = () => {
     }
   };
 
+  const handleMergeSingleTemplate = async () => {
+    if (!currentPost) {
+      toast({
+        description: "No post selected for merging.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (selectedContentIndex === null) {
+      toast({
+        description: "Please select a template to merge.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const template = templates[selectedContentIndex];
+      if (!template || !template.id) {
+        throw new Error("Invalid template selected");
+      }
+
+      setCurrentMergingIndex(selectedContentIndex);
+      console.log(`Attempting to merge selected template:`, template);
+
+      await handleMerge(currentPost.id, selectedContentIndex);
+      console.log(`Successfully merged content for selected template`);
+
+      // Update the local state after merge
+      const updatedPost = usePostStore.getState().currentPost;
+      if (updatedPost?.mergedContents && template.id) {
+        const mergedContent = updatedPost.mergedContents[template.id];
+        if (mergedContent) {
+          setEditorContent(mergedContent);
+          toast({
+            description: "Template content has been merged.",
+          });
+        }
+      }
+    } catch (err) {
+      const error = err as MergeError;
+      console.error("Error merging template:", error);
+      toast({
+        description: error.message
+          ? `Failed to merge template: ${error.message}`
+          : "Failed to merge template",
+        variant: "destructive",
+      });
+    } finally {
+      setCurrentMergingIndex(null);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {templates.length > 0 && (
@@ -264,11 +354,23 @@ export const MergeTab: React.FC = () => {
 
       <div className="flex justify-end gap-2">
         <Button
+          onClick={handleMergeSingleTemplate}
+          disabled={
+            !contentToMerge ||
+            selectedContentIndex === null ||
+            templates.length === 0 ||
+            isLoading
+          }
+          variant="secondary"
+        >
+          Merge Selected
+        </Button>
+        <Button
           onClick={handleMergeClick}
           disabled={!contentToMerge || templates.length === 0 || isLoading}
           variant="outline"
         >
-          {isLoading ? MESSAGES.MERGING_CONTENT : BUTTON_TEXTS.MERGE_CONTENT}
+          {isLoading ? MESSAGES.MERGING_CONTENT : BUTTON_TEXTS.MERGE_ALL}
         </Button>
         <Button
           onClick={handleSaveClick}

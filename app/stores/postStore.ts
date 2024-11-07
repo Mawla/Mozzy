@@ -45,17 +45,36 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
 
   // Actions
   loadPosts: () => {
-    const loadedPosts = postService.getPosts();
+    const loadedPosts = postService.getPosts().map((post) => ({
+      ...post,
+      templates: post.templates || [],
+      templateIds: post.templateIds || [],
+      mergedContents: post.mergedContents || {},
+    }));
+
+    console.log("Loading all posts with templates:", loadedPosts);
+
     set({ posts: loadedPosts });
   },
 
   loadPost: (id: string) => {
     const loadedPost = postService.getPostById(id);
     if (loadedPost) {
+      const fullPost = {
+        ...loadedPost,
+        templates: loadedPost.templates || [],
+        templateIds: loadedPost.templateIds || [],
+        mergedContents: loadedPost.mergedContents || {},
+      };
+
+      console.log("Loading post with templates:", fullPost);
+
       set({
-        currentPost: loadedPost,
-        wordCount: loadedPost.content.trim().split(/\s+/).length,
+        currentPost: fullPost,
+        wordCount: fullPost.content.trim().split(/\s+/).length,
       });
+    } else {
+      console.error(`Post with id ${id} not found`);
     }
   },
 
@@ -126,6 +145,7 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
   },
 
   handleMerge: async (postId: string, templateIndex: number) => {
+    debugger;
     try {
       const { posts, currentPost } = get();
       let post = posts.find((p) => p.id === postId);
