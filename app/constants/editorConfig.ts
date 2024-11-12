@@ -16,7 +16,9 @@ export const BUTTON_TEXTS = {
   POST_TO_LINKEDIN: "Post to LinkedIn",
   SUGGEST_TAGS: "Suggest Tags",
   SAVE: "Save",
-  NEW_POST: "New Post", // Add this line
+  NEW_POST: "New Post",
+  CANCEL_MERGE: "Cancel",
+  CANCELLING: "Cancelling...",
 };
 
 export const PLACEHOLDERS = {
@@ -31,4 +33,6 @@ export const LABELS = {
 
 export const MESSAGES = {
   MERGING_CONTENT: "Merging content...",
+  MERGE_CANCELLED: "Merge process cancelled.",
+  CANCELLING_MERGE: "Cancelling merge process...",
 };

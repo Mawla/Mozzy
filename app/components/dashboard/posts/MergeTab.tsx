@@ -12,6 +12,7 @@ import { generatePDF } from "@/app/utils/pdfGenerator";
 import { createRoot } from "react-dom/client";
 import html2canvas from "html2canvas";
 import { saveAs } from "file-saver";
+import { Textarea } from "@/components/ui/textarea";
 
 const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
   ssr: false,
@@ -34,6 +35,9 @@ export const MergeTab: React.FC = () => {
   >(null);
   const [editorContent, setEditorContent] = useState("");
   const [isClient, setIsClient] = useState(false);
+  const [additionalContext, setAdditionalContext] = useState("");
+  const [isCancelling, setIsCancelling] = useState(false);
+  const cancelRef = useRef(false);
 
   const mergedContents = useMemo(
     () => currentPost?.mergedContents || {},
@@ -102,6 +106,14 @@ export const MergeTab: React.FC = () => {
     setSelectedContentIndex(index);
   };
 
+  const handleCancel = () => {
+    setIsCancelling(true);
+    cancelRef.current = true;
+    toast({
+      description: "Cancelling merge process...",
+    });
+  };
+
   const handleMergeClick = async () => {
     if (!currentPost) {
       console.error("No current post selected");
@@ -120,12 +132,22 @@ export const MergeTab: React.FC = () => {
       return;
     }
 
+    cancelRef.current = false;
+    setIsCancelling(false);
+
     try {
       console.log("Starting merge process from MergeTab");
       console.log("Number of templates:", templates.length);
 
       for (let i = 0; i < templates.length; i++) {
-        debugger;
+        if (cancelRef.current) {
+          console.log("Merge process cancelled");
+          toast({
+            description: "Merge process cancelled.",
+          });
+          break;
+        }
+
         const template = templates[i];
         if (!template || !template.id) {
           console.error(`Invalid template at index ${i}`);
@@ -135,15 +157,12 @@ export const MergeTab: React.FC = () => {
         setCurrentMergingIndex(i);
         try {
           console.log(`Attempting to merge template ${i}:`, template);
-          // Ensure the template index exists before calling handleMerge
-          if (i >= templates.length) {
-            throw new Error(`Template index ${i} is out of bounds`);
-          }
+          await handleMerge(currentPost.id, i, additionalContext);
 
-          await handleMerge(currentPost.id, i);
+          if (cancelRef.current) break;
+
           console.log(`Successfully merged content for template ${i + 1}`);
 
-          // Update the local state after each merge
           const updatedPost = usePostStore.getState().currentPost;
           if (updatedPost?.mergedContents && template.id) {
             const mergedContent = updatedPost.mergedContents[template.id];
@@ -153,13 +172,11 @@ export const MergeTab: React.FC = () => {
               toast({
                 description: `Template ${i + 1} content has been merged.`,
               });
-            } else {
-              console.warn(
-                `No merged content found for template ${template.id}`
-              );
             }
           }
         } catch (err) {
+          if (cancelRef.current) break;
+
           const mergeError = err as MergeError;
           console.error(`Error merging template ${i}:`, mergeError);
           toast({
@@ -171,10 +188,12 @@ export const MergeTab: React.FC = () => {
         }
       }
 
-      console.log("Merge process completed for all templates");
-      toast({
-        description: "All templates have been processed.",
-      });
+      if (!cancelRef.current) {
+        console.log("Merge process completed for all templates");
+        toast({
+          description: "All templates have been processed.",
+        });
+      }
     } catch (err) {
       const error = err as MergeError;
       console.error("Error during merge process:", error);
@@ -186,6 +205,8 @@ export const MergeTab: React.FC = () => {
       });
     } finally {
       setCurrentMergingIndex(null);
+      setIsCancelling(false);
+      cancelRef.current = false;
     }
   };
 
@@ -280,7 +301,11 @@ export const MergeTab: React.FC = () => {
       setCurrentMergingIndex(selectedContentIndex);
       console.log(`Attempting to merge selected template:`, template);
 
-      await handleMerge(currentPost.id, selectedContentIndex);
+      await handleMerge(
+        currentPost.id,
+        selectedContentIndex,
+        additionalContext
+      );
       console.log(`Successfully merged content for selected template`);
 
       // Update the local state after merge
@@ -322,6 +347,19 @@ export const MergeTab: React.FC = () => {
         />
       )}
 
+      <div className="space-y-2">
+        <label htmlFor="additional-context" className="text-sm font-medium">
+          Additional Context
+        </label>
+        <Textarea
+          id="additional-context"
+          placeholder="Add any additional context or instructions for the AI to consider when merging content..."
+          value={additionalContext}
+          onChange={(e) => setAdditionalContext(e.target.value)}
+          className="min-h-[100px]"
+        />
+      </div>
+
       <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
         <div className="w-full sm:w-1/2">
           {isClient && (
@@ -339,9 +377,21 @@ export const MergeTab: React.FC = () => {
 
       {isLoading && (
         <div className="mt-4 p-4 bg-gray-100 rounded-md">
-          <div className="flex items-center">
-            <Loader2 className="animate-spin mr-2" />
-            <span>{loadingMessage}</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Loader2 className="animate-spin mr-2" />
+              <span>{loadingMessage}</span>
+            </div>
+            {!isCancelling && (
+              <Button
+                onClick={handleCancel}
+                variant="destructive"
+                size="sm"
+                className="ml-4"
+              >
+                Cancel
+              </Button>
+            )}
           </div>
           <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5">
             <div

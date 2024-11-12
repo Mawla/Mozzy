@@ -22,7 +22,11 @@ interface PostActions {
   deletePost: (id: string) => Promise<void>;
   generateMetadata: () => Promise<void>;
   suggestTemplates: () => Promise<void>;
-  handleMerge: (postId: string, templateIndex: number) => Promise<void>;
+  handleMerge: (
+    postId: string,
+    templateIndex: number,
+    additionalContext: string
+  ) => Promise<void>;
   handleSave: () => Promise<void>;
   handleRemoveTemplate: (index: number) => void;
   handleTemplateSelection: (selectedTemplate: Template) => void;
@@ -144,7 +148,11 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
     });
   },
 
-  handleMerge: async (postId: string, templateIndex: number) => {
+  handleMerge: async (
+    postId: string,
+    templateIndex: number,
+    additionalContext: string = ""
+  ) => {
     try {
       const { posts, currentPost } = get();
       let post = posts.find((p) => p.id === postId);
@@ -190,7 +198,8 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
           keyPeople: [],
           industries: [],
           contentType: [],
-        }
+        },
+        additionalContext
       );
 
       // Update the post with the new merged content

@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 
-const CLAUDE_MODEL_VERSION = "claude-3-5-sonnet-20240620";
+const CLAUDE_MODEL_VERSION = "claude-3-5-sonnet-20241022";
 
 export class AnthropicHelper {
   private static instance: AnthropicHelper;
@@ -28,6 +28,7 @@ export class AnthropicHelper {
       const response = await this.anthropic.messages.create({
         model: CLAUDE_MODEL_VERSION,
         max_tokens: maxTokens,
+        temperature: 0.7,
         messages: [
           {
             role: "user",

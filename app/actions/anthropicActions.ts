@@ -19,35 +19,50 @@ import { ContentMetadata } from "@/app/types/contentMetadata";
 
 const anthropicHelper = AnthropicHelper.getInstance();
 
-export async function mergeContent(
-  transcript: string,
-  template: Template,
-  metadata: ContentMetadata
-): Promise<string> {
-  const mergePrompt = mergeTranscriptAndTemplatePrompt(
-    transcript,
-    template.body || "",
-    metadata
-  );
-  const mergeResult = await anthropicHelper.getCompletion(mergePrompt);
+export async function mergeContent(prompt: string): Promise<string> {
+  const mergeResult = await anthropicHelper.getCompletion(prompt);
 
-  let mergedContent: string | null = null;
+  // First try to parse as JSON
   try {
     const parsedResult = JSON.parse(mergeResult);
-    mergedContent = parsedResult.mergedContent;
+    if (parsedResult.mergedContent) {
+      return parsedResult.mergedContent;
+    }
   } catch (parseError) {
-    console.error("Error parsing JSON response:", parseError);
-    mergedContent = extractJsonFieldFromString(mergeResult, "mergedContent");
+    console.log("Response is not JSON, attempting to extract content directly");
   }
 
-  if (!mergedContent) {
-    console.error(
-      "Failed to extract 'mergedContent' using both JSON parsing and regex fallback."
-    );
-    throw new Error("Failed to parse merged content");
+  // If the response starts with HTML-like content, return it directly
+  if (
+    mergeResult.trim().startsWith("<p>") ||
+    mergeResult.trim().startsWith("<")
+  ) {
+    return mergeResult.trim();
   }
 
-  return mergedContent;
+  // Try regex extraction as a fallback
+  const mergedContent = extractJsonFieldFromString(
+    mergeResult,
+    "mergedContent"
+  );
+  if (mergedContent) {
+    return mergedContent;
+  }
+
+  // If all parsing attempts fail, return the raw response if it looks like content
+  if (
+    mergeResult.length > 0 &&
+    !mergeResult.includes("```") &&
+    !mergeResult.includes("```json")
+  ) {
+    return mergeResult.trim();
+  }
+
+  console.error(
+    "Failed to extract content using all available methods. Raw response:",
+    mergeResult
+  );
+  throw new Error("Failed to parse merged content");
 }
 
 export async function suggestTags(
@@ -112,11 +127,7 @@ export async function mergeMultipleContents(
         metadata
       );
       try {
-        const mergedContent = await mergeContent(
-          transcript,
-          template,
-          metadata
-        );
+        const mergedContent = await mergeContent(prompt);
         return {
           templateId: template.id,
           mergedContent,

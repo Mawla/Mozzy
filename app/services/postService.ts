@@ -7,6 +7,16 @@ import { ContentMetadata } from "@/app/types/contentMetadata";
 import { useLoadingStore } from "@/app/stores/loadingStore";
 
 export const postService = {
+  isCancelled: false,
+
+  cancelOperation() {
+    this.isCancelled = true;
+  },
+
+  resetCancellation() {
+    this.isCancelled = false;
+  },
+
   getPacks(): Pack[] {
     const parser = new TemplateParser();
     return parser.getPacks();
@@ -185,14 +195,34 @@ export const postService = {
   async mergeContent(
     transcript: string,
     template: Template,
-    metadata: ContentMetadata
+    metadata: ContentMetadata,
+    additionalContext: string = ""
   ): Promise<string> {
     try {
-      return await AnthropicActions.mergeContent(
-        transcript,
-        template,
-        metadata
-      );
+      const contextPrompt = additionalContext
+        ? `\nAdditional Context: ${additionalContext}\n`
+        : "";
+
+      const prompt = `
+        Content: ${transcript}
+        ${contextPrompt}
+        Template: ${template.body}
+        Metadata: ${JSON.stringify(metadata)}
+        
+        Please merge the content with the template, considering the metadata and any additional context provided.
+      `;
+
+      if (this.isCancelled) {
+        throw new Error("Operation cancelled");
+      }
+
+      const result = await AnthropicActions.mergeContent(prompt);
+
+      if (this.isCancelled) {
+        throw new Error("Operation cancelled");
+      }
+
+      return result;
     } catch (error) {
       console.error("Error merging content:", error);
       throw error;
@@ -210,12 +240,17 @@ export const postService = {
   }> {
     const { setLoading } = useLoadingStore.getState();
     const totalTemplates = templates.length;
+    this.resetCancellation();
 
     try {
       const mergedResults = [];
       let failedMergesCount = 0;
 
       for (let i = 0; i < totalTemplates; i++) {
+        if (this.isCancelled) {
+          throw new Error("Operation cancelled");
+        }
+
         const template = templates[i];
         setLoading(
           true,
@@ -224,13 +259,16 @@ export const postService = {
         );
 
         try {
-          const mergedContent = await AnthropicActions.mergeContent(
+          const mergedContent = await this.mergeContent(
             transcript,
             template,
             metadata
           );
           mergedResults.push({ templateId: template.id, mergedContent });
         } catch (error) {
+          if (this.isCancelled) {
+            throw error;
+          }
           console.error(`Error merging content for template ${i + 1}:`, error);
           mergedResults.push({ templateId: template.id, mergedContent: null });
           failedMergesCount++;
@@ -249,6 +287,8 @@ export const postService = {
       console.error("Error in mergeMultipleContents:", error);
       setLoading(false, 0, "Merge process failed");
       throw error;
+    } finally {
+      this.resetCancellation();
     }
   },
 
