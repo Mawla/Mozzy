@@ -145,11 +145,11 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
   },
 
   handleMerge: async (postId: string, templateIndex: number) => {
-    debugger;
     try {
       const { posts, currentPost } = get();
       let post = posts.find((p) => p.id === postId);
 
+      // Use currentPost if post not found in posts array
       if (!post) {
         if (currentPost && currentPost.id === postId) {
           post = currentPost;
@@ -158,15 +158,26 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
         }
       }
 
-      const templates = post.templates || [];
-      if (templateIndex < 0 || templateIndex >= templates.length) {
-        throw new Error(`Invalid template index: ${templateIndex}`);
+      // Ensure templates array exists
+      if (!post.templates || !Array.isArray(post.templates)) {
+        throw new Error("No templates available for this post");
       }
 
-      const template = templates[templateIndex];
-      if (!template) {
-        throw new Error(`Template at index ${templateIndex} is undefined`);
+      // Validate template index
+      if (templateIndex < 0 || templateIndex >= post.templates.length) {
+        throw new Error(
+          `Invalid template index: ${templateIndex}. Available templates: ${post.templates.length}`
+        );
       }
+
+      const template = post.templates[templateIndex];
+      if (!template || !template.id) {
+        throw new Error(
+          `Template at index ${templateIndex} is invalid or missing ID`
+        );
+      }
+
+      console.log(`Merging template ${templateIndex}:`, template);
 
       // Merge content for the specific template
       const mergedContent = await postService.mergeContent(
@@ -196,7 +207,7 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
           state.currentPost?.id === postId ? updatedPost : state.currentPost,
       }));
 
-      console.log(`Content merged for template ${templateIndex + 1}`);
+      console.log(`Successfully merged content for template ${templateIndex}`);
     } catch (error) {
       console.error("Error in handleMerge:", error);
       throw error;
