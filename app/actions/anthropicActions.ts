@@ -11,11 +11,13 @@ import { suggestTagsPrompt } from "@/prompts/tagPrompt";
 import { chooseBestTemplatePrompt } from "@/prompts/shortlistPrompt";
 import { Template } from "@/app/types/template";
 import { getSimilarTemplatesPrompt } from "@/prompts/similarTemplatesPrompt";
-import {
-  extractJsonArrayFromString,
-  extractJsonFieldFromString,
-} from "@/utils/regexUtils";
+import { extractJsonArrayFromString } from "@/utils/regexUtils";
 import { ContentMetadata } from "@/app/types/contentMetadata";
+import {
+  unescapeJsonString,
+  sanitizeJsonString,
+  extractJsonFieldFromString,
+} from "@/utils/stringUtils";
 
 const anthropicHelper = AnthropicHelper.getInstance();
 
@@ -32,7 +34,8 @@ export async function mergeContent(prompt: string): Promise<string> {
 
   // First try to parse as JSON
   try {
-    const parsedResult = JSON.parse(mergeResult);
+    const sanitizedResult = sanitizeJsonString(mergeResult);
+    const parsedResult = JSON.parse(sanitizedResult);
     if (parsedResult.mergedContent) {
       return parsedResult.mergedContent;
     }
@@ -81,7 +84,8 @@ export async function suggestTags(
     tagsPrompt,
     DEFAULT_COMPLETION_LENGTH
   );
-  return JSON.parse(tagsResult);
+  const sanitizedTagsResult = sanitizeJsonString(tagsResult);
+  return JSON.parse(sanitizedTagsResult);
 }
 
 export async function chooseBestTemplate(
@@ -90,7 +94,12 @@ export async function chooseBestTemplate(
   templates: Template[]
 ) {
   const prompt = chooseBestTemplatePrompt(transcript, metadata, templates);
-  return await anthropicHelper.getCompletion(prompt, DEFAULT_COMPLETION_LENGTH);
+  const result = await anthropicHelper.getCompletion(
+    prompt,
+    DEFAULT_COMPLETION_LENGTH
+  );
+  const sanitizedResult = sanitizeJsonString(result);
+  return JSON.parse(sanitizedResult);
 }
 
 export async function generateTitle(transcript: string) {
@@ -99,7 +108,8 @@ export async function generateTitle(transcript: string) {
     titlePrompt,
     TITLE_COMPLETION_LENGTH
   );
-  const parsedResponse = JSON.parse(titleResponse);
+  const sanitizedTitleResponse = sanitizeJsonString(titleResponse);
+  const parsedResponse = JSON.parse(sanitizedTitleResponse);
   return parsedResponse.title;
 }
 
@@ -109,7 +119,10 @@ export async function generateImprovedTranscript(transcript: string) {
     improvedTranscriptPrompt,
     DEFAULT_COMPLETION_LENGTH
   );
-  const parsedResponse = JSON.parse(improvedTranscriptResponse);
+  const sanitizedImprovedTranscriptResponse = sanitizeJsonString(
+    improvedTranscriptResponse
+  );
+  const parsedResponse = JSON.parse(sanitizedImprovedTranscriptResponse);
   return parsedResponse.improvedTranscript;
 }
 
@@ -119,8 +132,38 @@ export async function generateSummary(transcript: string) {
     summaryPrompt,
     DEFAULT_COMPLETION_LENGTH
   );
-  const parsedResponse = JSON.parse(summaryResponse);
+  const sanitizedSummaryResponse = sanitizeJsonString(summaryResponse);
+  const parsedResponse = JSON.parse(sanitizedSummaryResponse);
   return parsedResponse.summary;
+}
+
+export async function getSimilarTemplates(
+  metadata: ContentMetadata,
+  templates: Template[]
+): Promise<string[]> {
+  const prompt = getSimilarTemplatesPrompt(metadata, templates);
+
+  try {
+    const response = await anthropicHelper.getCompletion(
+      prompt,
+      SIMILAR_TEMPLATES_COMPLETION_LENGTH
+    );
+    const sanitizedResponse = sanitizeJsonString(response);
+    try {
+      const parsedResponse = JSON.parse(sanitizedResponse);
+      return parsedResponse.similarTemplateIds;
+    } catch (parseError) {
+      console.error("Error parsing JSON response:", parseError);
+      // Fallback to regex matching if JSON parsing fails
+      return extractJsonArrayFromString(
+        sanitizedResponse,
+        "similarTemplateIds"
+      );
+    }
+  } catch (error) {
+    console.error("Error fetching similar templates from Anthropic:", error);
+    return [];
+  }
 }
 
 export async function mergeMultipleContents(
@@ -172,12 +215,16 @@ export async function mergeMultipleContents(
 
 export async function suggestTitle(transcript: string) {
   const titlePrompt = generateTitlePrompt(transcript);
-  const titleResponse = await anthropicHelper.getCompletion(titlePrompt, 50);
-  const parsedResponse = JSON.parse(titleResponse);
+  const titleResponse = await anthropicHelper.getCompletion(
+    titlePrompt,
+    TITLE_COMPLETION_LENGTH
+  );
+  const sanitizedTitleResponse = sanitizeJsonString(titleResponse);
+  const parsedResponse = JSON.parse(sanitizedTitleResponse);
   return parsedResponse.title;
 }
 
-export async function refinePodcastTranscript(prompt: string) {
+export async function refinePodcastTranscript(prompt: string): Promise<string> {
   const refinedTranscriptResponse = await anthropicHelper.getCompletion(
     prompt,
     DEFAULT_COMPLETION_LENGTH
@@ -185,43 +232,45 @@ export async function refinePodcastTranscript(prompt: string) {
   return extractRefinedContent(refinedTranscriptResponse);
 }
 
+/**
+ * Extracts refined content from API response with enhanced error handling
+ */
 function extractRefinedContent(response: string): string {
   try {
-    const parsedResponse = JSON.parse(response);
-    return parsedResponse.refinedContent;
+    // First attempt: Try parsing the sanitized JSON
+    const sanitizedResponse = sanitizeJsonString(response);
+    const parsedResponse = JSON.parse(sanitizedResponse);
+
+    if (typeof parsedResponse === "object" && parsedResponse?.refinedContent) {
+      return parsedResponse.refinedContent;
+    }
+
+    // If the first attempt fails, try the fallback regex approach
+    throw new Error("Invalid response structure");
   } catch (parseError) {
-    console.error("Error parsing refined transcript:", parseError);
-    const contentMatch = response.match(
-      /"refinedContent"\s*:\s*"((?:.|\n)*?)(?:"\s*}|$)/
-    );
-    if (contentMatch && contentMatch[1]) {
-      return contentMatch[1].replace(/\\"/g, '"').replace(/\\n/g, "\n");
-    }
-    throw new Error("Failed to extract refined content");
-  }
-}
+    console.error("Initial parsing failed:", parseError);
 
-export async function getSimilarTemplates(
-  metadata: ContentMetadata,
-  templates: Template[]
-): Promise<string[]> {
-  const prompt = getSimilarTemplatesPrompt(metadata, templates);
-
-  try {
-    const response = await anthropicHelper.getCompletion(
-      prompt,
-      SIMILAR_TEMPLATES_COMPLETION_LENGTH
-    );
     try {
-      const parsedResponse = JSON.parse(response);
-      return parsedResponse.similarTemplateIds;
-    } catch (parseError) {
-      console.error("Error parsing JSON response:", parseError);
-      // Fallback to regex matching if JSON parsing fails
-      return extractJsonArrayFromString(response, "similarTemplateIds");
+      // Second attempt: Try regex-based extraction with improved pattern
+      const refinedContent = extractJsonFieldFromString(
+        response,
+        "refinedContent"
+      );
+      if (refinedContent) {
+        return refinedContent;
+      }
+
+      // If all attempts fail, throw a detailed error
+      throw new Error("Could not extract refined content using any method");
+    } catch (extractionError) {
+      console.error("Extraction attempts failed:", extractionError);
+      console.error("Raw response excerpt:", response.slice(0, 200) + "...");
+
+      throw new Error(
+        `Failed to extract refined content: ${
+          (extractionError as Error).message
+        }`
+      );
     }
-  } catch (error) {
-    console.error("Error fetching similar templates from Anthropic:", error);
-    return [];
   }
 }

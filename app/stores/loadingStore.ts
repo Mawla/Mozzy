@@ -1,20 +1,16 @@
 import { create } from "zustand";
 
 interface LoadingState {
-  isLoading: boolean;
+  loading: boolean;
   progress: number;
-  loadingMessage: string;
-  setLoading: (
-    isLoading: boolean,
-    progress: number,
-    loadingMessage: string
-  ) => void;
+  loadingText: string;
+  setLoading: (loading: boolean, progress: number, loadingText: string) => void;
 }
 
 export const useLoadingStore = create<LoadingState>((set) => ({
-  isLoading: false,
+  loading: false,
   progress: 0,
-  loadingMessage: "",
-  setLoading: (isLoading, progress, loadingMessage) =>
-    set({ isLoading, progress, loadingMessage }),
+  loadingText: "",
+  setLoading: (loading: boolean, progress: number, loadingText: string) =>
+    set({ loading, progress, loadingText }),
 }));

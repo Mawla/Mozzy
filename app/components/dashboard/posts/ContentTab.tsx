@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useMemo, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { X, Loader2 } from "lucide-react";
@@ -23,7 +25,7 @@ export const ContentTab: React.FC = () => {
     refinementInstructions,
   } = usePostStore();
   const { toast } = useToast();
-  const { isLoading, progress, loadingMessage } = useLoadingStore();
+  const { loading, progress, loadingText } = useLoadingStore();
   const [isClient, setIsClient] = useState(false);
   const [isRefining, setIsRefining] = useState(false);
   const [isGeneratingMetadata, setIsGeneratingMetadata] = useState(false);
@@ -123,6 +125,10 @@ export const ContentTab: React.FC = () => {
     }
   };
 
+  const handleCancel = () => {
+    postService.cancelOperation();
+  };
+
   return (
     <div className="space-y-4">
       {isClient && (
@@ -148,27 +154,27 @@ export const ContentTab: React.FC = () => {
         <div className="flex items-center space-x-4">
           <Button
             onClick={handleGenerateMetadata}
-            disabled={isGeneratingMetadata || isLoading}
+            disabled={isGeneratingMetadata || loading}
           >
             {isGeneratingMetadata ? "Generating..." : "Generate Metadata"}
           </Button>
-          <Button onClick={suggestTemplates} disabled={isLoading}>
+          <Button onClick={suggestTemplates} disabled={loading}>
             Suggest Templates
           </Button>
           <Button
             onClick={handleRefinePodcastTranscript}
-            disabled={isRefining || isLoading}
+            disabled={isRefining || loading}
           >
             {isRefining ? "Refining..." : "Refine Transcript"}
           </Button>
           <span className="text-sm text-gray-500">Words: {wordCount}</span>
         </div>
       </div>
-      {isLoading && (
+      {loading && (
         <div className="mt-4 p-4 bg-gray-100 rounded-md">
           <div className="flex items-center">
             <Loader2 className="animate-spin mr-2" />
-            <span>{loadingMessage}</span>
+            <span>{loadingText}</span>
           </div>
           <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5">
             <div
@@ -182,6 +188,25 @@ export const ContentTab: React.FC = () => {
         <div className="mt-6">
           <h3 className="text-lg font-semibold mb-2">Content Metadata</h3>
           <ContentMetadataDisplay metadata={currentPost.metadata} />
+        </div>
+      )}
+      {loading && (
+        <div className="flex flex-col items-center gap-4 mt-4">
+          <div className="w-full max-w-md bg-gray-200 rounded-full h-2.5">
+            <div
+              className="bg-blue-600 h-2.5 rounded-full"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+          <p className="text-sm text-gray-600">{loadingText}</p>
+          <Button
+            onClick={handleCancel}
+            variant="destructive"
+            size="sm"
+            className="mt-2"
+          >
+            Cancel Refinement
+          </Button>
         </div>
       )}
     </div>

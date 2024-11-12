@@ -7,7 +7,7 @@ import { ContentMetadata } from "@/app/types/contentMetadata";
 import { useLoadingStore } from "@/app/stores/loadingStore";
 
 // Define constants for magic numbers
-const MAX_TOKENS = 4000;
+const MAX_TOKENS = 1500;
 const INITIAL_LOADING_PERCENTAGE = 0;
 const FINAL_LOADING_PERCENTAGE = 100;
 const CHUNK_PROCESSING_START_PERCENTAGE = 90;
@@ -347,6 +347,7 @@ export const postService = {
     transcript: string,
     additionalInstructions: string
   ): Promise<string> {
+    this.resetCancellation();
     try {
       const { setLoading } = useLoadingStore.getState();
       setLoading(
@@ -355,11 +356,19 @@ export const postService = {
         "Preparing transcript for refinement..."
       );
 
+      if (this.isCancelled) {
+        throw new Error("Operation cancelled");
+      }
+
       const chunks = this.chunkText(transcript);
       const refinedChunks = await this.processChunks(
         chunks,
         additionalInstructions
       );
+
+      if (this.isCancelled) {
+        throw new Error("Operation cancelled");
+      }
 
       setLoading(
         true,
@@ -369,6 +378,10 @@ export const postService = {
       const combinedRefinedContent = refinedChunks.join("\n\n");
 
       if (chunks.length > 1) {
+        if (this.isCancelled) {
+          throw new Error("Operation cancelled");
+        }
+
         setLoading(
           true,
           FINAL_REFINEMENT_START_PERCENTAGE,
@@ -381,7 +394,12 @@ export const postService = {
           1
         );
 
-        const finalRefinedContent = await this.iterativeRefinement(finalPrompt);
+        const finalRefinedContent =
+          await AnthropicActions.refinePodcastTranscript(finalPrompt);
+
+        if (this.isCancelled) {
+          throw new Error("Operation cancelled");
+        }
 
         setLoading(false, FINAL_LOADING_PERCENTAGE, "Refinement complete");
         return finalRefinedContent;
@@ -390,33 +408,20 @@ export const postService = {
       setLoading(false, FINAL_LOADING_PERCENTAGE, "Refinement complete");
       return combinedRefinedContent;
     } catch (error) {
+      const errorMessage =
+        (error as Error).message === "Operation cancelled"
+          ? "Refinement cancelled"
+          : "Refinement failed";
+
       useLoadingStore
         .getState()
-        .setLoading(false, INITIAL_LOADING_PERCENTAGE, "Refinement failed");
+        .setLoading(false, INITIAL_LOADING_PERCENTAGE, errorMessage);
+
       console.error("Error refining podcast transcript:", error);
       throw error;
+    } finally {
+      this.resetCancellation();
     }
-  },
-
-  async iterativeRefinement(prompt: string): Promise<string> {
-    let refinedContent = "";
-    let isComplete = false;
-
-    while (!isComplete) {
-      const response = await AnthropicActions.refinePodcastTranscript(prompt);
-      const parsedResponse = JSON.parse(response);
-
-      refinedContent += parsedResponse.refinedContent;
-
-      // Check if the response is complete or if more content is needed
-      if (parsedResponse.isComplete) {
-        isComplete = true;
-      } else {
-        prompt = parsedResponse.continuationToken; // Use a token or similar mechanism to request the next part
-      }
-    }
-
-    return refinedContent;
   },
 
   async processChunks(
@@ -427,6 +432,10 @@ export const postService = {
     const { setLoading } = useLoadingStore.getState();
 
     for (let i = 0; i < chunks.length; i++) {
+      if (this.isCancelled) {
+        throw new Error("Operation cancelled");
+      }
+
       console.log(`Processing chunk ${i + 1} of ${chunks.length}`);
       try {
         setLoading(
@@ -447,7 +456,10 @@ export const postService = {
           chunkPrompt
         );
 
-        console.log(`Received API response for chunk ${i + 1}`);
+        console.log(
+          `Received API response for chunk ${i + 1}:`,
+          refinedContent
+        );
 
         refinedChunks.push(refinedContent);
         console.log(`Successfully processed chunk ${i + 1}`);
