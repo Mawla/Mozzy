@@ -15,17 +15,26 @@ const TipTapEditor = dynamic(() => import("@/app/components/TipTapEditor"), {
 });
 
 export const ContentTab: React.FC = () => {
-  const { currentPost, updatePost, suggestTemplates } = usePostStore();
+  const {
+    currentPost,
+    updatePost,
+    suggestTemplates,
+    setRefinementInstructions,
+    refinementInstructions,
+  } = usePostStore();
   const { toast } = useToast();
   const { isLoading, progress, loadingMessage } = useLoadingStore();
   const [isClient, setIsClient] = useState(false);
   const [isRefining, setIsRefining] = useState(false);
   const [isGeneratingMetadata, setIsGeneratingMetadata] = useState(false);
-  const [additionalInstructions, setAdditionalInstructions] = useState("");
 
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    // Initialize refinement instructions from post if it exists
+    if (currentPost?.refinementInstructions) {
+      setRefinementInstructions(currentPost.refinementInstructions);
+    }
+  }, [currentPost?.refinementInstructions, setRefinementInstructions]);
 
   const wordCount = useMemo(() => {
     return currentPost?.content.trim().split(/\s+/).length || 0;
@@ -40,7 +49,8 @@ export const ContentTab: React.FC = () => {
   };
 
   const handleInstructionsUpdate = (instructions: string) => {
-    setAdditionalInstructions(instructions);
+    setRefinementInstructions(instructions);
+    // The store will handle updating the post
   };
 
   const removeTag = (tagToRemove: string) => {
@@ -65,7 +75,7 @@ export const ContentTab: React.FC = () => {
     try {
       const refinedContent = await postService.refinePodcastTranscript(
         currentPost.content,
-        additionalInstructions
+        refinementInstructions
       );
       updatePost({ transcript: refinedContent, content: refinedContent });
       toast({
@@ -120,17 +130,17 @@ export const ContentTab: React.FC = () => {
           <TipTapEditor
             content={currentPost?.content || ""}
             placeholder="Start typing or paste your transcript here..."
-            height="400px" // Main content editor height
+            height="400px"
             onUpdate={handleEditorUpdate}
           />
           <h3 className="text-lg font-semibold mt-4 mb-2">
-            Additional Instructions
+            Refinement Instructions
           </h3>
           <TipTapEditor
-            content={additionalInstructions}
+            content={refinementInstructions}
             onUpdate={handleInstructionsUpdate}
-            placeholder="Enter additional instructions for refining the transcript..."
-            height="80px" // 20% of the original 400px height
+            placeholder="Enter instructions for refining the content..."
+            height="80px"
           />
         </>
       )}

@@ -31,6 +31,10 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
     extensions: [
       StarterKit.configure({
         orderedList: false,
+        bulletList: {
+          keepMarks: true,
+          keepAttributes: false,
+        },
       }),
       PreserveLineBreaks,
       OrderedList.configure({
@@ -58,11 +62,22 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
   const updateContent = useCallback(
     (newContent: string) => {
       if (editor && newContent !== editor.getHTML()) {
-        // Preserve line breaks and convert them to <br> tags
-        const contentWithLineBreaks = newContent
+        // Preserve line breaks and normalize content
+        const cleanContent = newContent
+          .replace(/<li>\s*<\/li>/g, "") // Remove empty list items
+          .replace(/<ul>\s*<\/ul>/g, "") // Remove empty lists
+          .replace(/(<\/li>)\s*(<li>)/g, "$1$2") // Remove spaces between list items
+          .replace(/\n\n+/g, "\n\n") // Normalize multiple line breaks to double
+          .replace(/(<\/p>)\s*(<p>)/g, "$1\n$2") // Add line break between paragraphs
+          .replace(/<br\s*\/?>/g, "\n") // Convert <br> to newline
+          .trim();
+
+        // Convert the content to preserve line breaks
+        const contentWithLineBreaks = cleanContent
           .split("\n")
-          .map((line) => line.trim())
-          .join("<br>\n");
+          .map((line) => `<p>${line}</p>`)
+          .join("\n");
+
         editor.commands.setContent(contentWithLineBreaks, false);
       }
     },
@@ -94,20 +109,40 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
           cursor: text;
         }
         .ProseMirror p {
-          margin: 0 0 1em 0;
+          margin: 0;
           white-space: pre-wrap !important;
+          min-height: 1.5em;
+        }
+        .ProseMirror p:empty::before {
+          content: "";
+          display: inline-block;
         }
         .ProseMirror br {
           display: block;
+          height: 1.5em;
           content: "";
-          margin-top: 0.5em;
+          margin-top: 0;
         }
         .ProseMirror ol {
           list-style-type: decimal;
           padding-left: 1.5em;
+          margin: 1em 0;
         }
-        .ProseMirror ol li {
-          margin-bottom: 0.5em;
+        .ProseMirror ul {
+          list-style-type: disc;
+          padding-left: 1.5em;
+          margin: 1em 0;
+        }
+        .ProseMirror li {
+          margin: 0.5em 0;
+          position: relative;
+        }
+        .ProseMirror li:empty {
+          display: none;
+        }
+        .ProseMirror ul:empty,
+        .ProseMirror ol:empty {
+          display: none;
         }
       `}</style>
       <EditorContent editor={editor} className="prose max-w-none h-full" />
@@ -119,4 +154,5 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
     </div>
   );
 };
+
 export default TipTapEditor;

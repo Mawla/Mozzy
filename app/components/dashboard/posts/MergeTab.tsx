@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, Download, Plus } from "lucide-react"; // Add Download icon and Plus icon
+import { Loader2, Download, Plus, Clipboard } from "lucide-react"; // Add Download icon, Plus icon, and Clipboard icon
 import {
   BUTTON_TEXTS,
   MESSAGES,
@@ -27,8 +27,28 @@ interface MergeError extends Error {
   message: string;
 }
 
+const formatForSocial = (content: string): string => {
+  // Remove HTML tags
+  let socialContent = content.replace(/<[^>]*>/g, "");
+
+  // Replace multiple newlines with double newline
+  socialContent = socialContent.replace(/\n{3,}/g, "\n\n");
+
+  // Trim extra whitespace
+  socialContent = socialContent.trim();
+
+  return socialContent;
+};
+
 export const MergeTab: React.FC = () => {
-  const { currentPost, updatePost, handleMerge, handleSave } = usePostStore();
+  const {
+    currentPost,
+    updatePost,
+    handleMerge,
+    handleSave,
+    mergeInstructions,
+    setMergeInstructions,
+  } = usePostStore();
   const { toast } = useToast();
   const { isLoading, progress, loadingMessage } = useLoadingStore();
   const [currentMergingIndex, setCurrentMergingIndex] = useState<number | null>(
@@ -39,7 +59,6 @@ export const MergeTab: React.FC = () => {
   >(null);
   const [editorContent, setEditorContent] = useState("");
   const [isClient, setIsClient] = useState(false);
-  const [additionalContext, setAdditionalContext] = useState("");
   const [isCancelling, setIsCancelling] = useState(false);
   const cancelRef = useRef(false);
 
@@ -54,7 +73,11 @@ export const MergeTab: React.FC = () => {
 
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    // Initialize merge instructions from post if it exists
+    if (currentPost?.mergeInstructions) {
+      setMergeInstructions(currentPost.mergeInstructions);
+    }
+  }, [currentPost?.mergeInstructions, setMergeInstructions]);
 
   useEffect(() => {
     console.log("Current templates:", templates);
@@ -161,7 +184,7 @@ export const MergeTab: React.FC = () => {
         setCurrentMergingIndex(i);
         try {
           console.log(`Attempting to merge template ${i}:`, template);
-          await handleMerge(currentPost.id, i, additionalContext);
+          await handleMerge(currentPost.id, i, mergeInstructions);
 
           if (cancelRef.current) break;
 
@@ -308,7 +331,7 @@ export const MergeTab: React.FC = () => {
       await handleMerge(
         currentPost.id,
         selectedContentIndex,
-        additionalContext
+        mergeInstructions
       );
       console.log(`Successfully merged content for selected template`);
 
@@ -337,73 +360,34 @@ export const MergeTab: React.FC = () => {
     }
   };
 
+  const handleCopyForSocial = () => {
+    if (!editorContent) {
+      toast({
+        description: "No content to copy.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const formattedContent = formatForSocial(editorContent);
+    navigator.clipboard
+      .writeText(formattedContent)
+      .then(() => {
+        toast({
+          description: "Content copied to clipboard!",
+        });
+      })
+      .catch((error) => {
+        console.error("Failed to copy:", error);
+        toast({
+          description: "Failed to copy content.",
+          variant: "destructive",
+        });
+      });
+  };
+
   return (
     <div className="space-y-4">
-      <TemplateCardGrid
-        templates={templates}
-        maxTemplates={templates.length}
-        onCardClick={handleTemplateClick}
-        selectedIndexes={
-          selectedContentIndex !== null ? [selectedContentIndex] : []
-        }
-        currentMergingIndex={currentMergingIndex}
-      />
-
-      <div className="space-y-2">
-        <label htmlFor="additional-context" className="text-sm font-medium">
-          Additional Context
-        </label>
-        <Textarea
-          id="additional-context"
-          placeholder="Add any additional context or instructions for the AI to consider when merging content..."
-          value={additionalContext}
-          onChange={(e) => setAdditionalContext(e.target.value)}
-          className="min-h-[100px]"
-        />
-      </div>
-
-      <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-        <div className="w-full sm:w-1/2">
-          {isClient && (
-            <TipTapEditor
-              content={editorContent}
-              onUpdate={(newContent) => handleEditorUpdate(newContent)}
-              placeholder={placeholderMessage}
-            />
-          )}
-        </div>
-        <div className="w-full sm:w-1/2">
-          <TweetPreview content={editorContent} />
-        </div>
-      </div>
-
-      {isLoading && (
-        <div className="mt-4 p-4 bg-gray-100 rounded-md">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Loader2 className="animate-spin mr-2" />
-              <span>{loadingMessage}</span>
-            </div>
-            {!isCancelling && (
-              <Button
-                onClick={handleCancel}
-                variant="destructive"
-                size="sm"
-                className="ml-4"
-              >
-                Cancel
-              </Button>
-            )}
-          </div>
-          <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5">
-            <div
-              className="bg-blue-600 h-2.5 rounded-full"
-              style={{ width: `${progress}%` }}
-            ></div>
-          </div>
-        </div>
-      )}
-
       <div className="flex justify-end gap-2">
         <Button
           onClick={handleMergeSingleTemplate}
@@ -439,7 +423,89 @@ export const MergeTab: React.FC = () => {
           <Download className="mr-2 h-4 w-4" />
           Export PDF
         </Button>
+        <Button
+          onClick={handleCopyForSocial}
+          disabled={!editorContent || isLoading}
+          variant="outline"
+        >
+          <Clipboard className="mr-2 h-4 w-4" />
+          Copy for Social
+        </Button>
       </div>
+
+      <TemplateCardGrid
+        templates={templates}
+        maxTemplates={templates.length}
+        onCardClick={handleTemplateClick}
+        selectedIndexes={
+          selectedContentIndex !== null ? [selectedContentIndex] : []
+        }
+        currentMergingIndex={currentMergingIndex}
+      />
+
+      <div className="space-y-2">
+        <label htmlFor="merge-instructions" className="text-sm font-medium">
+          Merge Instructions
+        </label>
+        <Textarea
+          id="merge-instructions"
+          placeholder="Add any instructions for the AI to consider when merging content..."
+          value={mergeInstructions}
+          onChange={(e) => setMergeInstructions(e.target.value)}
+          className="min-h-[100px]"
+        />
+      </div>
+
+      <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+        <div className="w-full sm:w-1/2">
+          {isClient && (
+            <TipTapEditor
+              content={editorContent}
+              onUpdate={(newContent) => handleEditorUpdate(newContent)}
+              placeholder={placeholderMessage}
+            />
+          )}
+        </div>
+        <div className="w-full sm:w-1/2 space-y-4">
+          <TweetPreview content={editorContent} />
+          <Button
+            onClick={handleCopyForSocial}
+            disabled={!editorContent || isLoading}
+            variant="outline"
+            className="w-full"
+          >
+            <Clipboard className="mr-2 h-4 w-4" />
+            Copy for Social
+          </Button>
+        </div>
+      </div>
+
+      {isLoading && (
+        <div className="mt-4 p-4 bg-gray-100 rounded-md">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Loader2 className="animate-spin mr-2" />
+              <span>{loadingMessage}</span>
+            </div>
+            {!isCancelling && (
+              <Button
+                onClick={handleCancel}
+                variant="destructive"
+                size="sm"
+                className="ml-4"
+              >
+                Cancel
+              </Button>
+            )}
+          </div>
+          <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5">
+            <div
+              className="bg-blue-600 h-2.5 rounded-full"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

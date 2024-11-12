@@ -11,6 +11,8 @@ interface PostState {
   isLoading: boolean;
   progress: number;
   loadingMessage: string;
+  refinementInstructions: string;
+  mergeInstructions: string;
 }
 
 interface PostActions {
@@ -25,7 +27,7 @@ interface PostActions {
   handleMerge: (
     postId: string,
     templateIndex: number,
-    additionalContext: string
+    mergeInstructions: string
   ) => Promise<void>;
   handleSave: () => Promise<void>;
   handleRemoveTemplate: (index: number) => void;
@@ -36,6 +38,8 @@ interface PostActions {
     progress?: number,
     loadingMessage?: string
   ) => void;
+  setRefinementInstructions: (instructions: string) => void;
+  setMergeInstructions: (instructions: string) => void;
 }
 
 export const usePostStore = create<PostState & PostActions>()((set, get) => ({
@@ -46,6 +50,8 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
   isLoading: false,
   progress: 0,
   loadingMessage: "",
+  refinementInstructions: "",
+  mergeInstructions: "",
 
   // Actions
   loadPosts: () => {
@@ -151,7 +157,7 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
   handleMerge: async (
     postId: string,
     templateIndex: number,
-    additionalContext: string = ""
+    mergeInstructions: string = ""
   ) => {
     try {
       const { posts, currentPost } = get();
@@ -199,15 +205,19 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
           industries: [],
           contentType: [],
         },
-        additionalContext
+        mergeInstructions
       );
 
-      // Update the post with the new merged content
+      // Update the post with the new merged content and merge context
       const updatedMergedContents = {
         ...post.mergedContents,
         [template.id]: mergedContent,
       };
-      const updatedPost = { ...post, mergedContents: updatedMergedContents };
+      const updatedPost = {
+        ...post,
+        mergedContents: updatedMergedContents,
+        mergeInstructions,
+      };
 
       // Update the posts array and currentPost
       set((state) => ({
@@ -228,12 +238,43 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
     if (!currentPost) return;
     try {
       console.log("Saving post:", currentPost);
-      const savedPost = await postService.handleSave(currentPost);
-      console.log("Post saved. Returned post:", savedPost);
-      get().updatePost(savedPost);
-      console.log("Store updated after save. Current post:", get().currentPost);
+
+      // Get fresh posts array from localStorage
+      const posts = postService.getPosts();
+      const existingPostIndex = posts.findIndex((p) => p.id === currentPost.id);
+
+      // Update or add the post
+      if (existingPostIndex !== -1) {
+        posts[existingPostIndex] = {
+          ...posts[existingPostIndex],
+          ...currentPost,
+          updatedAt: new Date().toISOString(),
+        };
+      } else {
+        posts.push({
+          ...currentPost,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+      }
+
+      // Save to localStorage
+      localStorage.setItem("posts", JSON.stringify(posts));
+
+      // Update the store's posts array
+      set((state) => ({
+        ...state,
+        posts: posts,
+        currentPost: {
+          ...currentPost,
+          updatedAt: new Date().toISOString(),
+        },
+      }));
+
+      console.log("Post saved successfully. Updated posts:", posts);
     } catch (error) {
       console.error("Error saving post:", error);
+      throw error;
     }
   },
 
@@ -276,4 +317,18 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
 
   setLoading: (isLoading: boolean, progress = 0, loadingMessage = "") =>
     set({ isLoading, progress, loadingMessage }),
+
+  setRefinementInstructions: (instructions: string) => {
+    set({ refinementInstructions: instructions });
+    if (get().currentPost) {
+      get().updatePost({ refinementInstructions: instructions });
+    }
+  },
+
+  setMergeInstructions: (instructions: string) => {
+    set({ mergeInstructions: instructions });
+    if (get().currentPost) {
+      get().updatePost({ mergeInstructions: instructions });
+    }
+  },
 }));
