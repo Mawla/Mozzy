@@ -82,6 +82,8 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
       set({
         currentPost: fullPost,
         wordCount: fullPost.content.trim().split(/\s+/).length,
+        refinementInstructions: fullPost.refinementInstructions || "",
+        mergeInstructions: fullPost.mergeInstructions || "",
       });
     } else {
       console.error(`Post with id ${id} not found`);
@@ -108,6 +110,8 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
       posts: [...state.posts, newPost],
       currentPost: newPost,
       wordCount: 0,
+      mergeInstructions: "",
+      refinementInstructions: "",
     }));
   },
 

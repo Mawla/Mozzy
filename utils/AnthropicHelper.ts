@@ -21,7 +21,7 @@ export class AnthropicHelper {
 
   public async getCompletion(
     prompt: string,
-    maxTokens: number = 4096
+    maxTokens: number = 8192
   ): Promise<string> {
     try {
       console.log("Calling Anthropic API with prompt:", prompt);

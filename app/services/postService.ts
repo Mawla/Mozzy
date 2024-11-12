@@ -6,6 +6,13 @@ import * as AnthropicActions from "@/app/actions/anthropicActions";
 import { ContentMetadata } from "@/app/types/contentMetadata";
 import { useLoadingStore } from "@/app/stores/loadingStore";
 
+// Define constants for magic numbers
+const MAX_TOKENS = 4000;
+const INITIAL_LOADING_PERCENTAGE = 0;
+const FINAL_LOADING_PERCENTAGE = 100;
+const CHUNK_PROCESSING_START_PERCENTAGE = 90;
+const FINAL_REFINEMENT_START_PERCENTAGE = 95;
+
 export const postService = {
   isCancelled: false,
 
@@ -342,7 +349,11 @@ export const postService = {
   ): Promise<string> {
     try {
       const { setLoading } = useLoadingStore.getState();
-      setLoading(true, 0, "Preparing transcript for refinement...");
+      setLoading(
+        true,
+        INITIAL_LOADING_PERCENTAGE,
+        "Preparing transcript for refinement..."
+      );
 
       const chunks = this.chunkText(transcript);
       const refinedChunks = await this.processChunks(
@@ -350,11 +361,19 @@ export const postService = {
         additionalInstructions
       );
 
-      setLoading(true, 90, "Combining refined chunks...");
+      setLoading(
+        true,
+        CHUNK_PROCESSING_START_PERCENTAGE,
+        "Combining refined chunks..."
+      );
       const combinedRefinedContent = refinedChunks.join("\n\n");
 
       if (chunks.length > 1) {
-        setLoading(true, 95, "Performing final refinement...");
+        setLoading(
+          true,
+          FINAL_REFINEMENT_START_PERCENTAGE,
+          "Performing final refinement..."
+        );
         const finalPrompt = refinePodcastTranscriptPrompt(
           combinedRefinedContent,
           additionalInstructions,
@@ -362,20 +381,42 @@ export const postService = {
           1
         );
 
-        const finalRefinedContent =
-          await AnthropicActions.refinePodcastTranscript(finalPrompt);
+        const finalRefinedContent = await this.iterativeRefinement(finalPrompt);
 
-        setLoading(false, 100, "Refinement complete");
+        setLoading(false, FINAL_LOADING_PERCENTAGE, "Refinement complete");
         return finalRefinedContent;
       }
 
-      setLoading(false, 100, "Refinement complete");
+      setLoading(false, FINAL_LOADING_PERCENTAGE, "Refinement complete");
       return combinedRefinedContent;
     } catch (error) {
-      useLoadingStore.getState().setLoading(false, 0, "Refinement failed");
+      useLoadingStore
+        .getState()
+        .setLoading(false, INITIAL_LOADING_PERCENTAGE, "Refinement failed");
       console.error("Error refining podcast transcript:", error);
       throw error;
     }
+  },
+
+  async iterativeRefinement(prompt: string): Promise<string> {
+    let refinedContent = "";
+    let isComplete = false;
+
+    while (!isComplete) {
+      const response = await AnthropicActions.refinePodcastTranscript(prompt);
+      const parsedResponse = JSON.parse(response);
+
+      refinedContent += parsedResponse.refinedContent;
+
+      // Check if the response is complete or if more content is needed
+      if (parsedResponse.isComplete) {
+        isComplete = true;
+      } else {
+        prompt = parsedResponse.continuationToken; // Use a token or similar mechanism to request the next part
+      }
+    }
+
+    return refinedContent;
   },
 
   async processChunks(
@@ -419,13 +460,7 @@ export const postService = {
     return refinedChunks;
   },
 
-  bulkDeletePosts(ids: string[]): void {
-    let posts = this.getPosts();
-    posts = posts.filter((post) => !ids.includes(post.id));
-    localStorage.setItem("posts", JSON.stringify(posts));
-  },
-
-  chunkText(text: string, maxTokens: number = 4000): string[] {
+  chunkText(text: string, maxTokens: number = MAX_TOKENS): string[] {
     const words = text.split(/\s+/);
     const chunks: string[] = [];
     let currentChunk: string[] = [];
@@ -443,6 +478,12 @@ export const postService = {
     }
 
     return chunks;
+  },
+
+  bulkDeletePosts(ids: string[]): void {
+    let posts = this.getPosts();
+    posts = posts.filter((post) => !ids.includes(post.id));
+    localStorage.setItem("posts", JSON.stringify(posts));
   },
 
   async handleMerge(postId: string): Promise<void> {

@@ -19,8 +19,16 @@ import { ContentMetadata } from "@/app/types/contentMetadata";
 
 const anthropicHelper = AnthropicHelper.getInstance();
 
+// Define constants for magic numbers
+const DEFAULT_COMPLETION_LENGTH = 8192;
+const TITLE_COMPLETION_LENGTH = 50;
+const SIMILAR_TEMPLATES_COMPLETION_LENGTH = 4096;
+
 export async function mergeContent(prompt: string): Promise<string> {
-  const mergeResult = await anthropicHelper.getCompletion(prompt);
+  const mergeResult = await anthropicHelper.getCompletion(
+    prompt,
+    DEFAULT_COMPLETION_LENGTH
+  );
 
   // First try to parse as JSON
   try {
@@ -69,7 +77,10 @@ export async function suggestTags(
   transcript: string
 ): Promise<ContentMetadata> {
   const tagsPrompt = suggestTagsPrompt(transcript);
-  const tagsResult = await anthropicHelper.getCompletion(tagsPrompt);
+  const tagsResult = await anthropicHelper.getCompletion(
+    tagsPrompt,
+    DEFAULT_COMPLETION_LENGTH
+  );
   return JSON.parse(tagsResult);
 }
 
@@ -79,12 +90,15 @@ export async function chooseBestTemplate(
   templates: Template[]
 ) {
   const prompt = chooseBestTemplatePrompt(transcript, metadata, templates);
-  return await anthropicHelper.getCompletion(prompt);
+  return await anthropicHelper.getCompletion(prompt, DEFAULT_COMPLETION_LENGTH);
 }
 
 export async function generateTitle(transcript: string) {
   const titlePrompt = generateTitlePrompt(transcript);
-  const titleResponse = await anthropicHelper.getCompletion(titlePrompt, 50);
+  const titleResponse = await anthropicHelper.getCompletion(
+    titlePrompt,
+    TITLE_COMPLETION_LENGTH
+  );
   const parsedResponse = JSON.parse(titleResponse);
   return parsedResponse.title;
 }
@@ -93,7 +107,7 @@ export async function generateImprovedTranscript(transcript: string) {
   const improvedTranscriptPrompt = generateImprovedTranscriptPrompt(transcript);
   const improvedTranscriptResponse = await anthropicHelper.getCompletion(
     improvedTranscriptPrompt,
-    4096
+    DEFAULT_COMPLETION_LENGTH
   );
   const parsedResponse = JSON.parse(improvedTranscriptResponse);
   return parsedResponse.improvedTranscript;
@@ -103,7 +117,7 @@ export async function generateSummary(transcript: string) {
   const summaryPrompt = generateSummaryPrompt(transcript);
   const summaryResponse = await anthropicHelper.getCompletion(
     summaryPrompt,
-    4096
+    DEFAULT_COMPLETION_LENGTH
   );
   const parsedResponse = JSON.parse(summaryResponse);
   return parsedResponse.summary;
@@ -166,7 +180,7 @@ export async function suggestTitle(transcript: string) {
 export async function refinePodcastTranscript(prompt: string) {
   const refinedTranscriptResponse = await anthropicHelper.getCompletion(
     prompt,
-    4096
+    DEFAULT_COMPLETION_LENGTH
   );
   return extractRefinedContent(refinedTranscriptResponse);
 }
@@ -187,7 +201,6 @@ function extractRefinedContent(response: string): string {
   }
 }
 
-// {{ edit_start }}
 export async function getSimilarTemplates(
   metadata: ContentMetadata,
   templates: Template[]
@@ -195,7 +208,10 @@ export async function getSimilarTemplates(
   const prompt = getSimilarTemplatesPrompt(metadata, templates);
 
   try {
-    const response = await anthropicHelper.getCompletion(prompt, 4096);
+    const response = await anthropicHelper.getCompletion(
+      prompt,
+      SIMILAR_TEMPLATES_COMPLETION_LENGTH
+    );
     try {
       const parsedResponse = JSON.parse(response);
       return parsedResponse.similarTemplateIds;
@@ -209,4 +225,3 @@ export async function getSimilarTemplates(
     return [];
   }
 }
-// {{ edit_end }}
