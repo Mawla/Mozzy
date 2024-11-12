@@ -1,7 +1,11 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, Download } from "lucide-react"; // Add Download icon
-import { BUTTON_TEXTS, MESSAGES } from "@/app/constants/editorConfig";
+import { Loader2, Download, Plus } from "lucide-react"; // Add Download icon and Plus icon
+import {
+  BUTTON_TEXTS,
+  MESSAGES,
+  TAB_NAMES,
+} from "@/app/constants/editorConfig";
 import dynamic from "next/dynamic";
 import { TemplateCardGrid } from "./TemplateCardGrid";
 import { TweetPreview } from "./TweetPreview";
@@ -335,17 +339,15 @@ export const MergeTab: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {templates.length > 0 && (
-        <TemplateCardGrid
-          templates={templates}
-          maxTemplates={templates.length}
-          onCardClick={handleTemplateClick}
-          selectedIndexes={
-            selectedContentIndex !== null ? [selectedContentIndex] : []
-          }
-          currentMergingIndex={currentMergingIndex}
-        />
-      )}
+      <TemplateCardGrid
+        templates={templates}
+        maxTemplates={templates.length}
+        onCardClick={handleTemplateClick}
+        selectedIndexes={
+          selectedContentIndex !== null ? [selectedContentIndex] : []
+        }
+        currentMergingIndex={currentMergingIndex}
+      />
 
       <div className="space-y-2">
         <label htmlFor="additional-context" className="text-sm font-medium">

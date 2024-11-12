@@ -19,6 +19,7 @@ export const BUTTON_TEXTS = {
   NEW_POST: "New Post",
   CANCEL_MERGE: "Cancel",
   CANCELLING: "Cancelling...",
+  ADD_TEMPLATES: "Add Templates",
 };
 
 export const PLACEHOLDERS = {
@@ -35,4 +36,5 @@ export const MESSAGES = {
   MERGING_CONTENT: "Merging content...",
   MERGE_CANCELLED: "Merge process cancelled.",
   CANCELLING_MERGE: "Cancelling merge process...",
+  NO_TEMPLATES: "No templates selected",
 };

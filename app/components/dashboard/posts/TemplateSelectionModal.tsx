@@ -18,16 +18,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { postService } from "@/app/services/postService";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
 interface TemplateSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  filteredPacks: Pack[];
-  onSelectTemplate: (template: Template) => void;
-  filter: "all" | "recent" | "favorite" | "suggested" | "shortlisted";
-  setFilter: (
+  onSelect: (template: Template) => void;
+  selectedTemplateIds: string[];
+  filteredPacks?: Pack[];
+  onSelectTemplate?: (template: Template) => void;
+  filter?: "all" | "recent" | "favorite" | "suggested" | "shortlisted";
+  setFilter?: (
     filter: "all" | "recent" | "favorite" | "suggested" | "shortlisted"
   ) => void;
 }
@@ -35,10 +38,11 @@ interface TemplateSelectionModalProps {
 const TemplateSelectionModal: React.FC<TemplateSelectionModalProps> = ({
   isOpen,
   onClose,
-  filteredPacks,
-  onSelectTemplate,
-  filter,
-  setFilter,
+  onSelect,
+  selectedTemplateIds,
+  filteredPacks = postService.getPacks(),
+  filter = "all",
+  setFilter = () => {},
 }) => {
   const [selectedPack, setSelectedPack] = useState<Pack | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(
@@ -88,7 +92,7 @@ const TemplateSelectionModal: React.FC<TemplateSelectionModalProps> = ({
 
   const handleUseTemplate = () => {
     if (selectedTemplate) {
-      onSelectTemplate(selectedTemplate);
+      onSelect(selectedTemplate);
       onClose();
     }
   };
