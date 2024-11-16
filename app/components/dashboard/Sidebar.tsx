@@ -15,6 +15,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  HomeIcon,
+  DocumentTextIcon,
+  Cog6ToothIcon,
+  DocumentDuplicateIcon,
+} from "@heroicons/react/24/outline";
 
 const Sidebar: React.FC = () => {
   const pathname = usePathname();
@@ -25,6 +31,11 @@ const Sidebar: React.FC = () => {
     { icon: LineChart, name: "Content Bank", href: "/dashboard/analytics" },
     { icon: Users, name: "ICP", href: "/dashboard/icp" },
     { icon: Lightbulb, name: "Ideas", href: "/dashboard/ideas" },
+    {
+      icon: DocumentDuplicateIcon,
+      name: "Templates",
+      href: "/dashboard/templates",
+    },
     { icon: Settings, name: "Settings", href: "/dashboard/settings" },
   ];
 

@@ -1,16 +1,12 @@
 export interface Template {
   id: string;
-  name: string;
-  title?: string;
+  title: string;
   description: string;
-  body: string;
+  content: string;
   emoji: string;
-  isRecent?: boolean;
-  isFavorite?: boolean;
-  isSuggested?: boolean;
-  isShortlisted?: boolean;
-  tags?: string[];
-  packId?: string;
+  category: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Pack {
