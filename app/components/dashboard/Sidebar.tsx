@@ -11,6 +11,7 @@ import {
   Settings,
   Users,
   Lightbulb,
+  Mic,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ const Sidebar: React.FC = () => {
       name: "Templates",
       href: "/dashboard/templates",
     },
+    { icon: Mic, name: "Podcasts", href: "/dashboard/podcasts" },
     { icon: Settings, name: "Settings", href: "/dashboard/settings" },
   ];
 

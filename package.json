@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.27.1",
+    "@anthropic-ai/sdk": "^0.32.1",
     "@headlessui/react": "^2.1.8",
     "@heroicons/react": "^2.1.5",
     "@hookform/resolvers": "^3.9.0",

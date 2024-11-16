@@ -1,0 +1,559 @@
+Transcript: (disclaimer: may contain unintentionally confusing, inaccurate and/or amusing transcription errors)
+
+Ben: Hello Acquired listeners. We have an excellent ACQ2 episode for you today. We are here with Luis von Ahn, the co-founder and CEO of Duolingo.
+
+Luis was a math professor at Carnegie Mellon in Pittsburgh from 2005 to 2012. He previously founded reCAPTCHA—which I’m sure many of you have filled out hundreds or thousands of times—that sold to Google in 2009. He is Guatemalan and immigrated to the United States studying Mathematics at Duke and later earning his PhD in Computer Science from Carnegie Mellon.
+
+Welcome to the show, Luis.
+
+Luis: Thank you for having me.
+
+Ben: We are very excited to do this together. I think Duolingo is a completely fascinating company. Rather than me saying Duolingo is a, why don’t we ask you, what is Duolingo?
+
+Luis: We’re most well-known for an app that teaches languages. It is the most popular way to learn languages in the world. It is the most popular education app in the world, and we have about a hundred million monthly active users.
+
+We’re also known for unhinged yet wholesome Green Owl that does weird stuff on TikTok. It’s the mascot of the company. That’s basically it. We’re doing what we can to teach people languages.
+
+It started because we wanted to teach people English. It turns out English is transformational. In the US (I guess) too. If you don’t know English in the US, you really should learn English. But in non-English speaking countries, English is pretty transformational. People who learn English can just make a lot more money.
+
+We started with this very mission-driven idea that we could teach people English all over the world. But if we were going to teach English, we may as well teach other languages. We started teaching other languages, and at this point we’re the most popular way to learn languages in the world.
+
+Ben: It’s amazing. My first question that I’ve been listening to you on other podcasts and doing research on the company and preparing for this, why has Duolingo worked to such an extreme scale? You’re a $9 billion publicly-traded company. Why has it worked when so many companies in a language category in the past have been these small, fragmented sort of subscale companies?
+
+Luis: There are a number of reasons, but if you ask me for one single reason, it is that we understood something early on. The insight is the hardest thing about learning something by yourself is staying motivated by a margin.
+
+What we’ve done with Duolingo is we really have made it so that you want to learn. I think that’s what has made us very popular. Most education apps that try to teach you something, concentrate mostly on the learning outcomes. They try to actually teach you the thing. And that makes sense.
+
+However, that’s not the hard part. The reality is you can learn anything with a book. Do you want to learn quantum physics? You can do so with a book. It’s just nobody’s doing it because it requires reading a quantum physics book. But if we can turn it into something that people actually want to do, that can be really powerful. I think that’s the biggest insight.
+
+There are other things that we’ve done. We became really good at product, we have really good design. There are a lot of things, but ultimately it’s just that we understand that we need to get people to want to do it.
+
+Ben: What are some of your key levers in making people want to engage?
+
+Luis: When we started Duolingo, which was in 2011 or so we started working on it, we were building a program that taught you languages, and it was with my co-founder. My co-founder is a native Swiss German speaker and I’m a native Spanish speaker. What we decided we were going to do is I was going to make the first Spanish course, even though I don’t know how to teach Spanish but I do know Spanish. And he was going to make the first German course.
+
+That was really stupid. I thought German and Swiss German were the same language. Turns out they’re not. I thought they were like British English and American English. They’re not. It’s like a different language. Anyway, he does happen to also know German. He made the German course, I made the Spanish course. The goal was that we were going to learn each other’s language.
+
+But we ran into this problem that we would go home, then the next day we would come into the office at 9:00 AM and I would ask him, did you do your Spanish lesson? He would say, no, man, so boring. And I had the same problem. It’s because when we started, we were making these lessons that were 30 minutes long, first of all. There was no gamification, et cetera, and we couldn’t even get ourselves to do it. This is when we started really trying to add all the mechanics to get people to do it.
+
+David: Was this in any way connected to your research or was this a complete side project?
+
+Luis: It was. Well, it kind of was. He was my PhD student, I was a professor, and we were trying to find a PhD thesis topic for him. That’s what we were doing. We didn’t even know this was going to be a company. We kind of in the back of our mind thought maybe this could turn into a company; we weren’t super sure. That was the idea. It was kind of connected to my research, but ultimately it was just trying to teach you something with a computer.
+
+Ben: Your research was around crowdsourcing, right?
+
+Luis: My research was around crowdsourcing, yes. And this was just more about trying to teach you something with a computer. So we were doing that, but this is when we learned that we needed to make it more fun. So we started doing a number of things.
+
+The first thing is 30-minute lessons, no good. You want to do three-minute lessons. That’s the first thing we did. We made it in three minutes. That’s very important. Even if ultimately people do spend 30 minutes on your app, making each chunk short matters a lot because that means you can do them while you’re waiting for the bus or while you’re literally going to the bathroom. Thirty minutes is just too long, so you have to be able to chunk them. We started chunking them. That’s important.
+
+We made the lesson experience something that was quite palatable. Three minutes, there’s a progress bar that you get to fill, then we started adding all kinds of little dopamine hits where when you get something right, there’s a little explosion. That’s one thing.
+
+Then over time, we discovered a number of other really important levers. One super important lever has been the streak. We have a streak. We’ve had a streak for 12 years, basically. The idea is, the standard with a streak, if you use it for seven days in a row, you have a streak of length seven. If you don’t use it on the eighth day, it goes down to zero. It’s just a counter of how many days you’ve done it in a row. This is super powerful.
+
+At this point we have—I think I’m going to get this number right—I think eight million people who are daily active users who have a streak longer than 365. We have 8 million daily active users that haven’t missed a day in the last year. Or more, so more than 365. It is very powerful. Streak is very powerful.
+
+Ben: That’s around 8% of your users.
+
+Luis: Eight percent of our active users have not missed a day in at least a year. That’s very powerful. It really is.
+
+Another thing that has been really powerful is notifications. Many apps abuse notifications, where they just notify you like crazy. It turns out that if you’re teaching something to somebody, they are a lot more okay with you sending them notifications because people think, well this is good for me.
+
+We’ve taken advantage of that. While we’re not spamming, we do send notifications probably at a higher rate than we could if we were not teaching you something. We have a very sophisticated system, it’s an AI system that we’ve trained over the years that basically tries to figure out when to send you a notification, what to say in it to get you to come back. That has been really successful.
+
+Then the other thing that has been pretty successful that we’ve gotten just a lot better over the last few years is the social component where we have leaderboards. Leaderboards, by the way, there’s a whole science of how to do them well. We got them very wrong at the beginning, but we are much better now. We have leaderboards, you can have streaks with friends now, you can have quests with friends, et cetera. That has helped out a lot.
+
+Ben: And we should say this notion of gamification was a real hot word, call it 2012–2015. You started the company in 2011, so you were blazing the trail on a lot of these things. The idea that you could bring game mechanics to non-game experiences, it’s pretty interesting reflecting back on that time, how that was the buzzword in every VC pitch that we were seeing, that you really did build a public company on that concept.
+
+Luis: Yeah. For some stuff, gamification is not all that useful, particularly things that you anyway have to do. For example, a smaller part of our business for Duolingo, we have this thing called the Duolingo English test, which is about 10% of our business. It’s a standardized English test.
+
+David: Like TOEFL.
+
+Luis: It’s like TOEFL. It’s a competitor to TOEFL. It’s a test that people have to take to get into a university, for example. That thing, you can gamify it, you can not gamify it, it doesn’t matter. The reality is people have to take it and they’ll go through it.
+
+For something like education, I think gamification ends up really mattering a lot because it’s all about motivation actually keeping you there. So I think this was just a very good use of gamification in the end.
+
+Ben: Do you have a sense of if you’ve expanded the market for people learning a language, who wouldn’t have sought to learn one otherwise?
+
+Luis: Massively. It depends on the country, but in the United States for example, 80% of our users were not learning a language before Duolingo.
+
+David: Your typical American…
+
+Luis: Was not learning a language.
+
+David: Not learning a language, yes.
+
+Luis: But they are now with Duolingo. It’s a similar number in the UK. There are other countries, particularly countries where people are learning English. There, we probably haven’t expanded the market as much, but in English-speaking countries like the US, UK, and Australia, we’ve expanded the market by a lot.
+
+Ben: Did you encounter, when you were fundraising, a lot of pushback that hey, this market isn’t that big? I imagine it’s probably hard to sell the thesis. Our product is so good that we will massively expand the market.
+
+Luis: We did. Our first fundraise was in 2011, Union Square Ventures. At the time, Union Square Ventures was very hot. They had just funded Twitter. It was a big deal. Anyway, we went there and we were so fortunate that they funded us. Brad Burnham was our partner there. He got into our board, we became good friends, et cetera.
+
+Many years later he told me, ah, we didn’t think you were going to succeed at that. We just liked you and we thought you were going to pivot into something else and maybe you’ll do something. We actually didn’t think you were going to succeed because we didn’t have a product.
+
+That was the first round, that was the Series A. By the time we reached a Series B and we raised it, the results spoke for themselves. We weren’t making any money, but we had a lot of users, especially if we had only launched maybe two years before that or something, and we really already had millions of users. It became a lot easier when we had, I don’t know how much product/market fit was, but at least we had some amount of product/market fit.
+
+David: I’m curious what your thought process and discussions were as you were starting the company, but even before then and you’re looking for a PhD thesis. Were you always planning to be mobile-first, mobile-native? Because it was right around that generation when it switched from…
+
+Luis: You are exactly right. In 2011 almost no company was doing mobile-first. Everybody was website-first because most of the traffic was on the web, like a big laptop or even a desktop. When we started, we thought this was going to be a website, but relatively early on, really maybe in the first few months we realized almost everything is going mobile.
+
+We had this insight which was—we’re very fortunate that we had this insight—at the time, most companies were website-first and they had a companion app. Like banks. You could go to the main website, but in the companion app you could check your balance, but you couldn’t do anything else or whatever. It’s just a companion app. We had this insight that we could actually put all the functionality of the website in the app. It was not a companion app or anything.
+
+As soon as we launched, we first launched the iPhone app, it overtook the website traffic. Within weeks, we had more traffic on our iPhone app than on the web app. Right then is when we decided we were going to be mobile-first. At this point, 95% of our traffic is on mobile and 5% is on the web, probably.
+
+David: Were you all watching Instagram as this was happening? Because the analogies are so close here.
+
+Luis: We were, and by the way, we were very fortunate with Instagram. I also think we gained a lot from this because we were not the first language learning app. There were others. But I think we were the first good one, and it’s because before us, what people were doing with apps is they were basically making websites and making them tiny. It’s a tiny little website, but they just shrunk everything into a mobile screen. When we came out with a mobile app, by the time we came out, we were watching things like Instagram.
+
+There was another app called Path. We were watching all these apps and we were like, this is how you design an app, not make a website and shrink it. You actually have to change all these things. I think we benefited a lot from the thinking of let’s make an actual native mobile thing as opposed to a miniature version of your website. We’re very fortunate with that.
+
+Ben: I’m obsessed with this misperception of the market size question. I’m sure you get pitched a lot of ideas now. Many people probably come to you with the idea, hey, just like Duolingo, this doesn’t seem like a big market, but actually we’re going to build a big business in it. What’s a good heuristic for when that is possible versus not?
+
+Luis: I don’t know what a good heuristic really is, but I can tell you this. I think language learning was massively underappreciated in the United States, because in the US people don’t have to learn a language. The reality is if you already speak English. English is the monster language in the world. That’s the big one.
+
+I grew up in a country where you had to learn English if you wanted to be mildly successful. This is true in my case. Had I not learned English, I wouldn’t have come to the US and I would’ve definitely not succeeded the way that I did. And my co-founder was also not born in an English-speaking country.
+
+I think when you grow up in a country that is not an English-speaking country, I think you realize, yeah, you may think that the market is not huge, but pretty much everybody is either learning a language—in particular, English—or wants to learn English, and everybody pretty much understands.
+
+So at some point you just realize, billions of people want to learn English. It just has to be a big market. There has to be a big need. I think that was the case for language learning. I don’t know for the other ones.
+
+What we do inside Duolingo when we’re looking at opportunities is we definitely look at just how many people are either doing something every day or close to every day. This is why we decided when we’re trying to expand to other subjects like we’re doing math and music, we went for those because those are things that literally billions of people are either doing or want to do. We didn’t go for something like, you could go for chemistry or something, love chemistry. It’s just there are probably not a billion people learning chemistry or wanting to learn chemistry.
+
+Ben: What’s your early signal on Duolingo for X? You mentioned math, there’s music. Did you start with the very best use case for the type of product you build? Or do you feel like, oh actually that was a local maxima. There may be even better products that are more well-suited.
+
+Luis: There are a lot of companies out there. I get the ads all the time on my Instagram or something, Twitter or whatever that says Duolingo for whatever.
+
+There’s a curious one, the Duolingo for anger. I don’t know if they mean that it teaches how to get angry or not, but anyway I get a lot of ads that say Duolingo for anger. My sense is that there are probably other things that are pretty good, but it’s hard to compete with language learning.
+
+I think math and music are going to be big. I don’t know if they’re going to be as big as language learning, but they’re going to be big. The reason I think it’s hard to compete with language learning is that not only are there a lot of people wanting to learn English in particular, but also language learning has a few things that are good.
+
+One is that it’s one of the few things that people want to learn both in school and outside of school. Most things, people just have to learn in school. Math is an example. Not many people want to learn math outside of school, but language learning, if you ask the average person walking on the street, would you want to get better at Spanish, most people are like, yeah, why not? I think that’s a big thing.
+
+Another big thing that happens—this is in contrast with music—music has one big problem, which is you need an instrument. And that’s a big deal. Unfortunately, an instrument is $200–$300. With language learning, you don’t need anything. It’s just that. There are a lot of things that I think work really well for language learning. I don’t know if it’s the best use case, but it’s a pretty good one.
+
+Ben: Thinking about the language learning business, you mentioned earlier English is the number one language that people want to learn. Most of your usage—please correct me if I’m wrong—is outside the US, people wanting to learn English, but most of your monetization happens in the US. I was wondering if you could just tell us a little bit about how that evolved and how you think about it.
+
+Luis: If you look at the numbers, about 45% of our active users are learning English. English alone accounts for 45% of our users, and that’s mostly outside of the US. In terms of users, about 20% of our active users are in the US and the other 80% are outside. In terms of revenue, about half comes from the US.
+
+The reason for that is because the US is a pretty large and wealthy country. But the other thing that’s important to understand is people in the US are very accustomed to paying for digital subscriptions.
+
+What we’re finding is that in certain countries, the US is ahead of most everybody. In certain countries people are accustomed to digital subscriptions. In others, people are not or they’re really against them. These are countries where even Spotify or Netflix are just not as penetrated as they would be in a place like the US. I think that’s a big thing. We just have a lot more propensity to pay in the US and wealthier countries.
+
+The other thing that happens with us is, we have a really good free version. In fact, if you look at our monthly active users, only about 9% pay. The other 91% do not pay us. It’s because our free version is so good.
+
+What we’re finding is that in poorer countries, even if you bring the price down a lot, people have this mentality that they won’t pay unless they have to. Even if it’s 50 cents, like super cheap, unless they have to, they won’t pay. Whereas in the US, people are a lot more willing to pay for convenience for things like, well you know what? I don’t want to watch ads, so whatever I’ll pay.
+
+We are not seeing that type of behavior in a country like Vietnam or Brazil or something like that. Some people pay in those countries, but it’s just much less than the US.
+
+Ben: And you do have an ad-supported tier, right?
+
+Luis: Yeah, it is the free tier. It has ads at the end of a lesson, but the ad load is pretty light. it’s basically you get one skippable ad at the end of a lesson. So 5 seconds of ad after about 3–4 minutes of thing. It’s pretty light.
+
+Ben: The other thing that I think is important as listeners understand this part of your business, when did your product launch and when did you charge the first dollar of revenue?
+
+Luis: We launched in 2012, but when we launched we made no money. We didn’t have ads and you couldn’t pay us. Simply, we made no money because there’s just no way for us to make money. We just didn’t put it there. That was true up until about 2017. We started thinking about monetizing in 2016.
+
+What happened was, we had just raised funding from, at the time it was called Google Capital, but it’s now called CapitalG. We had just raised funding from them and I don’t remember the valuation. It’s about half a billion dollars valuation, but with no revenue whatsoever. The partner from there, Laela Sturdy, flew to Pittsburgh where we were. She got us drunk and she said, you got to start making money, like tomorrow.
+
+David: Of course, as a founder, you clearly knew the secret that the only thing better than making a lot of money is making no money. Everything in between is not good.
+
+Luis: Yeah, exactly. No, that is the secret. So went to the office the next day, and it was pretty interesting because for the first several years, we made no money. We weren’t even really trying to make money, and everybody that we were hiring was very mission-driven. We were hiring all these people that loved the idea of giving free education.
+
+When I came to the office and I told everybody, hey, we have to figure out how to make money, people were pretty shocked. They were like, but why? I said, well kind of have to pay your salaries. They said, you’ve been paying our salaries this whole time.
+
+Ben: Has it been a problem so far?
+
+Luis: Yeah, why can’t you just continue doing whatever the hell it is you’ve been doing? I had to explain, you can’t raise funding forever.
+
+David: Here, we’re going to do a seminar. We’ll do a Duolingo session on late-stage capitalism.
+
+Luis: You know? It was crazy. It took about six months to convince the employees of the company that it was in fact not evil to make money.
+
+Eventually, people got convinced. I think the main way in which people got convinced is that everybody understood that if we made money, we could invest more in the mission. Everybody was like, oh, okay. So you mean we can still put most people to work on actually making a better product as opposed to making money? I said, sure. That’s what we’re going to do.
+
+Today’s day, it remains true. The fraction of people that are working on making money at the company is relatively small compared to the rest. It took about six months to convince people that we should do that.
+
+The other thing that was complex is, at the time we weren’t sure how to make money in a way that respected the fact that we wanted it still to be the case that most people could learn for free.
+
+At the time Spotify was growing, et cetera, but it was not super clear that this freemium model worked. This freemium model, which is you can use it for free, but you may have to see some ads. If you don’t want to see ads, you have to pay. It wasn’t clear that we could make that work.
+
+It turns out you can make it work. It’s great. It worked really well. And the fact that that worked was really good for us because it’s very mission-aligned. Basically, you can learn entirely for free. You can learn without ever having to pay us. But if you want to turn off the ads, you can pay us. That’s very mission-aligned for us. But we’re fortunate that that worked. It really was not clear back then.
+
+David: It is so funny. That’s just such a basic assumption now. But even 2017–2018, YouTube, you couldn’t pay them. You could only watch ads. Netflix, you could only pay them, you couldn’t watch ads.
+
+Ben: Actually, David, I think Google Contributor did exist.
+
+David: I don’t even know what that was.
+
+Ben: It was the predecessor to YouTube Premium and it worked across all their properties, where you could basically pay the amount that Google would make on you from all the ads that you would see across all [...]
+
+David: Wait, did it strip out AdWords? There’s no way.
+
+Ben: I think it might’ve been, except for AdWords. I don’t know. I should get my facts straight on this. I was a paying Google Contributor.
+
+David: Wow. I had no idea.
+
+Ben: And it says a lot that it was called Contributor.
+
+Luis: That’s funny. Well in any case, for us it was not super clear that this was going to work, but it worked.
+
+Ben: Was it strategic at all? Was there a network effect component? Is it good to not put any inhibitors on your growth rate because more users begets more users or something like that?
+
+Luis: I am a huge believer that the reason that we have been able to grow so much is because we didn’t monetize early on. Now I cannot recommend that to every single company. For some companies you probably should monetize early on.
+
+In our particular case, what happened was this. We launched. Because we weren’t making any money, we also couldn’t spend money on marketing. We couldn’t do performance marketing because performance marketing is this thing where you can pay Google $30 and then they send you a user. But to me that seemed really dumb to spend $30 to get a user when we were not going to make any money off of that user.
+
+David: You want to be making more than $30 from that user.
+
+Luis: Yes, or whatever it is. You want to just do more than that. We couldn’t spend money on marketing, we weren’t making any money. We had a bunch of engineers, so what were we going to work on?
+
+The only thing we decided to work on was teaching better and in increasing user retention. That’s it because that’s the only thing we could work on. We spent from 2012 to 2017 basically optimizing retention rate for users. And we optimized it a lot.
+
+For example, day one retention. That’s the retention of people when they show up. What fraction of them come back the second day or the next day. When we first launched, that number was 13%.
+
+Ben: As in you lose 87% of your users the day that they…
+
+Luis: Well, they may come back another day. Eighty-seven percent happened to not come back the day right after. It could be that they come back later, but that’s what we saw. We ran, who knows how many A/B tests over this period of time, but by 2017 that number was (I don’t know) probably about 50%.
+
+I may be misremembering exactly the numbers, but we were able to drive all of our retention numbers by a lot because that’s the only thing we could work on. Had we not done that, we probably would’ve spent all our time optimizing our ad pipeline and optimizing all kinds of weird stuff that ends up making you money but I don’t think it helps you grow that much. I think we were, in retrospect, this was a very smart move. At the time, I don’t think we were thinking how smart this was. We just did it.
+
+Ben: It gave you a durable asset.
+
+Luis: That’s what it did.
+
+Ben: The fact that you now have a product that ensures that you have fully maximized the potential for a user to stick around, it means the user base you’ve built and the machine by which you eventually do make money is far more durable.
+
+Luis: That’s right and I believe that. Now of course, I believe all of this, in retrospect. At the time, none of this, we were just like, I don’t know. Make a thing that people like.
+
+David: It was also work. You were raising money at a half a billion dollar valuation.
+
+Luis: This was when money was free in some sense. It’s just like, here, have more money. But it worked.
+
+David: Okay, so you joke that you weren’t doing any marketing. In some sense that’s true, in some sense it’s not. You have the green owl, you have had a great brand forever. How did a couple of PhDs from Carnegie Mellon (of all places) come up with a cuddly green owl? I don’t think of CMU as wonderful as an institution as it is as the top design and marketing place in the world.
+
+Luis: They happen to have a really good design program. But look, this evolved over time. We did know one thing. We did want a mascot, Early on we were like, look. A mascot somehow will help us. We didn’t know exactly how, but we did want a mascot.
+
+Eventually, we chose an owl because in western cultures (at least), it’s a symbol of knowledge. It ended up being green because my co-founder hates the color green. I thought it would be funny if it was green. That’s why it was green.
+
+Ben: And now your whole office, look behind you.
+
+Luis: Yeah. The first version of the owl was not very cuddly. I mean it was not great-looking, honestly. Over time it evolved. We hired some amazing illustrators. We hired this guy who still worked for us, Greg Hartman, who’s our head of art now. He just made an amazingly beautiful owl over time that evolved. That’s one thing. We just made a really good asset that looks good.
+
+Then the other thing that happened is it started getting a personality, but the personality was a little bit accidental. The first way in which it gets to the personality is, the owl was actually not in the app at all. At first, the only place where people saw it was the app icon, which is a very close-up version of the owl’s face. Then also when you get a notification, it has the app icon, so it looks like it comes from the owl.
+
+So the first place where the personality for the owl came up was basically what we said in the notifications. We started saying some weird stuff in the notifications. I think people started giving it a little bit of personality because of that.
+
+Then another thing happened with the notifications. At some point we decided, look, we can’t be super spammy, so we’re going to stop sending notifications after five days of inactivity. If you don’t use the app for five days, we’ll stop. Then it occurred to us, well we’re going to stop sending a notification. We may as well tell you.
+
+Ben: Get the credit for it.
+
+Luis: Yeah, so people know we’re good guys. This is what we thought. That last notification, the fifth day we wrote it, it’s just said, these notifications don’t seem to be working. We’re going to stop sending them for now. That’s what it said.
+
+Well, we didn’t know this, we didn’t expect this. It turns out this got people to come back a lot because they thought that Duolingo was giving up on them. It’s like your mother, like it’s guilt tripping you.
+
+Because of that, though, it started giving rise to all kinds of memes on the Internet about how the owl was obsessed with getting you to come back and he would kill you if you didn’t come back. But that was the community. We didn’t do that. After that we realized that we could push on those memes, so we started making fun of ourselves with those memes, and that has worked really well.
+
+At some point we got the idea of getting an owl suit, a suit that somebody could wear. At first, we thought it was going to be good for recruiting events, like going to try to hire people at universities and the owl suit would show up.
+
+It turned out you could start putting somebody in an owl suit to do weird stuff in TikTok videos, and that gets a lot of people to watch it. But that was a little bit accidentally discovered. In fact, the first person who started doing this was a very young woman, Zaria, who when she proposed it, I thought this was such a dumb idea. I was obviously completely wrong. It turned out this has given us a lot of prominence in the world.
+
+Ben: Have you ever tried to quantify? This is a core pillar of Duolingo business strategy at this point. Have you ever tried to quantify the business impact of having all this earned media?
+
+Luis: Yeah, we have. Our belief is that about 15% of our users come from that. On any given day, roughly 15% of our new users come from…
+
+David: The owl, for lack of a better word.
+
+Luis: Some sort of owl thing. The majority of them come from people telling their friends about it, but about 15% come from this weird stuff.
+
+Ben: Just to multiply some other numbers together that you’ve talked about, if it really is 15% and you have 100 million users, what’s the value of 15 million users? Well, if it’s actually at $30 a pop would be the paid cost to acquire them, that’s $450 million.
+
+Luis: Well, you’re only taking the active ones.
+
+David: $30 on Google to get a user, period.
+
+Luis: A user that may not stick around, so it’s more than that. This is probably when, I don’t know the exact number, but it’s hundreds of millions of dollars of earned media.
+
+David: This is the most valuable owl in history.
+
+Luis: I don’t know if that’s true, but it’s been really good for us.
+
+Ben: It’s fascinating. Okay, I’m going to keep coming back to my heuristic-type questions. A startup comes to you with the idea that they’re going to run a similar strategy. Any advice for when it could work or not? Or is this pure lightning in a bottle, I have no idea when it will work?
+
+Luis: Some stuff I think you can reuse. There are a few pillars in our strategy. One thing that we haven’t talked about that I think accounts for probably half the value of the company is our obsession with A/B testing.
+
+We have A/B-tested our way to where we are now and we have probably run, I’m going to make this up, probably about 2000 A/B tests per year of all kinds of things. We had just built a company around—our entire product organization that’s not just product managers, engineers, designers—shipping A/B tests as fast as possible. That has worked really well for us.
+
+I would say you should do that everywhere if you have a consumer product. I mean you shouldn’t be A/B testing stuff if you have a B2B, SaaS thing, whatever. Do something different. But for a consumer product that has a lot of users, you can really A/B test your way to improve almost any metric you can. That you should do.
+
+The other thing that I would give advice to is hiring really good people that you should continue doing. In terms of the specific strategy of having a freemium thing that you don’t monetize for a while, I’ll tell you one of the reasons why that may not work anymore. We have found ourselves, but we have seen it all over the place.
+
+We were fortunate that we put out an app in 2012. The app market was not yet set in stone. It’s pretty close to being set in stone these days. It’s not 100%, but if you look at what are the top 50 apps globally for the year this year versus last year, and you compare, they’re pretty similar. Maybe one or two changed, but they’re pretty similar. It’s similar to the year before and it’s similar to the year before. It’s just at this point it’s pretty hard to enter. I don’t think that the strategy that we employed in 2012 would work today because the app market is pretty set in stone. It just is.
+
+Ben: What about the strategy of something clever earning you hundreds of millions of dollars of free earned media?
+
+Luis: It’s great if you can do it. There’s, of course, a lot of cleverness in this that many employees at Duolingo did, but I think we were lucky in a few ways. I think the fact that we’re an education company gave us license to do some stuff that many other companies may not have been able to do because it’s hard to say that language learning is bad for you.
+
+That means that we can do risque stuff on TikTok. But if a company is trying to do—I don’t know—some FinTech company or something, I think it’s much easier to accuse them of stuff. I think that helped with us that just, come on, everybody. We’re the good guys. I think we were able to get away with a lot of stuff because it’s hard to say bad things about language learning.
+
+Ben: If I’m coming at you with, you could argue it’s a fair interest rate or you could argue it’s a predatory interest rate. If I have a mascot that’s sitting there with a knife saying, use our app more, it’s not going to go well.
+
+Luis: Exactly. I think we benefited a lot from the fact that ultimately we’re doing it for education, so people are okay to take some of this.
+
+Ben: Fascinating.
+
+Luis: By the way, in another place, when we talk to other companies, every company wants to talk to us, not because they learn from us, but because they’re like, oh you guys are fun. This is good. Nobody thinks of us as competitive. Well, that’s great for us because almost every time we talk to whoever fancy person at random companies, like my daughter loves you, I think we’ve benefited a lot from that.
+
+David: Which is crazy. How many other $10 billion companies could that be said for? If you’re a $10 billion company, almost you’d think de facto, you’re going to have people who are your mortal enemies.
+
+Luis: Again, because everybody’s like, ah, green owl.
+
+Ben: It’s an interesting comment on competitors. At this point, you probably don’t have a whole lot of meetings about legacy language learning companies and saying, how can we acquire users versus them? Who do you think about as competitors for your users?
+
+Luis: The way we see it is we compete for time. Our competitors are Instagram, TikTok, et cetera. That’s who we compete for time. By the way, we’re losing. We have much less time spent on our app than TikTok has, or Instagram, et cetera.
+
+When we look at our users and we see that our users maybe stop using Duolingo or something, we ask them, why’d you stop? The most common answer is, yeah, you know what? I’m spending more time on, pick-your-random-social-media-site. I’m spending more time on Instagram. That’s it. Our competitors are whatever takes your time.
+
+Ben: Well you planted a seed of something that we talked about for one minute in this podcast, but every person I talked to who’s ever interacted with Duolingo, former employees and other podcasts you’ve been on, is all about experimentation, A/B tests, being data-driven.
+
+There have been lots of inks spilled on this for anyone who wants to read excellent blog posts about the AI behind your push notifications and how all those systems work. One high level question for you. How do you as a leader balance a cultural tenet being data and experimentation-driven versus instinct-driven?
+
+Luis: We’re actually weirdly both. I’ll tell you where this comes from. We realized early on that pure experimentation can lead to really bad places. If you just don’t think about it at all, you’re just going to optimize some metric. That can lead you to really bad places.
+
+One of the best stories that I heard about, and we repeat this a lot at Duolingo, is something that we learned from the founder of Groupon who happens to be from Pittsburgh. We’re located in Pittsburgh, he happens to be from Pittsburgh.
+
+Ben: Andrew Mason?
+
+Luis: Yes.
+
+Ben: We’re huge Descript users.
+
+Luis: Yeah, he is a great guy. He told us this story, which I’m going to tell it and at this point it probably has changed a little bit because I probably remember now what is in the law of Duolingo as opposed to exactly what story he told us. But he told us a story about emails that Groupon sent per day.
+
+Group one, basically you got a deal, and the idea is at the beginning they could only send one email per day with one deal. He was strict on it. It’s like, only send one email per day because more than one email is spammy.
+
+At some point, some enterprising product manager shows up and says, what about if we send two? Andrew Mason says, no way. No, we’re only going to send one. Then this product manager gave this amazing argument against it. He said, we’re not trying to launch two, we just want to know, are you against knowledge? Of course nobody’s against knowledge. So he said, fine, fine, fine.
+
+So they tested two. Guess what happened when they tested two? Two is way better than one. They started sending two and they’re like, well if two is better, test three, turns out three is better than two, and four is better than three, et cetera. They A/B tested their way to, I don’t know what number, seven, eight or something until the channel stopped working because people marked it spam. Then it died. The channel died.
+
+This is the thing about A/B testing. You have to really do the common sense thing above the A/B test. What we do at Duolingo is we have this two step process. By the way, here we are against knowledge. There are certain things we just don’t want to know. And it’s because it is too tempting to do it.
+
+So the first step is before we do an A/B test, we have this process called product review, which I assume happens in many other companies. But in this case, every single change that goes to the app gets product review. Product review is basically a set of leaders in the company—that includes me, there are about five people—we look at every change and we have to agree for it to go out.
+
+We stop a lot of things before going out to prevent this type of stuff. Here we use intuition and just common sense. We’re like, no. Nobody wants to receive 32,000 notifications. That’s just dumb, even if the A/B test says so. I think that has helped us quite a bit.
+
+Ben: Do you have an example in which you’ve been anti-knowledge in the past? Something you decided you didn’t want to know?
+
+Luis: Oh yeah. Pretty recently somebody wanted to know what happens if you put an ad that takes over the whole screen when somebody opens the app. A product manager wanted to know that. We were like, yup, but we don’t, particularly with monetization. It’s so tempting.
+
+What happens with monetization is you run the experiment, and then it says something like, if you launch this experiment, it will make you $50 million a year. You look at it and you’re like, that’s nice.
+
+Then the finance team figures out that this happened. Somebody from the finance team looks at these experiments, and suddenly the CFO is in my conference room or something and he’s like, yo, $50 million a year, you got to launch that. We try not to know the answer to many of these monetization experiments.
+
+Ben: When you wear your CEO or your head of product hat, these things are obvious, and what’s underneath it is this implicit assumption that there is a future dollar value associated with treating the user with respect and having a feel good association with your product, that it’s basically like all of the potential future dollars we could earn are jeopardized by doing this. We’re pulling forward revenue if you do some—
+
+Luis: But it’s very hard to quantify.
+
+Ben: Complicated expected value calculation on it.
+
+Luis: Yeah.
+
+Ben: Have you ever tried to quantify that brand value or future value to…?
+
+Luis: No, we haven’t. What we just have is a group of, I’m saying five, but it’s on the order of five leaders that have a very good gut feeling about, no, this is too much, or no, this is not good. I think their gut feeling is quite good, I would say.
+
+We run into this problem sometimes. We do run an experiment and we have to make a trade-off. For example, we’re running some experiment, because we know if we do this, we lose 10,000 users but make this much more money or whatever. We’ve never known how to make these trade-offs.
+
+Generally what we do is we go for users, as in if something decreases the number of active users that we have, unless it’s going to make us $500 million, we’re really not going to launch it.
+
+David: It’s interesting. I’m laughing, Ben joked about using that line on me. This applies to any business. Like for us, if you told Ben and me, okay, go objective function, maximize the value of Acquired, we could come up in 10 minutes with a whole list of things that we know exactly what we would do and it would make an obscene amount of money.
+
+Ben: Welcome to this daily episode of Acquired.
+
+Luis: Yes, it would, but for the next few months and not for the next few years.
+
+David: I’m not even sure that that might be the value maximizing thing to do, but we would never do it because it would just kill our hearts.
+
+Luis: That also matters a lot, yeah. It’s funny though. You can boil a frog quite well and product managers at Duolingo have gotten really good at boiling my heart slowly. Things that I think I was not okay with five years ago, I think I’m a lot more okay with, because they just push the envelope. Every slippery slope, they get you.
+
+Ben: But do you end up feeling like, okay, you know what? They had a point, I no longer…
+
+Luis: Yeah, sometimes I’ve definitely been wrong about stuff. That’s for sure. But I still claim in the long-term, it really is better to do what’s best for the user. I don’t mean what the user’s asking for, because the users ask for weird shit. I mean what you think is better for the user. I think that in the long-term, I’m pretty sure that’s value maximizing.
+
+Ben: I think this is a pretty specific thing to founder-led companies, which is we will do what I personally feel in my gut is best for the users, and like that just carrying the day every time. That does not happen in a professional management setting.
+
+Luis: It may not. What I’m happy about is that I would say five years ago it was solely my gut. I think at this point there’s a group of leaders—Gem, our head of product; Sims, our chief design officer—whose gut somehow is identical to mine at this point. Maybe 1% different. But I feel pretty good about the fact that if I were hit by a bus, these people’s guts would be pretty good.
+
+Ben: We’ve talked a little bit about this idea that you have a bottom of funnel governor on what goes out, and we’ve talked about that there’s a mid-funnel thing that’s the A/B tests. And I think you’ve said in the past—
+
+Luis: The latest number is 50/50.
+
+Ben: 50/50, okay.
+
+Luis: It is eerily close to 50/50 as in it really is 50/50. It’s not 48/52. I can’t explain. It’s one of those where I’m just like, really? 50/50? Come on people, it has to be something different. But now it’s pretty close to 50/50.
+
+Ben: So that gets to this question, why is it that over time your collective gut has gotten better about what experiments will succeed?
+
+Luis: The way it has gotten better is because we get the results of the experiments. Our gut is a learning machine. We’re learning. We’re like, yeah, that type of stuff.
+
+At this point we have years of experience. The people that have been doing product review have been doing it for years now. We have years of experience knowing this type of change does that type of thing. And we’re pretty good at it. We’re not 100%, but we’re pretty good at it. Not only do you know which direction things are going to go, but you also know which ones have more impact.
+
+For example, we know that the session end screen—that is the screen that you get after doing a lesson—matters a lot in terms of getting you to come back the next day. But we know that other screens, like a screen in the middle of a lesson, almost matters not at all in terms of getting you to come back the next day. We’ve just learned what screens matter and what parts of the app matter for certain metrics. We just have a really good gut on that.
+
+Ben: Do you have to treat big experiments differently than little experiments where your gut may not have as much training data in it?
+
+Luis: Yeah, and there are some experiments that are a lot more complicated than others. Some stuff takes us a long time. Well first of all, now we also have pretty sophisticated data science that tells us for how long to run certain experiments.
+
+We also have a pretty good gut feeling about this particular experiment should run for a pretty long time. Most experiments we run, by the way, we run them for two weeks. We have enough data in two weeks to know where to go. But there are some experiments that we run for about six months because we know that you’re going to see a very big difference at the beginning rather than later because people get used to the thing.
+
+Ben: There’s a very heavy statistics component to the core competency of your company. Where does that come from?
+
+Luis: The first many employees were basically computer nerds from Carnegie Mellon. I think that’s where that came from. We understood things like statistical significance coming in.
+
+Ben: Makes sense. Does it feel related to your crowdsourcing research, or does it feel like you brought someone on who was a super key hire and then made that a pillar of the company?
+
+Luis: I don’t know if it’s exactly my crowdsourcing research, but it’s generally the first few people that worked at the company. We had a pretty good grasp of statistics.
+
+What I will tell you, though, is that it’s funny. This is true for most of the things, and I don’t think this is unique to Duolingo. For most things, we had a pretty good grasp of statistics. That’s good. But the level of sophistication that we do analysis today compared to that is insane. We now have people with PhDs in statistics who actually, honest to God, know what they’re doing, as opposed to, we had “a pretty good grasp” of statistics.
+
+Early on, when we were figuring out how to teach things, we had an idea of how to teach things. By now, we’ve hired dozens of people with PhDs in second language acquisition and the level of sophistication that they have in terms of learning outcomes and stuff like that compared to what we were doing at the beginning is night and day. So we had some expertise for a lot of things, but today we’ve become a lot more sophisticated about most things, including the statistical analysis of our experiments.
+
+Knowing what I know today, I’m pretty sure that experiments from eight years ago, many of them we analyze wrong. What do we know? We’re like, yeah, we look at averages, we look at statistical significance. We were not looking at the stuff that people look at today. In fact, I don’t even understand what they’re doing. There are very smart people who come and tell me to do this. I’m like, sounds good.
+
+David: So all this to me, and I bet to many listeners sounds like the perfect tee up for AI. You are a perfectly-suited company to AI, maybe just at the highest level. What’s going on? What’s changing? How is it impacting everything we just talked about?
+
+Luis: You are right. We are very well-suited for AI. We’ve been the whole time. AI of course means something a little different today than it did 10 years ago, but AI has been around for a while.
+
+David: Ten years ago, AI meant everything we were just talking about.
+
+Luis: Yes, statistics. Since we launched, we were very clear that what we wanted to do is we wanted to have a computer teach you a language, not another human teach you a language. Another human can teach you a language very well. That works, no problem.
+
+But having another human teach you a language is expensive. We wanted to have a computer teach you a language. Because of that, we’re very well-suited. We need to make a computer that is as good as a human teacher. We’ve been working on doing that as much as we can.
+
+Over the last couple of years, what has changed is these large language models. Again, I emphasize that the second L is language. We are a language learning company. Large language models are particularly good with language. And because of that, we’ve been using them a lot.
+
+I’ll tell you the two big things where we’re seeing large language models be used. One is it used to be the case that a lot of the data that we created for our courses was half-handmade. What that I meant, we made tools, but usually a lot of the stuff was humans doing things, then maybe the computers would fix it up or whatever, but it’s half-handmade. We’ve gotten to the point where most, it’s not 100%, but most of the stuff that we’re creating data for language learning is made by an AI.
+
+There are a couple of good things about that. First of all, it saves us money. It’s a lot cheaper than doing the humans, but the most interesting thing that has happened is we can now create data so much faster. It’s not that we can go fast. Okay, that’s nice. It’s that that allows you to do things that you weren’t going to do before.
+
+For example, about five years ago, somebody pitched a feature on Duolingo, which was a type of lesson where it’s like a mini (call it) two-minute podcast where you basically learn how to listen in the language that you’re learning. It looks like a little animated thing. We call it DuoRadio now. It was a thing where you could watch two minutes of something, listen to it, and you’re learning how to listen.
+
+I was told that creating the data was going to take five years. As soon as I was told that, I was like, no. This feature red light here. Do not proceed. I do not want anybody working on five years of things, something that I don’t even know if it’s going to work. A very similar feature. Now we can create the data for this in a couple of months. Now I’m like, yeah, sure, why not?
+
+Ben: What is it about today that causes that incredible time?
+
+Luis: Well all of that data is done by a computer as opposed to having it done by hand. For it to make a difference in the Duolingo language learning app, we needed to make hours of content, like many, many hours of content.
+
+David: Specifically in this case, you’re talking about animated graphics.
+
+Luis: Not just animated graphics. The audio of it. Like actually what you’re going to say, you have to make it interesting. You had to make something that people had to listen to, that was interesting, et cetera. You had to do all that.
+
+It was super slow to make hours of content and it was going to take five years to make content. Not only that, you had to make it in all the languages that we teach. We teach 40 languages, and we had to make hours of content. That was going to take an inordinate amount of time.
+
+But now, with an LLM you can do it pretty fast. What we do is we do it, then we spot check it. And if we don’t like it, do it again. We’re very happy with that, that you can basically do things that before were just, they were not impossible to do but practically impossible to, like why would you do that? That’s an important place where we use AI.
+
+The other big one is just conversational practice. We’re working on this feature that some of our users already have. We haven’t fully really launched it to everybody, but it is basically that you can have a conversation with one of the Duolingo animated characters, and it looks like you’re having a video call with an animated character. It’s a really good way to practice a language, an actual conversation. That’s something we just couldn’t do before.
+
+Ben: I’ve heard Mark Zuckerberg say about Llama use cases a few times, or maybe it’s about Meta AI use cases, that it’s for people to practice conversations that they don’t want to have yet in real life, but they need to feel like they’re having the conversation and get some some authentic responses.
+
+Luis: In the case of language learning, what’s amazing about it is, look, you want to learn a language, you have to be able to practice conversation. You just have to do that. And people don’t want to do it.
+
+In fact, we’ve done insane amounts of user studies where people may tell you they want to practice a language with another person, but when it comes down to it, they don’t want to do it. There’s some small fraction of extreme extroverts who like it. But the majority of people would just rather not talk to another person in a language that they’re not very good at.
+
+But the beautiful thing here is that you can just talk to an animated character and you really don’t care because you don’t think they’re judging you, even though technically they’re really judging you because that’s mainly what the thing is doing. But you just don’t think about that.
+
+David: Well that’s just absolutely incredible, and AI and data also opens up the other direction for you, too. You have an incredible amount of data within Duolingo that can be used and fed back into LLMs you own (I would assume) and others that would just be incredibly, incredibly valuable. Does that open up a whole nother new business dimension for you all?
+
+Luis: Maybe. At the moment that’s not something we’re doing. We’re using the data for ourselves. More than one billion exercises are solved by our users every single day. We have the data and basically we’re watching, I don’t know, tens of millions of people learn a language every single day. We’re using it to teach better.
+
+Today, we know that Duolingo’s about as good as a classroom in terms of learning a language, but not yet as good as a good human tutor, like a one-on-one good human tutor. The problem is those are like $50 an hour, like a good one. We’re not as good as that. It’s hard to predict the future, but I’m assuming that if you give us three-ish years, we’ll be about as good as a human tutor.
+
+Ben: And it requires making an hour. If you’re doing three minutes at a time, that’s a structural advantage.
+
+Luis: Yeah, much better.
+
+Ben: You’re just able to address people that will never ever make the hour.
+
+Luis: And you can’t have a paid human tutor that is there for three minutes, and then another three minutes later, and then this.
+
+Ben: They’d have to be sitting in the stall next to you to…
+
+Luis: Just waiting around.
+
+David: Well it’s cool. It’s funny you say three years. I wonder if it’s fast because you’ve got two tracks of progress happening that are accelerating. You’ve got the foundation models of LLMs themselves, which are getting better. Then you’ve got your data, which you’re getting, what did you say, 10 million solved exercises a day?
+
+Luis: No, a billion per day.
+
+David: Sorry, A billion per day. The quality of both of those are accelerating.
+
+Luis: I’m really bad at predicting the future, how long things are going to take.
+
+Ben: Well humans are, and you’re a human, so…
+
+Luis: Yeah, it’s very hard. It’s a matter of a small number of years to get as good as a human tutor.
+
+Ben: You’re in this education space. Are there any education companies that you look up to as shiny examples of people who’ve built great companies? Or do you mostly look outside your sector for inspiration?
+
+Luis: It’s mostly outside. Education has been hard because you want to start an education company. You run into a lot of problems. First of all, for some reason most education companies have decided to monetize by charging the school systems, which is fine, but we just can’t look up to those companies because we’re so different.
+
+We’re a consumer company. We’ve had in the past looked at those, but there’s very little to learn from somebody who has spent a lot of time making a salesforce for K through 12 schools. I’m glad they’re doing it. Good for them. It may work, I don’t know. But it’s just not much for us to learn.
+
+Ultimately for us, because we are a direct-to-consumer, we learn more from games companies like Spotify, Netflix, any of the Meta apps. That’s where we learn the most, but it’s because we are direct-to-consumer. There are just not very many direct-to-consumer–scaled education companies.
+
+David: Well there are, but they’re all nonprofits with brands like CMU or Harvard or Stanford or you know.
+
+Luis: Ah yes. But yes, they are there but they’re not apps and they’re not touching a hundred million people. They’re touching a few thousand people. But yes.
+
+Ben: It’s interesting to think about. Every institution starts as this niche thing using the latest and greatest technology available. Then over time you build a durable brand and you try not to jeopardize that brand in any way. Those words that I just said could apply to Duolingo and you’re just 75 years earlier on your journey than any of these other institutions. Is the goal to become an accreditation-bearing institution where people feel like when you’ve graduated from it, it means something?
+
+Luis: I would really like that. We are doing that for language. We’re trying to do that for language. We have a standardized English test. We’re doing it for English mainly because that’s where it matters, of this test called the Duolingo English test.
+
+The idea is that this is a test that you can go and take it online, it gives you a score, and it tells you how good your English is. That is actually valuable. For example, it is now accepted by most universities in the US. If you’re a foreign student that wants to come to the US, you have to take an English test. Ninety-eight out of the top 100 US universities, according to US news and World report, accept our test.
+
+We haven’t quite connected the test and the app, but we want to. For some languages you it’s, that’s already there. We’re giving you an estimated test score. If you just use the app, you’ll be like, oh, my test score is this much. Then you can go and certify the score.
+
+What I would love to do is to be able to own the score for languages. Right now, if you ask somebody how much French you know, the answer is usually something to the effect of I took four years of high school French or intermediate. But that doesn’t really tell you what.
+
+We would love to get to the point where when you ask somebody how much French they know, they’ll say, oh, I’m a Duolingo 65. We’re not there yet. Right now, people will tell you they’re using Duolingo and they may tell you they’re Duolingo streak, but that’s something that we want to get to. And I think that’ll be really valuable. You’re right. Maybe in 75 years we’ll just have really stodgy stone buildings and a $30 billion endowment.
+
+David: Well it’s funny you joke, I mean what would the market cap of Stanford be if it were a publicly-traded corporation? It would be quite large.
+
+Luis: It would, and we have this board member, Bing Gordon, who’s amazing. He’ll happily tell you. He’ll say the market cap of a university is twice its endowment.
+
+David: Oh wow. That feels like a low multiple to me.
+
+Luis:, I don’t know where he pulled that from, but this is what he’ll tell you. I don’t know where he pulled that from, but he’ll tell you. Stanford’s probably, I don’t know what their endowment is, $30 billion. Something like that.
+
+David: Somewhere to $50 billion, I would guess.
+
+Luis: Okay, it’s an $80 billion company.
+
+Ben: This is such an interesting thought experiment because the mission of education is so unbelievably important, but it has historically, at least the last 20–30 years been so hard to invest in education technology companies because they so rarely are using modern business models.
+
+The technology that all the other consumer companies are using, the distribution methods that all the other consumer companies are using, they’re instead trying to snap to how do I sell into the education supply chain? You just haven’t. You might be the one example of this education technology company that said, I am not playing in that existing system. That is how you invent something new.
+
+Luis: It varies on the day, but we’re certainly the most valuable ed-tech company. We may be the most valuable education company. Some days Pearson is more valuable than us. Some days we’re more valuable than them. But what’s interesting is we’re doing it with just one app. If you look at something like Pearson, they sell a gazillion books and stuff like that. We feel pretty good about that, that we really are actually able to teach better. We feel pretty good about that.
+
+Ben: All right. I want to close with a question on headwinds and tailwinds. What’s the most insane tailwind that just makes things easy for you running Duolingo? Then on the other side of it, what is a headwind that you think you are just always going to have to deal with? It’s a thorn in your side, but that’s all right.
+
+Luis: AI is certainly a big tailwind for us right now. I think there is a growing proportion of people who want to do useful things online, and I think we get a tailwind from that. I think if you use tooling for 30 minutes, you don’t feel the same as if you use Instagram for 30 minutes where you’re like, my God, I just lost 30 minutes of my life. I do think that’s a real tailwind for us.
+
+In terms of headwinds, this is more for me as a person. Employee problems are tough. We hire the top of the talent pool. I’ll use the word entitlement is there. That’s tough for me. I grew up in a country where literally for 2–3 hours a day there was no electricity. There are some people here who are like, why do we only have two flavors of coconut water? That’s always hard.
+
+David: It’s funny to connect that with something you were saying earlier. Part of why that exists is the X, Y, Z elite educational institutions these days and their brands and their brand capture and whatnot. But if there were just a Duolingo score of how good a product manager you are, that would level the playing field a lot better.
+
+Luis: Exactly. We could get these people that weren’t fed with a silver spoon as much.
+
+Ben: To go back to your comment of you grew up in an area where there were multiple hours of the day where you didn’t have electricity, and I think you went to one of the rare private English speaking schools to have the opportunity to learn English, how much of that formative experience for you contributed to you founding Duolingo?
+
+Luis: It’s a lot. First of all, in a place like Guatemala, language learning is life-changing. That was a big deal. But I think the other thing is I was fortunate. I received a rich person’s education. Even though I didn’t grow up rich, I was fortunate that my mother spent basically all her money on sending me to this fancy school.
+
+I went to school with very rich kids. It’s not like we were poor, we were not. We were middle class in Guatemala, which probably for US standards is poor. But in Guatemala we were middle class. I really saw the difference because in the neighborhood where I lived, the kids didn’t go to the school that I went to, and I could see how much more I was learning. It was pretty clear that I was learning, I don’t know, twice as much as they were. That was a big thing.
+
+When starting Duolingo, we wanted to do something that would give access to education to everybody. It was a big thing. Me growing up in Guatemala had a lot to do with starting Duolingo.
+
+Ben: Fascinating. Well, that’s a great place to leave it. Luis, thank you so much for joining us.
+
+Luis: Ben, David, thank you. Great questions.
+
+Ben: And listeners, we’ll see you next time.
+
+David: We’ll see you next time.
