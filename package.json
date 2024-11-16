@@ -53,6 +53,7 @@
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.2.0",
     "file-saver": "^2.0.5",
+    "gpt-tokenizer": "^2.6.2",
     "html2canvas": "^1.4.1",
     "input-otp": "^1.2.4",
     "jspdf": "^2.5.2",

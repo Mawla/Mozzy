@@ -224,53 +224,58 @@ export async function suggestTitle(transcript: string) {
   return parsedResponse.title;
 }
 
-export async function refinePodcastTranscript(prompt: string): Promise<string> {
-  const refinedTranscriptResponse = await anthropicHelper.getCompletion(
-    prompt,
+export async function refinePodcastTranscript(
+  transcript: string
+): Promise<string> {
+  const refinePrompt = generateImprovedTranscriptPrompt(transcript);
+  const response = await anthropicHelper.getCompletion(
+    refinePrompt,
     DEFAULT_COMPLETION_LENGTH
   );
-  return extractRefinedContent(refinedTranscriptResponse);
-}
 
-/**
- * Extracts refined content from API response with enhanced error handling
- */
-function extractRefinedContent(response: string): string {
+  // First try to parse as JSON
   try {
-    // First attempt: Try parsing the sanitized JSON
     const sanitizedResponse = sanitizeJsonString(response);
     const parsedResponse = JSON.parse(sanitizedResponse);
 
-    if (typeof parsedResponse === "object" && parsedResponse?.refinedContent) {
-      return parsedResponse.refinedContent;
+    // Check for different possible response fields
+    if (parsedResponse.improvedTranscript) {
+      return unescapeJsonString(parsedResponse.improvedTranscript);
+    }
+    if (parsedResponse.refinedContent) {
+      return unescapeJsonString(parsedResponse.refinedContent);
+    }
+    if (parsedResponse.transcript) {
+      return unescapeJsonString(parsedResponse.transcript);
     }
 
-    // If the first attempt fails, try the fallback regex approach
-    throw new Error("Invalid response structure");
+    throw new Error("No valid transcript field found in response");
   } catch (parseError) {
-    console.error("Initial parsing failed:", parseError);
+    console.error("JSON parsing failed:", parseError);
 
-    try {
-      // Second attempt: Try regex-based extraction with improved pattern
-      const refinedContent = extractJsonFieldFromString(
-        response,
-        "refinedContent"
-      );
-      if (refinedContent) {
-        return refinedContent;
-      }
+    // Try regex extraction for different possible field names
+    const extractedContent =
+      extractJsonFieldFromString(response, "improvedTranscript") ||
+      extractJsonFieldFromString(response, "refinedContent") ||
+      extractJsonFieldFromString(response, "transcript");
 
-      // If all attempts fail, throw a detailed error
-      throw new Error("Could not extract refined content using any method");
-    } catch (extractionError) {
-      console.error("Extraction attempts failed:", extractionError);
-      console.error("Raw response excerpt:", response.slice(0, 200) + "...");
-
-      throw new Error(
-        `Failed to extract refined content: ${
-          (extractionError as Error).message
-        }`
-      );
+    if (extractedContent) {
+      return unescapeJsonString(extractedContent);
     }
+
+    // If response looks like clean text, return it
+    if (
+      response.length > 0 &&
+      !response.includes("```") &&
+      !response.includes("```json")
+    ) {
+      return response.trim();
+    }
+
+    console.error(
+      "Failed to extract content using all methods. Raw response excerpt:",
+      response.slice(0, 200) + "..."
+    );
+    throw new Error("Failed to parse refined transcript");
   }
 }

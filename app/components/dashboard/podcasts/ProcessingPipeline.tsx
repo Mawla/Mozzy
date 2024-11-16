@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Loader2, RefreshCw } from "lucide-react";
+import { TiptapPreview } from "./TiptapPreview";
+import { ChunkVisualizer } from "./ChunkVisualizer";
 
 interface ProcessingStep {
   name: string;
@@ -46,18 +48,31 @@ export const ProcessingPipeline = ({
   const renderStepData = (step: ProcessingStep) => {
     if (!step.data) return null;
 
+    // If the data is a string, render it with Tiptap
+    if (typeof step.data === "string") {
+      return <TiptapPreview content={step.data} />;
+    }
+
+    // If the data is an array, render each item with Tiptap if it's a string
     if (Array.isArray(step.data)) {
       return (
-        <div className="space-y-2">
+        <div className="space-y-4">
           {step.data.map((item, index) => (
             <div key={index} className="p-2 bg-gray-50 rounded">
-              {JSON.stringify(item, null, 2)}
+              {typeof item === "string" ? (
+                <TiptapPreview content={item} />
+              ) : (
+                <pre className="text-sm whitespace-pre-wrap">
+                  {JSON.stringify(item, null, 2)}
+                </pre>
+              )}
             </div>
           ))}
         </div>
       );
     }
 
+    // If the data is an object, render each value with Tiptap if it's a string
     if (typeof step.data === "object") {
       return (
         <div className="space-y-4">
@@ -65,9 +80,13 @@ export const ProcessingPipeline = ({
             <div key={key}>
               <h4 className="text-sm font-medium text-gray-500 mb-1">{key}</h4>
               <div className="p-2 bg-gray-50 rounded">
-                <pre className="text-sm whitespace-pre-wrap">
-                  {JSON.stringify(value, null, 2)}
-                </pre>
+                {typeof value === "string" ? (
+                  <TiptapPreview content={value} />
+                ) : (
+                  <pre className="text-sm whitespace-pre-wrap">
+                    {JSON.stringify(value, null, 2)}
+                  </pre>
+                )}
               </div>
             </div>
           ))}
@@ -113,6 +132,14 @@ export const ProcessingPipeline = ({
         </div>
       </CardHeader>
       <CardContent>
+        {steps[0]?.status === "processing" && steps[0]?.data?.chunks && (
+          <div className="mb-6">
+            <ChunkVisualizer
+              chunks={steps[0].data.chunks}
+              networkLogs={steps[0].data.networkLogs}
+            />
+          </div>
+        )}
         <Tabs
           value={selectedStep}
           onValueChange={setSelectedStep}

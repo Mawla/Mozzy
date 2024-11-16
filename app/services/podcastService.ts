@@ -1,3 +1,10 @@
+import { chunkText, mergeChunks } from "@/app/utils/textChunking";
+import {
+  PodcastAnalysis,
+  PodcastEntities,
+  TimelineEvent,
+} from "@/app/types/podcast/processing";
+
 interface ProcessedPodcast {
   id: string;
   summary: string;
@@ -17,6 +24,63 @@ interface ProcessedPodcast {
 }
 
 export const podcastService = {
+  // Processing helpers
+  async processInChunks<T>(
+    text: string,
+    processor: (chunk: string) => Promise<T>,
+    merger: (results: T[]) => T
+  ): Promise<T> {
+    const chunks = chunkText(text);
+    const processedChunks = await Promise.all(chunks.map(processor));
+    return merger(processedChunks);
+  },
+
+  mergeAnalyses(analyses: PodcastAnalysis[]): PodcastAnalysis {
+    return {
+      title: analyses[0].title,
+      summary: analyses[0].summary,
+      quickFacts: analyses[0].quickFacts,
+      keyPoints: analyses.flatMap((a) => a.keyPoints),
+      themes: this.mergeThemes(analyses.flatMap((a) => a.themes)),
+      sections: analyses.flatMap((a) => a.sections),
+    };
+  },
+
+  mergeThemes(themes: any[]): any[] {
+    const themeMap = new Map();
+    themes.forEach((theme) => {
+      if (!themeMap.has(theme.name)) {
+        themeMap.set(theme.name, theme);
+      } else {
+        const existing = themeMap.get(theme.name);
+        existing.relatedConcepts = Array.from(
+          new Set([...existing.relatedConcepts, ...theme.relatedConcepts])
+        );
+      }
+    });
+    return Array.from(themeMap.values());
+  },
+
+  mergeEntities(entities: PodcastEntities[]): PodcastEntities {
+    return {
+      people: Array.from(new Set(entities.flatMap((e) => e.people))),
+      organizations: Array.from(
+        new Set(entities.flatMap((e) => e.organizations))
+      ),
+      locations: Array.from(new Set(entities.flatMap((e) => e.locations))),
+      events: Array.from(new Set(entities.flatMap((e) => e.events))),
+    };
+  },
+
+  mergeTimelines(timelines: TimelineEvent[][]): TimelineEvent[] {
+    return timelines.flat().sort((a, b) => {
+      const timeA = a.time.toLowerCase();
+      const timeB = b.time.toLowerCase();
+      return timeA.localeCompare(timeB);
+    });
+  },
+
+  // Storage methods
   async processPodcast(data: {
     type: "url" | "search" | "transcript";
     content: string;
@@ -36,7 +100,6 @@ export const podcastService = {
     return response.json();
   },
 
-  // Add methods for storing and retrieving podcasts from local storage
   savePodcast(podcast: ProcessedPodcast): void {
     const podcasts = this.getAllPodcasts();
     podcasts.push(podcast);

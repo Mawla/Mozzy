@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
+import { TokenCounter } from "./TokenCounter";
 
 interface PodcastInputProps {
   onSubmit: (data: {
@@ -34,16 +35,21 @@ export const PodcastInput = ({ onSubmit, isProcessing }: PodcastInputProps) => {
           </TabsList>
 
           <TabsContent value="transcript" className="space-y-4">
-            <Textarea
-              placeholder="Paste podcast transcript"
-              className="min-h-[128px]"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-            />
+            <div className="space-y-2">
+              <div className="flex justify-end">
+                <TokenCounter text={content} />
+              </div>
+              <Textarea
+                placeholder="Paste podcast transcript"
+                className="min-h-[128px]"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+              />
+            </div>
             <Button
               className="w-full"
               onClick={() => handleSubmit("transcript")}
-              disabled={isProcessing}
+              disabled={isProcessing || !content.trim()}
             >
               {isProcessing ? "Processing..." : "Process Transcript"}
             </Button>

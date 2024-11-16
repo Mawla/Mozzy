@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { refinePodcastTranscript } from "@/app/actions/anthropicActions";
+import { processTranscript } from "@/app/actions/podcastActions";
 
 export async function POST(request: Request) {
   try {
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const result = await refinePodcastTranscript(content);
+    const result = await processTranscript(content);
 
     return NextResponse.json({ result });
   } catch (error) {
