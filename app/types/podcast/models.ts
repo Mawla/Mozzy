@@ -36,7 +36,7 @@ export interface PodcastAnalysis {
     description: string;
     relatedConcepts: string[];
   }>;
-  // ... other analysis fields as defined in the prompt
+  sections: Section[];
 }
 
 export interface ContentSection {
@@ -163,4 +163,13 @@ export interface PodcastProcessingState {
   handlePodcastSubmit: (data: PodcastInput) => Promise<void>;
   handleRetryStep: (stepName: string) => Promise<void>;
   reset: () => void;
+}
+
+export interface Section {
+  title: string;
+  content: string;
+  subsections?: {
+    title: string;
+    content: string;
+  }[];
 }

@@ -6,21 +6,63 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Loader2, RefreshCw } from "lucide-react";
+import { Loader2, RefreshCw, AlertCircle, CheckCircle2 } from "lucide-react";
 import { TiptapPreview } from "./TiptapPreview";
 import { ChunkVisualizer } from "./ChunkVisualizer";
+import { NetworkLogger } from "./NetworkLogger";
+import {
+  ProcessingStep,
+  TranscriptStepData,
+  AnalysisStepData,
+  EntityStepData,
+  TimelineEvent,
+  NetworkLog,
+  QuickFact,
+  KeyPoint,
+  Theme,
+  ProcessingChunk,
+  StepData as BaseStepData,
+} from "@/app/types/podcast/processing";
+import { usePodcastProcessingStore } from "@/app/store/podcastProcessingStore";
 
-interface ProcessingStep {
-  name: string;
-  status: "idle" | "processing" | "completed" | "error";
-  data: any;
-  dependsOn?: string[];
+interface StepData extends Omit<BaseStepData, "chunks"> {
+  chunks?: ProcessingChunk[];
 }
 
 interface ProcessingPipelineProps {
-  steps: ProcessingStep[];
-  onRetryStep: (stepName: string) => void;
+  steps: Array<{
+    id: string;
+    name: string;
+    status: "idle" | "processing" | "completed" | "error";
+    error?: string;
+  }>;
+  onRetryStep: (stepId: string) => void;
   isProcessing: boolean;
+}
+
+function isTranscriptData(
+  data: StepData
+): data is StepData & Pick<TranscriptStepData, "refinedContent"> {
+  return "refinedContent" in data;
+}
+
+function isAnalysisData(data: StepData): data is AnalysisStepData {
+  return "title" in data || "summary" in data || "quickFacts" in data;
+}
+
+function isEntityData(data: StepData): data is EntityStepData {
+  return "people" in data || "organizations" in data;
+}
+
+function isTimelineData(
+  data: StepData
+): data is StepData & { timeline: TimelineEvent[] } {
+  return (
+    "timeline" in data &&
+    Array.isArray(data.timeline) &&
+    data.timeline.length > 0 &&
+    "importance" in data.timeline[0]
+  );
 }
 
 export const ProcessingPipeline = ({
@@ -28,155 +70,112 @@ export const ProcessingPipeline = ({
   onRetryStep,
   isProcessing,
 }: ProcessingPipelineProps) => {
-  const [selectedStep, setSelectedStep] = useState<string>(
-    steps[0]?.name || ""
-  );
+  const { chunks, networkLogs, processedTranscript } =
+    usePodcastProcessingStore();
+  const [activeTab, setActiveTab] = useState("progress");
 
-  const getStatusColor = (status: ProcessingStep["status"]) => {
+  const getStepBadgeVariant = (
+    status: "idle" | "processing" | "completed" | "error"
+  ): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
-      case "idle":
-        return "bg-gray-200 text-gray-700";
-      case "processing":
-        return "bg-blue-200 text-blue-700";
       case "completed":
-        return "bg-green-200 text-green-700";
+        return "default";
       case "error":
-        return "bg-red-200 text-red-700";
+        return "destructive";
+      case "processing":
+        return "secondary";
+      default:
+        return "outline";
     }
-  };
-
-  const renderStepData = (step: ProcessingStep) => {
-    if (!step.data) return null;
-
-    // If the data is a string, render it with Tiptap
-    if (typeof step.data === "string") {
-      return <TiptapPreview content={step.data} />;
-    }
-
-    // If the data is an array, render each item with Tiptap if it's a string
-    if (Array.isArray(step.data)) {
-      return (
-        <div className="space-y-4">
-          {step.data.map((item, index) => (
-            <div key={index} className="p-2 bg-gray-50 rounded">
-              {typeof item === "string" ? (
-                <TiptapPreview content={item} />
-              ) : (
-                <pre className="text-sm whitespace-pre-wrap">
-                  {JSON.stringify(item, null, 2)}
-                </pre>
-              )}
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    // If the data is an object, render each value with Tiptap if it's a string
-    if (typeof step.data === "object") {
-      return (
-        <div className="space-y-4">
-          {Object.entries(step.data).map(([key, value]) => (
-            <div key={key}>
-              <h4 className="text-sm font-medium text-gray-500 mb-1">{key}</h4>
-              <div className="p-2 bg-gray-50 rounded">
-                {typeof value === "string" ? (
-                  <TiptapPreview content={value} />
-                ) : (
-                  <pre className="text-sm whitespace-pre-wrap">
-                    {JSON.stringify(value, null, 2)}
-                  </pre>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    return (
-      <pre className="text-sm whitespace-pre-wrap bg-gray-50 p-2 rounded">
-        {JSON.stringify(step.data, null, 2)}
-      </pre>
-    );
   };
 
   return (
-    <Card className="mt-8">
+    <Card className="mt-6">
       <CardHeader>
-        <CardTitle className="text-xl">Processing Pipeline</CardTitle>
-        <div className="flex gap-2 mt-2 flex-wrap">
-          {steps.map((step) => (
-            <div key={step.name} className="flex items-center gap-2">
-              <Badge
-                variant="secondary"
-                className={`${getStatusColor(step.status)}`}
-              >
-                {step.name}
-                {step.status === "processing" && (
-                  <Loader2 className="ml-2 h-3 w-3 animate-spin" />
-                )}
-              </Badge>
-              {step.status === "error" && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onRetryStep(step.name)}
-                  disabled={isProcessing}
-                >
-                  <RefreshCw className="h-3 w-3" />
-                </Button>
-              )}
-            </div>
-          ))}
-        </div>
+        <CardTitle>Processing Pipeline</CardTitle>
       </CardHeader>
       <CardContent>
-        {steps[0]?.status === "processing" && steps[0]?.data?.chunks && (
-          <div className="mb-6">
-            <ChunkVisualizer
-              chunks={steps[0].data.chunks}
-              networkLogs={steps[0].data.networkLogs}
-            />
-          </div>
-        )}
-        <Tabs
-          value={selectedStep}
-          onValueChange={setSelectedStep}
-          className="w-full"
-        >
-          <TabsList className="grid grid-cols-4 lg:grid-cols-5 mb-4">
-            {steps.map((step) => (
-              <TabsTrigger key={step.name} value={step.name}>
-                {step.name}
-              </TabsTrigger>
-            ))}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-4">
+            <TabsTrigger value="progress">Progress</TabsTrigger>
+            <TabsTrigger value="chunks">Chunks</TabsTrigger>
+            <TabsTrigger value="result">Result</TabsTrigger>
+            <TabsTrigger value="logs">Logs</TabsTrigger>
           </TabsList>
 
-          {steps.map((step) => (
-            <TabsContent key={step.name} value={step.name}>
-              <ScrollArea className="h-[500px] w-full rounded-md border p-4">
-                {step.status === "processing" ? (
-                  <div className="flex items-center justify-center h-full">
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                  </div>
-                ) : step.status === "error" ? (
-                  <div className="flex flex-col items-center justify-center h-full space-y-4">
-                    <p className="text-red-600">Processing failed</p>
+          <TabsContent value="progress" className="space-y-4">
+            {steps.map((step) => (
+              <div
+                key={step.id}
+                className="flex items-center justify-between p-4 bg-white rounded-lg border"
+              >
+                <div className="flex items-center gap-3">
+                  {step.status === "processing" && (
+                    <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                  )}
+                  {step.status === "completed" && (
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  )}
+                  {step.status === "error" && (
+                    <AlertCircle className="h-4 w-4 text-red-500" />
+                  )}
+                  <span className="font-medium">{step.name}</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant={getStepBadgeVariant(step.status)}
+                    className={
+                      step.status === "completed"
+                        ? "bg-green-500 hover:bg-green-600"
+                        : ""
+                    }
+                  >
+                    {step.status}
+                  </Badge>
+                  {step.status === "error" && (
                     <Button
-                      onClick={() => onRetryStep(step.name)}
-                      disabled={isProcessing}
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onRetryStep(step.id)}
                     >
-                      <RefreshCw className="mr-2 h-4 w-4" />
-                      Retry Step
+                      <RefreshCw className="h-4 w-4" />
                     </Button>
-                  </div>
-                ) : (
-                  renderStepData(step)
-                )}
-              </ScrollArea>
-            </TabsContent>
-          ))}
+                  )}
+                </div>
+              </div>
+            ))}
+          </TabsContent>
+
+          <TabsContent value="chunks">
+            <ScrollArea className="h-[400px]">
+              {chunks?.length > 0 ? (
+                <ChunkVisualizer chunks={chunks} />
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  No chunks processed yet
+                </div>
+              )}
+            </ScrollArea>
+          </TabsContent>
+
+          <TabsContent value="result">
+            <ScrollArea className="h-[400px]">
+              {processedTranscript ? (
+                <TiptapPreview content={processedTranscript} />
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  No processed content yet
+                </div>
+              )}
+            </ScrollArea>
+          </TabsContent>
+
+          <TabsContent value="logs">
+            <ScrollArea className="h-[400px]">
+              <NetworkLogger logs={networkLogs || []} />
+            </ScrollArea>
+          </TabsContent>
         </Tabs>
       </CardContent>
     </Card>

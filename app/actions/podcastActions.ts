@@ -13,6 +13,7 @@ import {
   unescapeJsonString,
 } from "@/utils/stringUtils";
 import { podcastService } from "@/app/services/podcastService";
+import { TextChunk } from "@/app/types/podcast/processing";
 
 const anthropicHelper = AnthropicHelper.getInstance();
 const MAX_OUTPUT_TOKENS = 8192;
@@ -20,9 +21,9 @@ const MAX_OUTPUT_TOKENS = 8192;
 export async function processTranscript(transcript: string) {
   return podcastService.processInChunks(
     transcript,
-    async (chunk) => {
+    async (chunk: TextChunk) => {
       const response = await anthropicHelper.getCompletion(
-        refineTranscriptPrompt(chunk),
+        refineTranscriptPrompt(chunk.text),
         MAX_OUTPUT_TOKENS
       );
 
@@ -34,7 +35,7 @@ export async function processTranscript(transcript: string) {
         );
       } catch (error) {
         console.error("Error processing chunk:", error);
-        return chunk;
+        return chunk.text;
       }
     },
     (chunks) => chunks.join(" ")
@@ -44,9 +45,9 @@ export async function processTranscript(transcript: string) {
 export async function analyzeContent(transcript: string) {
   return podcastService.processInChunks(
     transcript,
-    async (chunk) => {
+    async (chunk: TextChunk) => {
       const response = await anthropicHelper.getCompletion(
-        analyzeContentPrompt(chunk),
+        analyzeContentPrompt(chunk.text),
         MAX_OUTPUT_TOKENS
       );
       const sanitizedResponse = sanitizeJsonString(response);
@@ -59,9 +60,9 @@ export async function analyzeContent(transcript: string) {
 export async function extractEntities(transcript: string) {
   return podcastService.processInChunks(
     transcript,
-    async (chunk) => {
+    async (chunk: TextChunk) => {
       const response = await anthropicHelper.getCompletion(
-        extractEntitiesPrompt(chunk),
+        extractEntitiesPrompt(chunk.text),
         MAX_OUTPUT_TOKENS
       );
       const sanitizedResponse = sanitizeJsonString(response);
@@ -74,9 +75,9 @@ export async function extractEntities(transcript: string) {
 export async function createTimeline(transcript: string) {
   return podcastService.processInChunks(
     transcript,
-    async (chunk) => {
+    async (chunk: TextChunk) => {
       const response = await anthropicHelper.getCompletion(
-        createTimelinePrompt(chunk),
+        createTimelinePrompt(chunk.text),
         MAX_OUTPUT_TOKENS
       );
       const sanitizedResponse = sanitizeJsonString(response);

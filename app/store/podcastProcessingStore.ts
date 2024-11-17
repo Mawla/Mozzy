@@ -1,156 +1,162 @@
 import { create } from "zustand";
+import { PodcastProcessingService } from "@/app/services/podcastProcessingService";
 import {
   ProcessingStep,
-  PodcastInput,
-  PodcastProcessingState,
-} from "@/app/types/podcast/models";
-import { PodcastProcessingService } from "@/app/services/podcastProcessingService";
+  ProcessingResult,
+  TranscriptStepData,
+  ProcessingChunk,
+  NetworkLog,
+} from "@/app/types/podcast/processing";
+import { convertToTranscriptStepData } from "@/app/utils/stateConverters";
+import { processTranscriptLocal } from "@/app/services/podcastProcessingService";
 
-const podcastProcessingService = new PodcastProcessingService();
-
-const initialSteps: ProcessingStep[] = [
-  { name: "Transcript Refinement", status: "idle", data: null },
-  {
-    name: "Content Analysis",
-    status: "idle",
-    data: null,
-    dependsOn: ["Transcript Refinement"],
-  },
-  {
-    name: "Entity Extraction",
-    status: "idle",
-    data: null,
-    dependsOn: ["Transcript Refinement"],
-  },
-  {
-    name: "Timeline Creation",
-    status: "idle",
-    data: null,
-    dependsOn: ["Transcript Refinement"],
-  },
-];
+interface PodcastProcessingState {
+  isProcessing: boolean;
+  processingSteps: ProcessingStep[];
+  service: PodcastProcessingService;
+  processedTranscript: string | null;
+  chunks: ProcessingChunk[];
+  networkLogs: NetworkLog[];
+  handlePodcastSubmit: (data: {
+    type: "url" | "search" | "transcript";
+    content: string;
+  }) => Promise<void>;
+  handleRetryStep: (stepName: string) => Promise<void>;
+  updateStepStatus: (
+    stepName: string,
+    status: ProcessingStep["status"],
+    data?: any
+  ) => void;
+  updateChunks: (chunks: ProcessingChunk[]) => void;
+  updateNetworkLogs: (logs: NetworkLog[]) => void;
+}
 
 export const usePodcastProcessingStore = create<PodcastProcessingState>(
-  (set, get) => ({
-    isProcessing: false,
-    inputData: null,
-    processingSteps: initialSteps,
-    currentPodcast: null,
+  (set, get) => {
+    const service = new PodcastProcessingService();
 
-    setProcessing: (isProcessing: boolean) => set({ isProcessing }),
+    service.subscribe((state) => {
+      const { updateStepStatus, updateChunks, updateNetworkLogs } = get();
 
-    setInputData: (data: PodcastInput | null) => set({ inputData: data }),
+      updateChunks(state.chunks);
+      updateNetworkLogs(state.networkLogs);
 
-    updateStepStatus: (
-      stepName: string,
-      status: ProcessingStep["status"],
-      data?: any
-    ) =>
-      set((state) => ({
-        processingSteps: state.processingSteps.map((step) =>
-          step.name === stepName
-            ? { ...step, status, ...(data ? { data } : {}) }
-            : step
-        ),
-      })),
-
-    processStep: async (step: ProcessingStep) => {
-      const { inputData, updateStepStatus } = get();
-
-      if (!inputData) return false;
-
-      updateStepStatus(step.name, "processing");
-
-      try {
-        let result;
-        switch (step.name) {
-          case "Transcript Refinement":
-            result = await podcastProcessingService.refineTranscript(
-              inputData.content
-            );
-            break;
-          case "Content Analysis":
-            result = await podcastProcessingService.analyzeContent(
-              inputData.content
-            );
-            break;
-          case "Entity Extraction":
-            result = await podcastProcessingService.extractEntities(
-              inputData.content
-            );
-            break;
-          case "Timeline Creation":
-            result = await podcastProcessingService.createTimeline(
-              inputData.content
-            );
-            break;
-          default:
-            throw new Error(`Unknown step: ${step.name}`);
+      updateStepStatus(
+        "Transcript Refinement",
+        state.chunks.length > 0 ? "processing" : "idle",
+        {
+          currentTranscript: state.currentTranscript,
         }
+      );
+    });
 
-        updateStepStatus(step.name, "completed", result);
-        return true;
-      } catch (error) {
-        console.error(`Error processing ${step.name}:`, error);
-        updateStepStatus(step.name, "error");
-        return false;
-      }
-    },
+    return {
+      isProcessing: false,
+      processedTranscript: null,
+      service,
+      chunks: [],
+      networkLogs: [],
+      processingSteps: [
+        { name: "Transcript Refinement", status: "idle", data: null },
+        { name: "Content Analysis", status: "idle", data: null },
+        { name: "Entity Extraction", status: "idle", data: null },
+        { name: "Timeline Creation", status: "idle", data: null },
+      ],
 
-    handlePodcastSubmit: async (data: PodcastInput) => {
-      const { setProcessing, setInputData, processStep, processingSteps } =
-        get();
+      updateChunks: (chunks) => set({ chunks }),
 
-      setProcessing(true);
-      setInputData(data);
+      updateNetworkLogs: (logs) => set({ networkLogs: logs }),
 
-      try {
-        // Reset all steps
-        processingSteps.forEach((step) => {
-          get().updateStepStatus(step.name, "idle");
+      updateStepStatus: (stepName, status, data) =>
+        set((state) => ({
+          processingSteps: state.processingSteps.map((step) =>
+            step.name === stepName
+              ? {
+                  ...step,
+                  status,
+                  data: {
+                    ...(step.data || {}),
+                    ...(data || {}),
+                  },
+                }
+              : step
+          ),
+        })),
+
+      handlePodcastSubmit: async ({ type, content }) => {
+        set({
+          isProcessing: true,
+          chunks: [],
+          networkLogs: [],
+          processingSteps: get().processingSteps.map((step) => ({
+            ...step,
+            status: "idle",
+            data: null,
+          })),
         });
 
-        // Process steps sequentially
-        for (const step of processingSteps) {
-          const success = await processStep(step);
-          if (!success) break;
-        }
-      } finally {
-        setProcessing(false);
-      }
-    },
+        try {
+          const { refinedTranscript } = await service.refineTranscript(content);
 
-    handleRetryStep: async (stepName: string) => {
-      const { setProcessing, processStep, processingSteps } = get();
-      const step = processingSteps.find((s) => s.name === stepName);
-      if (!step) return;
+          set({ processedTranscript: refinedTranscript });
 
-      setProcessing(true);
-      try {
-        const success = await processStep(step);
-
-        if (success) {
-          // If successful, process subsequent steps
-          const subsequentSteps = processingSteps.slice(
-            processingSteps.findIndex((s) => s.name === stepName) + 1
+          // Continue with other processing steps...
+        } catch (error) {
+          console.error("Store: Error in handlePodcastSubmit:", error);
+          const currentStep = get().processingSteps.find(
+            (step) => step.status === "processing"
           );
-
-          for (const nextStep of subsequentSteps) {
-            const nextSuccess = await processStep(nextStep);
-            if (!nextSuccess) break;
+          if (currentStep) {
+            set((state) => ({
+              processingSteps: state.processingSteps.map((step) =>
+                step.name === currentStep.name
+                  ? { ...step, status: "error", error: error as Error }
+                  : step
+              ),
+            }));
           }
+          throw error;
+        } finally {
+          set({ isProcessing: false });
         }
-      } finally {
-        setProcessing(false);
-      }
-    },
+      },
 
-    reset: () =>
-      set({
-        isProcessing: false,
-        inputData: null,
-        processingSteps: initialSteps,
-        currentPodcast: null,
-      }),
-  })
+      handleRetryStep: async (stepName) => {
+        const { updateStepStatus, service } = get();
+        const transcriptStep = get().processingSteps[0];
+        const refinedContent = transcriptStep?.data?.refinedContent;
+
+        if (!refinedContent) {
+          console.error("No transcript available for retry");
+          return;
+        }
+
+        set({ isProcessing: true });
+
+        try {
+          switch (stepName) {
+            case "Content Analysis":
+              const analysis = await service.analyzeContent(refinedContent);
+              updateStepStatus(stepName, "completed", analysis);
+              break;
+            case "Entity Extraction":
+              const entities = await service.extractEntities(refinedContent);
+              updateStepStatus(stepName, "completed", entities);
+              break;
+            case "Timeline Creation":
+              const timeline = await service.createTimeline(refinedContent);
+              updateStepStatus(stepName, "completed", timeline);
+              break;
+            default:
+              console.warn(`Retry not implemented for step: ${stepName}`);
+          }
+        } catch (error) {
+          console.error(`Error retrying step ${stepName}:`, error);
+          updateStepStatus(stepName, "error");
+        } finally {
+          set({ isProcessing: false });
+        }
+      },
+    };
+  }
 );

@@ -1,57 +1,93 @@
-const CHUNK_SIZE = 4000; // Tokens per chunk, leaving room for prompt and response
-const OVERLAP = 500; // Overlap between chunks to maintain context
+export interface TextChunk {
+  text: string;
+  index: number;
+  startIndex: number;
+  endIndex: number;
+  metadata?: Record<string, any>;
+}
 
-export function chunkText(
+export interface ChunkOptions {
+  maxChunkSize?: number;
+  overlap?: number;
+  preserveParagraphs?: boolean;
+}
+
+export const chunkText = (
   text: string,
-  chunkSize = CHUNK_SIZE,
-  overlap = OVERLAP
-): string[] {
-  const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-  const chunks: string[] = [];
+  options: ChunkOptions = {}
+): TextChunk[] => {
+  const {
+    maxChunkSize = 2000,
+    overlap = 0,
+    preserveParagraphs = true,
+  } = options;
+
+  const chunks: TextChunk[] = [];
   let currentChunk = "";
-  let tokenCount = 0;
+  let currentIndex = 0;
+  let startIndex = 0;
 
-  for (let i = 0; i < sentences.length; i++) {
-    const sentence = sentences[i];
-    const sentenceTokens = sentence.split(" ").length; // Simple token estimation
+  // Split by paragraphs first
+  const paragraphs = text.split(/\n\s*\n/);
 
-    if (tokenCount + sentenceTokens > chunkSize) {
-      chunks.push(currentChunk.trim());
-      // Keep last few sentences for overlap
-      const lastSentences = currentChunk
-        .split(/[.!?]+\s+/)
-        .slice(-3)
-        .join(". ");
-      currentChunk = lastSentences + " " + sentence;
-      tokenCount = lastSentences.split(" ").length + sentenceTokens;
+  paragraphs.forEach((paragraph) => {
+    // If paragraph is too long, split into sentences
+    if (paragraph.length > maxChunkSize) {
+      const sentences = paragraph.match(/[^.!?]+[.!?]+/g) || [paragraph];
+
+      sentences.forEach((sentence) => {
+        if ((currentChunk + sentence).length <= maxChunkSize) {
+          currentChunk += sentence;
+        } else {
+          if (currentChunk) {
+            const endIndex = startIndex + currentChunk.length;
+            chunks.push({
+              text: currentChunk.trim(),
+              index: currentIndex++,
+              startIndex,
+              endIndex,
+            });
+            startIndex = endIndex - (overlap || 0);
+          }
+          currentChunk = sentence;
+        }
+      });
     } else {
-      currentChunk += " " + sentence;
-      tokenCount += sentenceTokens;
+      if ((currentChunk + "\n\n" + paragraph).length <= maxChunkSize) {
+        currentChunk += (currentChunk ? "\n\n" : "") + paragraph;
+      } else {
+        if (currentChunk) {
+          const endIndex = startIndex + currentChunk.length;
+          chunks.push({
+            text: currentChunk.trim(),
+            index: currentIndex++,
+            startIndex,
+            endIndex,
+          });
+          startIndex = endIndex - (overlap || 0);
+        }
+        currentChunk = paragraph;
+      }
     }
-  }
+  });
 
-  if (currentChunk.trim()) {
-    chunks.push(currentChunk.trim());
+  // Add the last chunk if there is one
+  if (currentChunk) {
+    const endIndex = startIndex + currentChunk.length;
+    chunks.push({
+      text: currentChunk.trim(),
+      index: currentIndex,
+      startIndex,
+      endIndex,
+    });
   }
 
   return chunks;
-}
+};
 
-export function mergeChunks(chunks: string[]): string {
-  // Remove duplicate sentences from overlapping sections
-  const uniqueSentences = new Set<string>();
-  const mergedContent: string[] = [];
-
-  chunks.forEach((chunk) => {
-    const sentences = chunk.match(/[^.!?]+[.!?]+/g) || [chunk];
-    sentences.forEach((sentence) => {
-      const trimmedSentence = sentence.trim();
-      if (!uniqueSentences.has(trimmedSentence)) {
-        uniqueSentences.add(trimmedSentence);
-        mergedContent.push(trimmedSentence);
-      }
-    });
-  });
-
-  return mergedContent.join(" ");
-}
+export const mergeChunks = (chunks: TextChunk[]): string => {
+  return chunks
+    .sort((a, b) => a.index - b.index)
+    .map((chunk) => chunk.text)
+    .join("\n\n");
+};

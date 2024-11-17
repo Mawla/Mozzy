@@ -27,6 +27,7 @@ const NewPodcastPage = () => {
     content: string;
   }) => {
     try {
+      console.log("NewPodcastPage: Processing submission", data);
       await handlePodcastSubmit(data);
       // handleProcessingComplete will be called from the store after successful processing
     } catch (error) {

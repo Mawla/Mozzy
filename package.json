@@ -51,6 +51,7 @@
     "clsx": "^2.1.1",
     "cmdk": "1.0.0",
     "date-fns": "^3.6.0",
+    "diff-match-patch": "^1.0.5",
     "embla-carousel-react": "^8.2.0",
     "file-saver": "^2.0.5",
     "gpt-tokenizer": "^2.6.2",
@@ -82,6 +83,7 @@
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.15",
+    "@types/diff-match-patch": "^1.0.36",
     "@types/jest": "^29.5.13",
     "@types/lodash": "^4.17.7",
     "@types/node": "^20",

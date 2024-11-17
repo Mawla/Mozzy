@@ -1,8 +1,17 @@
-import { chunkText, mergeChunks } from "@/app/utils/textChunking";
+import {
+  chunkText,
+  mergeChunks,
+  TextChunk,
+  ChunkOptions,
+} from "@/app/utils/textChunking";
 import {
   PodcastAnalysis,
   PodcastEntities,
   TimelineEvent,
+  QuickFact,
+  KeyPoint,
+  Theme,
+  ProcessingResult,
 } from "@/app/types/podcast/processing";
 
 interface ProcessedPodcast {
@@ -14,11 +23,7 @@ interface ProcessedPodcast {
   organizations: string[];
   locations: string[];
   events: string[];
-  timeline: Array<{
-    time: string;
-    event: string;
-    importance: "high" | "medium" | "low";
-  }>;
+  timeline: TimelineEvent[];
   cleanTranscript: string;
   originalTranscript: string;
 }
@@ -26,33 +31,60 @@ interface ProcessedPodcast {
 export const podcastService = {
   // Processing helpers
   async processInChunks<T>(
-    text: string,
-    processor: (chunk: string) => Promise<T>,
-    merger: (results: T[]) => T
+    text: string | { text: string } | any,
+    processor: (chunk: TextChunk) => Promise<T>,
+    merger: (results: T[]) => T,
+    chunkOptions?: ChunkOptions
   ): Promise<T> {
-    const chunks = chunkText(text);
+    // Debug logging
+    console.log("Input text type:", typeof text);
+    console.log("Input text value:", text);
+
+    // Handle different input types
+    const textContent =
+      typeof text === "string"
+        ? text
+        : text?.text ||
+          (typeof text === "object"
+            ? JSON.stringify(text, null, 2)
+            : String(text));
+
+    if (typeof textContent !== "string") {
+      throw new Error(
+        `Invalid input: text content must be a string or contain a text property. Received: ${typeof text}`
+      );
+    }
+
+    // Debug logging
+    console.log(
+      "Processed text content:",
+      textContent.substring(0, 100) + "..."
+    );
+
+    const chunks = chunkText(textContent, chunkOptions);
     const processedChunks = await Promise.all(chunks.map(processor));
     return merger(processedChunks);
   },
 
   mergeAnalyses(analyses: PodcastAnalysis[]): PodcastAnalysis {
     return {
+      id: analyses[0].id,
       title: analyses[0].title,
       summary: analyses[0].summary,
       quickFacts: analyses[0].quickFacts,
       keyPoints: analyses.flatMap((a) => a.keyPoints),
       themes: this.mergeThemes(analyses.flatMap((a) => a.themes)),
-      sections: analyses.flatMap((a) => a.sections),
+      sections: analyses.flatMap((a) => a.sections || []),
     };
   },
 
-  mergeThemes(themes: any[]): any[] {
-    const themeMap = new Map();
+  mergeThemes(themes: Theme[]): Theme[] {
+    const themeMap = new Map<string, Theme>();
     themes.forEach((theme) => {
       if (!themeMap.has(theme.name)) {
         themeMap.set(theme.name, theme);
       } else {
-        const existing = themeMap.get(theme.name);
+        const existing = themeMap.get(theme.name)!;
         existing.relatedConcepts = Array.from(
           new Set([...existing.relatedConcepts, ...theme.relatedConcepts])
         );

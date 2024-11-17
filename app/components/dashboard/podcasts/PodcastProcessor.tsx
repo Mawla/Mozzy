@@ -29,18 +29,35 @@ export const PodcastProcessor = ({
     handleRetryStep,
   } = usePodcastProcessingStore();
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    console.log("Form submitted");
+
+    if (!input.trim()) {
+      console.log("Empty input, returning");
+      return;
+    }
 
     try {
+      setIsSubmitting(true);
+      console.log("Starting transcript processing with:", {
+        type: activeTab,
+        contentLength: input.trim().length,
+        firstChars: input.trim().substring(0, 100),
+      });
+
       await handlePodcastSubmit({
         type: activeTab,
         content: input.trim(),
       });
-      // onProcessingComplete will be called from the store after successful processing
+
+      console.log("Processing completed successfully");
     } catch (error) {
       console.error("Error processing podcast:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -66,8 +83,11 @@ export const PodcastProcessor = ({
                   onChange={(e) => setInput(e.target.value)}
                   className="min-h-[200px]"
                 />
-                <Button type="submit" disabled={isProcessing || !input.trim()}>
-                  Process Transcript
+                <Button
+                  type="submit"
+                  disabled={isProcessing || !input.trim() || isSubmitting}
+                >
+                  {isSubmitting ? "Processing..." : "Process Transcript"}
                 </Button>
               </TabsContent>
 
