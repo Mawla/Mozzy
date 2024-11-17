@@ -96,11 +96,60 @@ export const usePodcastProcessingStore = create<PodcastProcessingState>(
         });
 
         try {
+          // Step 1: Transcript Refinement
           const { refinedTranscript } = await service.refineTranscript(content);
-
           set({ processedTranscript: refinedTranscript });
 
-          // Continue with other processing steps...
+          // Step 2: Content Analysis
+          set((state) => ({
+            processingSteps: state.processingSteps.map((step) =>
+              step.name === "Content Analysis"
+                ? { ...step, status: "processing" }
+                : step
+            ),
+          }));
+          const analysis = await service.analyzeContent(refinedTranscript);
+          set((state) => ({
+            processingSteps: state.processingSteps.map((step) =>
+              step.name === "Content Analysis"
+                ? { ...step, status: "completed", data: analysis }
+                : step
+            ),
+          }));
+
+          // Step 3: Entity Extraction
+          set((state) => ({
+            processingSteps: state.processingSteps.map((step) =>
+              step.name === "Entity Extraction"
+                ? { ...step, status: "processing" }
+                : step
+            ),
+          }));
+          const entities = await service.extractEntities(refinedTranscript);
+          set((state) => ({
+            processingSteps: state.processingSteps.map((step) =>
+              step.name === "Entity Extraction"
+                ? { ...step, status: "completed", data: entities }
+                : step
+            ),
+          }));
+
+          // Step 4: Timeline Creation
+          set((state) => ({
+            processingSteps: state.processingSteps.map((step) =>
+              step.name === "Timeline Creation"
+                ? { ...step, status: "processing" }
+                : step
+            ),
+          }));
+          const timeline = await service.createTimeline(refinedTranscript);
+          set((state) => ({
+            processingSteps: state.processingSteps.map((step) =>
+              step.name === "Timeline Creation"
+                ? { ...step, status: "completed", data: timeline }
+                : step
+            ),
+          }));
         } catch (error) {
           console.error("Store: Error in handlePodcastSubmit:", error);
           const currentStep = get().processingSteps.find(
