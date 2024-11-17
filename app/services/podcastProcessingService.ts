@@ -93,6 +93,8 @@ export class PodcastProcessingService {
 
   private chunkingWorker: Worker | null = null;
 
+  private stateUpdateTimeout: NodeJS.Timeout | null = null;
+
   constructor() {
     if (typeof window !== "undefined") {
       this.chunkingWorker = new Worker(
@@ -106,15 +108,23 @@ export class PodcastProcessingService {
     return () => this.listeners.delete(callback);
   }
 
-  private updateState(newState: Partial<ProcessingState>) {
+  private debouncedUpdateState(newState: Partial<ProcessingState>) {
+    if (this.stateUpdateTimeout) {
+      clearTimeout(this.stateUpdateTimeout);
+    }
+
     this.state = { ...this.state, ...newState };
-    this.listeners.forEach((listener) => listener(this.state));
+
+    this.stateUpdateTimeout = setTimeout(() => {
+      this.listeners.forEach((listener) => listener(this.state));
+      this.stateUpdateTimeout = null;
+    }, 100); // Debounce time of 100ms
   }
 
   private logNetwork(type: "request" | "response" | "error", message: string) {
     const timestamp = new Date().toISOString().split("T")[1].slice(0, -1);
     const newLog = { timestamp, type, message };
-    this.updateState({
+    this.debouncedUpdateState({
       networkLogs: [...this.state.networkLogs, newLog],
     });
   }
@@ -134,8 +144,8 @@ export class PodcastProcessingService {
         : chunk
     );
 
-    // Update state and notify listeners immediately
-    this.updateState({
+    // Use debounced update for chunk status changes
+    this.debouncedUpdateState({
       chunks: updatedChunks,
       currentTranscript:
         status === "completed" && data?.response
@@ -148,87 +158,84 @@ export class PodcastProcessingService {
     });
   }
 
+  private async processChunksBatch(textChunks: TextChunk[], batchSize = 3) {
+    const chunks = textChunks.map((chunk, id) => ({
+      id,
+      text: chunk.text,
+      status: "pending" as const,
+    }));
+
+    this.debouncedUpdateState({ chunks });
+    this.logNetwork(
+      "request",
+      `Starting processing of ${chunks.length} chunks`
+    );
+
+    // Process chunks in batches
+    for (let i = 0; i < chunks.length; i += batchSize) {
+      const batch = textChunks.slice(i, i + batchSize);
+      const batchPromises = batch.map(async (chunk, batchIndex) => {
+        const chunkId = i + batchIndex;
+        try {
+          this.updateChunkStatus(chunkId, "processing");
+          this.logNetwork(
+            "request",
+            `Processing chunk ${chunkId + 1}/${chunks.length}`
+          );
+
+          const refinedChunk = await processTranscriptAction(chunk.text);
+
+          this.updateChunkStatus(chunkId, "completed", {
+            response: refinedChunk,
+          });
+
+          this.logNetwork(
+            "response",
+            `Completed chunk ${chunkId + 1}/${chunks.length}`
+          );
+        } catch (error) {
+          console.error(
+            `Service: Error processing chunk ${chunkId + 1}:`,
+            error
+          );
+          this.updateChunkStatus(chunkId, "error", {
+            error: (error as Error).message,
+          });
+          this.logNetwork(
+            "error",
+            `Failed chunk ${chunkId + 1}: ${(error as Error).message}`
+          );
+        }
+      });
+
+      // Wait for current batch to complete before processing next batch
+      await Promise.all(batchPromises);
+    }
+
+    // Return the final transcript
+    return {
+      refinedTranscript: this.state.chunks
+        .filter((chunk) => chunk.status === "completed")
+        .map((chunk) => chunk.response)
+        .filter(Boolean)
+        .join(" "),
+    };
+  }
+
   async refineTranscript(transcript: string) {
     try {
       console.log("Service: Starting transcript refinement");
-      // Reset state
-      this.updateState({
+      this.debouncedUpdateState({
         chunks: [],
         networkLogs: [],
         currentTranscript: "",
       });
 
-      // Initialize chunks with the text content
       console.log("Service: Processing transcript into chunks");
       const textChunks = await this.processTranscript(transcript);
       console.log(`Service: Created ${textChunks.length} chunks`);
 
-      // Update state with initial chunks
-      this.updateState({
-        chunks: textChunks.map((chunk, id) => ({
-          id,
-          text: chunk.text,
-          status: "pending",
-        })),
-      });
-
-      this.logNetwork(
-        "request",
-        `Starting processing of ${textChunks.length} chunks`
-      );
-
-      // Process chunks sequentially to maintain order
-      for (let i = 0; i < textChunks.length; i++) {
-        try {
-          console.log(
-            `Service: Processing chunk ${i + 1}/${textChunks.length}`
-          );
-          // Update status to processing
-          this.updateChunkStatus(i, "processing");
-          this.logNetwork(
-            "request",
-            `Processing chunk ${i + 1}/${textChunks.length}`
-          );
-
-          // Process the chunk
-          const refinedChunk = await processTranscriptAction(
-            textChunks[i].text
-          );
-
-          // Update status to completed with the refined content
-          this.updateChunkStatus(i, "completed", {
-            response: refinedChunk,
-          });
-
-          // Emit state update for visualization
-          this.updateState({
-            currentTranscript: this.state.chunks
-              .filter((chunk) => chunk.status === "completed")
-              .map((chunk) => chunk.response)
-              .filter(Boolean)
-              .join(" "),
-          });
-
-          this.logNetwork(
-            "response",
-            `Completed chunk ${i + 1}/${textChunks.length}`
-          );
-        } catch (error) {
-          console.error(`Service: Error processing chunk ${i + 1}:`, error);
-          this.updateChunkStatus(i, "error", {
-            error: (error as Error).message,
-          });
-          this.logNetwork(
-            "error",
-            `Failed chunk ${i + 1}: ${(error as Error).message}`
-          );
-          throw error;
-        }
-      }
-
-      console.log("Service: All chunks processed successfully");
-      this.logNetwork("response", "All chunks processed successfully");
-      return { refinedTranscript: this.state.currentTranscript };
+      return await this.processChunksBatch(textChunks);
     } catch (error) {
       console.error("Service: Error in refineTranscript:", error);
       this.logNetwork(
@@ -275,7 +282,7 @@ export class PodcastProcessingService {
     if (!this.chunkingWorker) {
       const chunks = chunkText(text, options);
       // Update state with chunks immediately
-      this.updateState({
+      this.debouncedUpdateState({
         chunks: chunks.map((chunk, id) => ({
           id,
           text: chunk.text,
@@ -290,7 +297,7 @@ export class PodcastProcessingService {
       this.chunkingWorker!.onmessage = (e: MessageEvent) => {
         const chunks = e.data;
         // Update state with chunks from worker
-        this.updateState({
+        this.debouncedUpdateState({
           chunks: chunks.map((chunk: TextChunk, id: number) => ({
             id,
             text: chunk.text,
@@ -310,6 +317,9 @@ export class PodcastProcessingService {
 
   // Clean up worker when done
   dispose() {
+    if (this.stateUpdateTimeout) {
+      clearTimeout(this.stateUpdateTimeout);
+    }
     this.chunkingWorker?.terminate();
     this.chunkingWorker = null;
   }

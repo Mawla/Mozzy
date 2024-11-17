@@ -13,10 +13,11 @@ import { processTranscriptLocal } from "@/app/services/podcastProcessingService"
 interface PodcastProcessingState {
   isProcessing: boolean;
   processingSteps: ProcessingStep[];
-  service: PodcastProcessingService;
   processedTranscript: string | null;
   chunks: ProcessingChunk[];
   networkLogs: NetworkLog[];
+  service: PodcastProcessingService;
+
   handlePodcastSubmit: (data: {
     type: "url" | "search" | "transcript";
     content: string;
@@ -41,12 +42,24 @@ export const usePodcastProcessingStore = create<PodcastProcessingState>(
       updateChunks(state.chunks);
       updateNetworkLogs(state.networkLogs);
 
+      const allChunksCompleted =
+        state.chunks.length > 0 &&
+        state.chunks.every((chunk) => chunk.status === "completed");
+
       updateStepStatus(
         "Transcript Refinement",
-        state.chunks.length > 0 ? "processing" : "idle",
-        {
-          currentTranscript: state.currentTranscript,
-        }
+        allChunksCompleted
+          ? "completed"
+          : state.chunks.length > 0
+          ? "processing"
+          : "idle",
+        allChunksCompleted
+          ? {
+              refinedContent: state.currentTranscript,
+            }
+          : {
+              currentTranscript: state.currentTranscript,
+            }
       );
     });
 
@@ -99,6 +112,16 @@ export const usePodcastProcessingStore = create<PodcastProcessingState>(
           // Step 1: Transcript Refinement
           const { refinedTranscript } = await service.refineTranscript(content);
           set({ processedTranscript: refinedTranscript });
+
+          // Wait for all chunks to complete before moving to next step
+          await new Promise<void>((resolve) => {
+            const unsubscribe = service.subscribe((state) => {
+              if (state.chunks.every((chunk) => chunk.status === "completed")) {
+                unsubscribe();
+                resolve();
+              }
+            });
+          });
 
           // Step 2: Content Analysis
           set((state) => ({

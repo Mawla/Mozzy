@@ -29,7 +29,7 @@ import {
   ProcessingChunk,
   StepData as BaseStepData,
 } from "@/app/types/podcast/processing";
-import { usePodcastProcessingStore } from "@/app/store/podcastProcessingStore";
+import { usePodcastProcessing } from "@/app/hooks/use-podcast-processing";
 
 interface StepData extends Omit<BaseStepData, "chunks"> {
   chunks?: ProcessingChunk[];
@@ -212,10 +212,28 @@ export const ProcessingPipeline = ({
   onRetryStep,
   isProcessing,
 }: ProcessingPipelineProps) => {
-  const { chunks, networkLogs, processedTranscript } =
-    usePodcastProcessingStore();
-  const [activeTab, setActiveTab] = useState("progress");
-  const [selectedStep, setSelectedStep] = useState<string | null>(null);
+  const {
+    chunks,
+    networkLogs,
+    processedTranscript,
+    selectedStep,
+    activeTab,
+    toggleStep,
+    setActiveTab,
+    isStepComplete,
+    getStepData,
+  } = usePodcastProcessing();
+
+  const handleTabChange = (value: string) => {
+    if (
+      value === "progress" ||
+      value === "chunks" ||
+      value === "result" ||
+      value === "logs"
+    ) {
+      setActiveTab(value);
+    }
+  };
 
   const getStepBadgeVariant = (
     status: "idle" | "processing" | "completed" | "error"
@@ -238,7 +256,7 @@ export const ProcessingPipeline = ({
         <CardTitle>Processing Pipeline</CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="mb-4">
             <TabsTrigger value="progress">Progress</TabsTrigger>
             <TabsTrigger value="chunks">Chunks</TabsTrigger>
@@ -251,9 +269,7 @@ export const ProcessingPipeline = ({
               <div key={step.id}>
                 <div
                   className="flex items-center justify-between p-4 bg-white rounded-lg border cursor-pointer hover:bg-gray-50"
-                  onClick={() =>
-                    setSelectedStep(selectedStep === step.id ? null : step.id)
-                  }
+                  onClick={() => toggleStep(step.id)}
                 >
                   <div className="flex items-center gap-3">
                     {step.status === "processing" && (

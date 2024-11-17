@@ -15,12 +15,12 @@ export type { Section };
 
 // Processing State Types
 export interface ProcessingState {
-  chunks: ChunkState[];
+  chunks: ProcessingChunk[];
   networkLogs: NetworkLog[];
   currentTranscript: string;
 }
 
-export interface ChunkState {
+export interface ProcessingChunk {
   id: number;
   text: string;
   status: "pending" | "processing" | "completed" | "error";
@@ -111,10 +111,13 @@ export type StepData = {
   timeline?: TimelineEvent[];
 };
 
+export type ProcessingStatus = "idle" | "processing" | "completed" | "error";
+
 export interface ProcessingStep {
   name: string;
-  status: "idle" | "processing" | "completed" | "error";
-  data: any;
+  status: ProcessingStatus;
+  data: StepData | null;
+  error?: Error;
 }
 
 export interface ProcessingResult {
@@ -126,7 +129,7 @@ export interface ProcessingResult {
 
 // Component Props Types
 export interface ChunkVisualizerProps {
-  chunks: ChunkState[];
+  chunks: ProcessingChunk[];
 }
 
 export interface NetworkLoggerProps {
@@ -140,10 +143,4 @@ export interface ProcessingPipelineProps {
   isProcessing: boolean;
 }
 
-export interface ProcessingChunk {
-  id: number;
-  text: string;
-  status: "pending" | "processing" | "completed" | "error";
-  response?: string;
-  error?: string;
-}
+export type ProcessingTab = "progress" | "chunks" | "result" | "logs";
