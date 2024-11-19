@@ -4,7 +4,6 @@ import { ProcessingError } from "../errors/ProcessingError";
 import { ProcessingLogger } from "../utils/logger";
 import { PROCESSING_CONFIG } from "../config/processingConfig";
 
-// Move type guard outside of block
 const isValidResult = <T>(result: T | null): result is T => {
   return result !== null;
 };
@@ -27,22 +26,76 @@ export class ProcessingPipeline<TInput, TChunk, TOutput> {
   }
 
   async process(input: TInput): Promise<TOutput> {
-    // 1. Chunk the input
-    this.chunks = this.chunkingStrategy.chunk(input);
+    try {
+      // Step 1: Chunk the input
+      await this.processVoidStep("chunk", async () => {
+        this.chunks = this.chunkingStrategy.chunk(input);
+        if (
+          !this.chunks.every((chunk) => this.chunkingStrategy.validate(chunk))
+        ) {
+          throw new ProcessingError(
+            "Invalid chunks generated",
+            "INVALID_CHUNKS_ERROR"
+          );
+        }
+      });
 
-    // 2. Validate chunks
-    if (!this.chunks.every((chunk) => this.chunkingStrategy.validate(chunk))) {
+      // Step 2: Process chunks
+      await this.processVoidStep("process", async () => {
+        this.results = await this.processChunksInBatches(this.chunks);
+      });
+
+      // Step 3: Combine results
+      return await this.processOutputStep("combine", async () => {
+        return this.combineResults(this.results);
+      });
+    } catch (error) {
       throw new ProcessingError(
-        "Invalid chunks generated",
-        "INVALID_CHUNKS_ERROR"
+        "Pipeline processing failed",
+        "PIPELINE_ERROR",
+        undefined,
+        { error }
       );
     }
+  }
 
-    // 3. Process chunks in parallel with batching
-    this.results = await this.processChunksInBatches(this.chunks);
+  private async processVoidStep(
+    stepId: string,
+    executor: () => Promise<void>
+  ): Promise<void> {
+    try {
+      ProcessingLogger.log("debug", `Starting step: ${stepId}`);
+      await executor();
+      ProcessingLogger.log("debug", `Completed step: ${stepId}`);
+    } catch (error) {
+      ProcessingLogger.log("error", `Failed step: ${stepId}`, { error });
+      throw new ProcessingError(
+        `Step ${stepId} failed`,
+        "STEP_EXECUTION_ERROR",
+        stepId,
+        { error }
+      );
+    }
+  }
 
-    // 4. Combine results
-    return this.combineResults(this.results);
+  private async processOutputStep(
+    stepId: string,
+    executor: () => Promise<TOutput>
+  ): Promise<TOutput> {
+    try {
+      ProcessingLogger.log("debug", `Starting step: ${stepId}`);
+      const result = await executor();
+      ProcessingLogger.log("debug", `Completed step: ${stepId}`);
+      return result;
+    } catch (error) {
+      ProcessingLogger.log("error", `Failed step: ${stepId}`, { error });
+      throw new ProcessingError(
+        `Step ${stepId} failed`,
+        "STEP_EXECUTION_ERROR",
+        stepId,
+        { error }
+      );
+    }
   }
 
   private async processChunksInBatches(
@@ -72,8 +125,6 @@ export class ProcessingPipeline<TInput, TChunk, TOutput> {
 
       const batchResults = await Promise.all(batchPromises);
       const validResults = batchResults.filter(isValidResult);
-
-      // Type assertion to ensure type compatibility
       results.push(...(validResults as TOutput[]));
 
       if (validResults.length === 0 && errors.length > 0) {
@@ -106,28 +157,5 @@ export class ProcessingPipeline<TInput, TChunk, TOutput> {
       "Combine method not implemented in strategy",
       "COMBINE_NOT_IMPLEMENTED"
     );
-  }
-
-  async processStep(stepId: string): Promise<void> {
-    const stepMethod = `process${stepId.charAt(0).toUpperCase()}${stepId.slice(
-      1
-    )}`;
-
-    // Use type assertion with unknown first
-    const strategy = this.processingStrategy as unknown;
-    const typedStrategy = strategy as { [key: string]: unknown };
-
-    if (typeof typedStrategy[stepMethod] === "function") {
-      const processFunction = typedStrategy[stepMethod] as (
-        chunks: TChunk[]
-      ) => Promise<void>;
-      await processFunction(this.chunks);
-    } else {
-      throw new ProcessingError(
-        `Step ${stepId} not implemented`,
-        "STEP_NOT_IMPLEMENTED",
-        stepId
-      );
-    }
   }
 }
