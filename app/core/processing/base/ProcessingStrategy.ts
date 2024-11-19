@@ -1,11 +1,22 @@
 import { ProcessingState, ProcessingStep } from "../types";
 
+// Polyfill for crypto.randomUUID in test environment
+const generateId = (): string => {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return (
+    Math.random().toString(36).substring(2, 15) +
+    Math.random().toString(36).substring(2, 15)
+  );
+};
+
 export abstract class ProcessingStrategy<TInput, TOutput> {
   protected state: ProcessingState;
 
   constructor() {
     this.state = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       steps: this.defineSteps(),
       currentStep: 0,
       overallProgress: 0,
