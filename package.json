@@ -7,9 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test": "node --max_old_space_size=4096 ./node_modules/.bin/jest",
+    "test:watch": "node --max_old_space_size=4096 ./node_modules/.bin/jest --watch",
+    "test:coverage": "node --max_old_space_size=4096 ./node_modules/.bin/jest --coverage"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
