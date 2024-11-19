@@ -4,22 +4,8 @@ import { TextChunkingStrategy } from "../strategies/TextChunkingStrategy";
 import { ProcessingError } from "../errors/ProcessingError";
 import { TextChunk, ChunkResult } from "../types";
 
-// Mock the anthropic actions
-jest.mock("@/app/actions/anthropicActions", () => ({
-  refinePodcastTranscript: jest.fn((text) => Promise.resolve(text)),
-  generateSummary: jest.fn(() => Promise.resolve("Test summary")),
-  generateTitle: jest.fn(() => Promise.resolve("Test title")),
-  suggestTags: jest.fn(() =>
-    Promise.resolve({
-      duration: "1:00",
-      speakers: ["Speaker 1"],
-      mainTopic: "Test Topic",
-      expertise: "General",
-      keyPoints: ["Point 1"],
-      themes: ["Theme 1"],
-    })
-  ),
-}));
+// Mock the anthropic actions only
+jest.mock("@/app/actions/anthropicActions");
 
 describe("Podcast Processing Pipeline", () => {
   let pipeline: ProcessingPipeline<string, TextChunk, ChunkResult>;
@@ -27,6 +13,9 @@ describe("Podcast Processing Pipeline", () => {
   let processingStrategy: PodcastProcessingStrategy;
 
   beforeEach(() => {
+    // Clear all mocks before each test
+    jest.clearAllMocks();
+
     chunkingStrategy = new TextChunkingStrategy();
     processingStrategy = new PodcastProcessingStrategy();
     pipeline = new ProcessingPipeline(chunkingStrategy, processingStrategy);
