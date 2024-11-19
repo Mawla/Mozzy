@@ -1,23 +1,34 @@
-export const createTimelinePrompt = (transcript: string) => `
-Create a timeline of key events from this podcast transcript:
+export const createTimelinePrompt = (chunk: string) => `
+Create a timeline of events from this chunk of podcast transcript:
 
-${transcript}
+${chunk}
 
-Return the response as JSON array with this structure:
-[
-  {
-    "time": "timestamp or section reference",
-    "event": "description of what happened",
-    "importance": "high|medium|low"
+Return the response as JSON with this structure:
+{
+  "events": [
+    {
+      "time": "timestamp or marker",
+      "event": "description",
+      "importance": "high|medium|low",
+      "context": {
+        "requiresPrevious": boolean,
+        "continuesInNext": boolean,
+        "relatedEvents": ["references to events in other chunks"]
+      }
+    }
+  ],
+  "continuity": {
+    "precedingEvents": ["events referenced but described earlier"],
+    "subsequentEvents": ["events referenced but described later"]
   }
-]
+}
 
 Guidelines:
-- Focus on significant events
-- Organize chronologically
-- Include relevant timestamps or section references
-- Rate importance of each event
-- Keep descriptions concise but informative
+- Focus on events within this chunk
+- Note references to events in other chunks
+- Track event sequences that span chunks
+- Preserve chronological markers
+- Indicate incomplete event descriptions
 
-Only include the JSON array in your response.
+Only include the JSON object in your response.
 `;

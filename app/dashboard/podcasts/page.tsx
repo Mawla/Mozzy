@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { PodcastGrid } from "@/app/components/dashboard/podcasts/PodcastGrid";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";

@@ -1,13 +1,10 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-interface NetworkLog {
-  timestamp: string;
-  type: "request" | "response" | "error";
-  message: string;
-}
+import { Badge } from "@/components/ui/badge";
+import { NetworkLog } from "@/app/types/podcast/processing";
+import { cn } from "@/lib/utils";
 
 interface NetworkLoggerProps {
   logs: NetworkLog[];
@@ -15,32 +12,59 @@ interface NetworkLoggerProps {
 }
 
 export const NetworkLogger = ({ logs, className = "" }: NetworkLoggerProps) => {
-  const getLogColor = (type: string) => {
+  const getLogStyle = (type: string) => {
+    return cn("flex items-center gap-2 p-2 rounded-md", {
+      "bg-blue-50 text-blue-700": type === "request",
+      "bg-green-50 text-green-700": type === "response",
+      "bg-red-50 text-red-700": type === "error",
+    });
+  };
+
+  const getBadgeVariant = (
+    type: string
+  ): "default" | "secondary" | "destructive" => {
     switch (type) {
       case "request":
-        return "text-blue-600";
+        return "secondary";
       case "response":
-        return "text-green-600";
+        return "default";
       case "error":
-        return "text-red-600";
+        return "destructive";
       default:
-        return "text-gray-600";
+        return "secondary";
     }
   };
 
+  if (logs.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-[400px] text-muted-foreground">
+        No processing logs yet
+      </div>
+    );
+  }
+
   return (
-    <Card className={`p-4 ${className}`}>
-      <h3 className="font-semibold mb-2">Network Activity</h3>
-      <ScrollArea className="h-[300px]">
-        <div className="space-y-2">
-          {logs.map((log, index) => (
-            <div key={index} className="text-sm">
-              <span className="text-gray-400">{log.timestamp}</span>{" "}
-              <span className={getLogColor(log.type)}>{log.message}</span>
+    <div className={className}>
+      <div className="space-y-2">
+        {logs.map((log, index) => (
+          <div key={index} className={getLogStyle(log.type)}>
+            <Badge
+              variant={getBadgeVariant(log.type)}
+              className="w-20 justify-center"
+            >
+              {log.type}
+            </Badge>
+            <div className="flex-1">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">{log.message}</span>
+                <span className="text-xs text-muted-foreground">
+                  {log.timestamp}
+                </span>
+              </div>
             </div>
-          ))}
-        </div>
-      </ScrollArea>
-    </Card>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 };

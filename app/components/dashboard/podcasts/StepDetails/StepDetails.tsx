@@ -9,12 +9,21 @@ interface StepDetailsProps {
     name: string;
     status: string;
     data?: any;
-    error?: string;
+    error?: string | Error;
   };
 }
 
 export const StepDetails = ({ step }: StepDetailsProps) => {
-  if (!step.data) return null;
+  if (!step.data) {
+    if (step.error) {
+      return (
+        <div className="text-red-600">
+          Error: {step.error instanceof Error ? step.error.message : step.error}
+        </div>
+      );
+    }
+    return null;
+  }
 
   switch (step.name) {
     case "Content Analysis":

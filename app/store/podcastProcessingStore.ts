@@ -2,13 +2,13 @@ import { create } from "zustand";
 import { PodcastProcessingService } from "@/app/services/podcastProcessingService";
 import {
   ProcessingStep,
-  ProcessingResult,
-  TranscriptStepData,
   ProcessingChunk,
   NetworkLog,
+  PodcastAnalysis,
+  PodcastEntities,
+  TimelineEvent,
 } from "@/app/types/podcast/processing";
-import { convertToTranscriptStepData } from "@/app/utils/stateConverters";
-import { processTranscriptLocal } from "@/app/services/podcastProcessingService";
+import { PROCESSING_STEPS, INITIAL_STEPS } from "@/app/constants/processing";
 
 interface PodcastProcessingState {
   isProcessing: boolean;
@@ -36,31 +36,60 @@ export const usePodcastProcessingStore = create<PodcastProcessingState>(
   (set, get) => {
     const service = new PodcastProcessingService();
 
+    // Subscribe to service updates
     service.subscribe((state) => {
       const { updateStepStatus, updateChunks, updateNetworkLogs } = get();
 
+      // Update UI state
       updateChunks(state.chunks);
       updateNetworkLogs(state.networkLogs);
 
-      const allChunksCompleted =
-        state.chunks.length > 0 &&
-        state.chunks.every((chunk) => chunk.status === "completed");
+      // Update processing status
+      if (state.chunks.length > 0) {
+        set({ isProcessing: true });
 
-      updateStepStatus(
-        "Transcript Refinement",
-        allChunksCompleted
-          ? "completed"
-          : state.chunks.length > 0
-          ? "processing"
-          : "idle",
-        allChunksCompleted
-          ? {
-              refinedContent: state.currentTranscript,
-            }
-          : {
-              currentTranscript: state.currentTranscript,
-            }
-      );
+        // Update transcript step status
+        updateStepStatus(PROCESSING_STEPS.TRANSCRIPT, "processing", {
+          chunks: state.chunks,
+        });
+
+        // Check if all chunks are completed
+        const allChunksCompleted = state.chunks.every(
+          (chunk) => chunk.status === "completed"
+        );
+
+        if (allChunksCompleted) {
+          updateStepStatus(PROCESSING_STEPS.TRANSCRIPT, "completed", {
+            chunks: state.chunks,
+            refinedContent: state.currentTranscript,
+          });
+        }
+      }
+
+      // Update other steps based on chunk data
+      state.chunks.forEach((chunk) => {
+        if (chunk.status === "completed") {
+          if (chunk.analysis) {
+            updateStepStatus(
+              PROCESSING_STEPS.ANALYSIS,
+              "processing",
+              chunk.analysis
+            );
+          }
+          if (chunk.entities) {
+            updateStepStatus(
+              PROCESSING_STEPS.ENTITIES,
+              "processing",
+              chunk.entities
+            );
+          }
+          if (chunk.timeline) {
+            updateStepStatus(PROCESSING_STEPS.TIMELINE, "processing", {
+              timeline: chunk.timeline,
+            });
+          }
+        }
+      });
     });
 
     return {
@@ -69,15 +98,9 @@ export const usePodcastProcessingStore = create<PodcastProcessingState>(
       service,
       chunks: [],
       networkLogs: [],
-      processingSteps: [
-        { name: "Transcript Refinement", status: "idle", data: null },
-        { name: "Content Analysis", status: "idle", data: null },
-        { name: "Entity Extraction", status: "idle", data: null },
-        { name: "Timeline Creation", status: "idle", data: null },
-      ],
+      processingSteps: INITIAL_STEPS,
 
       updateChunks: (chunks) => set({ chunks }),
-
       updateNetworkLogs: (logs) => set({ networkLogs: logs }),
 
       updateStepStatus: (stepName, status, data) =>
@@ -109,70 +132,8 @@ export const usePodcastProcessingStore = create<PodcastProcessingState>(
         });
 
         try {
-          // Step 1: Transcript Refinement
-          const { refinedTranscript } = await service.refineTranscript(content);
-          set({ processedTranscript: refinedTranscript });
-
-          // Wait for all chunks to complete before moving to next step
-          await new Promise<void>((resolve) => {
-            const unsubscribe = service.subscribe((state) => {
-              if (state.chunks.every((chunk) => chunk.status === "completed")) {
-                unsubscribe();
-                resolve();
-              }
-            });
-          });
-
-          // Step 2: Content Analysis
-          set((state) => ({
-            processingSteps: state.processingSteps.map((step) =>
-              step.name === "Content Analysis"
-                ? { ...step, status: "processing" }
-                : step
-            ),
-          }));
-          const analysis = await service.analyzeContent(refinedTranscript);
-          set((state) => ({
-            processingSteps: state.processingSteps.map((step) =>
-              step.name === "Content Analysis"
-                ? { ...step, status: "completed", data: analysis }
-                : step
-            ),
-          }));
-
-          // Step 3: Entity Extraction
-          set((state) => ({
-            processingSteps: state.processingSteps.map((step) =>
-              step.name === "Entity Extraction"
-                ? { ...step, status: "processing" }
-                : step
-            ),
-          }));
-          const entities = await service.extractEntities(refinedTranscript);
-          set((state) => ({
-            processingSteps: state.processingSteps.map((step) =>
-              step.name === "Entity Extraction"
-                ? { ...step, status: "completed", data: entities }
-                : step
-            ),
-          }));
-
-          // Step 4: Timeline Creation
-          set((state) => ({
-            processingSteps: state.processingSteps.map((step) =>
-              step.name === "Timeline Creation"
-                ? { ...step, status: "processing" }
-                : step
-            ),
-          }));
-          const timeline = await service.createTimeline(refinedTranscript);
-          set((state) => ({
-            processingSteps: state.processingSteps.map((step) =>
-              step.name === "Timeline Creation"
-                ? { ...step, status: "completed", data: timeline }
-                : step
-            ),
-          }));
+          const result = await service.refineTranscript(content);
+          set({ processedTranscript: result.refinedTranscript });
         } catch (error) {
           console.error("Store: Error in handlePodcastSubmit:", error);
           const currentStep = get().processingSteps.find(
@@ -204,24 +165,11 @@ export const usePodcastProcessingStore = create<PodcastProcessingState>(
         }
 
         set({ isProcessing: true });
+        updateStepStatus(stepName, "processing");
 
         try {
-          switch (stepName) {
-            case "Content Analysis":
-              const analysis = await service.analyzeContent(refinedContent);
-              updateStepStatus(stepName, "completed", analysis);
-              break;
-            case "Entity Extraction":
-              const entities = await service.extractEntities(refinedContent);
-              updateStepStatus(stepName, "completed", entities);
-              break;
-            case "Timeline Creation":
-              const timeline = await service.createTimeline(refinedContent);
-              updateStepStatus(stepName, "completed", timeline);
-              break;
-            default:
-              console.warn(`Retry not implemented for step: ${stepName}`);
-          }
+          const result = await service.refineTranscript(refinedContent);
+          set({ processedTranscript: result.refinedTranscript });
         } catch (error) {
           console.error(`Error retrying step ${stepName}:`, error);
           updateStepStatus(stepName, "error");

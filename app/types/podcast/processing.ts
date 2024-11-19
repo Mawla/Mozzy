@@ -26,6 +26,9 @@ export interface ProcessingChunk {
   status: "pending" | "processing" | "completed" | "error";
   response?: string;
   error?: string;
+  analysis?: PodcastAnalysis;
+  entities?: PodcastEntities;
+  timeline?: TimelineEvent[];
 }
 
 export interface NetworkLog {
@@ -63,6 +66,7 @@ export interface TimelineEvent {
 
 // Processing Step Types
 export interface TextChunk {
+  id: number;
   text: string;
   startIndex: number;
   endIndex: number;
@@ -114,14 +118,26 @@ export type StepData = {
 export type ProcessingStatus = "idle" | "processing" | "completed" | "error";
 
 export interface ProcessingStep {
+  id: string;
   name: string;
   status: ProcessingStatus;
   data: StepData | null;
-  error?: Error;
+  error?: Error | string;
 }
 
+// Add ChunkResult interface
+export interface ChunkResult {
+  id: number;
+  refinedText: string;
+  analysis: PodcastAnalysis;
+  entities: PodcastEntities;
+  timeline: TimelineEvent[];
+}
+
+// Update ProcessingResult to include transcript
 export interface ProcessingResult {
   transcript: string;
+  refinedTranscript: string;
   analysis: PodcastAnalysis;
   entities: PodcastEntities;
   timeline: TimelineEvent[];
@@ -144,3 +160,75 @@ export interface ProcessingPipelineProps {
 }
 
 export type ProcessingTab = "progress" | "chunks" | "result" | "logs";
+
+export interface SynthesisResult {
+  synthesis: {
+    title: string;
+    summary: string;
+    quickFacts: {
+      duration: string;
+      participants: string[];
+      mainTopics: string[];
+      expertise: string;
+    };
+    keyPoints: Array<{
+      title: string;
+      description: string;
+      relevance: string;
+      sourceChunks: number[];
+    }>;
+    themes: Array<{
+      name: string;
+      description: string;
+      relatedConcepts: string[];
+      progression: string;
+    }>;
+    narrative: {
+      beginning: string;
+      development: string;
+      conclusion: string;
+      transitions: string[];
+    };
+    connections: {
+      crossReferences: string[];
+      conceptualLinks: string[];
+      thematicArcs: string[];
+    };
+  };
+  analysis?: PodcastAnalysis;
+}
+
+export interface ContentMetadata {
+  duration?: string;
+  speakers?: string[];
+  mainTopic?: string;
+  expertise?: string;
+  keyPoints?: Array<{
+    title: string;
+    description: string;
+    relevance: string;
+  }>;
+  themes?: Array<{
+    name: string;
+    description: string;
+    relatedConcepts: string[];
+  }>;
+}
+
+// Add a type for the metadata response
+export interface MetadataResponse extends ContentMetadata {
+  duration: string;
+  speakers: string[];
+  mainTopic: string;
+  expertise: string;
+  keyPoints: Array<{
+    title: string;
+    description: string;
+    relevance: string;
+  }>;
+  themes: Array<{
+    name: string;
+    description: string;
+    relatedConcepts: string[];
+  }>;
+}

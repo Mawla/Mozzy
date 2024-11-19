@@ -1,21 +1,49 @@
-export const extractEntitiesPrompt = (transcript: string) => `
-Extract named entities from this podcast transcript:
+export const extractEntitiesPrompt = (chunk: string) => `
+Extract named entities from this chunk of podcast transcript:
 
-${transcript}
+${chunk}
 
 Return the response as JSON with this structure:
 {
-  "people": ["person1", "person2"],
-  "organizations": ["org1", "org2"],
-  "locations": ["location1", "location2"],
-  "events": ["event1", "event2"]
+  "entities": {
+    "people": [
+      {
+        "name": "person name",
+        "role": "role if mentioned",
+        "firstMention": true/false
+      }
+    ],
+    "organizations": [
+      {
+        "name": "org name",
+        "context": "brief context",
+        "firstMention": true/false
+      }
+    ],
+    "locations": [
+      {
+        "name": "location",
+        "context": "brief context"
+      }
+    ],
+    "events": [
+      {
+        "name": "event name",
+        "timeContext": "when mentioned/occurred"
+      }
+    ]
+  },
+  "continuity": {
+    "referencesPrevious": ["any references to previously mentioned entities"],
+    "incompleteReferences": ["any partial references that might be completed in other chunks"]
+  }
 }
 
 Guidelines:
-- Only include significant entities
-- Focus on entities relevant to the content
-- Include full names where possible
-- Add brief context if necessary
+- Track first mentions vs references
+- Note cross-chunk entity references
+- Preserve context for each entity
+- Track pronouns that might refer to entities in other chunks
 
 Only include the JSON object in your response.
 `;

@@ -12,21 +12,25 @@ export const PROCESSING_STEPS = {
 
 export const INITIAL_STEPS: ProcessingStep[] = [
   {
+    id: "transcript",
     name: PROCESSING_STEPS.TRANSCRIPT,
     status: "idle" as ProcessingStatus,
     data: null,
   },
   {
+    id: "analysis",
     name: PROCESSING_STEPS.ANALYSIS,
     status: "idle" as ProcessingStatus,
     data: null,
   },
   {
+    id: "entities",
     name: PROCESSING_STEPS.ENTITIES,
     status: "idle" as ProcessingStatus,
     data: null,
   },
   {
+    id: "timeline",
     name: PROCESSING_STEPS.TIMELINE,
     status: "idle" as ProcessingStatus,
     data: null,
