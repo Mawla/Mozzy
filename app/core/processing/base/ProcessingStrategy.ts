@@ -1,4 +1,4 @@
-import { ProcessingState, ProcessingStep, ProcessingResult } from "../types";
+import { ProcessingState, ProcessingStep } from "../types";
 
 export abstract class ProcessingStrategy<TInput, TOutput> {
   protected state: ProcessingState;
@@ -15,9 +15,11 @@ export abstract class ProcessingStrategy<TInput, TOutput> {
 
   protected abstract defineSteps(): ProcessingStep[];
 
-  public abstract process(input: TInput): Promise<TOutput>;
+  public abstract process(chunk: TInput): Promise<TOutput>;
 
   public abstract validate(input: TInput): boolean;
+
+  public abstract combine?(results: TOutput[]): Promise<TOutput>;
 
   protected updateProgress(stepId: string, progress: number): void {
     const step = this.state.steps.find((s) => s.id === stepId);

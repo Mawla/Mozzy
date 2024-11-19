@@ -17,6 +17,7 @@ export interface ProcessingStep {
   status: "pending" | "processing" | "completed" | "failed";
   progress: number;
   error?: Error;
+  dependencies?: string[];
 }
 
 export interface ProcessingState {
