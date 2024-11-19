@@ -2,23 +2,39 @@ export class ProcessingError extends Error {
   constructor(
     message: string,
     public readonly code: string,
-    public readonly details?: any
+    public readonly step?: string,
+    public readonly details?: unknown
   ) {
     super(message);
     this.name = "ProcessingError";
   }
 }
 
-export class ChunkingError extends ProcessingError {
-  constructor(message: string, details?: any) {
-    super(message, "CHUNKING_ERROR", details);
-    this.name = "ChunkingError";
+export class ChunkProcessingError extends ProcessingError {
+  constructor(
+    message: string,
+    public readonly chunkIndex: number,
+    details?: unknown
+  ) {
+    super(message, "CHUNK_PROCESSING_ERROR", undefined, details);
+    this.name = "ChunkProcessingError";
   }
 }
 
-export class ProcessingStrategyError extends ProcessingError {
-  constructor(message: string, details?: any) {
-    super(message, "PROCESSING_STRATEGY_ERROR", details);
-    this.name = "ProcessingStrategyError";
+export class PipelineError extends ProcessingError {
+  constructor(
+    message: string,
+    public readonly failedSteps: string[],
+    details?: unknown
+  ) {
+    super(message, "PIPELINE_ERROR", undefined, details);
+    this.name = "PipelineError";
+  }
+}
+
+export class ValidationError extends ProcessingError {
+  constructor(message: string, step?: string, details?: unknown) {
+    super(message, "VALIDATION_ERROR", step, details);
+    this.name = "ValidationError";
   }
 }

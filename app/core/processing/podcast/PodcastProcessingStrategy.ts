@@ -1,10 +1,9 @@
-import { ProcessingStrategy } from "../base/ProcessingStrategy";
 import {
+  ProcessingResult,
   TextChunk,
   ChunkResult,
   PodcastAnalysis,
   PodcastEntities,
-  TimelineEvent,
   ContentMetadata,
   MetadataResponse,
 } from "../types";
@@ -15,85 +14,97 @@ import {
   suggestTags,
 } from "@/app/actions/anthropicActions";
 import { ProcessingLogger } from "../utils/logger";
+import { ProcessingStrategy } from "../base/ProcessingStrategy";
+import { ProcessingStep } from "../types";
 
-export class PodcastProcessingStrategy
-  implements ProcessingStrategy<TextChunk, ChunkResult>
-{
-  async process(chunk: TextChunk): Promise<ChunkResult> {
+export class PodcastProcessingStrategy extends ProcessingStrategy<
+  TextChunk,
+  ChunkResult
+> {
+  protected defineSteps(): ProcessingStep[] {
+    return [
+      {
+        id: "refine",
+        name: "Transcript Refinement",
+        description: "Cleaning and formatting the transcript text",
+        status: "pending",
+        progress: 0,
+      },
+      {
+        id: "analyze",
+        name: "Content Analysis",
+        description: "Generating summary and extracting key information",
+        status: "pending",
+        progress: 0,
+      },
+      {
+        id: "metadata",
+        name: "Metadata Generation",
+        description: "Creating tags and content metadata",
+        status: "pending",
+        progress: 0,
+      },
+    ];
+  }
+
+  public async process(chunk: TextChunk): Promise<ChunkResult> {
     try {
       // Step 1: Refine the text
-      ProcessingLogger.log("info", `Processing chunk ${chunk.id}`, {
-        length: chunk.text.length,
+      const refinedText = await this.executeStep("refine", async () => {
+        ProcessingLogger.log("info", `Processing chunk ${chunk.id}`, {
+          length: chunk.text.length,
+        });
+        return await refinePodcastTranscript(chunk.text);
       });
-      const refinedText = await refinePodcastTranscript(chunk.text);
 
       // Step 2: Generate analysis
-      const summary = await generateSummary(refinedText);
-      const title = await generateTitle(refinedText);
+      const analysis = await this.executeStep("analyze", async () => {
+        const summary = await generateSummary(refinedText);
+        const title = await generateTitle(refinedText);
+        return {
+          id: Date.now().toString(),
+          title,
+          summary,
+          quickFacts: {
+            duration: "0:00",
+            participants: [],
+            mainTopic: "",
+            expertise: "",
+          },
+          keyPoints: [],
+          themes: [],
+        } as PodcastAnalysis;
+      });
 
-      // Cast metadata to MetadataResponse which has required fields
-      const rawMetadata = (await suggestTags(refinedText)) as ContentMetadata;
-      const metadata: MetadataResponse = {
-        duration: rawMetadata?.duration ?? "0:00",
-        speakers: rawMetadata?.speakers ?? [],
-        mainTopic: rawMetadata?.mainTopic ?? "Unknown",
-        expertise: rawMetadata?.expertise ?? "General",
-        keyPoints:
-          rawMetadata?.keyPoints?.map(
-            (
-              kp:
-                | string
-                | { title: string; description: string; relevance: string }
-            ) => ({
-              title: typeof kp === "string" ? kp : kp.title,
-              description: typeof kp === "string" ? kp : kp.description,
-              relevance: typeof kp === "string" ? "medium" : kp.relevance,
-            })
-          ) ?? [],
-        themes:
-          rawMetadata?.themes?.map(
-            (
-              theme:
-                | string
-                | {
-                    name: string;
-                    description: string;
-                    relatedConcepts: string[];
-                  }
-            ) => ({
-              name: typeof theme === "string" ? theme : theme.name,
-              description:
-                typeof theme === "string" ? theme : theme.description,
-              relatedConcepts:
-                typeof theme === "string" ? [] : theme.relatedConcepts,
-            })
-          ) ?? [],
+      // Step 3: Generate metadata
+      const metadata = await this.executeStep("metadata", async () => {
+        const rawMetadata = (await suggestTags(refinedText)) as ContentMetadata;
+        return {
+          duration: rawMetadata?.duration ?? "0:00",
+          speakers: rawMetadata?.speakers ?? [],
+          mainTopic: rawMetadata?.mainTopic ?? "Unknown",
+          expertise: rawMetadata?.expertise ?? "General",
+          keyPoints: [],
+          themes: [],
+        } as MetadataResponse;
+      });
+
+      // Update analysis with metadata
+      analysis.quickFacts = {
+        duration: metadata.duration,
+        participants: metadata.speakers,
+        mainTopic: metadata.mainTopic,
+        expertise: metadata.expertise,
       };
+      analysis.keyPoints = metadata.keyPoints ?? [];
+      analysis.themes = metadata.themes ?? [];
 
-      const analysis: PodcastAnalysis = {
-        id: Date.now().toString(),
-        title,
-        summary,
-        quickFacts: {
-          duration: metadata.duration,
-          participants: metadata.speakers,
-          mainTopic: metadata.mainTopic,
-          expertise: metadata.expertise,
-        },
-        keyPoints: metadata.keyPoints,
-        themes: metadata.themes,
-      };
-
-      // Step 3: Extract entities
       const entities: PodcastEntities = {
         people: metadata.speakers,
         organizations: [],
         locations: [],
         events: [],
       };
-
-      // Step 4: Create timeline
-      const timeline: TimelineEvent[] = [];
 
       ProcessingLogger.log("info", `Completed chunk ${chunk.id}`, {
         refinedLength: refinedText.length,
@@ -106,7 +117,7 @@ export class PodcastProcessingStrategy
         refinedText,
         analysis,
         entities,
-        timeline,
+        timeline: [],
       };
     } catch (error) {
       ProcessingLogger.log("error", `Failed to process chunk ${chunk.id}`, {
@@ -116,7 +127,7 @@ export class PodcastProcessingStrategy
     }
   }
 
-  validate(chunk: TextChunk): boolean {
+  public validate(chunk: TextChunk): boolean {
     if (!chunk.text || typeof chunk.text !== "string") {
       return false;
     }
@@ -124,14 +135,5 @@ export class PodcastProcessingStrategy
       return false;
     }
     return true;
-  }
-
-  combine(results: ChunkResult[]): ChunkResult {
-    // Implement proper combination logic
-    const combinedResult = results[0];
-    if (!combinedResult) {
-      throw new Error("No results to combine");
-    }
-    return combinedResult;
   }
 }
