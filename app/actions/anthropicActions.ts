@@ -1,6 +1,6 @@
 "use server";
 
-import { AnthropicHelper } from "@/utils/AnthropicHelper";
+import { AnthropicHelper } from "../utils/AnthropicHelper";
 import {
   mergeTranscriptAndTemplatePrompt,
   generateTitlePrompt,
@@ -18,6 +18,12 @@ import {
   sanitizeJsonString,
   extractJsonFieldFromString,
 } from "@/utils/stringUtils";
+import { extractEntitiesPrompt } from "../prompts/podcasts";
+import {
+  Entity,
+  EntityResponse,
+  PodcastEntities,
+} from "@/app/types/podcast/processing";
 
 const anthropicHelper = AnthropicHelper.getInstance();
 
@@ -279,3 +285,34 @@ export async function refinePodcastTranscript(
     throw new Error("Failed to parse refined transcript");
   }
 }
+
+export const extractEntities = async (
+  text: string
+): Promise<PodcastEntities> => {
+  const prompt = extractEntitiesPrompt(text);
+  const response = await anthropicHelper.getCompletion(
+    prompt,
+    DEFAULT_COMPLETION_LENGTH
+  );
+
+  try {
+    const sanitizedResponse = sanitizeJsonString(response);
+    const parsedResponse = JSON.parse(sanitizedResponse) as EntityResponse;
+    const { entities } = parsedResponse;
+
+    return {
+      people: entities.people.map((p) => p.name),
+      organizations: entities.organizations.map((o) => o.name),
+      locations: entities.locations.map((l) => l.name),
+      events: entities.events.map((e) => e.name),
+    };
+  } catch (error) {
+    console.error("Failed to parse entity extraction response:", error);
+    return {
+      people: [],
+      organizations: [],
+      locations: [],
+      events: [],
+    };
+  }
+};

@@ -21,6 +21,18 @@ describe("Podcast Processing Pipeline", () => {
     pipeline = new ProcessingPipeline(chunkingStrategy, processingStrategy);
   });
 
+  afterEach(() => {
+    // Clean up after each test
+    if (pipeline) {
+      pipeline.getChunks().length = 0;
+      pipeline.getResults().length = 0;
+    }
+    if (processingStrategy) {
+      processingStrategy.clearResults();
+    }
+    if (global.gc) global.gc();
+  });
+
   it("should process a simple podcast transcript", async () => {
     const input = "This is a test podcast transcript.";
     const result = await pipeline.process(input);

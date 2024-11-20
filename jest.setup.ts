@@ -2,17 +2,19 @@
 import "@testing-library/jest-dom";
 
 if (typeof global.TextEncoder === "undefined") {
-  const util = require("util");
-  global.TextEncoder = util.TextEncoder;
-  global.TextDecoder = util.TextDecoder;
+  const { TextEncoder, TextDecoder } = require("util");
+  global.TextEncoder = TextEncoder;
+  global.TextDecoder = TextDecoder;
   global.ArrayBuffer = ArrayBuffer;
   global.Uint8Array = Uint8Array;
 }
 
 if (typeof global.fetch === "undefined") {
-  const nodeFetch = require("node-fetch");
-  global.fetch = nodeFetch;
-  global.Headers = nodeFetch.Headers;
-  global.Request = nodeFetch.Request;
-  global.Response = nodeFetch.Response;
+  const fetch = require("node-fetch").default;
+  const { Headers, Request, Response } = require("node-fetch");
+
+  global.fetch = fetch;
+  global.Headers = Headers;
+  global.Request = Request;
+  global.Response = Response;
 }

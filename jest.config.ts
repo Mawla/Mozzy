@@ -25,11 +25,12 @@ const config: Config = {
   },
   moduleDirectories: ["node_modules", "<rootDir>/"],
   testPathIgnorePatterns: ["<rootDir>/.next/", "<rootDir>/node_modules/"],
-  transformIgnorePatterns: ["/node_modules/(?!@anthropic-ai/sdk)"],
+  transformIgnorePatterns: ["node_modules/(?!(@anthropic-ai/sdk|node-fetch)/)"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   testEnvironmentOptions: {
     customExportConditions: ["node", "node-addons"],
   },
+  resolver: undefined,
 };
 
 export default createJestConfig(config);

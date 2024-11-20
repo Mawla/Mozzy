@@ -5,9 +5,9 @@ export type {
   TextChunk,
   ChunkResult,
   PodcastAnalysis,
-  PodcastEntities,
   ContentMetadata,
   MetadataResponse,
+  PodcastEntities,
 } from "@/app/types/podcast/processing";
 
 export interface ProcessingStep {

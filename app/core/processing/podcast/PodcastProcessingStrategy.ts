@@ -12,6 +12,7 @@ import {
   generateSummary,
   generateTitle,
   suggestTags,
+  extractEntities,
 } from "@/app/actions/anthropicActions";
 import { ProcessingLogger } from "../utils/logger";
 import { ProcessingStrategy } from "../base/ProcessingStrategy";
@@ -148,9 +149,11 @@ export class PodcastProcessingStrategy extends ProcessingStrategy<
       const metadataPromise = this.executeStepWithDependencies(
         "metadata",
         async () => {
-          const rawMetadata = (await suggestTags(
-            refinedText.refinedText
-          )) as ContentMetadata;
+          const [rawMetadata, extractedEntities] = await Promise.all([
+            suggestTags(refinedText.refinedText),
+            extractEntities(refinedText.refinedText),
+          ]);
+
           const metadata = {
             duration: rawMetadata?.duration ?? "0:00",
             speakers: rawMetadata?.speakers ?? [],
@@ -159,7 +162,21 @@ export class PodcastProcessingStrategy extends ProcessingStrategy<
             keyPoints: [],
             themes: [],
           } as MetadataResponse;
-          return { metadata };
+
+          // Enhanced entity extraction
+          const entities: PodcastEntities = {
+            people: Array.from(
+              new Set([
+                ...(rawMetadata?.speakers ?? []),
+                ...(extractedEntities?.people ?? []),
+              ])
+            ),
+            organizations: extractedEntities?.organizations ?? [],
+            locations: extractedEntities?.locations ?? [],
+            events: extractedEntities?.events ?? [],
+          };
+
+          return { metadata, entities };
         }
       );
 
@@ -174,7 +191,7 @@ export class PodcastProcessingStrategy extends ProcessingStrategy<
         "synthesis",
         async () => {
           const { analysis } = analysisResult;
-          const { metadata } = metadataResult;
+          const { metadata, entities } = metadataResult;
 
           // Update analysis with metadata
           analysis.quickFacts = {
@@ -185,13 +202,6 @@ export class PodcastProcessingStrategy extends ProcessingStrategy<
           };
           analysis.keyPoints = metadata.keyPoints ?? [];
           analysis.themes = metadata.themes ?? [];
-
-          const entities: PodcastEntities = {
-            people: metadata.speakers,
-            organizations: [],
-            locations: [],
-            events: [],
-          };
 
           return {
             id: chunk.id,

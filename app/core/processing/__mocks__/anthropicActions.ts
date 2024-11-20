@@ -23,3 +23,11 @@ export const suggestTags = jest.fn(() =>
     themes: ["Theme 1"],
   })
 );
+export const extractEntities = jest.fn(() =>
+  Promise.resolve({
+    people: ["Person 1"],
+    organizations: ["Org 1"],
+    locations: ["Location 1"],
+    events: ["Event 1"],
+  })
+);

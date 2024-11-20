@@ -1,14 +1,8 @@
 export interface ContentMetadata {
-  themes?: string[];
-  tags?: string[];
+  duration?: string;
+  speakers?: string[];
+  mainTopic?: string;
+  expertise?: string;
   keyPoints?: string[];
-  people?: string[];
-  organizations?: string[];
-  locations?: string[];
-  events?: string[];
-  timeline?: Array<{
-    time: string;
-    event: string;
-    importance: "high" | "medium" | "low";
-  }>;
+  themes?: string[];
 }

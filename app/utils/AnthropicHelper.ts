@@ -28,7 +28,7 @@ export class AnthropicHelper {
       console.log("Calling Anthropic API with prompt:", prompt);
       const response = await this.anthropic.messages.create({
         model: CLAUDE_MODEL_VERSION,
-        max_tokens: Math.min(maxTokens, MAX_OUTPUT_TOKENS), // Ensure we don't exceed the limit
+        max_tokens: Math.min(maxTokens, MAX_OUTPUT_TOKENS),
         temperature: 0.7,
         messages: [
           {
@@ -40,12 +40,9 @@ export class AnthropicHelper {
 
       console.log("Anthropic API response:", response);
 
-      if (
-        response.content &&
-        response.content.length > 0 &&
-        "text" in response.content[0]
-      ) {
-        return response.content[0].text.trim();
+      const content = response.content[0];
+      if (content && "type" in content && content.type === "text") {
+        return content.text.trim();
       } else {
         throw new Error("Invalid response format from Claude API");
       }

@@ -232,3 +232,45 @@ export interface MetadataResponse extends ContentMetadata {
     relatedConcepts: string[];
   }>;
 }
+
+// Add Entity types for processing
+export interface Entity {
+  name: string;
+  role?: string;
+  context?: string;
+  timeContext?: string;
+  firstMention?: boolean;
+}
+
+export interface EntityResponse {
+  entities: {
+    people: Entity[];
+    organizations: Entity[];
+    locations: Entity[];
+    events: Entity[];
+  };
+  continuity: {
+    referencesPrevious: string[];
+    incompleteReferences: string[];
+  };
+}
+
+// Update Anthropic response types to match the actual API
+export interface ContentBlock {
+  text: string;
+  type: "text";
+}
+
+export interface ToolUseBlock {
+  type: "tool_use" | "tool_result";
+  text: string;
+}
+
+export type MessageContentBlock = ContentBlock | ToolUseBlock;
+
+export interface Message {
+  id: string;
+  content: MessageContentBlock[];
+  role: string;
+  model: string;
+}
