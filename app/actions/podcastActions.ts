@@ -1,42 +1,36 @@
 "use server";
 
-import { AnthropicHelper } from "@/utils/AnthropicHelper";
+import { generateObject } from "ai";
+import { anthropic } from "@ai-sdk/anthropic";
+import { podcastService } from "@/app/services/podcastService";
+import { TextChunk } from "@/app/utils/textChunking";
+import {
+  PodcastAnalysis,
+  PodcastEntities,
+} from "@/app/types/podcast/processing";
+import { refinedTranscriptSchema } from "@/app/schemas/podcast/transcript";
+import { contentAnalysisSchema } from "@/app/schemas/podcast/analysis";
+import { entitySchema } from "@/app/schemas/podcast/entities";
 import {
   refineTranscriptPrompt,
   analyzeContentPrompt,
   extractEntitiesPrompt,
-  createTimelinePrompt,
 } from "@/app/prompts/podcasts";
-import {
-  sanitizeJsonString,
-  extractJsonFieldFromString,
-  unescapeJsonString,
-} from "@/utils/stringUtils";
-import { podcastService } from "@/app/services/podcastService";
-import { TextChunk } from "@/app/types/podcast/processing";
 
-const anthropicHelper = AnthropicHelper.getInstance();
-const MAX_OUTPUT_TOKENS = 8192;
+// Define the model once with the latest version
+const model = anthropic("claude-3-sonnet-20241022");
 
 export async function processTranscript(transcript: string) {
   return podcastService.processInChunks(
     transcript,
     async (chunk: TextChunk) => {
-      const response = await anthropicHelper.getCompletion(
-        refineTranscriptPrompt(chunk.text),
-        MAX_OUTPUT_TOKENS
-      );
+      const { object } = await generateObject({
+        model,
+        schema: refinedTranscriptSchema,
+        prompt: refineTranscriptPrompt(chunk.text),
+      });
 
-      try {
-        const sanitizedResponse = sanitizeJsonString(response);
-        const parsedResponse = JSON.parse(sanitizedResponse);
-        return (
-          parsedResponse.refinedContent || parsedResponse.transcript || response
-        );
-      } catch (error) {
-        console.error("Error processing chunk:", error);
-        return chunk.text;
-      }
+      return object.refinedContent || object.transcript || chunk.text;
     },
     (chunks) => chunks.join(" ")
   );
@@ -46,12 +40,13 @@ export async function analyzeContent(transcript: string) {
   return podcastService.processInChunks(
     transcript,
     async (chunk: TextChunk) => {
-      const response = await anthropicHelper.getCompletion(
-        analyzeContentPrompt(chunk.text),
-        MAX_OUTPUT_TOKENS
-      );
-      const sanitizedResponse = sanitizeJsonString(response);
-      return JSON.parse(sanitizedResponse);
+      const { object } = await generateObject({
+        model,
+        schema: contentAnalysisSchema,
+        prompt: analyzeContentPrompt(chunk.text),
+      });
+
+      return object as PodcastAnalysis;
     },
     (analyses) => podcastService.mergeAnalyses(analyses)
   );
@@ -61,28 +56,17 @@ export async function extractEntities(transcript: string) {
   return podcastService.processInChunks(
     transcript,
     async (chunk: TextChunk) => {
-      const response = await anthropicHelper.getCompletion(
-        extractEntitiesPrompt(chunk.text),
-        MAX_OUTPUT_TOKENS
-      );
-      const sanitizedResponse = sanitizeJsonString(response);
-      return JSON.parse(sanitizedResponse);
+      const { object } = await generateObject({
+        model,
+        schema: entitySchema,
+        prompt: extractEntitiesPrompt(chunk.text),
+      });
+
+      return object as PodcastEntities;
     },
     (entities) => podcastService.mergeEntities(entities)
   );
 }
 
-export async function createTimeline(transcript: string) {
-  return podcastService.processInChunks(
-    transcript,
-    async (chunk: TextChunk) => {
-      const response = await anthropicHelper.getCompletion(
-        createTimelinePrompt(chunk.text),
-        MAX_OUTPUT_TOKENS
-      );
-      const sanitizedResponse = sanitizeJsonString(response);
-      return JSON.parse(sanitizedResponse);
-    },
-    (timelines) => podcastService.mergeTimelines(timelines)
-  );
-}
+// Timeline functionality temporarily disabled
+// export async function createTimeline(transcript: string) { ... }
