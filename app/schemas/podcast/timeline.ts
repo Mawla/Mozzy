@@ -8,6 +8,6 @@ export const timelineEventSchema = z
     details: z.string(),
     speakers: z.array(z.string()).optional(),
     time: z.string(),
-    importance: z.number(),
+    importance: z.enum(["low", "medium", "high"]),
   })
   .strict() as z.ZodType<TimelineEvent>;

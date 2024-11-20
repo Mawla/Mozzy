@@ -7,6 +7,12 @@ const keyPointSchema = z.object({
   relevance: z.string(),
 });
 
+const themeSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  relatedConcepts: z.array(z.string()),
+});
+
 export const contentAnalysisSchema = z
   .object({
     id: z.string(),
@@ -23,6 +29,6 @@ export const contentAnalysisSchema = z
       mainTopic: z.string(),
       expertise: z.string(),
     }),
-    themes: z.array(z.string()),
+    themes: z.array(themeSchema),
   })
   .strict() as z.ZodType<PodcastAnalysis>;
