@@ -105,19 +105,16 @@ export class PodcastProcessingStrategy extends ProcessingStrategy<
     try {
       this.stepResults.clear();
 
-      // Step 1: Refine the text
+      // Step 1: Refine the text - Use service instead of direct action call
       const refinedText = await this.executeStepWithDependencies(
         "refine",
         async () => {
-          ProcessingLogger.log("info", `Refining chunk ${chunk.id}`, {
-            length: chunk.text.length,
-          });
           const refined = await podcastService.refineText(chunk.text);
           return { refinedText: refined };
         }
       );
 
-      // Step 2: Generate analysis
+      // Step 2: Generate analysis - Use service instead of direct action call
       const analysisPromise = this.executeStepWithDependencies(
         "analyze",
         async () => {
@@ -128,7 +125,7 @@ export class PodcastProcessingStrategy extends ProcessingStrategy<
         }
       );
 
-      // Step 3: Generate metadata
+      // Step 3: Generate metadata - Use service instead of direct action call
       const metadataPromise = this.executeStepWithDependencies(
         "metadata",
         async () => {

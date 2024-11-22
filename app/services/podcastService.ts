@@ -8,14 +8,13 @@ import {
   ChunkResult,
 } from "@/app/types/podcast/processing";
 import { Theme } from "@/app/schemas/podcast/analysis";
-import { PodcastChunker } from "@/app/core/processing/podcast/PodcastChunker";
+import { PodcastProcessor } from "@/app/core/processing/podcast/PodcastProcessor";
 import { ProcessingLogger } from "@/app/core/processing/utils/logger";
 import {
   processTranscript,
   analyzeContent,
   extractEntities,
 } from "@/app/actions/podcastActions";
-import { PodcastProcessor } from "@/app/core/processing/podcast/PodcastProcessor";
 
 interface ProcessedPodcast {
   id: string;
@@ -32,20 +31,65 @@ interface ProcessedPodcast {
 }
 
 export const podcastService = {
-  // Main entry point - called directly from UI
+  // Main entry point - called from UI/Processing Service
   async processTranscript(
     transcript: string,
     onStateUpdate?: (state: any) => void
   ): Promise<ProcessingResult> {
     try {
-      // 1. Create processor instance
+      // 1. Create processor for chunking
       const processor = new PodcastProcessor();
       onStateUpdate?.({ type: "PROCESSOR_CREATED" });
 
-      // 2. Delegate processing to processor
-      const result = await processor.process(transcript);
-      onStateUpdate?.({ type: "PROCESSING_COMPLETED", result });
+      // 2. Get chunks using public method
+      const chunks = await processor.createChunks(transcript);
+      onStateUpdate?.({ type: "CHUNKS_CREATED", chunks });
 
+      // 3. Process each chunk through AI
+      const chunkResults = await Promise.all(
+        chunks.map(async (chunk) => {
+          onStateUpdate?.({ type: "CHUNK_STARTED", chunkId: chunk.id });
+
+          // Direct calls to server actions
+          const refinedText = await processTranscript(chunk);
+          onStateUpdate?.({ type: "CHUNK_REFINED", chunkId: chunk.id });
+
+          const analysis = await analyzeContent(chunk);
+          onStateUpdate?.({ type: "CHUNK_ANALYZED", chunkId: chunk.id });
+
+          const entities = await extractEntities(chunk);
+          onStateUpdate?.({
+            type: "CHUNK_ENTITIES_EXTRACTED",
+            chunkId: chunk.id,
+          });
+
+          const result: ChunkResult = {
+            id: chunk.id,
+            refinedText,
+            analysis,
+            entities,
+            timeline: [],
+          };
+
+          onStateUpdate?.({
+            type: "CHUNK_COMPLETED",
+            chunkId: chunk.id,
+            result,
+          });
+          return result;
+        })
+      );
+
+      // 4. Combine results
+      const result = {
+        transcript,
+        refinedTranscript: chunkResults.map((r) => r.refinedText).join(" "),
+        analysis: this.mergeAnalyses(chunkResults.map((r) => r.analysis)),
+        entities: this.mergeEntities(chunkResults.map((r) => r.entities)),
+        timeline: [],
+      };
+
+      onStateUpdate?.({ type: "PROCESSING_COMPLETED", result });
       return result;
     } catch (error) {
       onStateUpdate?.({ type: "PROCESSING_ERROR", error });

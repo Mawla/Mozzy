@@ -16,6 +16,10 @@ export class PodcastProcessor extends Processor<string, ProcessingResult> {
     this.strategy = new PodcastProcessingStrategy();
   }
 
+  public async createChunks(text: string): Promise<TextChunk[]> {
+    return this.chunker.chunk(text);
+  }
+
   async process(input: string): Promise<ProcessingResult> {
     try {
       // Validate input before processing

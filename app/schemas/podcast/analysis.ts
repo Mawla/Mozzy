@@ -13,6 +13,13 @@ const themeSchema = z.object({
   relatedConcepts: z.array(z.string()),
 });
 
+// Define section schema instead of using z.any()
+const sectionSchema = z.object({
+  title: z.string(),
+  content: z.string(),
+  timestamp: z.string().optional(),
+});
+
 export const contentAnalysisSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -25,9 +32,10 @@ export const contentAnalysisSchema = z.object({
   }),
   keyPoints: z.array(keyPointSchema),
   themes: z.array(themeSchema),
-  sections: z.array(z.any()).optional(),
+  sections: z.array(sectionSchema).optional(),
 });
 
 export type PodcastAnalysis = z.infer<typeof contentAnalysisSchema>;
 export type KeyPoint = z.infer<typeof keyPointSchema>;
 export type Theme = z.infer<typeof themeSchema>;
+export type Section = z.infer<typeof sectionSchema>;
