@@ -1,43 +1,41 @@
 "use server";
 
 import { generateObject } from "ai";
-// import { anthropic } from "@ai-sdk/anthropic";
 import { openai } from "@ai-sdk/openai";
 import { TextChunk } from "@/app/types/podcast/processing";
 import { ProcessingLogger } from "@/app/core/processing/utils/logger";
 import {
   refinedTranscriptSchema,
   RefinedTranscript,
-} from "@/app/schemas/podcast/transcript";
-import {
   contentAnalysisSchema,
   PodcastAnalysis,
-} from "@/app/schemas/podcast/analysis";
-import { entitySchema, PodcastEntities } from "@/app/schemas/podcast/entities";
+  entitySchema,
+  PodcastEntities,
+} from "@/app/schemas/podcast";
 import {
   refineTranscriptPrompt,
   analyzeContentPrompt,
   extractEntitiesPrompt,
 } from "@/app/prompts/podcasts";
 
-// Initialize Anthropic client
-// const model = anthropic("claude-3-sonnet");
-// const model: openai('gpt-4o');
+// Initialize OpenAI client
 const model = openai("gpt-4o");
-// Pure server actions - no dependencies on service
+
 export async function processTranscript(chunk: TextChunk) {
   try {
-    const { object } = await generateObject({
+    const { object } = await generateObject<RefinedTranscript>({
       model,
       schema: refinedTranscriptSchema,
       schemaName: "RefinedTranscript",
-      schemaDescription: "A refined version of the podcast transcript text",
+      schemaDescription:
+        "A refined version of the podcast transcript text with context",
       prompt: refineTranscriptPrompt(chunk.text),
       output: "object",
-      temperature: 0, // Lower temperature for more consistent output
+      temperature: 0,
     });
 
-    return object.refinedContent || object.transcript || chunk.text;
+    // Return just the refined content, but keep context for future use if needed
+    return object.refinedContent;
   } catch (error) {
     ProcessingLogger.log("error", "Failed to process transcript", {
       error,
@@ -57,7 +55,7 @@ export async function analyzeContent(chunk: TextChunk) {
         "Analysis of the podcast content including key points and themes",
       prompt: analyzeContentPrompt(chunk.text),
       output: "object",
-      temperature: 0.3, // Slightly higher for analysis
+      temperature: 0.3,
     });
 
     return object;
@@ -79,7 +77,7 @@ export async function extractEntities(chunk: TextChunk) {
       schemaDescription: "Entities extracted from the podcast transcript",
       prompt: extractEntitiesPrompt(chunk.text),
       output: "object",
-      temperature: 0, // Lower temperature for entity extraction
+      temperature: 0,
     });
 
     return object;
