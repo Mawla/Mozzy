@@ -7,17 +7,16 @@ import {
   ContentMetadata,
   MetadataResponse,
 } from "../types";
-import {
-  refinePodcastTranscript,
-  generateSummary,
-  generateTitle,
-  suggestTags,
-  extractEntities,
-} from "@/app/actions/anthropicActions";
+
 import { ProcessingLogger } from "../utils/logger";
 import { ProcessingStrategy } from "../base/ProcessingStrategy";
 import { ProcessingStep } from "../types";
 import { ProcessingError } from "../errors/ProcessingError";
+import {
+  processTranscript,
+  analyzeContent,
+  extractEntities,
+} from "@/app/actions/podcastActions";
 
 interface StepResult {
   refinedText?: string;
@@ -117,7 +116,7 @@ export class PodcastProcessingStrategy extends ProcessingStrategy<
           ProcessingLogger.log("info", `Refining chunk ${chunk.id}`, {
             length: chunk.text.length,
           });
-          const refined = await refinePodcastTranscript(chunk.text);
+          const refined = await processTranscript(chunk.text);
           return { refinedText: refined };
         }
       );
@@ -126,21 +125,7 @@ export class PodcastProcessingStrategy extends ProcessingStrategy<
       const analysisPromise = this.executeStepWithDependencies(
         "analyze",
         async () => {
-          const summary = await generateSummary(refinedText.refinedText);
-          const title = await generateTitle(refinedText.refinedText);
-          const analysis = {
-            id: Date.now().toString(),
-            title,
-            summary,
-            quickFacts: {
-              duration: "0:00",
-              participants: [],
-              mainTopic: "",
-              expertise: "",
-            },
-            keyPoints: [],
-            themes: [],
-          } as PodcastAnalysis;
+          const analysis = await analyzeContent(refinedText.refinedText);
           return { analysis };
         }
       );
@@ -149,31 +134,16 @@ export class PodcastProcessingStrategy extends ProcessingStrategy<
       const metadataPromise = this.executeStepWithDependencies(
         "metadata",
         async () => {
-          const [rawMetadata, extractedEntities] = await Promise.all([
-            suggestTags(refinedText.refinedText),
-            extractEntities(refinedText.refinedText),
-          ]);
+          const entities = await extractEntities(refinedText.refinedText);
 
-          const metadata = {
-            duration: rawMetadata?.duration ?? "0:00",
-            speakers: rawMetadata?.speakers ?? [],
-            mainTopic: rawMetadata?.mainTopic ?? "Unknown",
-            expertise: rawMetadata?.expertise ?? "General",
+          // Create metadata from entities
+          const metadata: MetadataResponse = {
+            duration: "0:00", // This should come from audio processing
+            speakers: entities.people || [],
+            mainTopic: "Unknown", // This could be derived from analysis
+            expertise: "General",
             keyPoints: [],
             themes: [],
-          } as MetadataResponse;
-
-          // Enhanced entity extraction
-          const entities: PodcastEntities = {
-            people: Array.from(
-              new Set([
-                ...(rawMetadata?.speakers ?? []),
-                ...(extractedEntities?.people ?? []),
-              ])
-            ),
-            organizations: extractedEntities?.organizations ?? [],
-            locations: extractedEntities?.locations ?? [],
-            events: extractedEntities?.events ?? [],
           };
 
           return { metadata, entities };
