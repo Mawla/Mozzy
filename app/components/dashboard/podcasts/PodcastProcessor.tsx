@@ -8,10 +8,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ProcessingPipeline } from "./ProcessingPipeline";
 import { usePodcastProcessingStore } from "@/app/store/podcastProcessingStore";
-import { ProcessingStep } from "@/app/types/podcast/models";
+import { PodcastProcessingService } from "@/app/services/podcastProcessingService";
+import { ProcessingState } from "@/app/types/podcast/processing";
 
 interface PodcastProcessorProps {
-  onProcessingComplete: (podcastId: string) => void;
+  onProcessingComplete: (result: ProcessingState) => void;
 }
 
 export const PodcastProcessor = ({
@@ -21,43 +22,26 @@ export const PodcastProcessor = ({
   const [activeTab, setActiveTab] = useState<"url" | "search" | "transcript">(
     "transcript"
   );
-
   const {
     isProcessing,
-    processingSteps: steps,
+    processingSteps,
     handlePodcastSubmit,
     handleRetryStep,
   } = usePodcastProcessingStore();
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Create processing service instance
+  const processingService = new PodcastProcessingService();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted");
-
-    if (!input.trim()) {
-      console.log("Empty input, returning");
-      return;
-    }
+    if (!input.trim()) return;
 
     try {
-      setIsSubmitting(true);
-      console.log("Starting transcript processing with:", {
-        type: activeTab,
-        contentLength: input.trim().length,
-        firstChars: input.trim().substring(0, 100),
-      });
-
-      await handlePodcastSubmit({
-        type: activeTab,
-        content: input.trim(),
-      });
-
-      console.log("Processing completed successfully");
+      // Use processingService directly
+      await processingService.refineTranscript(input.trim());
+      onProcessingComplete(processingService.getState());
     } catch (error) {
       console.error("Error processing podcast:", error);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -83,11 +67,8 @@ export const PodcastProcessor = ({
                   onChange={(e) => setInput(e.target.value)}
                   className="min-h-[200px]"
                 />
-                <Button
-                  type="submit"
-                  disabled={isProcessing || !input.trim() || isSubmitting}
-                >
-                  {isSubmitting ? "Processing..." : "Process Transcript"}
+                <Button type="submit" disabled={isProcessing || !input.trim()}>
+                  Process Transcript
                 </Button>
               </TabsContent>
 
@@ -115,11 +96,11 @@ export const PodcastProcessor = ({
         </CardContent>
       </Card>
 
-      {steps.some((step: ProcessingStep) => step.status !== "idle") && (
+      {processingSteps.some((step) => step.status !== "idle") && (
         <ProcessingPipeline
-          steps={steps}
-          onRetryStep={handleRetryStep}
+          steps={processingSteps}
           isProcessing={isProcessing}
+          onRetryStep={handleRetryStep}
         />
       )}
     </div>

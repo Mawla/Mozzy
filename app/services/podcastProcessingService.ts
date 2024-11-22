@@ -122,4 +122,8 @@ export class PodcastProcessingService {
     }
     this.listeners.clear();
   }
+
+  getState(): ProcessingState {
+    return { ...this.state };
+  }
 }

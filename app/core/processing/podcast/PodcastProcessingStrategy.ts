@@ -135,7 +135,7 @@ export class PodcastProcessingStrategy extends ProcessingStrategy<
 
           const metadata: MetadataResponse = {
             duration: "0:00",
-            speakers: entities.people || [],
+            speakers: entities.people.map((p) => p.name),
             mainTopic: "Unknown",
             expertise: "General",
             keyPoints: [],

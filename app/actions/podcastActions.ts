@@ -6,11 +6,8 @@ import { TextChunk } from "@/app/types/podcast/processing";
 import { ProcessingLogger } from "@/app/core/processing/utils/logger";
 import {
   refinedTranscriptSchema,
-  RefinedTranscript,
   contentAnalysisSchema,
-  PodcastAnalysis,
   entitySchema,
-  PodcastEntities,
 } from "@/app/schemas/podcast";
 import {
   refineTranscriptPrompt,
@@ -18,7 +15,6 @@ import {
   extractEntitiesPrompt,
 } from "@/app/prompts/podcasts";
 
-// Initialize OpenAI client
 const model = openai("gpt-4o");
 
 export async function processTranscript(chunk: TextChunk) {

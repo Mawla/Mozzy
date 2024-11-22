@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Progress } from "@/components/ui/progress";
 import {
   Collapsible,
   CollapsibleContent,
@@ -21,11 +20,26 @@ import { usePodcastProcessing } from "@/app/hooks/use-podcast-processing";
 import { cn } from "@/lib/utils";
 import { ParallelProcessingStatus } from "./ParallelProcessingStatus";
 import { ProcessingStep } from "@/app/types/podcast/processing";
+import { PodcastEntities } from "@/app/schemas/podcast/entities";
 
 interface ProcessingPipelineProps {
   steps: ProcessingStep[];
   onRetryStep: (stepId: string) => void;
   isProcessing: boolean;
+}
+
+interface ExtendedProcessingStep extends ProcessingStep {
+  type?: "transcription" | "entity-extraction" | "summarization";
+  error?: string | Error;
+  data?: {
+    entities?: PodcastEntities;
+    [key: string]: any;
+  };
+}
+
+interface StepData {
+  entities?: PodcastEntities;
+  [key: string]: any;
 }
 
 export const ProcessingPipeline = ({
@@ -41,6 +55,7 @@ export const ProcessingPipeline = ({
     activeTab,
     toggleStep,
     setActiveTab,
+    getStepData,
   } = usePodcastProcessing();
 
   const handleTabChange = (value: string) => {
@@ -52,6 +67,30 @@ export const ProcessingPipeline = ({
     ) {
       setActiveTab(value);
     }
+  };
+
+  const renderStepContent = (step: ExtendedProcessingStep) => {
+    if (step.status === "error") {
+      return (
+        <div className="text-red-500 text-sm">
+          {(step.error instanceof Error ? step.error.message : step.error) ||
+            "An error occurred during processing"}
+        </div>
+      );
+    }
+
+    if (step.type === "entity-extraction" && step.status === "completed") {
+      const stepData = getStepData(step.id) as StepData;
+      if (stepData?.entities) {
+        const stepWithData: ExtendedProcessingStep = {
+          ...step,
+          data: { entities: stepData.entities },
+        };
+        return <StepDetails step={stepWithData} />;
+      }
+    }
+
+    return <StepDetails step={step} />;
   };
 
   return (
@@ -134,7 +173,7 @@ export const ProcessingPipeline = ({
                   <CollapsibleContent>
                     <CardContent className="pt-0">
                       <Separator className="mb-4" />
-                      <StepDetails step={step} />
+                      {renderStepContent(step as ExtendedProcessingStep)}
                     </CardContent>
                   </CollapsibleContent>
                 </Card>
@@ -144,7 +183,7 @@ export const ProcessingPipeline = ({
 
           <TabsContent value="chunks">
             <ScrollArea className="h-[500px] rounded-md border p-4">
-              <ChunkVisualizer chunks={chunks} />
+              <ChunkVisualizer chunks={chunks || []} />
             </ScrollArea>
           </TabsContent>
 

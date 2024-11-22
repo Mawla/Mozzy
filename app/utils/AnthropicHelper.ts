@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 
-const CLAUDE_MODEL_VERSION = "claude-3-sonnet-20241022";
-const MAX_OUTPUT_TOKENS = 8192; // Maximum allowed for Claude 3 Sonnet
+const CLAUDE_MODEL_VERSION = "claude-3-sonnet-20240229";
+const MAX_OUTPUT_TOKENS = 4096; // Maximum allowed for Claude 3 Sonnet
 
 export class AnthropicHelper {
   private static instance: AnthropicHelper;
@@ -21,14 +21,14 @@ export class AnthropicHelper {
   }
 
   public async getCompletion(
-    prompt: string,
-    maxTokens: number = MAX_OUTPUT_TOKENS
+      prompt: string,
+      maxTokens: number = MAX_OUTPUT_TOKENS
   ): Promise<string> {
     try {
       console.log("Calling Anthropic API with prompt:", prompt);
       const response = await this.anthropic.messages.create({
         model: CLAUDE_MODEL_VERSION,
-        max_tokens: Math.min(maxTokens, MAX_OUTPUT_TOKENS),
+        max_tokens: Math.min(maxTokens, MAX_OUTPUT_TOKENS), // Ensure we don't exceed the limit
         temperature: 0.7,
         messages: [
           {
@@ -40,9 +40,12 @@ export class AnthropicHelper {
 
       console.log("Anthropic API response:", response);
 
-      const content = response.content[0];
-      if (content && "type" in content && content.type === "text") {
-        return content.text.trim();
+      if (
+          response.content &&
+          response.content.length > 0 &&
+          "text" in response.content[0]
+      ) {
+        return response.content[0].text.trim();
       } else {
         throw new Error("Invalid response format from Claude API");
       }

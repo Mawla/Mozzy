@@ -10,7 +10,34 @@ export interface PodcastAnalysis extends Omit<BasePodcastAnalysis, "sections"> {
 }
 
 // Re-export PodcastEntities type
-export type PodcastEntities = BasePodcastEntities;
+export interface EntityMention {
+  text: string;
+  timestamp?: string;
+  sentiment?: string;
+}
+
+export interface EntityRelationship {
+  entity: string;
+  relationship: string;
+}
+
+export interface EntityDetails {
+  name: string;
+  type: string;
+  context?: string;
+  mentions: EntityMention[];
+  relationships?: EntityRelationship[];
+}
+
+export interface PodcastEntities {
+  people: EntityDetails[];
+  organizations: EntityDetails[];
+  locations: EntityDetails[];
+  events: EntityDetails[];
+  topics?: EntityDetails[];
+  concepts?: EntityDetails[];
+}
+
 export type { Section };
 
 // Processing State Types

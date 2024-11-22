@@ -14,6 +14,7 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^1.0.2",
     "@ai-sdk/openai": "^1.0.4",
+    "@anthropic-ai/sdk": "^0.32.1",
     "@headlessui/react": "^2.1.8",
     "@heroicons/react": "^2.1.5",
     "@hookform/resolvers": "^3.9.0",
@@ -52,6 +53,7 @@
     "@types/file-saver": "^2.0.7",
     "@uiw/react-md-editor": "^4.0.4",
     "ai": "latest",
+    "anthropic": "^0.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "1.0.0",
@@ -68,6 +70,7 @@
     "next": "14.2.6",
     "next-themes": "^0.3.0",
     "openai": "^4.0.0",
+    "pdf-lib": "^1.17.1",
     "react": "^18",
     "react-day-picker": "8.10.1",
     "react-dom": "^18",

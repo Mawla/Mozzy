@@ -6,8 +6,9 @@ import {
   TimelineEvent,
   ProcessingResult,
   ChunkResult,
+  EntityDetails,
 } from "@/app/types/podcast/processing";
-import { Theme } from "@/app/schemas/podcast/analysis";
+import { Theme, KeyPoint } from "@/app/schemas/podcast/analysis";
 import { PodcastProcessor } from "@/app/core/processing/podcast/PodcastProcessor";
 import { ProcessingLogger } from "@/app/core/processing/utils/logger";
 import {
@@ -19,12 +20,9 @@ import {
 interface ProcessedPodcast {
   id: string;
   summary: string;
-  themes: string[];
-  keyPoints: string[];
-  people: string[];
-  organizations: string[];
-  locations: string[];
-  events: string[];
+  themes: Theme[];
+  keyPoints: KeyPoint[];
+  entities: PodcastEntities;
   timeline: TimelineEvent[];
   cleanTranscript: string;
   originalTranscript: string;
@@ -156,13 +154,42 @@ export const podcastService = {
   },
 
   mergeEntities(entities: PodcastEntities[]): PodcastEntities {
+    const mergeEntityArray = (entityArrays: EntityDetails[][]) => {
+      const entityMap = new Map<string, EntityDetails>();
+
+      entityArrays.flat().forEach((entity) => {
+        if (!entityMap.has(entity.name)) {
+          entityMap.set(entity.name, {
+            ...entity,
+            mentions: [...entity.mentions],
+            relationships: entity.relationships
+              ? [...entity.relationships]
+              : [],
+          });
+        } else {
+          const existing = entityMap.get(entity.name)!;
+          existing.mentions = [...existing.mentions, ...entity.mentions];
+          if (entity.relationships) {
+            existing.relationships = existing.relationships || [];
+            existing.relationships.push(...entity.relationships);
+          }
+        }
+      });
+
+      return Array.from(entityMap.values());
+    };
+
     return {
-      people: Array.from(new Set(entities.flatMap((e) => e.people))),
-      organizations: Array.from(
-        new Set(entities.flatMap((e) => e.organizations))
-      ),
-      locations: Array.from(new Set(entities.flatMap((e) => e.locations))),
-      events: Array.from(new Set(entities.flatMap((e) => e.events))),
+      people: mergeEntityArray(entities.map((e) => e.people)),
+      organizations: mergeEntityArray(entities.map((e) => e.organizations)),
+      locations: mergeEntityArray(entities.map((e) => e.locations)),
+      events: mergeEntityArray(entities.map((e) => e.events)),
+      topics: entities.some((e) => e.topics)
+        ? mergeEntityArray(entities.map((e) => e.topics || []))
+        : undefined,
+      concepts: entities.some((e) => e.concepts)
+        ? mergeEntityArray(entities.map((e) => e.concepts || []))
+        : undefined,
     };
   },
 

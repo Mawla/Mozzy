@@ -1,49 +1,54 @@
-export const extractEntitiesPrompt = (chunk: string) => `
-Extract named entities from this chunk of podcast transcript:
+export const extractEntitiesPrompt = (text: string) => `
+Extract and categorize entities from this podcast transcript chunk with rich context and relationships.
+Focus on key information and be concise to avoid response truncation.
 
-${chunk}
-
-Return the response as JSON with this structure:
-{
-  "entities": {
-    "people": [
-      {
-        "name": "person name",
-        "role": "role if mentioned",
-        "firstMention": true/false
-      }
-    ],
-    "organizations": [
-      {
-        "name": "org name",
-        "context": "brief context",
-        "firstMention": true/false
-      }
-    ],
-    "locations": [
-      {
-        "name": "location",
-        "context": "brief context"
-      }
-    ],
-    "events": [
-      {
-        "name": "event name",
-        "timeContext": "when mentioned/occurred"
-      }
-    ]
-  },
-  "continuity": {
-    "referencesPrevious": ["any references to previously mentioned entities"],
-    "incompleteReferences": ["any partial references that might be completed in other chunks"]
-  }
-}
+${text}
 
 Guidelines:
-- Track first mentions vs references
-- Note cross-chunk entity references
-- Preserve context for each entity
-- Track pronouns that might refer to entities in other chunks
+1. Entity Identification:
+   - Identify main entities (people, organizations, locations, events)
+   - Include essential roles and relevance
+   - Note primary relationships
+   - Track key mentions with sentiment
 
-Only include the JSON object in your response.
+2. Entity Context:
+   - Capture core context for each entity
+   - Include most relevant quotes
+   - Note important timestamps
+   - Record overall sentiment
+
+3. Entity Relationships:
+   - Focus on direct relationships
+   - Keep relationship descriptions brief
+   - Prioritize important connections
+
+Return a focused JSON response with this structure:
+{
+  "people": [
+    {
+      "name": "Name",
+      "type": "Role type",
+      "context": "Brief context",
+      "mentions": [
+        {
+          "text": "Key quote",
+          "sentiment": "positive/negative/neutral"
+        }
+      ],
+      "relationships": [
+        {
+          "entity": "Related entity",
+          "relationship": "Brief description"
+        }
+      ]
+    }
+  ],
+  "organizations": [...],
+  "locations": [...],
+  "events": [...],
+  "topics": [...],
+  "concepts": [...]
+}
+
+Keep responses focused and concise to avoid truncation.
 `;
