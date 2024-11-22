@@ -1,62 +1,94 @@
-import { PROCESSING_CONFIG } from "@/app/config/processing";
 import {
-  ProcessingChunk,
-  NetworkLog,
-  TextChunk,
-  ChunkOptions,
   ProcessingResult,
+  ProcessingState,
+  ProcessingChunk,
+  ChunkResult,
+  TextChunk,
 } from "@/app/types/podcast/processing";
-import { PodcastProcessor } from "@/app/core/processing/podcast/PodcastProcessor";
-import { chunkText } from "@/app/utils/textChunking";
-import { ProcessingLogger } from "@/app/core/processing/utils/logger";
+import { podcastService } from "@/app/services/podcastService";
 
-interface ServiceProcessingState {
-  chunks: {
-    id: number;
-    text: string;
-    status: "pending" | "processing" | "completed" | "error";
-    response?: string;
-    error?: string;
-  }[];
-  networkLogs: {
-    timestamp: string;
-    type: "request" | "response" | "error";
-    message: string;
-  }[];
-  currentTranscript: string;
-}
+type ChunkStatus = "pending" | "processing" | "completed" | "error";
+
+type ProcessingStatus =
+  | { type: "PROCESSOR_CREATED" }
+  | { type: "CHUNKS_CREATED"; chunks: TextChunk[] }
+  | { type: "CHUNK_STARTED"; chunkId: number }
+  | { type: "CHUNK_REFINED"; chunkId: number }
+  | { type: "CHUNK_ANALYZED"; chunkId: number }
+  | { type: "CHUNK_ENTITIES_EXTRACTED"; chunkId: number }
+  | { type: "CHUNK_COMPLETED"; chunkId: number; result: ChunkResult }
+  | { type: "PROCESSING_COMPLETED"; result: ProcessingResult }
+  | { type: "PROCESSING_ERROR"; error: Error };
 
 export class PodcastProcessingService {
-  private state: ServiceProcessingState = {
+  private state: ProcessingState = {
     chunks: [],
     networkLogs: [],
     currentTranscript: "",
   };
-  private processor: PodcastProcessor;
-  private listeners: Set<(state: ServiceProcessingState) => void> = new Set();
-  private chunkingWorker: Worker | null = null;
+  private listeners: Set<(state: ProcessingState) => void> = new Set();
   private stateUpdateTimeout: NodeJS.Timeout | null = null;
 
-  constructor() {
-    this.processor = new PodcastProcessor();
-    if (typeof window !== "undefined") {
-      this.chunkingWorker = new Worker(
-        new URL("../workers/chunkingWorker.ts", import.meta.url)
-      );
-    }
-  }
-
-  subscribe(callback: (state: ServiceProcessingState) => void) {
+  subscribe(callback: (state: ProcessingState) => void) {
     this.listeners.add(callback);
     return () => this.listeners.delete(callback);
   }
 
-  private debouncedUpdateState(newState: Partial<ServiceProcessingState>) {
+  private updateState(status: ProcessingStatus) {
+    switch (status.type) {
+      case "CHUNKS_CREATED":
+        this.state.chunks = status.chunks.map((chunk) => ({
+          id: chunk.id,
+          text: chunk.text,
+          status: "pending",
+        }));
+        break;
+      case "CHUNK_STARTED":
+        this.updateChunkStatus(status.chunkId, "processing");
+        break;
+      case "CHUNK_COMPLETED":
+        this.updateChunkStatus(status.chunkId, "completed", status.result);
+        break;
+      case "PROCESSING_ERROR":
+        this.addNetworkLog("error", status.error.message);
+        break;
+      // ... handle other status types
+    }
+
+    this.notifyListeners();
+  }
+
+  private updateChunkStatus(
+    chunkId: number,
+    status: ChunkStatus,
+    result?: ChunkResult
+  ) {
+    const chunk = this.state.chunks.find(
+      (c) => c.id === chunkId
+    ) as ProcessingChunk;
+    if (chunk) {
+      chunk.status = status;
+      if (result && status === "completed") {
+        chunk.response = result.refinedText;
+        chunk.analysis = result.analysis;
+        chunk.entities = result.entities;
+        chunk.timeline = result.timeline;
+      }
+    }
+  }
+
+  private addNetworkLog(
+    type: "request" | "response" | "error",
+    message: string
+  ) {
+    const timestamp = new Date().toISOString();
+    this.state.networkLogs.push({ timestamp, type, message });
+  }
+
+  private notifyListeners() {
     if (this.stateUpdateTimeout) {
       clearTimeout(this.stateUpdateTimeout);
     }
-
-    this.state = { ...this.state, ...newState };
 
     this.stateUpdateTimeout = setTimeout(() => {
       this.listeners.forEach((listener) => listener(this.state));
@@ -64,136 +96,30 @@ export class PodcastProcessingService {
     }, 100);
   }
 
-  private logNetwork(type: "request" | "response" | "error", message: string) {
-    const timestamp = new Date().toISOString().split("T")[1].slice(0, -1);
-    const newLog = { timestamp, type, message };
-    this.debouncedUpdateState({
-      networkLogs: [...this.state.networkLogs, newLog],
-    });
-  }
-
-  async processTranscript(
-    text: string,
-    options: ChunkOptions = {}
-  ): Promise<TextChunk[]> {
-    try {
-      if (!this.chunkingWorker) {
-        const rawChunks = chunkText(text, options);
-        const chunks = rawChunks.map((chunk, index) => {
-          const textChunk: TextChunk = {
-            id: index,
-            text: chunk.text || "",
-            startIndex: chunk.startIndex || 0,
-            endIndex: chunk.endIndex || chunk.text?.length || 0,
-          };
-
-          // Log chunk creation
-          ProcessingLogger.log("debug", "Created chunk", {
-            chunk: textChunk,
-            rawChunk: chunk,
-          });
-
-          return textChunk;
-        });
-
-        // Validate chunks before returning
-        chunks.forEach((chunk, index) => {
-          if (!this.validateChunk(chunk)) {
-            throw new Error(`Invalid chunk created at index ${index}`);
-          }
-        });
-
-        return chunks;
-      }
-
-      return new Promise((resolve, reject) => {
-        this.chunkingWorker!.onmessage = (e: MessageEvent) => {
-          try {
-            const chunks = e.data.map((chunk: any, id: number) => {
-              const textChunk: TextChunk = {
-                id,
-                text: chunk.text || "",
-                startIndex: chunk.startIndex || 0,
-                endIndex: chunk.endIndex || chunk.text?.length || 0,
-              };
-
-              // Validate each chunk from worker
-              if (!this.validateChunk(textChunk)) {
-                throw new Error(`Invalid chunk from worker at index ${id}`);
-              }
-
-              return textChunk;
-            });
-
-            this.debouncedUpdateState({
-              chunks: chunks.map((chunk: TextChunk) => ({
-                id: chunk.id,
-                text: chunk.text,
-                status: "pending",
-              })),
-            });
-
-            resolve(chunks);
-          } catch (error) {
-            reject(error);
-          }
-        };
-
-        this.chunkingWorker!.onerror = (error) => {
-          ProcessingLogger.log("error", "Worker error", { error });
-          reject(error);
-        };
-
-        this.chunkingWorker!.postMessage({ text, options });
-      });
-    } catch (error) {
-      ProcessingLogger.log("error", "Error processing transcript", { error });
-      throw error;
-    }
-  }
-
-  private validateChunk(chunk: TextChunk): boolean {
-    return (
-      chunk !== null &&
-      typeof chunk === "object" &&
-      typeof chunk.text === "string" &&
-      chunk.text.length > 0 &&
-      typeof chunk.id === "number" &&
-      Number.isInteger(chunk.id) &&
-      chunk.id >= 0 &&
-      typeof chunk.startIndex === "number" &&
-      typeof chunk.endIndex === "number"
-    );
-  }
-
   async refineTranscript(transcript: string): Promise<ProcessingResult> {
     try {
-      this.logNetwork("request", "Starting transcript processing");
-      this.debouncedUpdateState({
+      // Reset state
+      this.state = {
         chunks: [],
         networkLogs: [],
-        currentTranscript: "",
-      });
+        currentTranscript: transcript,
+      };
 
-      const result = await this.processor.process(transcript);
-
-      this.logNetwork("response", "Completed transcript processing");
-      return result;
-    } catch (error) {
-      this.logNetwork(
-        "error",
-        `Processing failed: ${(error as Error).message}`
+      // Process using podcastService
+      return await podcastService.processTranscript(
+        transcript,
+        this.updateState.bind(this)
       );
+    } catch (error) {
+      this.updateState({ type: "PROCESSING_ERROR", error: error as Error });
       throw error;
     }
   }
 
-  // Clean up worker when done
   dispose() {
     if (this.stateUpdateTimeout) {
       clearTimeout(this.stateUpdateTimeout);
     }
-    this.chunkingWorker?.terminate();
-    this.chunkingWorker = null;
+    this.listeners.clear();
   }
 }

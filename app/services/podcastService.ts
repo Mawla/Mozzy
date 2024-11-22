@@ -8,14 +8,14 @@ import {
   ChunkResult,
 } from "@/app/types/podcast/processing";
 import { Theme } from "@/app/schemas/podcast/analysis";
-import { PodcastProcessor } from "@/app/core/processing/podcast/PodcastProcessor";
+import { PodcastChunker } from "@/app/core/processing/podcast/PodcastChunker";
 import { ProcessingLogger } from "@/app/core/processing/utils/logger";
 import {
   processTranscript,
   analyzeContent,
   extractEntities,
 } from "@/app/actions/podcastActions";
-import { PodcastChunker } from "@/app/core/processing/podcast/PodcastChunker";
+import { PodcastProcessor } from "@/app/core/processing/podcast/PodcastProcessor";
 
 interface ProcessedPodcast {
   id: string;
@@ -32,78 +32,56 @@ interface ProcessedPodcast {
 }
 
 export const podcastService = {
-  // Main entry point for processing
-  async processFullTranscript(transcript: string): Promise<ProcessingResult> {
-    const processor = new PodcastProcessor();
-    const chunks = await this.chunkText(transcript);
+  // Main entry point - called directly from UI
+  async processTranscript(
+    transcript: string,
+    onStateUpdate?: (state: any) => void
+  ): Promise<ProcessingResult> {
+    try {
+      // 1. Create processor instance
+      const processor = new PodcastProcessor();
+      onStateUpdate?.({ type: "PROCESSOR_CREATED" });
 
-    // Process each chunk through the AI
-    const chunkResults = await Promise.all(
-      chunks.map(async (chunk) => {
-        const refinedText = await this.refineText(chunk.text);
-        const analysis = await this.analyze(refinedText);
-        const entities = await this.extractEntities(refinedText);
+      // 2. Delegate processing to processor
+      const result = await processor.process(transcript);
+      onStateUpdate?.({ type: "PROCESSING_COMPLETED", result });
 
-        const chunkResult: ChunkResult = {
-          id: chunk.id,
-          refinedText,
-          analysis,
-          entities,
-          timeline: [],
-        };
-
-        return chunkResult;
-      })
-    );
-
-    // Transform into final result
-    return {
-      transcript,
-      refinedTranscript: chunkResults.map((r) => r.refinedText).join(" "),
-      analysis: this.mergeAnalyses(chunkResults.map((r) => r.analysis)),
-      entities: this.mergeEntities(chunkResults.map((r) => r.entities)),
-      timeline: [],
-    };
+      return result;
+    } catch (error) {
+      onStateUpdate?.({ type: "PROCESSING_ERROR", error });
+      throw error;
+    }
   },
 
   // Server action wrappers - client/server boundary
   async refineText(text: string): Promise<string> {
-    return processTranscript(text);
+    return processTranscript({
+      id: 0,
+      text,
+      startIndex: 0,
+      endIndex: text.length,
+    });
   },
 
   async analyze(text: string): Promise<PodcastAnalysis> {
-    return analyzeContent(text);
+    return analyzeContent({
+      id: 0,
+      text,
+      startIndex: 0,
+      endIndex: text.length,
+    });
   },
 
   async extractEntities(text: string): Promise<PodcastEntities> {
-    return extractEntities(text);
+    return extractEntities({
+      id: 0,
+      text,
+      startIndex: 0,
+      endIndex: text.length,
+    });
   },
 
-  // Processing orchestration
-  async processFullTranscript(transcript: string): Promise<ProcessingResult> {
-    const processor = new PodcastProcessor();
-    return processor.process(transcript);
-  },
-
-  // Chunking helper
-  async chunkText(text: string, options?: ChunkOptions): Promise<TextChunk[]> {
-    const chunker = new PodcastChunker();
-    return chunker.chunk(text);
-  },
-
-  // Processing with chunks
-  async processInChunks<T>(
-    text: string,
-    processor: (chunk: TextChunk) => Promise<T>,
-    merger: (results: T[]) => T,
-    chunkOptions?: ChunkOptions
-  ): Promise<T> {
-    const chunks = await this.chunkText(text, chunkOptions);
-    const results = await Promise.all(chunks.map(processor));
-    return merger(results);
-  },
-
-  // Merge utilities for combining results
+  // Merge utilities for result combination
   mergeAnalyses(analyses: PodcastAnalysis[]): PodcastAnalysis {
     if (!analyses.length) return {} as PodcastAnalysis;
 
