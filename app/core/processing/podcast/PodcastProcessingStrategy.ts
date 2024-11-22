@@ -194,12 +194,31 @@ export class PodcastProcessingStrategy extends ProcessingStrategy<
   }
 
   public validate(chunk: TextChunk): boolean {
-    if (!chunk.text || typeof chunk.text !== "string") {
+    if (!chunk || typeof chunk !== "object") {
+      ProcessingLogger.log("error", "Invalid chunk: not an object", { chunk });
       return false;
     }
-    if (chunk.text.length === 0) {
+
+    if (typeof chunk.text !== "string" || chunk.text.length === 0) {
+      ProcessingLogger.log("error", "Invalid chunk: invalid text", {
+        textType: typeof chunk.text,
+        textLength: chunk.text?.length,
+      });
       return false;
     }
+
+    if (
+      typeof chunk.id !== "number" ||
+      !Number.isInteger(chunk.id) ||
+      chunk.id < 0
+    ) {
+      ProcessingLogger.log("error", "Invalid chunk: invalid id", {
+        idType: typeof chunk.id,
+        id: chunk.id,
+      });
+      return false;
+    }
+
     return true;
   }
 

@@ -8,6 +8,7 @@ import {
 } from "@/app/types/podcast/processing";
 import { PodcastProcessor } from "@/app/core/processing/podcast/PodcastProcessor";
 import { chunkText } from "@/app/utils/textChunking";
+import { ProcessingLogger } from "@/app/core/processing/utils/logger";
 
 interface ServiceProcessingState {
   chunks: {
@@ -75,35 +76,94 @@ export class PodcastProcessingService {
     text: string,
     options: ChunkOptions = {}
   ): Promise<TextChunk[]> {
-    if (!this.chunkingWorker) {
-      const rawChunks = chunkText(text, options);
-      return rawChunks.map((chunk, index) => ({
-        id: index,
-        text: chunk.text,
-        startIndex: chunk.startIndex,
-        endIndex: chunk.endIndex,
-      }));
-    }
+    try {
+      if (!this.chunkingWorker) {
+        const rawChunks = chunkText(text, options);
+        const chunks = rawChunks.map((chunk, index) => {
+          const textChunk: TextChunk = {
+            id: index,
+            text: chunk.text || "",
+            startIndex: chunk.startIndex || 0,
+            endIndex: chunk.endIndex || chunk.text?.length || 0,
+          };
 
-    return new Promise((resolve, reject) => {
-      this.chunkingWorker!.onmessage = (e: MessageEvent) => {
-        const chunks = e.data;
-        this.debouncedUpdateState({
-          chunks: chunks.map((chunk: TextChunk, id: number) => ({
-            id,
-            text: chunk.text,
-            status: "pending",
-          })),
+          // Log chunk creation
+          ProcessingLogger.log("debug", "Created chunk", {
+            chunk: textChunk,
+            rawChunk: chunk,
+          });
+
+          return textChunk;
         });
-        resolve(chunks);
-      };
 
-      this.chunkingWorker!.onerror = (error) => {
-        reject(error);
-      };
+        // Validate chunks before returning
+        chunks.forEach((chunk, index) => {
+          if (!this.validateChunk(chunk)) {
+            throw new Error(`Invalid chunk created at index ${index}`);
+          }
+        });
 
-      this.chunkingWorker!.postMessage({ text, options });
-    });
+        return chunks;
+      }
+
+      return new Promise((resolve, reject) => {
+        this.chunkingWorker!.onmessage = (e: MessageEvent) => {
+          try {
+            const chunks = e.data.map((chunk: any, id: number) => {
+              const textChunk: TextChunk = {
+                id,
+                text: chunk.text || "",
+                startIndex: chunk.startIndex || 0,
+                endIndex: chunk.endIndex || chunk.text?.length || 0,
+              };
+
+              // Validate each chunk from worker
+              if (!this.validateChunk(textChunk)) {
+                throw new Error(`Invalid chunk from worker at index ${id}`);
+              }
+
+              return textChunk;
+            });
+
+            this.debouncedUpdateState({
+              chunks: chunks.map((chunk: TextChunk) => ({
+                id: chunk.id,
+                text: chunk.text,
+                status: "pending",
+              })),
+            });
+
+            resolve(chunks);
+          } catch (error) {
+            reject(error);
+          }
+        };
+
+        this.chunkingWorker!.onerror = (error) => {
+          ProcessingLogger.log("error", "Worker error", { error });
+          reject(error);
+        };
+
+        this.chunkingWorker!.postMessage({ text, options });
+      });
+    } catch (error) {
+      ProcessingLogger.log("error", "Error processing transcript", { error });
+      throw error;
+    }
+  }
+
+  private validateChunk(chunk: TextChunk): boolean {
+    return (
+      chunk !== null &&
+      typeof chunk === "object" &&
+      typeof chunk.text === "string" &&
+      chunk.text.length > 0 &&
+      typeof chunk.id === "number" &&
+      Number.isInteger(chunk.id) &&
+      chunk.id >= 0 &&
+      typeof chunk.startIndex === "number" &&
+      typeof chunk.endIndex === "number"
+    );
   }
 
   async refineTranscript(transcript: string): Promise<ProcessingResult> {
