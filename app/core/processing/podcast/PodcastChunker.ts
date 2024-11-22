@@ -1,29 +1,59 @@
-import { Chunker } from "../base/Chunker";
-import type { TextChunk } from "../types/processing";
+import { TextChunk } from "../types";
 
-export class PodcastChunker extends Chunker<string, TextChunk> {
-  chunk(content: string, options?: any): TextChunk[] {
-    return content.split("\n").map((text, index) => ({
-      id: index,
-      text,
-      startIndex: index * text.length,
-      endIndex: (index + 1) * text.length,
-    }));
-  }
+export class PodcastChunker {
+  private readonly CHUNK_SIZE = 4000; // ~4k characters per chunk
+  private readonly OVERLAP = 100; // Words of overlap between chunks
 
-  validateChunk(chunk: TextChunk): boolean {
-    return (
-      typeof chunk.text === "string" &&
-      typeof chunk.startIndex === "number" &&
-      typeof chunk.endIndex === "number" &&
-      chunk.endIndex > chunk.startIndex
-    );
-  }
+  async chunk(text: string): Promise<TextChunk[]> {
+    // Remove any null or undefined sections
+    const cleanText = text.replace(/\s+/g, " ").trim();
 
-  combineChunks(chunks: TextChunk[]): string {
-    return chunks
-      .sort((a, b) => a.startIndex - b.startIndex)
-      .map((chunk) => chunk.text)
-      .join(" ");
+    if (!cleanText) {
+      return [];
+    }
+
+    // Split into sentences to avoid breaking mid-sentence
+    const sentences = cleanText.match(/[^.!?]+[.!?]+/g) || [cleanText];
+
+    const chunks: TextChunk[] = [];
+    let currentChunk = "";
+    let startIndex = 0;
+
+    for (const sentence of sentences) {
+      // If adding this sentence would exceed chunk size, create new chunk
+      if (
+        (currentChunk + sentence).length > this.CHUNK_SIZE &&
+        currentChunk.length > 0
+      ) {
+        chunks.push({
+          id: chunks.length,
+          text: currentChunk.trim(),
+          startIndex,
+          endIndex: startIndex + currentChunk.length,
+        });
+
+        // Start new chunk with overlap
+        const words = currentChunk.split(" ");
+        currentChunk = words.slice(-this.OVERLAP).join(" ") + sentence;
+        startIndex =
+          startIndex +
+          currentChunk.length -
+          words.slice(-this.OVERLAP).join(" ").length;
+      } else {
+        currentChunk += sentence;
+      }
+    }
+
+    // Add final chunk if not empty
+    if (currentChunk.trim()) {
+      chunks.push({
+        id: chunks.length,
+        text: currentChunk.trim(),
+        startIndex,
+        endIndex: startIndex + currentChunk.length,
+      });
+    }
+
+    return chunks;
   }
 }

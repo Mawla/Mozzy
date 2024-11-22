@@ -12,11 +12,7 @@ import { ProcessingLogger } from "../utils/logger";
 import { ProcessingStrategy } from "../base/ProcessingStrategy";
 import { ProcessingStep } from "../types";
 import { ProcessingError } from "../errors/ProcessingError";
-import {
-  processTranscript,
-  analyzeContent,
-  extractEntities,
-} from "@/app/actions/podcastActions";
+import { podcastService } from "@/app/services/podcastService";
 
 interface StepResult {
   refinedText?: string;
@@ -116,31 +112,34 @@ export class PodcastProcessingStrategy extends ProcessingStrategy<
           ProcessingLogger.log("info", `Refining chunk ${chunk.id}`, {
             length: chunk.text.length,
           });
-          const refined = await processTranscript(chunk.text);
+          const refined = await podcastService.refineText(chunk.text);
           return { refinedText: refined };
         }
       );
 
-      // Step 2: Generate analysis (parallel with metadata)
+      // Step 2: Generate analysis
       const analysisPromise = this.executeStepWithDependencies(
         "analyze",
         async () => {
-          const analysis = await analyzeContent(refinedText.refinedText);
+          const analysis = await podcastService.analyze(
+            refinedText.refinedText
+          );
           return { analysis };
         }
       );
 
-      // Step 3: Generate metadata (parallel with analysis)
+      // Step 3: Generate metadata
       const metadataPromise = this.executeStepWithDependencies(
         "metadata",
         async () => {
-          const entities = await extractEntities(refinedText.refinedText);
+          const entities = await podcastService.extractEntities(
+            refinedText.refinedText
+          );
 
-          // Create metadata from entities
           const metadata: MetadataResponse = {
-            duration: "0:00", // This should come from audio processing
+            duration: "0:00",
             speakers: entities.people || [],
-            mainTopic: "Unknown", // This could be derived from analysis
+            mainTopic: "Unknown",
             expertise: "General",
             keyPoints: [],
             themes: [],

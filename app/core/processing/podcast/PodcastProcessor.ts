@@ -7,7 +7,7 @@ import { ProcessingLogger } from "../utils/logger";
 export class PodcastProcessor extends Processor<string, ProcessingResult> {
   private chunker: PodcastChunker;
   private strategy: PodcastProcessingStrategy;
-  private readonly MAX_CHUNK_SIZE = 24000; // Claude's approximate token limit
+  private readonly MAX_CHUNK_SIZE = 4000; // Match chunker size
   private readonly MIN_CHUNK_SIZE = 100; // Minimum meaningful chunk size
 
   constructor() {
@@ -26,34 +26,22 @@ export class PodcastProcessor extends Processor<string, ProcessingResult> {
       // Split input into manageable chunks
       const chunks = await this.chunker.chunk(input);
 
-      // Filter out invalid chunks and normalize them
-      const validChunks = chunks
-        .map((chunk, index) => this.normalizeChunk(chunk, index))
-        .filter((chunk): chunk is TextChunk => {
-          const isValid = this.validateChunk(chunk);
-          if (!isValid) {
-            ProcessingLogger.log("warn", "Filtered out invalid chunk", {
-              chunk,
-            });
-          }
-          return isValid;
-        });
+      ProcessingLogger.log("debug", "Created chunks", {
+        totalChunks: chunks.length,
+        firstChunkPreview: chunks[0]?.text.slice(0, 100),
+      });
 
-      if (validChunks.length === 0) {
+      if (chunks.length === 0) {
         throw new Error("No valid chunks created from input");
       }
 
-      ProcessingLogger.log("info", `Processing ${validChunks.length} chunks`, {
-        totalChunks: chunks.length,
-        validChunks: validChunks.length,
-      });
-
-      // Process each valid chunk using our strategy
+      // Process each chunk using our strategy
       const results = await Promise.all(
-        validChunks.map(async (chunk) => {
+        chunks.map(async (chunk) => {
           ProcessingLogger.log("debug", "Processing chunk", {
             id: chunk.id,
             textLength: chunk.text.length,
+            textPreview: chunk.text.slice(0, 100),
           });
 
           return this.strategy.process(chunk);
@@ -63,7 +51,6 @@ export class PodcastProcessor extends Processor<string, ProcessingResult> {
       // Combine the chunk results
       const combinedResult = await this.strategy.combine(results);
 
-      // Transform ChunkResult into ProcessingResult
       return {
         transcript: input,
         refinedTranscript: combinedResult.refinedText,
@@ -72,7 +59,11 @@ export class PodcastProcessor extends Processor<string, ProcessingResult> {
         timeline: combinedResult.timeline,
       };
     } catch (error) {
-      ProcessingLogger.log("error", "Failed to process podcast", { error });
+      ProcessingLogger.log("error", "Failed to process podcast", {
+        error,
+        inputLength: input.length,
+        inputPreview: input.slice(0, 100),
+      });
       throw error;
     }
   }

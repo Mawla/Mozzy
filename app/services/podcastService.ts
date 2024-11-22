@@ -1,18 +1,21 @@
 import {
-  chunkText,
-  mergeChunks,
   TextChunk,
   ChunkOptions,
-} from "@/app/utils/textChunking";
-import {
   PodcastAnalysis,
   PodcastEntities,
   TimelineEvent,
-  QuickFact,
-  KeyPoint,
-  Theme,
   ProcessingResult,
+  ChunkResult,
 } from "@/app/types/podcast/processing";
+import { Theme } from "@/app/schemas/podcast/analysis";
+import { PodcastProcessor } from "@/app/core/processing/podcast/PodcastProcessor";
+import { ProcessingLogger } from "@/app/core/processing/utils/logger";
+import {
+  processTranscript,
+  analyzeContent,
+  extractEntities,
+} from "@/app/actions/podcastActions";
+import { PodcastChunker } from "@/app/core/processing/podcast/PodcastChunker";
 
 interface ProcessedPodcast {
   id: string;
@@ -29,44 +32,81 @@ interface ProcessedPodcast {
 }
 
 export const podcastService = {
-  // Processing helpers
+  // Main entry point for processing
+  async processFullTranscript(transcript: string): Promise<ProcessingResult> {
+    const processor = new PodcastProcessor();
+    const chunks = await this.chunkText(transcript);
+
+    // Process each chunk through the AI
+    const chunkResults = await Promise.all(
+      chunks.map(async (chunk) => {
+        const refinedText = await this.refineText(chunk.text);
+        const analysis = await this.analyze(refinedText);
+        const entities = await this.extractEntities(refinedText);
+
+        const chunkResult: ChunkResult = {
+          id: chunk.id,
+          refinedText,
+          analysis,
+          entities,
+          timeline: [],
+        };
+
+        return chunkResult;
+      })
+    );
+
+    // Transform into final result
+    return {
+      transcript,
+      refinedTranscript: chunkResults.map((r) => r.refinedText).join(" "),
+      analysis: this.mergeAnalyses(chunkResults.map((r) => r.analysis)),
+      entities: this.mergeEntities(chunkResults.map((r) => r.entities)),
+      timeline: [],
+    };
+  },
+
+  // Server action wrappers - client/server boundary
+  async refineText(text: string): Promise<string> {
+    return processTranscript(text);
+  },
+
+  async analyze(text: string): Promise<PodcastAnalysis> {
+    return analyzeContent(text);
+  },
+
+  async extractEntities(text: string): Promise<PodcastEntities> {
+    return extractEntities(text);
+  },
+
+  // Processing orchestration
+  async processFullTranscript(transcript: string): Promise<ProcessingResult> {
+    const processor = new PodcastProcessor();
+    return processor.process(transcript);
+  },
+
+  // Chunking helper
+  async chunkText(text: string, options?: ChunkOptions): Promise<TextChunk[]> {
+    const chunker = new PodcastChunker();
+    return chunker.chunk(text);
+  },
+
+  // Processing with chunks
   async processInChunks<T>(
-    text: string | { text: string } | any,
+    text: string,
     processor: (chunk: TextChunk) => Promise<T>,
     merger: (results: T[]) => T,
     chunkOptions?: ChunkOptions
   ): Promise<T> {
-    // Debug logging
-    console.log("Input text type:", typeof text);
-    console.log("Input text value:", text);
-
-    // Handle different input types
-    const textContent =
-      typeof text === "string"
-        ? text
-        : text?.text ||
-          (typeof text === "object"
-            ? JSON.stringify(text, null, 2)
-            : String(text));
-
-    if (typeof textContent !== "string") {
-      throw new Error(
-        `Invalid input: text content must be a string or contain a text property. Received: ${typeof text}`
-      );
-    }
-
-    // Debug logging
-    console.log(
-      "Processed text content:",
-      textContent.substring(0, 100) + "..."
-    );
-
-    const chunks = chunkText(textContent, chunkOptions);
-    const processedChunks = await Promise.all(chunks.map(processor));
-    return merger(processedChunks);
+    const chunks = await this.chunkText(text, chunkOptions);
+    const results = await Promise.all(chunks.map(processor));
+    return merger(results);
   },
 
+  // Merge utilities for combining results
   mergeAnalyses(analyses: PodcastAnalysis[]): PodcastAnalysis {
+    if (!analyses.length) return {} as PodcastAnalysis;
+
     return {
       id: analyses[0].id,
       title: analyses[0].title,
@@ -104,41 +144,15 @@ export const podcastService = {
     };
   },
 
-  mergeTimelines(timelines: TimelineEvent[][]): TimelineEvent[] {
-    return timelines.flat().sort((a, b) => {
-      const timeA = a.time.toLowerCase();
-      const timeB = b.time.toLowerCase();
-      return timeA.localeCompare(timeB);
-    });
-  },
-
   // Storage methods
-  async processPodcast(data: {
-    type: "url" | "search" | "transcript";
-    content: string;
-  }): Promise<ProcessedPodcast> {
-    const response = await fetch("/api/podcasts/process", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to process podcast");
-    }
-
-    return response.json();
-  },
-
-  savePodcast(podcast: ProcessedPodcast): void {
+  async savePodcast(podcast: ProcessedPodcast): Promise<void> {
     const podcasts = this.getAllPodcasts();
     podcasts.push(podcast);
     localStorage.setItem("podcasts", JSON.stringify(podcasts));
   },
 
   getAllPodcasts(): ProcessedPodcast[] {
+    if (typeof window === "undefined") return [];
     const podcastsJson = localStorage.getItem("podcasts");
     return podcastsJson ? JSON.parse(podcastsJson) : [];
   },
