@@ -1,8 +1,25 @@
 import { Processor } from "../base/Processor";
-import type { ProcessingResult, TextChunk, ChunkResult } from "../types";
+import type { ProcessingResult, TextChunk } from "../types";
 import { PodcastChunker } from "../podcast";
 import { PodcastProcessingStrategy } from "./PodcastProcessingStrategy";
 import { ProcessingLogger } from "../utils/logger";
+import { PodcastEntities, EntityDetails } from "@/app/schemas/podcast/entities";
+import {
+  PodcastAnalysis,
+  KeyPoint,
+  Theme,
+} from "@/app/types/podcast/processing";
+
+interface ProcessingChunkResult {
+  refinedText: string;
+  entities?: PodcastEntities;
+  analysis?: {
+    summary?: string;
+    keyPoints?: KeyPoint[];
+    themes?: Theme[];
+  };
+  timeline?: any[];
+}
 
 export class PodcastProcessor extends Processor<string, ProcessingResult> {
   private chunker: PodcastChunker;
@@ -39,7 +56,7 @@ export class PodcastProcessor extends Processor<string, ProcessingResult> {
         throw new Error("No valid chunks created from input");
       }
 
-      // Process each chunk using our strategy
+      // Process each chunk
       const results = await Promise.all(
         chunks.map(async (chunk) => {
           ProcessingLogger.log("debug", "Processing chunk", {
@@ -48,19 +65,108 @@ export class PodcastProcessor extends Processor<string, ProcessingResult> {
             textPreview: chunk.text.slice(0, 100),
           });
 
-          return this.strategy.process(chunk);
+          return this.strategy.process(chunk) as Promise<ProcessingChunkResult>;
         })
       );
 
-      // Combine the chunk results
-      const combinedResult = await this.strategy.combine(results);
+      // Initialize empty entities object with default arrays
+      const combinedEntities: PodcastEntities = {
+        people: [],
+        organizations: [],
+        locations: [],
+        events: [],
+        topics: [],
+        concepts: [],
+      };
+
+      // Combine entities from all chunks
+      const entities = results.reduce<PodcastEntities>((acc, result) => {
+        if (!result.entities) return acc;
+
+        // Helper function to merge arrays with deduplication
+        const mergeEntities = (
+          accArray: EntityDetails[] = [],
+          newArray: EntityDetails[] = []
+        ) => {
+          const map = new Map<string, EntityDetails>();
+
+          // Add existing entities
+          accArray.forEach((e) => {
+            if (e.name) {
+              const entity: EntityDetails = {
+                name: e.name,
+                type: e.type,
+                context: e.context,
+                mentions: e.mentions || [],
+                relationships: e.relationships || [],
+              };
+              map.set(e.name, entity);
+            }
+          });
+
+          // Add or update with new entities
+          newArray.forEach((e) => {
+            if (e.name) {
+              const entity: EntityDetails = {
+                name: e.name,
+                type: e.type,
+                context: e.context,
+                mentions: e.mentions || [],
+                relationships: e.relationships || [],
+              };
+              map.set(e.name, entity);
+            }
+          });
+
+          return Array.from(map.values());
+        };
+
+        // Ensure each array is properly typed as EntityDetails[]
+        return {
+          people: mergeEntities(acc.people || [], result.entities.people || []),
+          organizations: mergeEntities(
+            acc.organizations || [],
+            result.entities.organizations || []
+          ),
+          locations: mergeEntities(
+            acc.locations || [],
+            result.entities.locations || []
+          ),
+          events: mergeEntities(acc.events || [], result.entities.events || []),
+          topics: mergeEntities(acc.topics || [], result.entities.topics || []),
+          concepts: mergeEntities(
+            acc.concepts || [],
+            result.entities.concepts || []
+          ),
+        } as PodcastEntities;
+      }, combinedEntities);
+
+      // Combine analysis from all chunks
+      const combinedAnalysis: PodcastAnalysis = {
+        id: "combined-analysis",
+        title: "Combined Analysis",
+        summary:
+          results.find((r) => r.analysis?.summary)?.analysis?.summary || "",
+        quickFacts: {
+          duration: "0:00",
+          participants: [],
+          mainTopic: "",
+          expertise: "General",
+        },
+        keyPoints: Array.from(
+          new Set(results.flatMap((r) => r.analysis?.keyPoints || []))
+        ),
+        themes: Array.from(
+          new Set(results.flatMap((r) => r.analysis?.themes || []))
+        ),
+      };
 
       return {
         transcript: input,
-        refinedTranscript: combinedResult.refinedText,
-        analysis: combinedResult.analysis,
-        entities: combinedResult.entities,
-        timeline: combinedResult.timeline,
+        refinedTranscript: results[0]?.refinedText || input,
+        analysis: combinedAnalysis,
+        entities: entities,
+        timeline: results[0]?.timeline || [],
       };
     } catch (error) {
       ProcessingLogger.log("error", "Failed to process podcast", {

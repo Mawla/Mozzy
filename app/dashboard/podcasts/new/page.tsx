@@ -2,25 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { PodcastProcessor } from "@/app/components/dashboard/podcasts/PodcastProcessor";
+import { PodcastResults } from "@/app/components/dashboard/podcasts/PodcastResults";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { PodcastInput } from "@/app/components/dashboard/podcasts/PodcastInput";
-import { ProcessingPipeline } from "@/app/components/dashboard/podcasts/ProcessingPipeline";
 import { usePodcastProcessingStore } from "@/app/store/podcastProcessingStore";
 
 const NewPodcastPage = () => {
   const router = useRouter();
-  const {
-    isProcessing,
-    processingSteps,
-    handlePodcastSubmit,
-    handleRetryStep,
-  } = usePodcastProcessingStore();
-
-  const handleProcessingComplete = (podcastId: string) => {
-    router.push(`/dashboard/podcasts/${podcastId}`);
-  };
+  const { isProcessing, handlePodcastSubmit } = usePodcastProcessingStore();
 
   const handleSubmit = async (data: {
     type: "url" | "search" | "transcript";
@@ -29,7 +20,6 @@ const NewPodcastPage = () => {
     try {
       console.log("NewPodcastPage: Processing submission", data);
       await handlePodcastSubmit(data);
-      // handleProcessingComplete will be called from the store after successful processing
     } catch (error) {
       console.error("Error processing podcast:", error);
     }
@@ -48,13 +38,8 @@ const NewPodcastPage = () => {
         <PodcastInput onSubmit={handleSubmit} isProcessing={isProcessing} />
       </Card>
 
-      {processingSteps.some((step) => step.status !== "idle") && (
-        <ProcessingPipeline
-          steps={processingSteps}
-          onRetryStep={handleRetryStep}
-          isProcessing={isProcessing}
-        />
-      )}
+      <PodcastProcessor />
+      <PodcastResults />
     </div>
   );
 };

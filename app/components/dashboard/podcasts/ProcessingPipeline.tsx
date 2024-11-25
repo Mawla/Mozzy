@@ -7,10 +7,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { RefreshCw } from "lucide-react";
 import { StepStatusIcon } from "./StepStatusIcon";
 import { ChunkVisualizer } from "./ChunkVisualizer";
@@ -26,19 +27,19 @@ interface ProcessingPipelineProps {
   steps: ProcessingStep[];
   onRetryStep: (stepId: string) => void;
   isProcessing: boolean;
+  isOpen: boolean;
+  onToggle: () => void;
 }
 
-interface ExtendedProcessingStep extends ProcessingStep {
+interface ExtendedProcessingStep extends Omit<ProcessingStep, "data"> {
   type?: "transcription" | "entity-extraction" | "summarization";
   error?: string | Error;
-  data?: {
-    entities?: PodcastEntities;
-    [key: string]: any;
-  };
+  data?: StepData | null;
 }
 
 interface StepData {
   entities?: PodcastEntities;
+  result?: any;
   [key: string]: any;
 }
 
@@ -46,11 +47,12 @@ export const ProcessingPipeline = ({
   steps,
   onRetryStep,
   isProcessing,
+  isOpen,
+  onToggle,
 }: ProcessingPipelineProps) => {
   const {
     chunks,
     networkLogs,
-    processedTranscript,
     selectedStep,
     activeTab,
     toggleStep,
@@ -59,12 +61,7 @@ export const ProcessingPipeline = ({
   } = usePodcastProcessing();
 
   const handleTabChange = (value: string) => {
-    if (
-      value === "progress" ||
-      value === "chunks" ||
-      value === "result" ||
-      value === "logs"
-    ) {
+    if (value === "progress" || value === "chunks" || value === "logs") {
       setActiveTab(value);
     }
   };
@@ -95,119 +92,116 @@ export const ProcessingPipeline = ({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>Processing Pipeline</span>
-          {isProcessing && (
-            <Badge variant="secondary" className="animate-pulse">
-              Processing...
-            </Badge>
-          )}
-        </CardTitle>
-      </CardHeader>
+      <Accordion type="single" collapsible defaultValue="pipeline">
+        <AccordionItem value="pipeline" className="border-none">
+          <CardHeader className="border-b">
+            <AccordionTrigger className="hover:no-underline">
+              <div className="flex items-center justify-between w-full">
+                <CardTitle>Processing Pipeline</CardTitle>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant={isProcessing ? "secondary" : "outline"}
+                    className={cn(isProcessing && "animate-pulse")}
+                  >
+                    {isProcessing ? "Processing..." : "Ready"}
+                  </Badge>
+                </div>
+              </div>
+            </AccordionTrigger>
+          </CardHeader>
 
-      <CardContent>
-        <Tabs value={activeTab} onValueChange={handleTabChange}>
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="progress">Progress</TabsTrigger>
-            <TabsTrigger value="chunks">Chunks</TabsTrigger>
-            <TabsTrigger value="result">Result</TabsTrigger>
-            <TabsTrigger value="logs">Logs</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="progress" className="space-y-4 mt-4">
-            <ParallelProcessingStatus
-              steps={steps}
-              currentStep={selectedStep}
-            />
-            {steps.map((step) => (
-              <Collapsible
-                key={step.id}
-                open={selectedStep === step.id}
-                onOpenChange={() => toggleStep(step.id)}
+          <AccordionContent>
+            <CardContent>
+              <Tabs
+                value={activeTab}
+                onValueChange={handleTabChange}
+                className="mt-4"
               >
-                <Card
-                  className={cn(
-                    "transition-colors",
-                    step.status === "completed" && "border-green-200",
-                    step.status === "error" && "border-red-200",
-                    step.status === "processing" && "border-blue-200"
-                  )}
-                >
-                  <CollapsibleTrigger asChild>
-                    <CardHeader className="p-4 hover:bg-gray-50 cursor-pointer">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <StepStatusIcon status={step.status} />
-                          <span className="font-medium">{step.name}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge
-                            variant={
-                              step.status === "completed"
-                                ? "default"
-                                : step.status === "error"
-                                ? "destructive"
-                                : "secondary"
-                            }
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="progress">Progress</TabsTrigger>
+                  <TabsTrigger value="chunks">Chunks</TabsTrigger>
+                  <TabsTrigger value="logs">Logs</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="progress" className="space-y-4 mt-4">
+                  <ParallelProcessingStatus
+                    steps={steps}
+                    currentStep={selectedStep}
+                  />
+                  <div className="space-y-2">
+                    {steps.map((step) => (
+                      <div
+                        key={step.id}
+                        className="rounded-lg border bg-card text-card-foreground"
+                      >
+                        <Accordion type="single" collapsible>
+                          <AccordionItem
+                            value={step.id}
+                            className="border-none"
                           >
-                            {step.status}
-                          </Badge>
-                          {step.status === "error" && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onRetryStep(step.id);
-                              }}
-                            >
-                              <RefreshCw className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
+                            <AccordionTrigger className="px-4 py-2 hover:no-underline">
+                              <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center gap-3">
+                                  <StepStatusIcon status={step.status} />
+                                  <span className="font-medium">
+                                    {step.name}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Badge
+                                    variant={
+                                      step.status === "completed"
+                                        ? "default"
+                                        : step.status === "error"
+                                        ? "destructive"
+                                        : "secondary"
+                                    }
+                                  >
+                                    {step.status}
+                                  </Badge>
+                                  {step.status === "error" && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onRetryStep(step.id);
+                                      }}
+                                    >
+                                      <RefreshCw className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="px-4 pb-3">
+                              {renderStepContent(
+                                step as ExtendedProcessingStep
+                              )}
+                            </AccordionContent>
+                          </AccordionItem>
+                        </Accordion>
                       </div>
-                    </CardHeader>
-                  </CollapsibleTrigger>
+                    ))}
+                  </div>
+                </TabsContent>
 
-                  <CollapsibleContent>
-                    <CardContent className="pt-0">
-                      <Separator className="mb-4" />
-                      {renderStepContent(step as ExtendedProcessingStep)}
-                    </CardContent>
-                  </CollapsibleContent>
-                </Card>
-              </Collapsible>
-            ))}
-          </TabsContent>
+                <TabsContent value="chunks">
+                  <ScrollArea className="h-[500px] rounded-md border p-4">
+                    <ChunkVisualizer chunks={chunks || []} />
+                  </ScrollArea>
+                </TabsContent>
 
-          <TabsContent value="chunks">
-            <ScrollArea className="h-[500px] rounded-md border p-4">
-              <ChunkVisualizer chunks={chunks || []} />
-            </ScrollArea>
-          </TabsContent>
-
-          <TabsContent value="result">
-            <ScrollArea className="h-[500px] rounded-md border p-4">
-              {processedTranscript ? (
-                <div className="prose max-w-none">
-                  <p>{processedTranscript}</p>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-full text-muted-foreground">
-                  No processed content yet
-                </div>
-              )}
-            </ScrollArea>
-          </TabsContent>
-
-          <TabsContent value="logs">
-            <ScrollArea className="h-[500px] rounded-md border">
-              <NetworkLogger logs={networkLogs || []} />
-            </ScrollArea>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
+                <TabsContent value="logs">
+                  <ScrollArea className="h-[500px] rounded-md border">
+                    <NetworkLogger logs={networkLogs || []} />
+                  </ScrollArea>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </Card>
   );
 };

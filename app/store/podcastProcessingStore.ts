@@ -59,37 +59,80 @@ export const usePodcastProcessingStore = create<PodcastProcessingState>(
         );
 
         if (allChunksCompleted) {
+          // Complete transcript step
           updateStepStatus(PROCESSING_STEPS.TRANSCRIPT, "completed", {
             chunks: state.chunks,
             refinedContent: state.currentTranscript,
           });
-        }
-      }
 
-      // Update other steps based on chunk data
-      state.chunks.forEach((chunk) => {
-        if (chunk.status === "completed") {
-          if (chunk.analysis) {
-            updateStepStatus(
-              PROCESSING_STEPS.ANALYSIS,
-              "processing",
-              chunk.analysis
-            );
-          }
-          if (chunk.entities) {
+          // Combine entities from all chunks
+          const combinedEntities = state.chunks.reduce((acc, chunk) => {
+            if (!chunk.entities) return acc;
+
+            // Helper function to merge arrays with deduplication
+            const mergeEntities = (
+              accArray: any[] = [],
+              newArray: any[] = []
+            ) => {
+              const map = new Map();
+              [...accArray, ...newArray].forEach((e) => map.set(e.name, e));
+              return Array.from(map.values());
+            };
+
+            return {
+              people: mergeEntities(acc.people, chunk.entities.people),
+              organizations: mergeEntities(
+                acc.organizations,
+                chunk.entities.organizations
+              ),
+              locations: mergeEntities(acc.locations, chunk.entities.locations),
+              events: mergeEntities(acc.events, chunk.entities.events),
+              topics: mergeEntities(acc.topics, chunk.entities.topics),
+              concepts: mergeEntities(acc.concepts, chunk.entities.concepts),
+            };
+          }, {} as PodcastEntities);
+
+          // Combine analysis from all chunks
+          const combinedAnalysis = state.chunks.reduce((acc, chunk) => {
+            if (!chunk.analysis) return acc;
+
+            // Helper function to merge arrays
+            const mergeArrays = (
+              accArray: any[] = [],
+              newArray: any[] = []
+            ) => {
+              const set = new Set([...accArray, ...newArray]);
+              return Array.from(set);
+            };
+
+            return {
+              summary: acc.summary || chunk.analysis.summary,
+              keyPoints: mergeArrays(acc.keyPoints, chunk.analysis.keyPoints),
+              themes: mergeArrays(acc.themes, chunk.analysis.themes),
+            };
+          }, {} as { summary?: string; keyPoints?: any[]; themes?: any[] });
+
+          // Update steps with combined data
+          if (Object.keys(combinedEntities).length > 0) {
             updateStepStatus(
               PROCESSING_STEPS.ENTITIES,
-              "processing",
-              chunk.entities
+              "completed",
+              combinedEntities
             );
           }
-          if (chunk.timeline) {
-            updateStepStatus(PROCESSING_STEPS.TIMELINE, "processing", {
-              timeline: chunk.timeline,
-            });
+
+          if (Object.keys(combinedAnalysis).length > 0) {
+            updateStepStatus(
+              PROCESSING_STEPS.ANALYSIS,
+              "completed",
+              combinedAnalysis
+            );
           }
+
+          // Set processing to false when everything is complete
+          set({ isProcessing: false });
         }
-      });
+      }
     });
 
     return {

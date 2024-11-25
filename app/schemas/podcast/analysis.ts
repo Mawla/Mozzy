@@ -1,41 +1,24 @@
 import { z } from "zod";
+import { entitySchema } from "./entities";
 
-// Define sub-schemas for better reuse and type safety
-const keyPointSchema = z.object({
-  title: z.string(),
-  description: z.string(),
-  relevance: z.string(),
-});
-
-const themeSchema = z.object({
-  name: z.string(),
-  description: z.string(),
-  relatedConcepts: z.array(z.string()),
-});
-
-// Define section schema instead of using z.any()
 const sectionSchema = z.object({
   title: z.string(),
+  startTime: z.string(),
+  endTime: z.string(),
   content: z.string(),
-  timestamp: z.string().optional(),
 });
 
-export const contentAnalysisSchema = z.object({
-  id: z.string(),
+export const podcastAnalysisSchema = z.object({
   title: z.string(),
+  duration: z.number(),
+  speakers: z.array(z.string()),
+  keyPoints: z.array(z.string()),
   summary: z.string(),
-  quickFacts: z.object({
-    duration: z.string(),
-    participants: z.array(z.string()),
-    mainTopic: z.string(),
-    expertise: z.string(),
-  }),
-  keyPoints: z.array(keyPointSchema),
-  themes: z.array(themeSchema),
-  sections: z.array(sectionSchema).optional(),
+  entities: z.array(entitySchema),
+  topics: z.array(z.string()),
+  sections: z.array(sectionSchema),
+  conclusion: z.string(),
 });
 
-export type PodcastAnalysis = z.infer<typeof contentAnalysisSchema>;
-export type KeyPoint = z.infer<typeof keyPointSchema>;
-export type Theme = z.infer<typeof themeSchema>;
-export type Section = z.infer<typeof sectionSchema>;
+export type PodcastAnalysis = z.infer<typeof podcastAnalysisSchema>;
+export type PodcastSection = z.infer<typeof sectionSchema>;

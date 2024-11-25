@@ -1,108 +1,96 @@
 "use client";
 
-import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { ProcessingPipeline } from "./ProcessingPipeline";
+import { usePodcastProcessing } from "@/app/hooks/use-podcast-processing";
+import { useEffect } from "react";
+import { PodcastEntities } from "@/app/schemas/podcast/entities";
+import { KeyPoint, Theme } from "@/app/types/podcast/processing";
 import { usePodcastProcessingStore } from "@/app/store/podcastProcessingStore";
-import { PodcastProcessingService } from "@/app/services/podcastProcessingService";
-import { ProcessingState } from "@/app/types/podcast/processing";
+import { PROCESSING_STEPS } from "@/app/constants/processing";
 
-interface PodcastProcessorProps {
-  onProcessingComplete: (result: ProcessingState) => void;
-}
+export const PodcastProcessor = () => {
+  const { isProcessing, processingSteps, handleRetryStep, chunks } =
+    usePodcastProcessing();
 
-export const PodcastProcessor = ({
-  onProcessingComplete,
-}: PodcastProcessorProps) => {
-  const [input, setInput] = useState("");
-  const [activeTab, setActiveTab] = useState<"url" | "search" | "transcript">(
-    "transcript"
+  const updateStepStatus = usePodcastProcessingStore(
+    (state) => state.updateStepStatus
   );
-  const {
-    isProcessing,
-    processingSteps,
-    handlePodcastSubmit,
-    handleRetryStep,
-  } = usePodcastProcessingStore();
 
-  // Create processing service instance
-  const processingService = new PodcastProcessingService();
+  useEffect(() => {
+    if (!chunks.length) return;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim()) return;
+    const allChunksCompleted = chunks.every(
+      (chunk) => chunk.status === "completed"
+    );
 
-    try {
-      // Use processingService directly
-      await processingService.refineTranscript(input.trim());
-      onProcessingComplete(processingService.getState());
-    } catch (error) {
-      console.error("Error processing podcast:", error);
+    if (allChunksCompleted) {
+      // Combine entities from all chunks
+      const combinedEntities = chunks.reduce((acc, chunk) => {
+        if (!chunk.entities) return acc;
+
+        // Helper function to merge arrays with deduplication
+        const mergeEntities = (accArray: any[] = [], newArray: any[] = []) => {
+          const map = new Map();
+          [...accArray, ...newArray].forEach((e) => map.set(e.name, e));
+          return Array.from(map.values());
+        };
+
+        return {
+          people: mergeEntities(acc.people, chunk.entities.people),
+          organizations: mergeEntities(
+            acc.organizations,
+            chunk.entities.organizations
+          ),
+          locations: mergeEntities(acc.locations, chunk.entities.locations),
+          events: mergeEntities(acc.events, chunk.entities.events),
+          topics: mergeEntities(acc.topics, chunk.entities.topics),
+          concepts: mergeEntities(acc.concepts, chunk.entities.concepts),
+        };
+      }, {} as PodcastEntities);
+
+      // Combine analysis from all chunks
+      const combinedAnalysis = chunks.reduce((acc, chunk) => {
+        if (!chunk.analysis) return acc;
+
+        // Helper function to merge arrays
+        const mergeArrays = (accArray: any[] = [], newArray: any[] = []) => {
+          const set = new Set([...accArray, ...newArray]);
+          return Array.from(set);
+        };
+
+        return {
+          summary: acc.summary || chunk.analysis.summary,
+          keyPoints: mergeArrays(acc.keyPoints, chunk.analysis.keyPoints),
+          themes: mergeArrays(acc.themes, chunk.analysis.themes),
+        };
+      }, {} as { summary?: string; keyPoints?: KeyPoint[]; themes?: Theme[] });
+
+      // Update steps with combined data
+      if (Object.keys(combinedEntities).length > 0) {
+        updateStepStatus(
+          PROCESSING_STEPS.ENTITIES,
+          "completed",
+          combinedEntities
+        );
+      }
+
+      if (Object.keys(combinedAnalysis).length > 0) {
+        updateStepStatus(
+          PROCESSING_STEPS.ANALYSIS,
+          "completed",
+          combinedAnalysis
+        );
+      }
     }
-  };
+  }, [chunks, updateStepStatus]);
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardContent className="pt-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Tabs
-              value={activeTab}
-              onValueChange={(value) => setActiveTab(value as typeof activeTab)}
-            >
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="transcript">Transcript</TabsTrigger>
-                <TabsTrigger value="url">URL</TabsTrigger>
-                <TabsTrigger value="search">Search</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="transcript" className="space-y-4">
-                <Textarea
-                  placeholder="Paste your transcript here..."
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  className="min-h-[200px]"
-                />
-                <Button type="submit" disabled={isProcessing || !input.trim()}>
-                  Process Transcript
-                </Button>
-              </TabsContent>
-
-              <TabsContent value="url">
-                <Input
-                  placeholder="Enter podcast URL"
-                  type="url"
-                  disabled={true}
-                  className="mb-4"
-                />
-                <Button disabled={true}>Coming Soon</Button>
-              </TabsContent>
-
-              <TabsContent value="search">
-                <Input
-                  placeholder="Search for podcasts"
-                  type="search"
-                  disabled={true}
-                  className="mb-4"
-                />
-                <Button disabled={true}>Coming Soon</Button>
-              </TabsContent>
-            </Tabs>
-          </form>
-        </CardContent>
-      </Card>
-
-      {processingSteps.some((step) => step.status !== "idle") && (
-        <ProcessingPipeline
-          steps={processingSteps}
-          isProcessing={isProcessing}
-          onRetryStep={handleRetryStep}
-        />
-      )}
-    </div>
+    <ProcessingPipeline
+      steps={processingSteps || []}
+      onRetryStep={handleRetryStep}
+      isProcessing={isProcessing}
+      isOpen={true}
+      onToggle={() => {}}
+    />
   );
 };
