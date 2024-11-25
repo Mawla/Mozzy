@@ -1,19 +1,14 @@
-import type { PodcastAnalysis } from "@/app/schemas/podcast/analysis";
 import { PodcastResults } from "@/app/components/dashboard/podcasts/PodcastResults";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { mockPodcastAnalysis } from "@/app/lib/mock/podcast-results";
-
-const getPodcastAnalysis = async (id: string): Promise<PodcastAnalysis> => {
-  // For now, return mock data
-  return mockPodcastAnalysis;
-};
 
 export default async function PodcastResultsPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const podcastAnalysis = await getPodcastAnalysis(params.id);
+  // Using mock data directly instead of fetching
+  const podcastAnalysis = mockPodcastAnalysis;
 
   return (
     <SidebarProvider>

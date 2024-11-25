@@ -50,39 +50,58 @@ export const mockPodcastAnalysis: PodcastAnalysis = {
   ],
   sections: [
     {
-      title: "Introduction and Overview",
-      startTime: "00:00:00",
-      endTime: "00:05:30",
-      content:
-        "Dr. Jane Smith introduces the topic and guest Prof. John Doe, setting the context for the discussion about AI's role in healthcare.",
-    },
-    {
       title: "AI in Early Disease Detection",
-      startTime: "00:05:30",
-      endTime: "00:15:00",
       content:
-        "Discussion of how AI systems can analyze medical data to detect diseases earlier than traditional methods, with specific examples from recent research studies.",
+        "AI systems have shown remarkable capabilities in detecting diseases at early stages. The discussion highlighted how machine learning algorithms can analyze complex medical data to identify patterns that human observers might miss. Several examples were provided, including applications in cancer detection, cardiovascular disease prediction, and neurological disorder diagnosis.",
+      qa: [
+        {
+          question: "How does AI improve disease detection?",
+          answer:
+            "AI improves disease detection by analyzing complex patterns in medical data that might be missed by human observers, leading to earlier and more accurate diagnoses.",
+        },
+        {
+          question: "What types of diseases can AI help detect?",
+          answer:
+            "AI has shown promise in detecting various conditions, including cancers, cardiovascular diseases, and neurological disorders, often at earlier stages than traditional methods.",
+        },
+      ],
     },
     {
       title: "Implementation Challenges",
-      startTime: "00:15:00",
-      endTime: "00:25:00",
       content:
-        "Exploration of technical and organizational challenges in implementing AI systems in healthcare settings, including integration with existing systems and staff training requirements.",
+        "The implementation of AI in healthcare settings faces several technical and organizational challenges. These include integrating AI systems with existing healthcare infrastructure, ensuring data privacy and security, training healthcare professionals to work with AI tools, and managing the transition to AI-enhanced workflows.",
+      qa: [
+        {
+          question:
+            "What are the main challenges in implementing AI in healthcare?",
+          answer:
+            "The main challenges include technical integration with existing systems, data privacy concerns, staff training requirements, and managing the organizational change process.",
+        },
+      ],
     },
     {
       title: "Ethical Considerations",
-      startTime: "00:25:00",
-      endTime: "00:35:00",
       content:
-        "In-depth discussion of ethical implications, including patient privacy, algorithmic bias, and the balance between AI and human decision-making in healthcare.",
+        "The discussion emphasized the importance of addressing ethical implications in AI healthcare applications. Key concerns include patient privacy, algorithmic bias, transparency in AI decision-making, and maintaining the appropriate balance between AI assistance and human medical judgment.",
+      qa: [
+        {
+          question: "What are the key ethical concerns?",
+          answer:
+            "The key ethical concerns include protecting patient privacy, ensuring algorithmic fairness, maintaining transparency in AI decisions, and balancing AI capabilities with human medical expertise.",
+        },
+      ],
     },
     {
       title: "Future Prospects",
-      startTime: "00:35:00",
-      endTime: "00:45:00",
       content:
-        "Overview of upcoming developments in AI healthcare technology, including AI-assisted surgery, personalized medicine, and predictive healthcare.",
+        "Looking ahead, the potential applications of AI in healthcare continue to expand. The discussion explored upcoming developments in AI-assisted surgery, personalized medicine, predictive healthcare, and the integration of AI with other emerging medical technologies.",
+      qa: [
+        {
+          question: "What are the most promising future applications?",
+          answer:
+            "The most promising applications include AI-assisted surgery, personalized treatment planning, predictive healthcare analytics, and integration with emerging medical technologies.",
+        },
+      ],
     },
   ],
   conclusion:

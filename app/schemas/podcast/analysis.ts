@@ -1,11 +1,15 @@
 import { z } from "zod";
 import { entitySchema } from "./entities";
 
+const qaSchema = z.object({
+  question: z.string(),
+  answer: z.string(),
+});
+
 const sectionSchema = z.object({
   title: z.string(),
-  startTime: z.string(),
-  endTime: z.string(),
   content: z.string(),
+  qa: z.array(qaSchema).optional(),
 });
 
 export const podcastAnalysisSchema = z.object({
@@ -22,3 +26,4 @@ export const podcastAnalysisSchema = z.object({
 
 export type PodcastAnalysis = z.infer<typeof podcastAnalysisSchema>;
 export type PodcastSection = z.infer<typeof sectionSchema>;
+export type QAItem = z.infer<typeof qaSchema>;
