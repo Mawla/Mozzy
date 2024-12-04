@@ -20,8 +20,8 @@ interconnected knowledge graphs.
 2. Knowledge Extraction Pipeline: 🚧
    [ ] Implement extraction stages:
    [✓] Basic entity recognition (speakers)
-   [ ] Advanced entity recognition (places, organizations)
-   [ ] Event detection and timeline construction
+   [✓] Advanced entity recognition (places, organizations)
+   [✓] Event detection and timeline construction
    [ ] Quote extraction and attribution
    [ ] Story/narrative identification
    [ ] Topic modeling and theme extraction
@@ -48,9 +48,9 @@ interconnected knowledge graphs.
 5. Data Model and Storage: 🚧
    [✓] Processed podcast metadata
    [✓] Basic knowledge graph
+   [✓] Timeline data
    [ ] Research annotations
    [ ] Entity relationships
-   [ ] Timeline data
    [ ] User enrichments
 
 6. UI/UX Implementation: 🚧
@@ -117,7 +117,7 @@ Current Issues:
 
 Next Priority Tasks:
 
-1. Complete Knowledge Extraction Pipeline
+1. Quote extraction and attribution
 2. Improve UI Feedback for intermediate results
 3. Implement Visual Knowledge Representation
 4. Add Research Support Features

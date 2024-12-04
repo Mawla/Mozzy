@@ -7,19 +7,21 @@ import { ProcessingLogger } from "@/app/core/processing/utils/logger";
 import {
   refinedTranscriptSchema,
   contentAnalysisSchema,
-  entitySchema,
+  podcastEntitiesSchema,
 } from "@/app/schemas/podcast";
+import { podcastTimelineSchema } from "@/app/schemas/podcast/timeline";
 import {
   refineTranscriptPrompt,
   analyzeContentPrompt,
   extractEntitiesPrompt,
+  detectEventsPrompt,
 } from "@/app/prompts/podcasts";
 
-const model = openai("gpt-4o");
+const model = openai("gpt-4");
 
 export async function processTranscript(chunk: TextChunk) {
   try {
-    const { object } = await generateObject<RefinedTranscript>({
+    const { object } = await generateObject({
       model,
       schema: refinedTranscriptSchema,
       schemaName: "RefinedTranscript",
@@ -68,17 +70,43 @@ export async function extractEntities(chunk: TextChunk) {
   try {
     const { object } = await generateObject({
       model,
-      schema: entitySchema,
+      schema: podcastEntitiesSchema,
       schemaName: "PodcastEntities",
-      schemaDescription: "Entities extracted from the podcast transcript",
+      schemaDescription:
+        "Detailed entities extracted from the podcast transcript",
       prompt: extractEntitiesPrompt(chunk.text),
       output: "object",
-      temperature: 0,
+      temperature: 0.2, // Slightly increased temperature for more varied entity detection
+      maxTokens: 2048, // Increased token limit for detailed entity extraction
     });
 
     return object;
   } catch (error) {
     ProcessingLogger.log("error", "Failed to extract entities", {
+      error,
+      chunkId: chunk.id,
+    });
+    throw error;
+  }
+}
+
+export async function detectEvents(chunk: TextChunk) {
+  try {
+    const { object } = await generateObject({
+      model,
+      schema: podcastTimelineSchema,
+      schemaName: "PodcastTimeline",
+      schemaDescription:
+        "Timeline of events detected from the podcast transcript",
+      prompt: detectEventsPrompt(chunk.text),
+      output: "object",
+      temperature: 0.2, // Balanced between consistency and creativity
+      maxTokens: 3072, // Increased token limit for detailed timeline construction
+    });
+
+    return object;
+  } catch (error) {
+    ProcessingLogger.log("error", "Failed to detect events", {
       error,
       chunkId: chunk.id,
     });

@@ -54,12 +54,20 @@ export class PodcastProcessingStrategy extends ProcessingStrategy<
         dependencies: ["refine"], // Depends on refined text
       },
       {
-        id: "synthesis",
-        name: "Result Synthesis",
-        description: "Combining analysis and metadata",
+        id: "events",
+        name: "Event Detection",
+        description: "Detecting and organizing timeline events",
         status: "pending",
         progress: 0,
-        dependencies: ["analyze", "metadata"], // Depends on both analysis and metadata
+        dependencies: ["refine", "analyze"], // Depends on refined text and analysis
+      },
+      {
+        id: "synthesis",
+        name: "Result Synthesis",
+        description: "Combining analysis, metadata, and events",
+        status: "pending",
+        progress: 0,
+        dependencies: ["analyze", "metadata", "events"], // Depends on all previous steps
       },
     ];
   }
@@ -105,7 +113,7 @@ export class PodcastProcessingStrategy extends ProcessingStrategy<
     try {
       this.stepResults.clear();
 
-      // Step 1: Refine the text - Use service instead of direct action call
+      // Step 1: Refine the text
       const refinedText = await this.executeStepWithDependencies(
         "refine",
         async () => {
@@ -114,7 +122,7 @@ export class PodcastProcessingStrategy extends ProcessingStrategy<
         }
       );
 
-      // Step 2: Generate analysis - Use service instead of direct action call
+      // Step 2: Generate analysis
       const analysisPromise = this.executeStepWithDependencies(
         "analyze",
         async () => {
@@ -125,7 +133,7 @@ export class PodcastProcessingStrategy extends ProcessingStrategy<
         }
       );
 
-      // Step 3: Generate metadata - Use service instead of direct action call
+      // Step 3: Generate metadata
       const metadataPromise = this.executeStepWithDependencies(
         "metadata",
         async () => {
@@ -146,18 +154,31 @@ export class PodcastProcessingStrategy extends ProcessingStrategy<
         }
       );
 
-      // Wait for both analysis and metadata
-      const [analysisResult, metadataResult] = await Promise.all([
+      // Step 4: Detect events
+      const eventsPromise = this.executeStepWithDependencies(
+        "events",
+        async () => {
+          const timeline = await podcastService.detectEvents(
+            refinedText.refinedText
+          );
+          return { timeline };
+        }
+      );
+
+      // Wait for all parallel steps
+      const [analysisResult, metadataResult, eventsResult] = await Promise.all([
         analysisPromise,
         metadataPromise,
+        eventsPromise,
       ]);
 
-      // Step 4: Synthesize results
+      // Step 5: Synthesize results
       const result = await this.executeStepWithDependencies(
         "synthesis",
         async () => {
           const { analysis } = analysisResult;
           const { metadata, entities } = metadataResult;
+          const { timeline } = eventsResult;
 
           // Update analysis with metadata
           analysis.quickFacts = {
@@ -174,7 +195,7 @@ export class PodcastProcessingStrategy extends ProcessingStrategy<
             refinedText: refinedText.refinedText,
             analysis,
             entities,
-            timeline: [],
+            timeline: timeline.events,
           };
         }
       );
