@@ -8,8 +8,14 @@ import {
   refinedTranscriptSchema,
   contentAnalysisSchema,
   podcastEntitiesSchema,
+  type RefinedTranscript,
+  type ContentAnalysis,
+  type PodcastEntities,
 } from "@/app/schemas/podcast";
-import { podcastTimelineSchema } from "@/app/schemas/podcast/timeline";
+import {
+  podcastTimelineSchema,
+  type PodcastTimeline,
+} from "@/app/schemas/podcast/timeline";
 import {
   refineTranscriptPrompt,
   analyzeContentPrompt,
@@ -17,22 +23,38 @@ import {
   detectEventsPrompt,
 } from "@/app/prompts/podcasts";
 
+// GPT-4 has a context window of ~8k tokens (~32k characters)
+// Our chunk size is 4k characters (~1k tokens)
+// This leaves ~7k tokens for completion in a single API call
 const model = openai("gpt-4");
 
+/**
+ * Process and refine a transcript chunk.
+ *
+ * Token allocation:
+ * - Input: ~1k tokens (4k characters from chunk)
+ * - System prompt + schema: ~200 tokens
+ * - Available for completion: ~2k tokens
+ *
+ * Parameters optimized for accurate transcription:
+ * - temperature: 0 for deterministic output
+ * - no penalties to maintain original meaning
+ */
 export async function processTranscript(chunk: TextChunk) {
   try {
-    const { object } = await generateObject({
+    const { object } = await generateObject<RefinedTranscript>({
       model,
       schema: refinedTranscriptSchema,
       schemaName: "RefinedTranscript",
       schemaDescription:
         "A refined version of the podcast transcript text with context",
       prompt: refineTranscriptPrompt(chunk.text),
-      output: "object",
       temperature: 0,
+      maxTokens: 2048,
+      presencePenalty: 0,
+      frequencyPenalty: 0,
     });
 
-    // Return just the refined content, but keep context for future use if needed
     return object.refinedContent;
   } catch (error) {
     ProcessingLogger.log("error", "Failed to process transcript", {
@@ -43,17 +65,31 @@ export async function processTranscript(chunk: TextChunk) {
   }
 }
 
+/**
+ * Analyze content for key points, themes, and structure.
+ *
+ * Token allocation:
+ * - Input: ~1k tokens (4k characters from chunk)
+ * - System prompt + schema: ~500 tokens
+ * - Available for completion: ~3k tokens
+ *
+ * Parameters optimized for insightful analysis:
+ * - Moderate temperature for balanced creativity
+ * - Higher penalties to encourage diverse analysis
+ */
 export async function analyzeContent(chunk: TextChunk) {
   try {
-    const { object } = await generateObject({
+    const { object } = await generateObject<ContentAnalysis>({
       model,
       schema: contentAnalysisSchema,
       schemaName: "PodcastAnalysis",
       schemaDescription:
-        "Analysis of the podcast content including key points and themes",
+        "Comprehensive analysis of podcast content including key points, themes, and narrative structure",
       prompt: analyzeContentPrompt(chunk.text),
-      output: "object",
       temperature: 0.3,
+      maxTokens: 3072,
+      presencePenalty: 0.2,
+      frequencyPenalty: 0.3,
     });
 
     return object;
@@ -66,18 +102,34 @@ export async function analyzeContent(chunk: TextChunk) {
   }
 }
 
+/**
+ * Extract and categorize entities with rich context.
+ *
+ * Token allocation:
+ * - Input: ~1k tokens (4k characters from chunk)
+ * - System prompt + schema: ~800 tokens
+ * - Available for completion: ~4k tokens
+ *
+ * Parameters optimized for comprehensive entity extraction:
+ * - Low temperature for consistent entity detection
+ * - Light penalties to maintain natural relationships
+ */
 export async function extractEntities(chunk: TextChunk) {
   try {
-    const { object } = await generateObject({
+    const { object } = await generateObject<PodcastEntities>({
       model,
       schema: podcastEntitiesSchema,
       schemaName: "PodcastEntities",
-      schemaDescription:
-        "Detailed entities extracted from the podcast transcript",
+      schemaDescription: `
+        Extract and categorize entities from podcast content with rich context and relationships.
+        Includes people (speakers, mentioned individuals), organizations, locations, events,
+        topics, and concepts. Each entity includes detailed context, relationships, and relevant quotes.
+      `,
       prompt: extractEntitiesPrompt(chunk.text),
-      output: "object",
-      temperature: 0.2, // Slightly increased temperature for more varied entity detection
-      maxTokens: 2048, // Increased token limit for detailed entity extraction
+      temperature: 0.1,
+      maxTokens: 4096,
+      presencePenalty: 0.1,
+      frequencyPenalty: 0.1,
     });
 
     return object;
@@ -90,18 +142,35 @@ export async function extractEntities(chunk: TextChunk) {
   }
 }
 
+/**
+ * Detect and construct timeline of events.
+ *
+ * Token allocation:
+ * - Input: ~1k tokens (4k characters from chunk)
+ * - System prompt + schema: ~1k tokens
+ * - Available for completion: ~4k tokens
+ *
+ * Parameters optimized for temporal analysis:
+ * - Moderate temperature for event interpretation
+ * - Balanced penalties for natural event flow
+ */
 export async function detectEvents(chunk: TextChunk) {
   try {
-    const { object } = await generateObject({
+    const { object } = await generateObject<PodcastTimeline>({
       model,
       schema: podcastTimelineSchema,
       schemaName: "PodcastTimeline",
-      schemaDescription:
-        "Timeline of events detected from the podcast transcript",
+      schemaDescription: `
+        Construct a detailed timeline of events from podcast content.
+        Includes event detection, temporal relationships, causality chains,
+        and narrative segments. Each event includes context, participants,
+        and relationships to other events.
+      `,
       prompt: detectEventsPrompt(chunk.text),
-      output: "object",
-      temperature: 0.2, // Balanced between consistency and creativity
-      maxTokens: 3072, // Increased token limit for detailed timeline construction
+      temperature: 0.2,
+      maxTokens: 4096,
+      presencePenalty: 0.2,
+      frequencyPenalty: 0.2,
     });
 
     return object;

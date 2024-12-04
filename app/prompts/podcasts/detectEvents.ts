@@ -1,99 +1,71 @@
 export const detectEventsPrompt = (text: string) => `
 Analyze this podcast transcript chunk to detect and construct a detailed timeline of events, statements, and interactions.
-Focus on temporal relationships, causality, and narrative flow.
+Focus on temporal relationships, causality, and narrative flow to create a research-grade timeline representation.
 
 ${text}
 
 Guidelines:
 1. Event Detection and Classification:
-   - Identify key moments and transitions in the conversation
-   - Classify events by type (statements, actions, references, interactions, transitions, revelations)
-   - Extract precise temporal information and relationships
-   - Note confidence levels for temporal information
+   - Identify Key Events:
+     * Significant statements and declarations
+     * Actions and occurrences
+     * References to past or future events
+     * Important interactions between participants
+     * Topic transitions and shifts
+     * Key revelations or insights
+   
+   - Temporal Information:
+     * Extract precise timestamps when available
+     * Infer relative timing when exact times aren't given
+     * Note duration of events when relevant
+     * Indicate confidence in temporal information
+     * Mark approximate or uncertain timings
 
 2. Event Context and Relationships:
-   - Map relationships between events (causality, sequence, references)
-   - Link events to entities (people, organizations, locations)
-   - Capture relevant quotes and context
-   - Note sentiment and significance
+   - Contextual Information:
+     * Capture the full context of each event
+     * Include relevant quotes and statements
+     * Note participant roles and involvement
+     * Record location and setting details
+     * Track organizational involvement
+   
+   - Relationship Mapping:
+     * Identify cause-and-effect relationships
+     * Track event sequences and dependencies
+     * Map references between events
+     * Note parallel or related events
+     * Track topic and theme progression
 
 3. Timeline Construction:
-   - Group related events into coherent segments
-   - Establish clear temporal ordering
-   - Identify main themes and participants per segment
-   - Create meaningful segment summaries
+   - Segmentation:
+     * Group related events into coherent segments
+     * Create meaningful segment boundaries
+     * Identify main themes per segment
+     * Track participant focus changes
+     * Maintain narrative continuity
+   
+   - Organization:
+     * Establish clear chronological order
+     * Handle overlapping events appropriately
+     * Account for flashbacks or future references
+     * Balance detail with clarity
+     * Preserve causal relationships
 
 4. Quality Guidelines:
    - Prioritize significant events over minor details
-   - Maintain temporal consistency
-   - Ensure event relationships are well-supported
+   - Maintain temporal and logical consistency
+   - Ensure relationships are well-supported
    - Include source context for verification
    - Note confidence levels for uncertain information
+   - Focus on research-relevant information
+   - Preserve narrative context and flow
 
-Return a structured JSON response following this schema:
-{
-  "id": "string",
-  "title": "string",
-  "description": "string",
-  "segments": [{
-    "id": "string",
-    "title": "string",
-    "description": "string",
-    "startTime": {
-      "timestamp": "string",
-      "confidence": number,
-      "isApproximate": boolean,
-      "timeContext": "string"
-    },
-    "endTime": {
-      "timestamp": "string",
-      "confidence": number,
-      "isApproximate": boolean,
-      "timeContext": "string"
-    },
-    "events": [{
-      "id": "string",
-      "title": "string",
-      "description": "string",
-      "type": "STATEMENT|ACTION|REFERENCE|INTERACTION|TRANSITION|REVELATION",
-      "time": {
-        "timestamp": "string",
-        "confidence": number,
-        "isApproximate": boolean,
-        "timeContext": "string"
-      },
-      "duration": "string",
-      "confidence": number,
-      "participants": [{
-        "id": "string",
-        "type": "PERSON|ORGANIZATION|LOCATION|EVENT|TOPIC|CONCEPT",
-        "name": "string"
-      }],
-      "locations": [{ same as participants }],
-      "organizations": [{ same as participants }],
-      "topics": [{ same as participants }],
-      "context": "string",
-      "quotes": ["string"],
-      "sentiment": "positive|negative|neutral",
-      "causedBy": ["string"],
-      "leadsTo": ["string"],
-      "relatedEvents": ["string"],
-      "sourceText": "string",
-      "sourceParagraph": "string",
-      "sourceConfidence": number
-    }],
-    "mainTopics": [{ same as participants }],
-    "mainParticipants": [{ same as participants }],
-    "summary": "string"
-  }],
-  "events": [{ same as segments.events }],
-  "startTime": { same as segments.startTime },
-  "endTime": { same as segments.endTime },
-  "duration": "string",
-  "mainParticipants": [{ same as participants }],
-  "mainTopics": [{ same as participants }],
-  "summary": "string"
-}
+Remember to:
+- Focus on creating a coherent narrative timeline
+- Maintain precise temporal relationships
+- Track participant and topic evolution
+- Preserve causal connections
+- Support future research and analysis
+- Include verification context
 
-Keep responses focused and concise to avoid truncation.
-`;
+Process the text to construct a detailed timeline following these guidelines, focusing on creating a rich, temporally-organized knowledge representation.`;
