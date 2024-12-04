@@ -3,91 +3,164 @@
 import * as React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Podcast, ProcessedPodcast } from "@/app/types/podcast";
-import { transformPodcastData } from "@/app/services/podcast/transformers";
+import { BlockBuilder } from "@/app/components/blocks/block-builder";
+import { transformToBlocks } from "@/app/services/podcast/transformers";
+import { Button } from "@/components/ui/button";
+import {
+  Clock,
+  Download,
+  Share2,
+  ListMusic,
+  BarChart2,
+  MessageSquare,
+  BookOpen,
+  Lightbulb,
+} from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 
 interface PodcastResultsProps {
   podcast: Podcast;
-  analysis?: ProcessedPodcast;
+  analysis: ProcessedPodcast;
 }
 
 export function PodcastResults({ podcast, analysis }: PodcastResultsProps) {
-  const transformedData = React.useMemo(
-    () => transformPodcastData(podcast, analysis),
-    [podcast, analysis]
-  );
-  const metrics = transformedData.metrics || [];
+  const blocks = React.useMemo(() => transformToBlocks(analysis), [analysis]);
+  const [activeSection, setActiveSection] = React.useState("overview");
+  const scrollAreaRef = React.useRef<HTMLDivElement>(null);
+
+  const menuItems = [
+    { id: "overview", label: "Overview", icon: BookOpen },
+    { id: "insights", label: "Key Insights", icon: Lightbulb },
+    { id: "themes", label: "Themes", icon: BarChart2 },
+    { id: "timeline", label: "Timeline", icon: ListMusic },
+    { id: "qa", label: "Q&A", icon: MessageSquare },
+  ];
+
+  const handleSectionClick = (sectionId: string) => {
+    setActiveSection(sectionId);
+    const section = document.getElementById(sectionId);
+    if (section && scrollAreaRef.current) {
+      const container = scrollAreaRef.current;
+      const sectionTop = section.offsetTop;
+      container.scrollTo({
+        top: sectionTop - 24, // Add some padding
+        behavior: "smooth",
+      });
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {metrics.map((metric, index) => (
-          <div
-            key={index}
-            className="p-4 bg-white rounded-lg shadow-sm border border-gray-100"
-          >
-            <div className="flex items-center space-x-2">
-              <span className="text-xl">{metric.icon}</span>
-              <span className="text-sm text-gray-600">{metric.label}</span>
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="flex-none border-b border-border bg-card">
+        <div className="container py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">{podcast.title}</h1>
+              <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                <Clock className="w-4 h-4" />
+                <span>{podcast.duration || analysis.quickFacts.duration}</span>
+              </div>
             </div>
-            <p className="mt-2 text-2xl font-semibold">{metric.value}</p>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm">
+                <Share2 className="w-4 h-4 mr-2" />
+                Share
+              </Button>
+              <Button variant="outline" size="sm">
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
+              <SidebarTrigger />
+            </div>
           </div>
-        ))}
+        </div>
       </div>
 
-      {/* Timeline Section */}
-      {analysis?.timeline && analysis.timeline.length > 0 && (
-        <div className="mt-8">
-          <h3 className="text-lg font-semibold mb-4">Timeline</h3>
-          <div className="space-y-4">
-            {analysis.timeline.map((point, index) => (
-              <div key={index} className="flex items-start space-x-4">
-                <div className="min-w-[100px] text-sm text-gray-500">
-                  {point.time}
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm">{point.event}</p>
-                  {point.importance && (
-                    <span
-                      className={`text-xs px-2 py-1 rounded-full ${
-                        point.importance === "high"
-                          ? "bg-red-100 text-red-800"
-                          : point.importance === "medium"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-green-100 text-green-800"
-                      }`}
-                    >
-                      {point.importance}
-                    </span>
-                  )}
+      {/* Content */}
+      <ScrollArea ref={scrollAreaRef} className="flex-grow">
+        <div className="container py-6">
+          <div className="flex gap-6">
+            {/* Navigation Sidebar */}
+            <div className="w-64 flex-none">
+              <div className="sticky top-6">
+                <div className="rounded-lg border bg-card">
+                  <SidebarHeader>
+                    <h3 className="px-2 text-lg font-semibold">Navigation</h3>
+                  </SidebarHeader>
+                  <SidebarContent>
+                    <SidebarMenu>
+                      {menuItems.map((item) => (
+                        <SidebarMenuItem key={item.id}>
+                          <SidebarMenuButton
+                            onClick={() => handleSectionClick(item.id)}
+                            isActive={activeSection === item.id}
+                            tooltip={item.label}
+                          >
+                            <item.icon className="w-4 h-4" />
+                            <span>{item.label}</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      ))}
+                    </SidebarMenu>
+                  </SidebarContent>
                 </div>
               </div>
-            ))}
+            </div>
+
+            {/* Main Content */}
+            <div className="flex-grow min-w-0">
+              {/* Overview Section */}
+              <section id="overview" className="mb-8">
+                <h2 className="text-xl font-semibold mb-4">Overview</h2>
+                <BlockBuilder
+                  rows={blocks.filter((row) =>
+                    ["metrics", "quick-facts"].includes(row.id)
+                  )}
+                />
+              </section>
+
+              {/* Key Insights Section */}
+              <section id="insights" className="mb-8">
+                <h2 className="text-xl font-semibold mb-4">Key Insights</h2>
+                <BlockBuilder
+                  rows={blocks.filter((row) => row.id === "key-points")}
+                />
+              </section>
+
+              {/* Themes Section */}
+              <section id="themes" className="mb-8">
+                <h2 className="text-xl font-semibold mb-4">Themes</h2>
+                <BlockBuilder
+                  rows={blocks.filter((row) => row.id === "themes")}
+                />
+              </section>
+
+              {/* Timeline Section */}
+              <section id="timeline" className="mb-8">
+                <h2 className="text-xl font-semibold mb-4">Timeline</h2>
+                <BlockBuilder
+                  rows={blocks.filter((row) => row.id === "timeline")}
+                />
+              </section>
+
+              {/* Q&A Section */}
+              <section id="qa" className="mb-8">
+                <h2 className="text-xl font-semibold mb-4">Q&A</h2>
+                <BlockBuilder rows={blocks.filter((row) => row.id === "qa")} />
+              </section>
+            </div>
           </div>
         </div>
-      )}
-
-      {/* Key Points Section */}
-      {analysis?.keyPoints && analysis.keyPoints.length > 0 && (
-        <div className="mt-8">
-          <h3 className="text-lg font-semibold mb-4">Key Points</h3>
-          <ul className="list-disc pl-5 space-y-2">
-            {analysis.keyPoints.map((point, index) => (
-              <li key={index} className="text-sm">
-                {point}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Summary Section */}
-      {analysis?.summary && (
-        <div className="mt-8">
-          <h3 className="text-lg font-semibold mb-4">Summary</h3>
-          <p className="text-sm text-gray-700">{analysis.summary}</p>
-        </div>
-      )}
+      </ScrollArea>
     </div>
   );
 }

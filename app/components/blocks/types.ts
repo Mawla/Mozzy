@@ -37,7 +37,15 @@ export interface MetricData {
 
 // Block System Types
 export interface BlockField {
-  type: "text" | "list" | "grid" | "timeline" | "metrics";
+  type:
+    | "number"
+    | "text"
+    | "badge"
+    | "list"
+    | "grid"
+    | "comparison"
+    | "timeline"
+    | "metrics";
   label: string;
   value: any;
   metadata?: {

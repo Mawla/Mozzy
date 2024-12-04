@@ -7,8 +7,9 @@ import {
   ProcessingResult,
   ChunkResult,
   EntityDetails,
-} from "@/app/types/podcast/processing";
-import { Theme, KeyPoint } from "@/app/schemas/podcast/analysis";
+  ProcessedPodcast,
+} from "@/app/types/podcast";
+import { Theme } from "@/app/schemas/podcast/analysis";
 import { PodcastProcessor } from "@/app/core/processing/podcast/PodcastProcessor";
 import { ProcessingLogger } from "@/app/core/processing/utils/logger";
 import {
@@ -16,20 +17,27 @@ import {
   analyzeContent,
   extractEntities,
 } from "@/app/actions/podcastActions";
-
-interface ProcessedPodcast {
-  id: string;
-  summary: string;
-  themes: Theme[];
-  keyPoints: KeyPoint[];
-  entities: PodcastEntities;
-  timeline: TimelineEvent[];
-  cleanTranscript: string;
-  originalTranscript: string;
-}
+import { mockPodcastResults } from "@/app/lib/mock/podcast-results";
 
 export const podcastService = {
-  // Main entry point - called from UI/Processing Service
+  // Mock data methods for development
+  async getPodcastById(id: string): Promise<ProcessedPodcast | null> {
+    // For now, always return mock data
+    return mockPodcastResults;
+  },
+
+  async getPodcasts(): Promise<ProcessedPodcast[]> {
+    // For now, return array with mock data
+    return [mockPodcastResults];
+  },
+
+  // Timeline events detection
+  async detectEvents(text: string): Promise<TimelineEvent[]> {
+    // For now, return mock timeline events
+    return mockPodcastResults.timeline;
+  },
+
+  // Main processing methods
   async processTranscript(
     transcript: string,
     onStateUpdate?: (state: any) => void
@@ -191,23 +199,5 @@ export const podcastService = {
         ? mergeEntityArray(entities.map((e) => e.concepts || []))
         : undefined,
     };
-  },
-
-  // Storage methods
-  async savePodcast(podcast: ProcessedPodcast): Promise<void> {
-    const podcasts = this.getAllPodcasts();
-    podcasts.push(podcast);
-    localStorage.setItem("podcasts", JSON.stringify(podcasts));
-  },
-
-  getAllPodcasts(): ProcessedPodcast[] {
-    if (typeof window === "undefined") return [];
-    const podcastsJson = localStorage.getItem("podcasts");
-    return podcastsJson ? JSON.parse(podcastsJson) : [];
-  },
-
-  getPodcastById(id: string): ProcessedPodcast | null {
-    const podcasts = this.getAllPodcasts();
-    return podcasts.find((podcast) => podcast.id === id) || null;
   },
 };
