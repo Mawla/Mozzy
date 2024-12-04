@@ -2,6 +2,7 @@ import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { TimelineView } from "./timeline-block";
 
 export type ViewField = {
   type:
@@ -83,6 +84,14 @@ export function BaseView({ sections }: BaseViewProps) {
             </div>
           </div>
         );
+      case "timeline":
+        return (
+          <TimelineView
+            title={field.label}
+            events={field.value}
+            description={field.metadata?.description}
+          />
+        );
       default:
         return <p className="text-sm text-muted-foreground">{field.value}</p>;
     }
@@ -90,28 +99,40 @@ export function BaseView({ sections }: BaseViewProps) {
 
   return (
     <div className="space-y-4">
-      {sections.map((section, i) => (
-        <Card key={i}>
-          <CardHeader>
-            <CardTitle>{section.title}</CardTitle>
-            {section.description && (
-              <p className="text-sm text-muted-foreground">
-                {section.description}
-              </p>
-            )}
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {section.fields.map((field, j) => (
-                <div key={j} className="space-y-2">
-                  <h4 className="font-medium">{field.label}</h4>
-                  {renderField(field)}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+      {sections.map((section, i) => {
+        // Check if the section contains only a timeline field
+        const isTimelineSection =
+          section.fields.length === 1 && section.fields[0].type === "timeline";
+
+        // If it's a timeline section, render it directly without the Card wrapper
+        if (isTimelineSection) {
+          return renderField(section.fields[0]);
+        }
+
+        // Otherwise, render the normal Card layout
+        return (
+          <Card key={i}>
+            <CardHeader>
+              <CardTitle>{section.title}</CardTitle>
+              {section.description && (
+                <p className="text-sm text-muted-foreground">
+                  {section.description}
+                </p>
+              )}
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {section.fields.map((field, j) => (
+                  <div key={j} className="space-y-2">
+                    <h4 className="font-medium">{field.label}</h4>
+                    {renderField(field)}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }

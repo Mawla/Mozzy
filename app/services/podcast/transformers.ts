@@ -1,65 +1,36 @@
-import { Podcast, ProcessedPodcast } from "@/app/types/podcast";
+import { ProcessedPodcast, Podcast } from "@/app/types/podcast";
 import { BlockRow, BlockConfig } from "@/app/components/blocks/block-builder";
 import { ViewField } from "@/app/components/blocks/base-block";
-
-interface PodcastMetric {
-  label: string;
-  value: number;
-  icon: string;
-}
 
 export function transformPodcastData(
   podcast: Podcast,
   analysis?: ProcessedPodcast
 ) {
+  // Transform podcast data for display
   return {
-    ...podcast,
-    metrics: transformToMetrics(analysis),
-    blocks: transformToBlocks(analysis),
+    title: podcast.title,
+    duration: podcast.duration,
+    analysis: analysis || null,
   };
 }
 
-export function transformToMetrics(
-  analysis?: ProcessedPodcast
-): PodcastMetric[] {
-  const metrics: PodcastMetric[] = [
-    {
-      label: "Key Insights",
-      value: analysis?.keyPoints?.length || 0,
-      icon: "✨",
-    },
-    {
-      label: "People Mentioned",
-      value: analysis?.people?.length || 0,
-      icon: "👥",
-    },
-    {
-      label: "Organizations",
-      value: analysis?.organizations?.length || 0,
-      icon: "🏢",
-    },
-    {
-      label: "Locations",
-      value: analysis?.locations?.length || 0,
-      icon: "📍",
-    },
-    {
-      label: "Events",
-      value: analysis?.events?.length || 0,
-      icon: "📅",
-    },
-    {
-      label: "Timeline Points",
-      value: analysis?.timeline?.length || 0,
-      icon: "⏱️",
-    },
-  ];
-
-  return metrics;
+function transformTheme(
+  theme: { name: string; description: string; relatedConcepts: string[] },
+  index: number
+): ViewField {
+  return {
+    type: "grid" as const,
+    label: theme.name,
+    value: [
+      {
+        description: theme.description,
+        concepts: theme.relatedConcepts,
+      },
+    ],
+  };
 }
 
 function transformQuickFacts(analysis: ProcessedPodcast): BlockRow {
-  // TODO: Implement proper quick facts transformation
   return {
     id: "quick-facts",
     blocks: [
@@ -71,82 +42,24 @@ function transformQuickFacts(analysis: ProcessedPodcast): BlockRow {
             title: "Quick Facts",
             fields: [
               {
-                type: "text",
-                label: "Raw Data",
-                value: JSON.stringify(analysis, null, 2),
+                type: "text" as const,
+                label: "Duration",
+                value: analysis.quickFacts.duration,
               },
-            ],
-          },
-        ],
-      },
-    ],
-  };
-}
-
-function transformSummary(analysis: ProcessedPodcast): BlockRow {
-  return {
-    id: "summary",
-    blocks: [
-      {
-        id: "summary-block",
-        layout: "full",
-        sections: [
-          {
-            title: "Summary",
-            fields: [
               {
-                type: "text",
-                label: "Overview",
-                value: analysis.summary || "No summary available",
+                type: "list" as const,
+                label: "Participants",
+                value: analysis.quickFacts.participants,
               },
-            ],
-          },
-        ],
-      },
-    ],
-  };
-}
-
-function transformKeyPoints(analysis: ProcessedPodcast): BlockRow {
-  return {
-    id: "key-points",
-    blocks: [
-      {
-        id: "key-points-block",
-        layout: "full",
-        sections: [
-          {
-            title: "Key Points",
-            fields: [
               {
-                type: "list",
-                label: "Main Takeaways",
-                value: analysis.keyPoints || [],
+                type: "text" as const,
+                label: "Main Topic",
+                value: analysis.quickFacts.mainTopic,
               },
-            ],
-          },
-        ],
-      },
-    ],
-  };
-}
-
-function transformThemes(analysis: ProcessedPodcast): BlockRow {
-  // TODO: Implement proper theme transformation with grid layout
-  return {
-    id: "themes",
-    blocks: [
-      {
-        id: "themes-block",
-        layout: "full",
-        sections: [
-          {
-            title: "Themes",
-            fields: [
               {
-                type: "text",
-                label: "Raw Theme Data",
-                value: JSON.stringify(analysis.themes, null, 2),
+                type: "text" as const,
+                label: "Expertise Level",
+                value: analysis.quickFacts.expertise,
               },
             ],
           },
@@ -157,7 +70,6 @@ function transformThemes(analysis: ProcessedPodcast): BlockRow {
 }
 
 function transformMetrics(analysis: ProcessedPodcast): BlockRow {
-  // TODO: Implement proper metrics visualization
   return {
     id: "metrics",
     blocks: [
@@ -166,12 +78,86 @@ function transformMetrics(analysis: ProcessedPodcast): BlockRow {
         layout: "full",
         sections: [
           {
-            title: "Analysis Metrics",
+            title: "Key Metrics",
+            fields: analysis.metrics.map((metric) => ({
+              type: "number" as const,
+              label: metric.label,
+              value: metric.value,
+            })),
+          },
+        ],
+      },
+    ],
+  };
+}
+
+function transformThemes(analysis: ProcessedPodcast): BlockRow {
+  const midPoint = Math.ceil(analysis.themes.length / 2);
+  const firstHalf = analysis.themes.slice(0, midPoint);
+  const secondHalf = analysis.themes.slice(midPoint);
+
+  const blocks: BlockConfig[] = [];
+
+  if (firstHalf.length > 0) {
+    blocks.push({
+      id: "themes-block-1",
+      layout: "half",
+      sections: [
+        {
+          title: "Key Themes",
+          fields: firstHalf.map((theme, index) => transformTheme(theme, index)),
+        },
+      ],
+    });
+  }
+
+  if (secondHalf.length > 0) {
+    blocks.push({
+      id: "themes-block-2",
+      layout: "half",
+      sections: [
+        {
+          title: "Additional Themes",
+          fields: secondHalf.map((theme, index) =>
+            transformTheme(theme, index + midPoint)
+          ),
+        },
+      ],
+    });
+  }
+
+  return {
+    id: "themes",
+    blocks,
+  };
+}
+
+function transformTimeline(analysis: ProcessedPodcast): BlockRow {
+  return {
+    id: "timeline",
+    blocks: [
+      {
+        id: "timeline-block",
+        layout: "full",
+        sections: [
+          {
+            title: "Timeline",
             fields: [
               {
-                type: "text",
-                label: "Content Analysis",
-                value: JSON.stringify(transformToMetrics(analysis), null, 2),
+                type: "timeline" as const,
+                label: "Event Timeline",
+                value: analysis.timeline.map((event) => ({
+                  title: event.title,
+                  description: event.description,
+                  date: event.date,
+                  type:
+                    event.type === "milestone"
+                      ? "milestone"
+                      : event.type === "decision"
+                      ? "decision"
+                      : "event",
+                  importance: event.importance,
+                })),
               },
             ],
           },
@@ -181,30 +167,26 @@ function transformMetrics(analysis: ProcessedPodcast): BlockRow {
   };
 }
 
-export function transformToBlocks(analysis?: ProcessedPodcast): BlockRow[] {
-  if (!analysis) return [];
-
+export function transformToBlocks(analysis: ProcessedPodcast): BlockRow[] {
   const rows: BlockRow[] = [];
 
-  // Add metrics at the top
-  rows.push(transformMetrics(analysis));
-
-  // Add quick facts
-  rows.push(transformQuickFacts(analysis));
-
-  // Add summary if available
-  if (analysis.summary) {
-    rows.push(transformSummary(analysis));
+  // Add quick facts to the sidebar
+  if (analysis.quickFacts) {
+    rows.push(transformQuickFacts(analysis));
   }
 
-  // Add key points if available
-  if (analysis.keyPoints?.length > 0) {
-    rows.push(transformKeyPoints(analysis));
+  // Add metrics to the sidebar
+  if (analysis.metrics?.length > 0) {
+    rows.push(transformMetrics(analysis));
   }
 
-  // Add themes if available
+  // Add main content blocks
   if (analysis.themes?.length > 0) {
     rows.push(transformThemes(analysis));
+  }
+
+  if (analysis.timeline?.length > 0) {
+    rows.push(transformTimeline(analysis));
   }
 
   return rows;

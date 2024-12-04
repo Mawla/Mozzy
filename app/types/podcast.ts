@@ -4,6 +4,7 @@ import {
   Section,
   ContentAnalysis,
 } from "@/app/schemas/podcast/analysis";
+import { MetricData } from "@/app/components/blocks/types";
 
 export interface TimelineEvent {
   title: string;
@@ -21,6 +22,13 @@ export interface ProcessedPodcast extends Omit<ContentAnalysis, "themes"> {
   events: string[];
   timeline: TimelineEvent[];
   themes: Theme[];
+  metrics: MetricData[];
+  quickFacts: {
+    duration: string;
+    participants: string[];
+    mainTopic: string;
+    expertise: string;
+  };
 }
 
 export interface ProcessingStep {
@@ -37,8 +45,5 @@ export interface Podcast {
   imageUrl?: string;
   duration?: string;
   status: "processing" | "completed" | "error";
-  analysis?: {
-    keyPoints: string[];
-    summary: string;
-  };
+  analysis?: ProcessedPodcast;
 }

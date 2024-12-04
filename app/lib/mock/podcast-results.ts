@@ -11,6 +11,32 @@ export const mockPodcastResults: ProcessedPodcast = {
     "Machine learning is transforming traditional industries",
     "The role of human oversight remains crucial",
   ],
+  metrics: [
+    {
+      label: "Key Insights",
+      value: 15,
+    },
+    {
+      label: "People Mentioned",
+      value: 3,
+    },
+    {
+      label: "Organizations",
+      value: 3,
+    },
+    {
+      label: "Locations",
+      value: 3,
+    },
+    {
+      label: "Events",
+      value: 3,
+    },
+    {
+      label: "Timeline Points",
+      value: 3,
+    },
+  ],
   themes: [
     {
       name: "AI Ethics",

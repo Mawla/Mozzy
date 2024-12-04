@@ -26,7 +26,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-  SidebarRail,
 } from "@/components/ui/sidebar";
 
 const navItems = [
@@ -47,21 +46,24 @@ export function DashboardSidebar() {
     <Sidebar variant="sidebar" collapsible="icon">
       <SidebarHeader>
         <div className="flex h-14 items-center px-4">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
-            <Package2 className="h-6 w-6" />
-            <span>Acme Inc</span>
+          <Link
+            href="/"
+            className="flex items-center gap-2 font-semibold min-w-0 flex-shrink"
+          >
+            {/* <Package2 className="h-6 w-6 shrink-0" /> */}
+            <span className="truncate">Acme Inc</span>
           </Link>
-          <div className="ml-auto flex items-center gap-2">
-            <Button variant="outline" size="icon" className="h-8 w-8">
+          <div className="flex items-center gap-2 ml-auto">
+            {/* <Button variant="outline" size="icon" className="h-8 w-8">
               <Bell className="h-4 w-4" />
               <span className="sr-only">Toggle notifications</span>
-            </Button>
-            <SidebarTrigger />
+            </Button> */}
           </div>
         </div>
       </SidebarHeader>
 
       <SidebarContent>
+        <SidebarTrigger className="h-8 w-8 ml-2" />
         <SidebarMenu>
           {navItems.map((item) => {
             const isActive =
@@ -73,8 +75,8 @@ export function DashboardSidebar() {
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href} passHref legacyBehavior>
                   <SidebarMenuButton isActive={isActive} tooltip={item.name}>
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.name}</span>
+                    <item.icon className="h-4 w-4 shrink-0 ml-2" />
+                    <span className="truncate">{item.name}</span>
                   </SidebarMenuButton>
                 </Link>
               </SidebarMenuItem>
@@ -85,7 +87,7 @@ export function DashboardSidebar() {
 
       <SidebarFooter>
         <div className="p-4">
-          <Card>
+          {/* <Card>
             <CardHeader className="p-2 pt-0 md:p-4">
               <CardTitle>Upgrade to Pro</CardTitle>
             </CardHeader>
@@ -94,10 +96,9 @@ export function DashboardSidebar() {
                 Upgrade
               </Button>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
       </SidebarFooter>
-      <SidebarRail />
     </Sidebar>
   );
 }

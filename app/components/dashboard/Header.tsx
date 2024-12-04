@@ -9,13 +9,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 
 const Header = () => {
   return (
     <header className="flex h-14 lg:h-[60px] items-center gap-4 border-b bg-background px-4 lg:px-6">
       <div className="flex items-center gap-2">
-        <SidebarTrigger />
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input

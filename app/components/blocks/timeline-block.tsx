@@ -22,6 +22,11 @@ export function TimelineView({
   description,
   className,
 }: TimelineViewProps) {
+  if (!Array.isArray(events)) {
+    console.error("Timeline events must be an array");
+    return null;
+  }
+
   return (
     <ContainerBlock
       title={title}
