@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { logger } from "@/app/services/logger";
-import { withErrorBoundary } from "@/app/components/error-boundary";
+import { ErrorBoundaryWrapper } from "./error-boundary-wrapper";
 
 interface TimelineEvent {
   title: string;
@@ -113,7 +113,17 @@ function TimelineBlockComponent({
   );
 }
 
-// Wrap with error boundary
-export const TimelineBlock = withErrorBoundary(TimelineBlockComponent, {
-  name: "TimelineBlock",
-});
+// Wrap with error boundary wrapper
+export const TimelineBlock = ({
+  title,
+  events,
+  description,
+}: TimelineBlockProps) => (
+  <ErrorBoundaryWrapper name="TimelineBlock">
+    <TimelineBlockComponent
+      title={title}
+      events={events}
+      description={description}
+    />
+  </ErrorBoundaryWrapper>
+);

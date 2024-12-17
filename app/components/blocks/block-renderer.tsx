@@ -7,10 +7,12 @@ import { BlockNavigation } from "./layout/block-navigation";
 import { BlockSidebar } from "./layout/block-sidebar";
 import { BlockContent } from "./layout/block-content";
 import { cn } from "@/lib/utils";
+import { logger } from "@/app/services/logger";
+import { withErrorBoundary } from "@/app/components/error-boundary";
 import type { NavigationSection } from "@/app/types/navigation";
 import type { BlockRendererProps } from "@/app/types/renderer";
 
-export function BlockRenderer({
+function BlockRendererComponent({
   blocks,
   title,
   subtitle,
@@ -18,57 +20,70 @@ export function BlockRenderer({
   className,
 }: BlockRendererProps) {
   // Split blocks into main content and sidebar
-  const mainBlocks = React.useMemo(
-    () =>
-      blocks.filter(
+  const mainBlocks = React.useMemo(() => {
+    try {
+      return blocks.filter(
         (row) =>
           !row.blocks.some((block) => block.metadata?.placement === "sidebar")
-      ),
-    [blocks]
-  );
+      );
+    } catch (error) {
+      logger.error("Error filtering main blocks", error as Error);
+      return [];
+    }
+  }, [blocks]);
 
-  const sidebarBlocks = React.useMemo(
-    () =>
-      blocks.filter((row) =>
+  const sidebarBlocks = React.useMemo(() => {
+    try {
+      return blocks.filter((row) =>
         row.blocks.some((block) => block.metadata?.placement === "sidebar")
-      ),
-    [blocks]
-  );
+      );
+    } catch (error) {
+      logger.error("Error filtering sidebar blocks", error as Error);
+      return [];
+    }
+  }, [blocks]);
 
   // Create navigation sections from blocks
-  const navigationSections = React.useMemo<NavigationSection[]>(
-    () => [
-      {
-        id: "main",
-        title: "Main Sections",
-        items: mainBlocks.map((row) => ({
-          id: row.id,
-          title: row.blocks[0]?.sections[0]?.title || "",
-          onClick: () => {
-            const element = document.querySelector(
-              `[data-section-id="${row.id}"]`
-            );
-            if (element) {
-              element.scrollIntoView({ behavior: "smooth" });
-              window.history.pushState({}, "", `#${row.id}`);
-            }
-          },
-        })),
-      },
-    ],
-    [mainBlocks]
-  );
+  const navigationSections = React.useMemo<NavigationSection[]>(() => {
+    try {
+      return [
+        {
+          id: "main",
+          title: "Main Sections",
+          items: mainBlocks.map((row) => ({
+            id: row.id,
+            title: row.blocks[0]?.sections[0]?.title || "",
+            onClick: () => {
+              const element = document.querySelector(
+                `[data-section-id="${row.id}"]`
+              );
+              if (element) {
+                element.scrollIntoView({ behavior: "smooth" });
+                window.history.pushState({}, "", `#${row.id}`);
+              }
+            },
+          })),
+        },
+      ];
+    } catch (error) {
+      logger.error("Error creating navigation sections", error as Error);
+      return [];
+    }
+  }, [mainBlocks]);
 
   // Create sidebar sections
-  const sidebarSections = React.useMemo(
-    () =>
-      sidebarBlocks.map((row) => ({
+  const sidebarSections = React.useMemo(() => {
+    try {
+      return sidebarBlocks.map((row) => ({
         id: row.id,
         title: row.blocks[0]?.sections[0]?.title || "",
         content: <BlockBuilder rows={[row]} />,
-      })),
-    [sidebarBlocks]
-  );
+      }));
+    } catch (error) {
+      logger.error("Error creating sidebar sections", error as Error);
+      return [];
+    }
+  }, [sidebarBlocks]);
 
   return (
     <BlockLayout
@@ -110,3 +125,8 @@ export function BlockRenderer({
     </BlockLayout>
   );
 }
+
+// Wrap with error boundary
+export const BlockRenderer = withErrorBoundary(BlockRendererComponent, {
+  name: "BlockRenderer",
+});

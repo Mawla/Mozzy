@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { TimelineBlock } from "./timeline-block";
 import { logger } from "@/app/services/logger";
-import { withErrorBoundary } from "@/app/components/error-boundary";
+import { ErrorBoundaryWrapper } from "./error-boundary-wrapper";
 import {
   ViewField,
   ViewSection,
@@ -234,7 +234,9 @@ function BaseViewComponent({ sections, metadata }: BaseViewProps) {
   );
 }
 
-// Wrap with error boundary
-export const BaseView = withErrorBoundary(BaseViewComponent, {
-  name: "BaseView",
-});
+// Wrap with error boundary wrapper
+export const BaseView = ({ sections, metadata }: BaseViewProps) => (
+  <ErrorBoundaryWrapper name="BaseView">
+    <BaseViewComponent sections={sections} metadata={metadata} />
+  </ErrorBoundaryWrapper>
+);
