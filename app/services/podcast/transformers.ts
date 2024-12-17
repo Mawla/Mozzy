@@ -31,6 +31,33 @@ function transformTheme(
 }
 
 function transformQuickFacts(analysis: ProcessedPodcast): BlockRow {
+  const fields = [
+    ...(analysis.quickFacts.duration
+      ? [
+          {
+            type: "text" as const,
+            label: "Duration",
+            value: analysis.quickFacts.duration,
+          },
+        ]
+      : []),
+    {
+      type: "list" as const,
+      label: "Participants",
+      value: analysis.quickFacts.participants,
+    },
+    {
+      type: "text" as const,
+      label: "Main Topic",
+      value: analysis.quickFacts.mainTopic,
+    },
+    {
+      type: "text" as const,
+      label: "Expertise Level",
+      value: analysis.quickFacts.expertise,
+    },
+  ];
+
   return {
     id: "quick-facts",
     blocks: [
@@ -40,26 +67,29 @@ function transformQuickFacts(analysis: ProcessedPodcast): BlockRow {
         sections: [
           {
             title: "Quick Facts",
+            fields,
+          },
+        ],
+      },
+    ],
+  };
+}
+
+function transformKeyPoints(analysis: ProcessedPodcast): BlockRow {
+  return {
+    id: "key-points",
+    blocks: [
+      {
+        id: "key-points-block",
+        layout: "full",
+        sections: [
+          {
+            title: "Key Points",
             fields: [
               {
-                type: "text" as const,
-                label: "Duration",
-                value: analysis.quickFacts.duration,
-              },
-              {
                 type: "list" as const,
-                label: "Participants",
-                value: analysis.quickFacts.participants,
-              },
-              {
-                type: "text" as const,
-                label: "Main Topic",
-                value: analysis.quickFacts.mainTopic,
-              },
-              {
-                type: "text" as const,
-                label: "Expertise Level",
-                value: analysis.quickFacts.expertise,
+                label: "Main Takeaways",
+                value: analysis.keyPoints,
               },
             ],
           },
@@ -167,7 +197,50 @@ function transformTimeline(analysis: ProcessedPodcast): BlockRow {
   };
 }
 
-export function transformToBlocks(analysis: ProcessedPodcast): BlockRow[] {
+function transformSections(analysis: ProcessedPodcast): BlockRow {
+  return {
+    id: "sections",
+    blocks: [
+      {
+        id: "sections-block",
+        layout: "full",
+        sections: analysis.sections.map((section) => ({
+          title: section.title,
+          fields: [
+            {
+              type: "text" as const,
+              label: "Content",
+              value: section.content,
+            },
+            ...(section.qa
+              ? [
+                  {
+                    type: "grid" as const,
+                    label: "Q&A",
+                    value: section.qa.map((qa) => ({
+                      question: qa.question,
+                      answer: qa.answer,
+                      context: qa.context,
+                      topics: qa.topics,
+                    })),
+                  },
+                ]
+              : []),
+          ],
+        })),
+      },
+    ],
+  };
+}
+
+export function transformToBlocks(
+  analysis: ProcessedPodcast | undefined | null
+): BlockRow[] {
+  // Return empty array if analysis is not provided
+  if (!analysis) {
+    return [];
+  }
+
   const rows: BlockRow[] = [];
 
   // Add quick facts to the sidebar
@@ -180,6 +253,11 @@ export function transformToBlocks(analysis: ProcessedPodcast): BlockRow[] {
     rows.push(transformMetrics(analysis));
   }
 
+  // Add key points
+  if (analysis.keyPoints?.length > 0) {
+    rows.push(transformKeyPoints(analysis));
+  }
+
   // Add main content blocks
   if (analysis.themes?.length > 0) {
     rows.push(transformThemes(analysis));
@@ -187,6 +265,11 @@ export function transformToBlocks(analysis: ProcessedPodcast): BlockRow[] {
 
   if (analysis.timeline?.length > 0) {
     rows.push(transformTimeline(analysis));
+  }
+
+  // Add sections
+  if (analysis.sections?.length > 0) {
+    rows.push(transformSections(analysis));
   }
 
   return rows;

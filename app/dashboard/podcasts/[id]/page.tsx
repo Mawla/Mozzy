@@ -18,6 +18,7 @@ export default async function PodcastResultsPage({
             id: analysis.id,
             title: analysis.title,
             description: analysis.summary,
+            duration: analysis.quickFacts.duration,
             status: "completed" as const,
           }}
           analysis={analysis}

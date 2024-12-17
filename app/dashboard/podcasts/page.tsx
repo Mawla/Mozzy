@@ -35,17 +35,21 @@ const ErrorState = () => {
 
 export default function PodcastsPage() {
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Podcasts</h1>
-        <Button asChild className="bg-blue-600 hover:bg-blue-700">
-          <Link href="/dashboard/podcasts/new">Add Podcast</Link>
-        </Button>
+    <div className="h-full container mx-auto p-4">
+      <div className="border-b">
+        <div className="flex justify-between items-center h-[60px] px-6">
+          <h1 className="text-2xl font-semibold text-gray-900">Podcasts</h1>
+          <Button asChild className="bg-blue-600 hover:bg-blue-700">
+            <Link href="/dashboard/podcasts/new">Add Podcast</Link>
+          </Button>
+        </div>
       </div>
 
-      <Suspense fallback={<PodcastGridSkeleton />}>
-        <PodcastGrid />
-      </Suspense>
+      <div className="p-6">
+        <Suspense fallback={<PodcastGridSkeleton />}>
+          <PodcastGrid />
+        </Suspense>
+      </div>
     </div>
   );
 }

@@ -4,8 +4,6 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Package2,
-  Bell,
   Home,
   FileText,
   LineChart,
@@ -14,9 +12,6 @@ import {
   Lightbulb,
   Mic,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Sidebar,
   SidebarContent,
@@ -50,20 +45,13 @@ export function DashboardSidebar() {
             href="/"
             className="flex items-center gap-2 font-semibold min-w-0 flex-shrink"
           >
-            {/* <Package2 className="h-6 w-6 shrink-0" /> */}
             <span className="truncate">Acme Inc</span>
           </Link>
-          <div className="flex items-center gap-2 ml-auto">
-            {/* <Button variant="outline" size="icon" className="h-8 w-8">
-              <Bell className="h-4 w-4" />
-              <span className="sr-only">Toggle notifications</span>
-            </Button> */}
-          </div>
         </div>
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarTrigger className="h-8 w-8 ml-2" />
+        <SidebarTrigger className="h-8 w-8 ml-2 mb-2" />
         <SidebarMenu>
           {navItems.map((item) => {
             const isActive =
@@ -86,18 +74,7 @@ export function DashboardSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
-        <div className="p-4">
-          {/* <Card>
-            <CardHeader className="p-2 pt-0 md:p-4">
-              <CardTitle>Upgrade to Pro</CardTitle>
-            </CardHeader>
-            <CardContent className="p-2 pt-0 md:p-4 md:pt-0">
-              <Button size="sm" className="w-full">
-                Upgrade
-              </Button>
-            </CardContent>
-          </Card> */}
-        </div>
+        <div className="p-4" />
       </SidebarFooter>
     </Sidebar>
   );

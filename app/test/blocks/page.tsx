@@ -1,14 +1,21 @@
-import { BlockBuilder } from "@/components/blocks/block-builder";
+"use client";
 
-const testData = {
+import { BlockBuilder } from "@/app/components/blocks/block-builder";
+import { transformToBlocks } from "@/app/services/podcast/transformers";
+import { ProcessedPodcast } from "@/app/types/podcast";
+import { Card } from "@/components/ui/card";
+
+const testData: ProcessedPodcast = {
+  id: "test-1",
+  title: "Test Podcast",
+  summary:
+    "A fascinating discussion about the future of AI and its impact on society.",
   quickFacts: {
     duration: "1h 30m",
     participants: ["John Doe", "Jane Smith"],
     mainTopic: "AI and Machine Learning",
     expertise: "Technical",
   },
-  summary:
-    "A fascinating discussion about the future of AI and its impact on society.",
   keyPoints: [
     "AI is advancing rapidly",
     "Ethics in AI is crucial",
@@ -19,149 +26,93 @@ const testData = {
       name: "AI Ethics",
       description: "Discussion about ethical considerations in AI development",
       relatedConcepts: ["privacy", "bias", "transparency"],
-      relevance: 0.9,
     },
     {
       name: "Technical Innovation",
       description: "Overview of recent breakthroughs in AI",
       relatedConcepts: ["deep learning", "neural networks", "GPT"],
-      relevance: 0.8,
+    },
+  ],
+  sections: [
+    {
+      title: "Introduction",
+      content: "Overview of current AI landscape and ethical considerations",
+      startTime: "00:00:00",
+      endTime: "00:15:00",
+      qa: [
+        {
+          question: "What are the main challenges in AI ethics?",
+          answer: "Privacy concerns, bias in data, and ensuring transparency",
+          context: "Discussion of ethical frameworks",
+          topics: ["ethics", "challenges", "privacy"],
+        },
+      ],
+    },
+    {
+      title: "Technical Deep Dive",
+      content: "Exploration of recent AI breakthroughs and their implications",
+      startTime: "00:15:00",
+      endTime: "00:30:00",
+      qa: [
+        {
+          question: "How do neural networks work?",
+          answer:
+            "Neural networks process data through interconnected layers of nodes",
+          context: "Technical discussion section",
+          topics: ["neural networks", "deep learning", "AI architecture"],
+        },
+      ],
+    },
+  ],
+  people: [],
+  organizations: [],
+  locations: [],
+  events: [],
+  timeline: [],
+  metrics: [
+    {
+      label: "Duration",
+      value: "1h 30m",
+    },
+    {
+      label: "Participants",
+      value: 2,
     },
   ],
 };
 
 export default function TestBlocksPage() {
-  return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-2xl font-bold mb-6">Block System Test</h1>
-      <BlockBuilder
-        rows={[
-          // Quick Facts
-          {
-            id: "quick-facts",
-            blocks: [
-              {
-                id: "quick-facts-block",
-                layout: "full",
-                sections: [
-                  {
-                    title: "Quick Facts",
-                    fields: [
-                      {
-                        type: "text",
-                        label: "Duration",
-                        value: testData.quickFacts.duration,
-                      },
-                      {
-                        type: "list",
-                        label: "Participants",
-                        value: testData.quickFacts.participants,
-                      },
-                      {
-                        type: "text",
-                        label: "Main Topic",
-                        value: testData.quickFacts.mainTopic,
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          // Summary
-          {
-            id: "summary",
-            blocks: [
-              {
-                id: "summary-block",
-                layout: "full",
-                sections: [
-                  {
-                    title: "Summary",
-                    fields: [
-                      {
-                        type: "text",
-                        label: "Overview",
-                        value: testData.summary,
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          // Key Points
-          {
-            id: "key-points",
-            blocks: [
-              {
-                id: "key-points-block",
-                layout: "full",
-                sections: [
-                  {
-                    title: "Key Points",
-                    fields: [
-                      {
-                        type: "list",
-                        label: "Main Takeaways",
-                        value: testData.keyPoints,
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          // Themes (split into two columns)
-          {
-            id: "themes",
-            blocks: [
-              {
-                id: "themes-left",
-                layout: "half",
-                sections: [
-                  {
-                    title: "Theme 1",
-                    fields: [
-                      {
-                        type: "grid",
-                        label: testData.themes[0].name,
-                        value: [
-                          {
-                            description: testData.themes[0].description,
-                            concepts: testData.themes[0].relatedConcepts,
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                ],
-              },
-              {
-                id: "themes-right",
-                layout: "half",
-                sections: [
-                  {
-                    title: "Theme 2",
-                    fields: [
-                      {
-                        type: "grid",
-                        label: testData.themes[1].name,
-                        value: [
-                          {
-                            description: testData.themes[1].description,
-                            concepts: testData.themes[1].relatedConcepts,
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-        ]}
-      />
-    </div>
-  );
+  try {
+    const blocks = transformToBlocks(testData);
+
+    if (!blocks || blocks.length === 0) {
+      return (
+        <div className="container mx-auto py-8">
+          <Card className="p-6">
+            <p className="text-center text-muted-foreground">
+              No blocks available to display
+            </p>
+          </Card>
+        </div>
+      );
+    }
+
+    return (
+      <div className="container mx-auto py-8">
+        <h1 className="text-2xl font-bold mb-6">Block System Test</h1>
+        <BlockBuilder rows={blocks} />
+      </div>
+    );
+  } catch (error) {
+    console.error("Error rendering blocks:", error);
+    return (
+      <div className="container mx-auto py-8">
+        <Card className="p-6 border-destructive">
+          <p className="text-center text-destructive">
+            Error rendering blocks. Please check the console for details.
+          </p>
+        </Card>
+      </div>
+    );
+  }
 }

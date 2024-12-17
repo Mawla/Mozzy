@@ -25,10 +25,11 @@ import {
   SidebarMenuButton,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { Card } from "@/components/ui/card";
 
 interface PodcastResultsProps {
-  podcast: Podcast;
-  analysis: ProcessedPodcast;
+  podcast?: Podcast;
+  analysis?: ProcessedPodcast;
 }
 
 export function PodcastResults({ podcast, analysis }: PodcastResultsProps) {
@@ -57,37 +58,45 @@ export function PodcastResults({ podcast, analysis }: PodcastResultsProps) {
     }
   };
 
+  if (!podcast || !analysis) {
+    return (
+      <Card className="p-6">
+        <p className="text-center text-muted-foreground">
+          No podcast data available
+        </p>
+      </Card>
+    );
+  }
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col min-h-0 flex-1 bg-background">
       {/* Header */}
       <div className="flex-none border-b border-border bg-card">
-        <div className="container py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold">{podcast.title}</h1>
-              <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                <Clock className="w-4 h-4" />
-                <span>{podcast.duration || analysis.quickFacts.duration}</span>
-              </div>
+        <div className="flex items-center justify-between h-[60px] px-6">
+          <div>
+            <h1 className="text-2xl font-bold">{podcast.title}</h1>
+            <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+              <Clock className="w-4 h-4" />
+              <span>{podcast.duration || analysis.quickFacts?.duration}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                <Share2 className="w-4 h-4 mr-2" />
-                Share
-              </Button>
-              <Button variant="outline" size="sm">
-                <Download className="w-4 h-4 mr-2" />
-                Export
-              </Button>
-              <SidebarTrigger />
-            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm">
+              <Share2 className="w-4 h-4 mr-2" />
+              Share
+            </Button>
+            <Button variant="outline" size="sm">
+              <Download className="w-4 h-4 mr-2" />
+              Export
+            </Button>
+            <SidebarTrigger />
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <ScrollArea ref={scrollAreaRef} className="flex-grow">
-        <div className="container py-6">
+      <ScrollArea ref={scrollAreaRef} className="flex-1 min-h-0">
+        <div className="py-6">
           <div className="flex gap-6">
             {/* Navigation Sidebar */}
             <div className="w-64 flex-none">
@@ -117,7 +126,7 @@ export function PodcastResults({ podcast, analysis }: PodcastResultsProps) {
             </div>
 
             {/* Main Content */}
-            <div className="flex-grow min-w-0">
+            <div className="flex-1 min-w-0">
               {/* Overview Section */}
               <section id="overview" className="mb-8">
                 <h2 className="text-xl font-semibold mb-4">Overview</h2>

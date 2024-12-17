@@ -24,7 +24,7 @@ export interface ProcessedPodcast extends Omit<ContentAnalysis, "themes"> {
   themes: Theme[];
   metrics: MetricData[];
   quickFacts: {
-    duration: string;
+    duration?: string;
     participants: string[];
     mainTopic: string;
     expertise: string;
