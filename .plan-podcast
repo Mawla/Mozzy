@@ -272,3 +272,77 @@ Reference Files:
     - Add documentation and examples
     - Implement keyboard navigation
     - Add accessibility improvements
+
+11. Block System Restructuring: 🚧
+    [✓] Analyze current block system architecture
+    [✓] Consolidate block-related logic:
+    - Move all block components to app/components/blocks
+    - Create subdirectories for different block types (layout, content, visualization)
+    - Move block-related hooks to app/hooks/blocks
+    - Move block-related utils to app/utils/blocks
+    - Move block-related types to app/types/blocks
+      [✓] Migrate wiki components to block system:
+    - Convert WikiLayout to BlockLayout
+    - Convert WikiNavigation to BlockNavigation
+    - Convert WikiSidebar to BlockSidebar
+    - Convert WikiMainContent to BlockContent
+    - Update all imports to use new block components
+      [✓] Update PodcastResults to use new block components:
+    - Replace wiki imports with block imports
+    - Update component structure to use block system
+    - Ensure proper data flow through block components
+      [✓] Clean up and remove wiki-related files:
+    - Remove app/components/wiki directory
+    - Update all references to wiki components
+    - Remove wiki-related types and utilities
+      [ ] Add documentation for block system:
+    - Document block component hierarchy
+    - Document block data flow
+    - Document block customization options
+    - Add examples for common use cases
+
+Next Steps:
+
+- Implement new block components
+- Update existing components to use new structure
+- Add tests for restructured components
+- Update documentation with new architecture
+
+Documentation Index:
+
+1. Block System
+
+   - [✓] app/components/blocks/README.md - Block system architecture and usage
+   - [ ] app/components/blocks/content/README.md - Content block components
+   - [ ] app/components/blocks/visualization/README.md - Visualization components
+   - [✓] app/components/blocks/layout/README.md - Layout system
+
+2. Podcast Processing
+
+   - [ ] app/services/podcast/README.md - Processing pipeline and services
+   - [ ] app/schemas/podcast/README.md - Data schemas and types
+   - [ ] app/components/dashboard/podcasts/README.md - Podcast UI components
+
+3. Knowledge Extraction
+
+   - [ ] app/services/extraction/README.md - Entity and relationship extraction
+   - [ ] app/services/analysis/README.md - Content analysis and processing
+   - [ ] app/types/knowledge/README.md - Knowledge graph types
+
+4. Visualization System
+
+   - [ ] app/components/blocks/visualization/timeline/README.md - Timeline visualization
+   - [ ] app/components/blocks/visualization/graph/README.md - Knowledge graph visualization
+   - [ ] app/components/blocks/visualization/gallery/README.md - Quote gallery
+
+5. Research Features
+   - [ ] app/components/research/README.md - Research support features
+   - [ ] app/services/research/README.md - Research integration services
+
+Reference Files:
+
+- app/schemas/podcast/\*.ts
+- app/components/blocks/\*.tsx
+- app/components/dashboard/podcasts/\*.tsx
+- app/services/podcast/\*.ts
+- app/types/podcast/\*.ts

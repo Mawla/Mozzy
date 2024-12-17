@@ -1,54 +1,41 @@
 import * as React from "react";
-import { BaseView, ViewSection } from "./base-block";
-import { cn } from "@/lib/utils";
+import { BaseView } from "./base-block";
+import { ViewSection } from "@/app/types/metadata";
 
-// Layout types for blocks
-export type BlockLayout = "full" | "half" | "third" | "two-thirds";
-
-// Core block configuration
 export interface BlockConfig {
   id: string;
-  layout: BlockLayout;
+  layout: "full" | "half" | "third";
   sections: ViewSection[];
-  className?: string;
 }
 
-// Row configuration
 export interface BlockRow {
   id: string;
   blocks: BlockConfig[];
-  className?: string;
 }
 
 interface BlockBuilderProps {
   rows: BlockRow[];
-  className?: string;
 }
 
-// Layout class mappings
-const layoutClasses: Record<BlockLayout, string> = {
-  full: "col-span-12",
-  half: "col-span-6",
-  third: "col-span-4",
-  "two-thirds": "col-span-8",
-};
-
-export function BlockBuilder({ rows, className }: BlockBuilderProps) {
+export function BlockBuilder({ rows }: BlockBuilderProps) {
   return (
-    <div className={cn("space-y-6", className)}>
+    <div className="space-y-6">
       {rows.map((row) => (
-        <div
-          key={row.id}
-          className={cn("grid grid-cols-12 gap-4", row.className)}
-        >
-          {row.blocks.map((block) => (
-            <div
-              key={block.id}
-              className={cn(layoutClasses[block.layout], block.className)}
-            >
-              <BaseView sections={block.sections} />
-            </div>
-          ))}
+        <div key={row.id} className="grid gap-6 grid-cols-1 md:grid-cols-12">
+          {row.blocks.map((block) => {
+            const colSpan =
+              block.layout === "full"
+                ? "md:col-span-12"
+                : block.layout === "half"
+                ? "md:col-span-6"
+                : "md:col-span-4";
+
+            return (
+              <div key={block.id} className={colSpan}>
+                <BaseView sections={block.sections} />
+              </div>
+            );
+          })}
         </div>
       ))}
     </div>

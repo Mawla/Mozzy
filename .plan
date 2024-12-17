@@ -385,3 +385,23 @@
     [✓] Ensure proper spacing between icons and text
     [✓] Maintain responsive design for different screen sizes
     [✓] Test sidebar layout across different viewport sizes
+
+45. Implement Consistent Badge and Tag Styling:
+    [ ] Create a reusable Badge component with standardized styling
+    [ ] Update all existing badge and tag instances to use the new component
+    [ ] Implement consistent color scheme for different badge types
+    [ ] Add hover and active states for interactive badges
+    [ ] Ensure proper spacing and alignment across all badge instances
+    [ ] Add support for different badge sizes (sm, md, lg)
+    [ ] Implement proper accessibility attributes for badges
+    [ ] Add documentation for badge usage and styling guidelines
+
+46. Restructure Block-based Architecture:
+    [ ] Create new folder structure under app/components/blocks
+    [ ] Move layout components from wiki to blocks/layout
+    [ ] Move navigation components from wiki to blocks/navigation
+    [ ] Update imports in all affected files
+    [ ] Remove wiki directory
+    [ ] Update PodcastResults to use new block-based components
+    [ ] Ensure all components use consistent naming conventions
+    [ ] Test all functionality after restructuring

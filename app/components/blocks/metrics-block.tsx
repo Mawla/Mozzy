@@ -1,5 +1,6 @@
 import * as React from "react";
-import { BaseView, ViewSection } from "./base-block";
+import { BaseView } from "./base-block";
+import { ViewSection } from "@/app/types/metadata";
 
 interface Metric {
   icon: React.ReactNode;
