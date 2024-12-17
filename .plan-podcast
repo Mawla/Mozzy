@@ -352,3 +352,14 @@ Reference Files:
 - app/components/dashboard/podcasts/\*.tsx
 - app/services/podcast/\*.ts
 - app/types/podcast/\*.ts
+
+46. Restructure Block-based Architecture: 🚧
+    [✓] Create new folder structure under app/components/blocks
+    [✓] Move layout components from wiki to blocks/layout
+    [✓] Move navigation components from wiki to blocks/navigation
+    [✓] Create use-toc hook in blocks/layout
+    [✓] Update imports in all affected files
+    [✓] Remove wiki directory
+    [✓] Update PodcastResults to use new block-based components
+    [✓] Ensure all components use consistent naming conventions: - Removed duplicate metrics-block.tsx - Updated TimelineView to TimelineBlock - Updated imports to use consistent naming
+    [ ] Test all functionality after restructuring

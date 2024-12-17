@@ -1,55 +1,85 @@
+import * as React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ContainerBlock } from "./container-block";
+import { cn } from "@/lib/utils";
 
 interface TimelineEvent {
   title: string;
   description: string;
   date: string;
-  type: "milestone" | "decision" | "event";
+  type: "milestone" | "event" | "decision";
   importance: "high" | "medium" | "low";
 }
 
-interface TimelineViewProps {
+interface TimelineBlockProps {
   title: string;
   events: TimelineEvent[];
   description?: string;
-  className?: string;
 }
 
-export function TimelineView({
+export function TimelineBlock({
   title,
   events,
   description,
-  className,
-}: TimelineViewProps) {
-  if (!Array.isArray(events)) {
-    console.error("Timeline events must be an array");
-    return null;
-  }
+}: TimelineBlockProps) {
+  const getEventTypeColor = (type: TimelineEvent["type"]) => {
+    switch (type) {
+      case "milestone":
+        return "bg-blue-500";
+      case "decision":
+        return "bg-green-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
+  const getImportanceStyle = (importance: TimelineEvent["importance"]) => {
+    switch (importance) {
+      case "high":
+        return "border-l-4";
+      case "medium":
+        return "border-l-2";
+      default:
+        return "border-l";
+    }
+  };
 
   return (
-    <ContainerBlock
-      title={title}
-      description={description}
-      className={className}
-    >
-      <div className="space-y-4">
-        {events.map((event, index) => (
-          <div
-            key={index}
-            className="relative pl-6 pb-4 border-l border-border"
-          >
-            <div className="absolute left-0 w-3 h-3 -translate-x-1.5 rounded-full bg-primary" />
-            <div className="flex items-center gap-2 mb-1">
-              <h4 className="font-medium">{event.title}</h4>
-              <Badge variant="outline">{event.date}</Badge>
-              <Badge>{event.type}</Badge>
-              <Badge variant="secondary">{event.importance}</Badge>
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        {description && (
+          <p className="text-sm text-muted-foreground">{description}</p>
+        )}
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {events.map((event, index) => (
+            <div
+              key={index}
+              className={cn(
+                "pl-4",
+                getImportanceStyle(event.importance),
+                "border-l-blue-500"
+              )}
+            >
+              <div className="flex items-center gap-2">
+                <h4 className="font-medium">{event.title}</h4>
+                <Badge
+                  variant="secondary"
+                  className={cn("text-xs", getEventTypeColor(event.type))}
+                >
+                  {event.type}
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                {event.description}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">{event.date}</p>
             </div>
-            <p className="text-sm text-muted-foreground">{event.description}</p>
-          </div>
-        ))}
-      </div>
-    </ContainerBlock>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

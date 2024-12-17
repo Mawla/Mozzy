@@ -11,4 +11,7 @@ export { ContainerBlock } from "./container-block";
 export { MetricBlock } from "./metric-block";
 export { AnalysisBlock } from "./analysis-block";
 export { BlockBuilder } from "./block-builder";
-export { TimelineView } from "./timeline-block";
+export { TimelineBlock } from "./timeline-block";
+export { ComparisonBlock } from "./comparison-block";
+export { RelatedTopicsBlock } from "./related-topics-block";
+export { TableOfContentsBlock } from "./table-of-contents-block";
