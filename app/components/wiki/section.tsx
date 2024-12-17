@@ -6,7 +6,7 @@ import { useScrollSync } from "./scroll-sync";
 
 interface WikiSectionProps {
   id: string;
-  title: string;
+  title?: string;
   children: React.ReactNode;
   className?: string;
   level?: 1 | 2 | 3 | 4 | 5 | 6;
@@ -37,18 +37,20 @@ export const WikiSection = ({
       ref={sectionRef}
       id={id}
       data-section-id={id}
-      className={cn("scroll-mt-16", className)}
+      className={cn("scroll-mt-16 py-6 first:pt-0", className)}
     >
-      <HeadingTag className="group flex items-center gap-2">
-        {title}
-        <a
-          href={`#${id}`}
-          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
-          aria-label={`Link to ${title}`}
-        >
-          #
-        </a>
-      </HeadingTag>
+      {title && (
+        <HeadingTag className="group flex items-center gap-2 mb-4">
+          {title}
+          <a
+            href={`#${id}`}
+            className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
+            aria-label={`Link to ${title}`}
+          >
+            #
+          </a>
+        </HeadingTag>
+      )}
       {children}
     </section>
   );

@@ -63,10 +63,8 @@ export const WikiMainContent = ({
       className={cn("h-full relative", className)}
       data-wiki-main-content
     >
-      <div className="container mx-auto py-6 px-4">
-        <div className="prose prose-slate dark:prose-invert max-w-none">
-          {children}
-        </div>
+      <div className="prose prose-slate dark:prose-invert max-w-none">
+        {children}
       </div>
     </ScrollArea>
   );

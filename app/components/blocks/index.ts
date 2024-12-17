@@ -10,3 +10,5 @@ export { TakeawaysBlock } from "./takeaways-block";
 export { ContainerBlock } from "./container-block";
 export { MetricBlock } from "./metric-block";
 export { AnalysisBlock } from "./analysis-block";
+export { BlockBuilder } from "./block-builder";
+export { TimelineView } from "./timeline-block";

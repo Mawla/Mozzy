@@ -222,7 +222,8 @@ Reference Files:
    [✓] Add Transcript Analysis section
    [✓] Implement Sections display
    [✓] Add Conclusion section
-   [ ] Add navigation between sections
+   [✓] Add navigation between sections using Wiki Visualization
+   [✓] Add metadata support
    [ ] Implement loading states
    [ ] Add error handling
 
@@ -234,6 +235,7 @@ Reference Files:
    [✓] Implement two-column layout with sidebar
    [✓] Add header with title and duration
    [✓] Filter blocks between main content and sidebar
+   [✓] Integrate with Wiki Visualization system
    [ ] Add loading states for blocks
    [ ] Add error handling for failed transformations
    [ ] Add animations for block transitions

@@ -4,12 +4,10 @@ import React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import {
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarGroupContent,
 } from "@/components/ui/sidebar";
 import { useScrollSync } from "./scroll-sync";
@@ -57,6 +55,7 @@ export const WikiNavigation = ({
               <SidebarMenuButton
                 tooltip={item.title}
                 isActive={scrollPosition.activeSection === item.id}
+                size="sm"
               >
                 <span className="truncate">{item.title}</span>
               </SidebarMenuButton>
@@ -72,11 +71,12 @@ export const WikiNavigation = ({
               }}
               tooltip={item.title}
               isActive={scrollPosition.activeSection === item.id}
+              size="sm"
             >
               <span
                 className={cn(
                   "truncate",
-                  item.level && `pl-${(item.level - 2) * 4}`
+                  item.level && `pl-${(item.level - 2) * 2}`
                 )}
               >
                 {item.title}
@@ -92,16 +92,13 @@ export const WikiNavigation = ({
   };
 
   return (
-    <div className={cn("flex flex-col h-full", className)}>
-      <SidebarHeader>
-        <div className="flex h-14 items-center px-4">
-          <span className="font-semibold">Wiki Navigation</span>
-        </div>
-      </SidebarHeader>
+    <div className={cn("flex flex-col", className)}>
+      <div className="p-2 text-xs font-medium text-muted-foreground">
+        On this page
+      </div>
 
       {sections.map((section) => (
-        <SidebarGroup key={section.id}>
-          <SidebarGroupLabel>{section.title}</SidebarGroupLabel>
+        <SidebarGroup key={section.id} className="px-1">
           <SidebarGroupContent>
             <SidebarMenu>{renderItems(section.items)}</SidebarMenu>
           </SidebarGroupContent>

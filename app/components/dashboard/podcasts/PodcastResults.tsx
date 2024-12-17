@@ -1,31 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Podcast, ProcessedPodcast } from "@/app/types/podcast";
-import { BlockBuilder } from "@/app/components/blocks/block-builder";
+import { BlockBuilder } from "@/app/components/blocks";
 import { transformToBlocks } from "@/app/services/podcast/transformers";
 import { Button } from "@/components/ui/button";
-import {
-  Clock,
-  Download,
-  Share2,
-  ListMusic,
-  BarChart2,
-  MessageSquare,
-  BookOpen,
-  Lightbulb,
-} from "lucide-react";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { Card } from "@/components/ui/card";
+import { Clock, Download, Share2 } from "lucide-react";
+import { WikiLayout } from "@/app/components/wiki/layout";
+import { WikiNavigation } from "@/app/components/wiki/navigation";
+import { WikiSidebar } from "@/app/components/wiki/sidebar";
+import { WikiMainContent } from "@/app/components/wiki/main-content";
+import { WikiSection } from "@/app/components/wiki/section";
 
 interface PodcastResultsProps {
   podcast?: Podcast;
@@ -34,39 +19,73 @@ interface PodcastResultsProps {
 
 export function PodcastResults({ podcast, analysis }: PodcastResultsProps) {
   const blocks = React.useMemo(() => transformToBlocks(analysis), [analysis]);
-  const [activeSection, setActiveSection] = React.useState("overview");
-  const scrollAreaRef = React.useRef<HTMLDivElement>(null);
 
-  const menuItems = [
-    { id: "overview", label: "Overview", icon: BookOpen },
-    { id: "insights", label: "Key Insights", icon: Lightbulb },
-    { id: "themes", label: "Themes", icon: BarChart2 },
-    { id: "timeline", label: "Timeline", icon: ListMusic },
-    { id: "qa", label: "Q&A", icon: MessageSquare },
-  ];
-
-  const handleSectionClick = (sectionId: string) => {
-    setActiveSection(sectionId);
-    const section = document.getElementById(sectionId);
-    if (section && scrollAreaRef.current) {
-      const container = scrollAreaRef.current;
-      const sectionTop = section.offsetTop;
-      container.scrollTo({
-        top: sectionTop - 24, // Add some padding
-        behavior: "smooth",
-      });
-    }
-  };
-
-  if (!podcast || !analysis) {
+  if (!podcast) {
     return (
-      <Card className="p-6">
+      <div className="p-6">
         <p className="text-center text-muted-foreground">
           No podcast data available
         </p>
-      </Card>
+      </div>
     );
   }
+
+  const navigationSections = [
+    {
+      id: "main",
+      title: "Main Sections",
+      items: [
+        { id: "insights", title: "Key Insights" },
+        { id: "themes", title: "Themes" },
+        { id: "timeline", title: "Timeline" },
+        { id: "qa", title: "Q&A" },
+      ].filter((item) => {
+        // Only show navigation items for sections that have data
+        switch (item.id) {
+          case "insights":
+            return blocks?.some((row) => row.id === "key-points");
+          case "themes":
+            return blocks?.some((row) => row.id === "themes");
+          case "timeline":
+            return blocks?.some((row) => row.id === "timeline");
+          case "qa":
+            return blocks?.some((row) => row.id === "qa");
+          default:
+            return false;
+        }
+      }),
+    },
+  ];
+
+  const quickFactsBlocks =
+    blocks?.filter((row) => row.id === "quick-facts") ?? [];
+  const metricsBlocks = blocks?.filter((row) => row.id === "metrics") ?? [];
+  const keyPointsBlocks =
+    blocks?.filter((row) => row.id === "key-points") ?? [];
+  const themesBlocks = blocks?.filter((row) => row.id === "themes") ?? [];
+  const timelineBlocks = blocks?.filter((row) => row.id === "timeline") ?? [];
+  const qaBlocks = blocks?.filter((row) => row.id === "qa") ?? [];
+
+  const sidebarSections = [
+    ...(quickFactsBlocks.length > 0
+      ? [
+          {
+            id: "quick-facts",
+            title: "Quick Facts",
+            content: <BlockBuilder rows={quickFactsBlocks} />,
+          },
+        ]
+      : []),
+    ...(metricsBlocks.length > 0
+      ? [
+          {
+            id: "metrics",
+            title: "Metrics",
+            content: <BlockBuilder rows={metricsBlocks} />,
+          },
+        ]
+      : []),
+  ];
 
   return (
     <div className="flex flex-col min-h-0 flex-1 bg-background">
@@ -77,7 +96,7 @@ export function PodcastResults({ podcast, analysis }: PodcastResultsProps) {
             <h1 className="text-2xl font-bold">{podcast.title}</h1>
             <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
               <Clock className="w-4 h-4" />
-              <span>{podcast.duration || analysis.quickFacts?.duration}</span>
+              <span>{podcast.duration || analysis?.quickFacts?.duration}</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -89,87 +108,47 @@ export function PodcastResults({ podcast, analysis }: PodcastResultsProps) {
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
-            <SidebarTrigger />
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <ScrollArea ref={scrollAreaRef} className="flex-1 min-h-0">
-        <div className="py-6">
-          <div className="flex gap-6">
-            {/* Navigation Sidebar */}
-            <div className="w-64 flex-none">
-              <div className="sticky top-6">
-                <div className="rounded-lg border bg-card">
-                  <SidebarHeader>
-                    <h3 className="px-2 text-lg font-semibold">Navigation</h3>
-                  </SidebarHeader>
-                  <SidebarContent>
-                    <SidebarMenu>
-                      {menuItems.map((item) => (
-                        <SidebarMenuItem key={item.id}>
-                          <SidebarMenuButton
-                            onClick={() => handleSectionClick(item.id)}
-                            isActive={activeSection === item.id}
-                            tooltip={item.label}
-                          >
-                            <item.icon className="w-4 h-4" />
-                            <span>{item.label}</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      ))}
-                    </SidebarMenu>
-                  </SidebarContent>
-                </div>
-              </div>
-            </div>
+      {/* Wiki Layout */}
+      <WikiLayout
+        navigation={<WikiNavigation sections={navigationSections} />}
+        sidebar={<WikiSidebar sections={sidebarSections} />}
+        defaultNavigationWidth={160}
+        defaultSidebarWidth={320}
+      >
+        <WikiMainContent>
+          {/* Key Insights Section */}
+          {keyPointsBlocks.length > 0 && (
+            <WikiSection id="insights" className="mt-6">
+              <BlockBuilder rows={keyPointsBlocks} />
+            </WikiSection>
+          )}
 
-            {/* Main Content */}
-            <div className="flex-1 min-w-0">
-              {/* Overview Section */}
-              <section id="overview" className="mb-8">
-                <h2 className="text-xl font-semibold mb-4">Overview</h2>
-                <BlockBuilder
-                  rows={blocks.filter((row) =>
-                    ["metrics", "quick-facts"].includes(row.id)
-                  )}
-                />
-              </section>
+          {/* Themes Section */}
+          {themesBlocks.length > 0 && (
+            <WikiSection id="themes" level={3}>
+              <BlockBuilder rows={themesBlocks} />
+            </WikiSection>
+          )}
 
-              {/* Key Insights Section */}
-              <section id="insights" className="mb-8">
-                <h2 className="text-xl font-semibold mb-4">Key Insights</h2>
-                <BlockBuilder
-                  rows={blocks.filter((row) => row.id === "key-points")}
-                />
-              </section>
+          {/* Timeline Section */}
+          {timelineBlocks.length > 0 && (
+            <WikiSection id="timeline" level={3}>
+              <BlockBuilder rows={timelineBlocks} />
+            </WikiSection>
+          )}
 
-              {/* Themes Section */}
-              <section id="themes" className="mb-8">
-                <h2 className="text-xl font-semibold mb-4">Themes</h2>
-                <BlockBuilder
-                  rows={blocks.filter((row) => row.id === "themes")}
-                />
-              </section>
-
-              {/* Timeline Section */}
-              <section id="timeline" className="mb-8">
-                <h2 className="text-xl font-semibold mb-4">Timeline</h2>
-                <BlockBuilder
-                  rows={blocks.filter((row) => row.id === "timeline")}
-                />
-              </section>
-
-              {/* Q&A Section */}
-              <section id="qa" className="mb-8">
-                <h2 className="text-xl font-semibold mb-4">Q&A</h2>
-                <BlockBuilder rows={blocks.filter((row) => row.id === "qa")} />
-              </section>
-            </div>
-          </div>
-        </div>
-      </ScrollArea>
+          {/* Q&A Section */}
+          {qaBlocks.length > 0 && (
+            <WikiSection id="qa" title="Q&A" level={3}>
+              <BlockBuilder rows={qaBlocks} />
+            </WikiSection>
+          )}
+        </WikiMainContent>
+      </WikiLayout>
     </div>
   );
 }
