@@ -1,130 +1,240 @@
-# Block System Architecture
+# Block System
 
-The block system is a modular, composable architecture for building complex content layouts and visualizations. It provides a consistent way to structure and display various types of content while maintaining flexibility and reusability.
+The block system provides a flexible and extensible way to render structured content in a consistent layout. It includes components for building, rendering, and organizing blocks of content.
 
-## Directory Structure
+## Core Components
 
-````
-app/components/blocks/
-├── layout/           # Layout components for block structure
-│   ├── block-layout.tsx      # Main layout component
-│   ├── block-navigation.tsx  # Navigation component
-│   ├── block-sidebar.tsx     # Sidebar component
-│   ├── block-content.tsx     # Main content component
-│   ├── config.tsx            # Layout configuration context
-│   ├── scroll-sync.tsx       # Scroll synchronization utilities
-│   ├── use-toc.tsx          # Table of contents hook
-│   └── index.ts             # Layout component exports
-├── content/         # Content block components
-├── visualization/   # Visualization block components
-└── index.ts        # Main block system exports
+### BlockRenderer
 
-## Block Components
+The main component for rendering blocks with a consistent layout:
 
-### Layout Components
+```tsx
+<BlockRenderer
+  blocks={blocks}
+  title="Page Title"
+  subtitle="Page Subtitle"
+  actions={<Button>Action</Button>}
+/>
+```
 
-- `BlockLayout`: Main layout component that provides the structure for block-based content
-- `BlockNavigation`: Navigation component for section navigation
-- `BlockSidebar`: Sidebar component for supplementary content
-- `BlockContent`: Main content area component
+Props:
 
-### Configuration
+- `blocks`: Array of BlockRow objects to render
+- `title`: Optional page title
+- `subtitle`: Optional page subtitle (React node)
+- `actions`: Optional action buttons/elements
+- `className`: Additional CSS classes
 
-The block system uses a configuration context (`BlockConfigProvider`) to manage layout settings:
+The BlockRenderer handles:
+
+- Separating blocks into main content and sidebar
+- Creating navigation sections from blocks
+- Rendering blocks in the appropriate layout areas
+- Managing the header with title, subtitle, and actions
+
+### BlockBuilder
+
+Component for rendering individual blocks:
+
+```tsx
+<BlockBuilder
+  rows={[
+    {
+      id: "block-1",
+      blocks: [
+        {
+          id: "section-1",
+          layout: "full",
+          sections: [
+            {
+              title: "Section Title",
+              fields: [
+                /* ... */
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ]}
+/>
+```
+
+Props:
+
+- `rows`: Array of BlockRow objects
+- `className`: Additional CSS classes
+
+## Block Types
+
+1. Content Blocks
+
+   - Text blocks
+   - List blocks
+   - Grid blocks
+   - Timeline blocks
+   - Metric blocks
+
+2. Layout Blocks
+   - Full width
+   - Half width
+   - Sidebar
+   - Navigation
+
+## Block Structure
 
 ```typescript
-interface BlockConfig {
-  navigationWidth: number;
-  sidebarWidth: number;
-  stickyNavigation: boolean;
-  stickySidebar: boolean;
+interface BlockRow {
+  id: string;
+  blocks: BlockConfig[];
 }
-````
 
-### Scroll Synchronization
+interface BlockConfig {
+  id: string;
+  layout: "full" | "half";
+  sections: BlockSection[];
+}
 
-The block system includes scroll synchronization utilities to maintain proper scroll position and section highlighting:
-
-```typescript
-interface ScrollPosition {
-  progress: number;
-  activeSection?: string;
+interface BlockSection {
+  title?: string;
+  fields: ViewField[];
+  metadata?: SectionMetadata;
 }
 ```
 
 ## Usage Example
 
 ```tsx
-import {
-  BlockLayout,
-  BlockNavigation,
-  BlockSidebar,
-  BlockContent,
-} from "@/app/components/blocks/layout";
+import { BlockRenderer } from "@/app/components/blocks/block-renderer";
+import { transformToBlocks } from "@/app/services/transformers";
 
-export function MyComponent() {
-  const navigationSections = [
-    {
-      id: "main",
-      title: "Main Sections",
-      items: [
-        { id: "section-1", title: "Section 1" },
-        { id: "section-2", title: "Section 2" },
-      ],
-    },
-  ];
-
-  const sidebarSections = [
-    {
-      id: "sidebar-1",
-      title: "Sidebar Section",
-      content: <div>Sidebar content</div>,
-    },
-  ];
+export function MyComponent({ data }) {
+  const blocks = transformToBlocks(data);
 
   return (
-    <BlockLayout
-      navigation={<BlockNavigation sections={navigationSections} />}
-      sidebar={<BlockSidebar sections={sidebarSections} />}
-      defaultNavigationWidth={160}
-      defaultSidebarWidth={320}
-    >
-      <BlockContent>
-        <div data-section-id="section-1">Section 1 content</div>
-        <div data-section-id="section-2">Section 2 content</div>
-      </BlockContent>
-    </BlockLayout>
+    <BlockRenderer
+      blocks={blocks}
+      title="My Content"
+      subtitle="Content details"
+      actions={<Button>Action</Button>}
+    />
   );
 }
 ```
 
-## Block Data Flow
+## Best Practices
 
-1. Content is organized into blocks using the `BlockBuilder` component
-2. Blocks can be filtered and organized into main content and sidebar sections
-3. Navigation is automatically generated from block titles and IDs
-4. Scroll synchronization maintains proper section highlighting
-5. Layout configuration manages component dimensions and behavior
+1. Block Organization
+
+   - Group related content into blocks
+   - Use appropriate layouts for content type
+   - Consider responsive behavior
+   - Keep blocks focused and single-purpose
+
+2. Navigation
+
+   - Use clear, descriptive section titles
+   - Group related sections together
+   - Consider section hierarchy
+   - Use consistent naming
+
+3. Performance
+
+   - Memoize block transformations
+   - Lazy load heavy content
+   - Use appropriate caching strategies
+   - Consider code splitting for large block types
+
+4. Accessibility
+   - Use semantic HTML
+   - Add proper ARIA attributes
+   - Ensure keyboard navigation
+   - Maintain proper heading hierarchy
+
+## Related Components
+
+- `BlockLayout`: Main layout component
+- `BlockNavigation`: Section navigation
+- `BlockSidebar`: Sidebar content
+- `BlockContent`: Main content area
 
 ## Customization
 
 The block system can be customized through:
 
-- Layout configuration (widths, sticky behavior)
-- Custom block components
-- Theme customization via Tailwind CSS classes
-- Custom scroll behavior
-- Section rendering overrides
+1. Metadata
 
-## Best Practices
+   - Section metadata
+   - Field metadata
+   - Layout options
+   - Display variants
 
-1. Use semantic section IDs for proper navigation
-2. Implement proper data-section-id attributes for scroll sync
-3. Keep blocks focused and single-purpose
-4. Use appropriate block types for different content
-5. Leverage the configuration context for layout customization
-6. Follow responsive design principles
-7. Implement proper accessibility attributes
+2. Styling
+
+   - Tailwind classes
+   - Theme customization
+   - Custom variants
+
+3. Layouts
+
+   - Custom layouts
+   - Responsive behavior
+   - Grid configurations
+
+4. Interactions
+   - Click handlers
+   - Hover states
+   - Animations
+   - Transitions
+
+## Error Handling
+
+The block system includes built-in error handling:
+
+1. Block Level
+
+   - Invalid block configurations
+   - Missing required fields
+   - Layout conflicts
+
+2. Content Level
+
+   - Missing data
+   - Invalid field types
+   - Transformation errors
+
+3. UI Level
+   - Loading states
+   - Error boundaries
+   - Fallback content
+
+## Future Enhancements
+
+1. Block Features
+
+   - Block reordering
+   - Custom block types
+   - Block templates
+   - Block presets
+
+2. Interaction
+
+   - Drag and drop
+   - Inline editing
+   - Block filtering
+   - Search integration
+
+3. Performance
+   - Virtual scrolling
+   - Progressive loading
+   - Optimistic updates
+   - Real-time sync
+
+## Related Documentation
+
+- [Layout System](./layout/README.md)
+- [Content Blocks](./content/README.md)
+- [Visualization Components](./visualization/README.md)
 
 ```
 

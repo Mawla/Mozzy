@@ -63,6 +63,8 @@ Implementation Phases:
    [✓] Add proper block layout system
    [✓] Fix type errors in transformers
    [✓] Add proper data flow
+   [✓] Create BlockRenderer component
+   [✓] Move transformation logic to BlockRenderer
    [ ] Add block interaction system
    [ ] Add loading states
    [ ] Add error handling
@@ -126,6 +128,7 @@ Technical Debt Resolution:
    [✓] Remove redundant transformers
    [✓] Add collapsible main sidebar
    [✓] Improve header layout
+   [✓] Create reusable BlockRenderer component
    [ ] Add loading states
    [ ] Add error handling
    [ ] Add animations
@@ -224,6 +227,7 @@ Reference Files:
    [✓] Add Conclusion section
    [✓] Add navigation between sections using Wiki Visualization
    [✓] Add metadata support
+   [✓] Move block rendering to dedicated BlockRenderer component
    [ ] Implement loading states
    [ ] Add error handling
 
@@ -236,6 +240,7 @@ Reference Files:
    [✓] Add header with title and duration
    [✓] Filter blocks between main content and sidebar
    [✓] Integrate with Wiki Visualization system
+   [✓] Create reusable BlockRenderer component
    [ ] Add loading states for blocks
    [ ] Add error handling for failed transformations
    [ ] Add animations for block transitions
@@ -295,6 +300,7 @@ Reference Files:
     - Remove app/components/wiki directory
     - Update all references to wiki components
     - Remove wiki-related types and utilities
+      [✓] Create reusable BlockRenderer component
       [ ] Add documentation for block system:
     - Document block component hierarchy
     - Document block data flow
