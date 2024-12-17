@@ -387,6 +387,16 @@ function transformSections(analysis: ProcessedPodcast): BlockRow {
 }
 
 function transformTopics(analysis: ProcessedPodcast): BlockRow {
+  const fieldMetadata: FieldMetadata = {
+    component: "TopicBlock",
+    props: {
+      title: "Topics Discussed",
+      description: "Key topics and subtopics covered in this podcast",
+      topics: analysis.topics,
+      noCard: true,
+    },
+  };
+
   const sectionMetadata: SectionMetadata = {
     variant: "bordered",
     spacing: "md",
@@ -407,15 +417,8 @@ function transformTopics(analysis: ProcessedPodcast): BlockRow {
             type: "custom",
             label: "Topics",
             value: analysis.topics,
-            metadata: {
-              component: "TopicBlock",
-              props: {
-                title: "Topics Discussed",
-                description: "Key topics and subtopics covered in this podcast",
-                topics: analysis.topics,
-              },
-            },
-          },
+            metadata: fieldMetadata,
+          } as ViewField,
         ],
         metadata: sectionMetadata,
       },

@@ -8,7 +8,16 @@ import { ErrorBoundaryWrapper } from "./error-boundary-wrapper";
 import { Button } from "@/components/ui/button";
 import { TopicItem, TopicBlockProps } from "@/app/types/topic";
 
-function TopicBlockComponent({ title, description, topics }: TopicBlockProps) {
+interface TopicBlockComponentProps extends TopicBlockProps {
+  noCard?: boolean;
+}
+
+function TopicBlockComponent({
+  title,
+  description,
+  topics,
+  noCard = false,
+}: TopicBlockComponentProps) {
   const [expandedTopics, setExpandedTopics] = React.useState<Set<string>>(
     new Set()
   );
@@ -117,6 +126,22 @@ function TopicBlockComponent({ title, description, topics }: TopicBlockProps) {
     return null;
   }
 
+  const content = (
+    <div className="space-y-6">
+      {title && <h3 className="text-lg font-semibold">{title}</h3>}
+      {description && (
+        <p className="text-sm text-muted-foreground">{description}</p>
+      )}
+      <div className="space-y-6">
+        {topics.map((topic) => renderTopicItem(topic))}
+      </div>
+    </div>
+  );
+
+  if (noCard) {
+    return content;
+  }
+
   return (
     <Card className="border-2">
       <CardHeader>
@@ -133,12 +158,18 @@ function TopicBlockComponent({ title, description, topics }: TopicBlockProps) {
 }
 
 // Wrap with error boundary wrapper
-export const TopicBlock = ({ title, description, topics }: TopicBlockProps) => (
+export const TopicBlock = ({
+  title,
+  description,
+  topics,
+  noCard,
+}: TopicBlockComponentProps) => (
   <ErrorBoundaryWrapper name="TopicBlock">
     <TopicBlockComponent
       title={title}
       description={description}
       topics={topics}
+      noCard={noCard}
     />
   </ErrorBoundaryWrapper>
 );

@@ -40,7 +40,7 @@ export type ViewFieldType =
 
 // Custom component props mapping
 export type CustomComponentProps = {
-  TopicBlock: TopicBlockProps;
+  TopicBlock: TopicBlockProps & { noCard?: boolean };
   // Add other custom component props here as needed
 };
 

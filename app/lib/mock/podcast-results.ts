@@ -14,17 +14,17 @@ export const mockPodcastResults: ProcessedPodcast = {
   topics: [
     {
       id: "learning-model",
-      title: "Interactive Learning Approach",
+      title: "Duolingo Learning Model",
       content:
-        "Comprehensive analysis of Duolingo's core learning methodology, where users learn through active engagement with language in brief, focused lessons that incorporate multiple learning modalities",
+        "Comprehensive analysis of Duolingo's innovative approach to language learning, combining gamification, adaptive algorithms, and social features to create an engaging and effective learning experience. The platform emphasizes active language engagement through brief, focused lessons and a variety of interactive exercises.",
       metadata: {
         timestamp: "00:05:30",
-        relevanceScore: 0.95,
+        relevanceScore: 0.98,
         relatedTopics: [
           "Gamification",
-          "Spaced Repetition",
           "Adaptive Learning",
-          "Interactive Exercises",
+          "Social Features",
+          "User Engagement",
         ],
       },
       subtopics: [
@@ -32,108 +32,50 @@ export const mockPodcastResults: ProcessedPodcast = {
           id: "core-methodology",
           title: "Core Learning Methodology",
           content:
-            "Users learn through direct language engagement, completing lessons with practical words and phrases. The platform combines translating exercises, interactive quizzes, and immersive stories to create a comprehensive learning experience. Each lesson is intentionally brief to facilitate manageable, consistent learning sessions.",
+            "Duolingo's fundamental approach centers on direct language engagement where users learn through practical application. The platform employs a gamified methodology with lessons incorporating translation exercises, interactive quizzes, and immersive stories. Lessons are intentionally designed to be brief and manageable, allowing users to learn in digestible chunks while maintaining consistent engagement. This structured approach ensures steady progress while preventing cognitive overload.",
           metadata: {
             timestamp: "00:07:45",
-            relevanceScore: 0.94,
+            relevanceScore: 0.96,
           },
         },
         {
           id: "adaptive-system",
-          title: "Adaptive Learning Algorithm",
+          title: "Adaptive Learning Technology",
           content:
-            "Implementation of a sophisticated personalized bandit algorithm system, later enhanced with A/B tested variant recovering difference softmax algorithm. This system dynamically adjusts to each learner's performance, providing personalized feedback and recommendations while optimizing daily notification timing for maximum engagement.",
+            "At the heart of Duolingo's personalization is a sophisticated adaptive algorithm system. The platform implements a personalized bandit algorithm, later enhanced with an A/B tested variant recovering difference softmax algorithm, which dynamically adjusts to each learner's performance patterns. This system serves multiple functions: it personalizes the learning path, provides targeted feedback and recommendations, and optimizes the timing of daily notifications to maximize user engagement. The algorithm continuously analyzes user performance to adjust difficulty and content presentation.",
           metadata: {
             timestamp: "00:12:20",
-            relevanceScore: 0.93,
-          },
-        },
-        {
-          id: "competitive-learning",
-          title: "Competitive Learning Environment",
-          content:
-            "Robust competitive framework featuring Leagues where users compete in groups of up to 30 randomly selected worldwide participants. Rankings are determined by weekly XP (experience points) accumulation. Users can personalize their experience with custom avatars and engage in direct competition through Duolingo Clash. Achievement badges are awarded for completing specific objectives, adding another layer of motivation.",
-          metadata: {
-            timestamp: "00:15:30",
-            relevanceScore: 0.92,
-          },
-        },
-        {
-          id: "engagement-features",
-          title: "Engagement and Retention Features",
-          content:
-            "Comprehensive streak system integrated with platform widgets, including 39 unique illustrations by Kyle Ruane showing Duo's varying moods throughout the day. The streak feature, symbolized by a fire icon, tracks daily lesson completion and extends to social interaction through Friend Streak, allowing users to maintain streaks with up to five friends simultaneously.",
-          metadata: {
-            timestamp: "00:18:45",
-            relevanceScore: 0.91,
-          },
-        },
-        {
-          id: "exercise-types",
-          title: "Exercise Variety",
-          content:
-            "Diverse range of exercise types including translation tasks, listening comprehension, speaking practice, and interactive stories. Each exercise type is carefully designed to reinforce different aspects of language learning while maintaining user engagement through variety and progressive difficulty.",
-          metadata: {
-            timestamp: "00:21:00",
-            relevanceScore: 0.9,
-          },
-        },
-      ],
-    },
-    {
-      id: "engagement-mechanics",
-      title: "Core Learning Mechanics",
-      content:
-        "Comprehensive analysis of Duolingo's learning methodology and engagement systems",
-      metadata: {
-        timestamp: "00:15:00",
-        relevanceScore: 0.96,
-        relatedTopics: [
-          "Daily Streaks",
-          "Competitive Learning",
-          "Adaptive Algorithms",
-          "User Engagement",
-        ],
-      },
-      subtopics: [
-        {
-          id: "lesson-structure",
-          title: "Lesson Design",
-          content:
-            "Brief, focused lessons incorporating translation, interactive exercises, quizzes, and stories for effective language acquisition",
-          metadata: {
-            timestamp: "00:17:30",
-            relevanceScore: 0.94,
-          },
-        },
-        {
-          id: "adaptive-algorithms",
-          title: "Smart Learning Systems",
-          content:
-            "Implementation of personalized bandit algorithms and A/B tested variant recovering difference softmax algorithm for optimized learning paths",
-          metadata: {
-            timestamp: "00:20:45",
-            relevanceScore: 0.93,
+            relevanceScore: 0.95,
           },
         },
         {
           id: "competitive-features",
-          title: "Competition and Leagues",
+          title: "Competitive Learning Environment",
           content:
-            "Worldwide competitive leagues with 30-user groups, XP-based rankings, and achievement systems through badges",
+            "Duolingo creates an engaging competitive space through its Leagues system, where users compete in groups of up to 30 randomly selected participants worldwide. The platform uses experience points (XP) to determine weekly rankings within these leagues, fostering healthy competition. Users can personalize their experience with custom avatars and engage in direct competition through Duolingo Clash. The achievement system awards badges for completing specific objectives, adding another layer of motivation and recognition. This competitive framework helps maintain long-term engagement while encouraging consistent practice.",
           metadata: {
-            timestamp: "00:23:15",
-            relevanceScore: 0.91,
+            timestamp: "00:15:30",
+            relevanceScore: 0.94,
           },
         },
         {
-          id: "streak-system",
-          title: "Streak Mechanics",
+          id: "engagement-systems",
+          title: "Engagement and Retention Features",
           content:
-            "Daily streak system with widget integration, featuring 39 mood-based illustrations and Friend Streak functionality for up to 5 friends",
+            "The platform employs multiple mechanisms to maintain user engagement, with the streak system being a central feature. This includes a comprehensive widget system that originated as a hackathon project, featuring 39 unique illustrations by Kyle Ruane that show Duo's varying moods throughout the day. The streak feature, symbolized by a fire icon, tracks daily lesson completion and extends to social interaction through the Friend Streak feature, allowing users to maintain streaks with up to five friends simultaneously. These widgets appear on both iOS and Android platforms, serving as visual reminders and motivation for daily practice.",
           metadata: {
-            timestamp: "00:25:30",
-            relevanceScore: 0.9,
+            timestamp: "00:18:45",
+            relevanceScore: 0.93,
+          },
+        },
+        {
+          id: "exercise-variety",
+          title: "Learning Exercise Types",
+          content:
+            "Duolingo offers a diverse range of exercise types to maintain engagement and ensure comprehensive language acquisition. These include translation tasks, listening comprehension exercises, speaking practice sessions, and interactive stories. Each exercise type is carefully calibrated to reinforce different aspects of language learning while maintaining user engagement through variety and progressive difficulty. The platform's adaptive system ensures that these exercises are presented in an optimal sequence based on the user's learning patterns and performance.",
+          metadata: {
+            timestamp: "00:21:00",
+            relevanceScore: 0.92,
           },
         },
       ],
