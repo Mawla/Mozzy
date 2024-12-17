@@ -13,6 +13,7 @@ export function transformToBlocks(analysis?: ProcessedPodcast): BlockRow[] {
     transformQuickFacts(analysis),
     transformMetrics(analysis),
     transformKeyPoints(analysis),
+    transformTopics(analysis),
     transformThemes(analysis),
   ];
 }
@@ -382,5 +383,47 @@ function transformSections(analysis: ProcessedPodcast): BlockRow {
         })),
       },
     ],
+  };
+}
+
+function transformTopics(analysis: ProcessedPodcast): BlockRow {
+  const sectionMetadata: SectionMetadata = {
+    variant: "bordered",
+    spacing: "md",
+    padding: "md",
+    shadow: true,
+    rounded: true,
+    background: true,
+  };
+
+  const block: BlockConfig = {
+    id: "topics-block",
+    layout: "full",
+    sections: [
+      {
+        title: "Main Topics",
+        fields: [
+          {
+            type: "custom",
+            label: "Topics",
+            value: analysis.topics,
+            metadata: {
+              component: "TopicBlock",
+              props: {
+                title: "Topics Discussed",
+                description: "Key topics and subtopics covered in this podcast",
+                topics: analysis.topics,
+              },
+            },
+          },
+        ],
+        metadata: sectionMetadata,
+      },
+    ],
+  };
+
+  return {
+    id: "topics",
+    blocks: [block],
   };
 }

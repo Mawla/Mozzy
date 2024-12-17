@@ -364,3 +364,37 @@ Reference Files:
     [✓] Ensure all components use consistent naming conventions: - Removed duplicate metrics-block.tsx - Updated TimelineView to TimelineBlock - Updated imports to use consistent naming
     [✓] Test and improve block components: - Added error handling to TimelineBlock - Improved TimelineBlock styling and performance - Added input validation - Memoized callback functions
     [ ] Test remaining functionality after restructuring
+
+47. Implement Wikipedia-style Topic Extraction and Display: ⏳
+    [ ] Create TopicBlock component:
+    - Implement Wikipedia-style topic box layout
+    - Add collapsible sections
+    - Support hierarchical topic structure
+    - Add topic metadata (timestamps, relevance scores)
+      [ ] Implement topic extraction service:
+    - Extract main topics and subtopics
+    - Calculate topic relevance scores
+    - Identify topic relationships
+    - Generate topic summaries
+      [ ] Create topic transformation pipeline:
+    - Transform extracted topics to block format
+    - Add topic hierarchy support
+    - Include cross-references
+    - Link to relevant sections
+      [ ] Add topic visualization features:
+    - Implement expandable/collapsible sections
+    - Add topic navigation
+    - Create topic relationship diagram
+    - Support topic filtering and search
+      [ ] Integrate with existing block system:
+    - Add topic block to transformers
+    - Update block renderer
+    - Add topic-specific metadata
+    - Implement topic-based navigation
+
+Next Steps:
+
+1. Create TopicBlock component with Wikipedia-style layout
+2. Implement topic extraction service
+3. Add topic transformation pipeline
+4. Integrate with existing block system

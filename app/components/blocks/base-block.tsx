@@ -10,7 +10,9 @@ import {
   ViewSection,
   BlockMetadata,
   ViewFieldType,
+  CustomComponentProps,
 } from "@/app/types/metadata";
+import { TopicBlock } from "./topic-block";
 
 interface BaseViewProps {
   sections: ViewSection[];
@@ -122,6 +124,13 @@ function BaseViewComponent({ sections, metadata }: BaseViewProps) {
               description={timelineMetadata.description}
             />
           );
+        case "custom":
+          if (fieldMetadata.component === "TopicBlock") {
+            const props =
+              fieldMetadata.props as CustomComponentProps["TopicBlock"];
+            return <TopicBlock {...props} />;
+          }
+          return null;
         default:
           return <p className={fieldClasses}>{field.value}</p>;
       }

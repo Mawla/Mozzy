@@ -4,6 +4,7 @@ import {
   Section,
   ContentAnalysis,
 } from "@/app/schemas/podcast/analysis";
+import { TopicItem } from "./topic";
 
 export interface TimelineEvent {
   title: string;
@@ -27,6 +28,7 @@ export interface ProcessedPodcast extends Omit<ContentAnalysis, "themes"> {
   events: string[];
   timeline: TimelineEvent[];
   themes: Theme[];
+  topics: TopicItem[];
   metrics: MetricData[];
   quickFacts: {
     duration?: string;

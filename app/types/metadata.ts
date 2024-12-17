@@ -1,3 +1,5 @@
+import { TopicBlockProps } from "./topic";
+
 // Layout options for different field types
 export type LayoutType = "default" | "metric" | "timeline" | "grid" | "list";
 
@@ -33,29 +35,52 @@ export type ViewFieldType =
   | "list"
   | "grid"
   | "comparison"
-  | "timeline";
+  | "timeline"
+  | "custom";
+
+// Custom component props mapping
+export type CustomComponentProps = {
+  TopicBlock: TopicBlockProps;
+  // Add other custom component props here as needed
+};
+
+// Component-specific metadata
+export type ComponentMetadata<
+  T extends keyof CustomComponentProps = keyof CustomComponentProps
+> = {
+  component: T;
+  props: CustomComponentProps[T];
+};
 
 // Field-specific metadata options
 export type FieldMetadata = {
   layout?: LayoutType;
   iconPosition?: IconPosition;
   variant?: DisplayVariant;
-  columns?: number; // For grid layouts
-  gap?: number; // Spacing between items
-  maxItems?: number; // Maximum items to display
-  showMore?: boolean; // Whether to show "show more" button
-  isCollapsible?: boolean; // Whether section can be collapsed
-  defaultCollapsed?: boolean; // Default collapse state
-  sortable?: boolean; // Whether items can be sorted
-  filterable?: boolean; // Whether items can be filtered
-  searchable?: boolean; // Whether items can be searched
-  interactive?: boolean; // Whether items are clickable/interactive
-  renderAs?: "list" | "grid" | "table" | "cards"; // Display mode for collections
-  // Field type specific metadata
+  columns?: number;
+  gap?: number;
+  maxItems?: number;
+  showMore?: boolean;
+  isCollapsible?: boolean;
+  defaultCollapsed?: boolean;
+  sortable?: boolean;
+  filterable?: boolean;
+  searchable?: boolean;
+  interactive?: boolean;
+  renderAs?: "list" | "grid" | "table" | "cards";
   comparison?: ComparisonMetadata;
   timeline?: TimelineMetadata;
-  description?: string; // General description field
-};
+  description?: string;
+} & (
+  | {
+      component: keyof CustomComponentProps;
+      props: CustomComponentProps[keyof CustomComponentProps];
+    }
+  | {
+      component?: undefined;
+      props?: undefined;
+    }
+);
 
 // Section-level metadata options
 export type SectionMetadata = {
@@ -88,6 +113,7 @@ export type BlockMetadata = {
   width?: "full" | "container" | "content";
   padding?: "sm" | "md" | "lg";
   spacing?: "sm" | "md" | "lg";
+  placement?: "main" | "sidebar";
 };
 
 // View field type that uses the metadata

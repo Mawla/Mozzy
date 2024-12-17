@@ -15,3 +15,4 @@ export { TimelineBlock } from "./timeline-block";
 export { ComparisonBlock } from "./comparison-block";
 export { RelatedTopicsBlock } from "./related-topics-block";
 export { TableOfContentsBlock } from "./table-of-contents-block";
+export { TopicBlock } from "./topic-block";

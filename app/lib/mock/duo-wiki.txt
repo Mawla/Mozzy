@@ -1,0 +1,506 @@
+
+
+WikipediaThe Free Encyclopedia
+Search Wikipedia
+Search
+
+Donate
+Create account
+Log in
+
+Contents hide
+(Top)
+History
+
+Products and services
+
+Learning model
+Business model
+Reception
+
+Image and brand
+
+Duo's Taqueria
+Offices and workforce
+See also
+Notes
+References
+External links
+Duolingo
+
+Article
+Talk
+Read
+View source
+View history
+
+Tools
+Page semi-protected
+From Wikipedia, the free encyclopedia
+ 17 December: Wikipedia still can't be sold
+We're sorry we've asked you a few times recently, but it's Tuesday, 17 December – please don't wait until tomorrow to help. We're happy you consult Wikipedia often. If just 2% of our most loyal readers gave €2.75 today, we'd hit our goal in a few hours. Most readers don't donate, so if Wikipedia has given you €2.75 worth of knowledge, please give. Any contribution helps, whether it's €2.75 one time or monthly.
+Give €2.75
+ Give a different amount
+Wikimedia Foundation Logo
+Maybe later 
+I already donated
+Close 
+Duolingo, Inc.
+
+
+Duolingo home page visited while logged out in March 2024
+Type of business	Public
+Available in	
+Multilingual
+Traded as	
+Nasdaq: DUOL (Class A)
+S&P 400 component
+Founded	2011; 13 years ago
+Headquarters	Pittsburgh, Pennsylvania, U.S.
+Area served	Worldwide
+Founder(s)	
+Luis von Ahn
+Severin Hacker
+Key people	Luis von Ahn (CEO)
+Severin Hacker (CTO)
+Industry	Online education
+Products	
+Duolingo
+Duolingo ABC
+Duolingo English Test
+Services	Language, music, and mathematics courses and language assessment.
+Revenue	Increase US$531 million (2023)
+Operating income	Negative increase US$−13 million (2023)
+Profit	Increase US$16.1 million (2023)
+Total assets	Increase US$954 million (2023)
+Total equity	Increase US$656 million (2023)
+Employees	≈ 850 (September 2024)
+URL	duolingo.com
+Advertising	Yes
+Registration	Yes[a]
+Users	113 million MAU (Q3 2024)
+Launched	November 27, 2011; 13 years ago (private beta)
+June 19, 2012; 12 years ago (public release)
+Current status	Online
+Native client(s) on	Android, iOS, iPadOS
+[1][2][3][4]
+Duolingo, Inc.,[b] is an American educational technology company that produces learning apps and provides language certification. Duolingo offers courses on 44 languages,[5] ranging from English, French, and Spanish to less commonly studied languages such as Welsh, Irish, and Navajo, and even constructed languages such as Klingon.[6] It also offers courses on music[7] and math.[8] The learning method incorporates gamification to motivate users with points, rewards and interactive lessons featuring spaced repetition.[9] The app promotes short, daily lessons for consistent-phased practice.
+
+Duolingo also offers the Duolingo English Test, an online language assessment, and Duolingo ABC, a literacy app designed for children. The company follows a freemium model, with optional premium services like Super Duolingo and Duolingo Max, which are ad-free and provide additional features. Additionally, Duolingo runs Duo's Taqueria, a Mexican taco restaurant in Pittsburgh.
+
+With over 100 million monthly active users, Duolingo is the most popular language learning app.[10][11][12] In total, learners on Duolingo complete more than 13 billion exercises per week.[13] A systematic review of research on Duolingo from 2012 to 2020 found comparatively few studies on the platform's efficiency for language learning but identified several studies that reported relatively high user satisfaction, enjoyment, and positive perceptions of the app's effectiveness.[14] The company has also been recognized for its successful marketing tactics and strong brand engagement.[15][16]
+
+History
+Early history
+The idea of Duolingo was formulated in 2009 by Carnegie Mellon University professor Luis von Ahn and his Swiss-born post-graduate student Severin Hacker.[17][18] Von Ahn had sold his second company, reCAPTCHA, to Google and, with Hacker, wanted to work on an education-related project.[19] Von Ahn stated that he saw how expensive it was for people in his community in Guatemala to learn English.[20][21] Hacker (co-founder and current CTO of Duolingo) believed that "free education will really change the world"[22] and wanted to provide an accessible means for doing so. He was recognized by the National Inventors Hall of Fame for his contributions to language learning and technological development.[23] The Duo mascot is a green owl because co-founder Severin Hacker hates the color green.[24]
+
+The project was originally financed by von Ahn's MacArthur fellowship and a National Science Foundation grant.[25][26][27] The founders considered creating Duolingo as a nonprofit organization, but von Ahn judged this model unsustainable.[22] Its early revenue stream, a crowdsourced translation service, was replaced by a Duolingo English Test certification program, advertising, and subscription.[28][29]
+
+Funds
+
+Duolingo logo from 2011 to 2019
+In October 2011, Duolingo announced that it had raised $3.3 million from a Series A round of funding, led by Union Square Ventures, with participation from author Tim Ferriss and actor Ashton Kutcher's investing firm A-Grade Investments.[30] Duolingo launched a private beta on November 27, 2011, and accumulated a waiting list of more than 300,000 people.[18][31] It launched to the general public on June 19, 2012, at which point the waiting list had grown to around 500,000.[32][33]
+
+In September 2012, Duolingo announced that it had raised a further $15 million from a Series B funding round led by New Enterprise Associates, with participation from Union Square Ventures.[34] In November 2012, Duolingo released an iPhone app,[35] followed by an Android app in May 2013, at which time Duolingo had around 3 million users.[36] By July 2013, it had grown to 5 million users and was rated the No. 1 free education app in the Google Play Store.[37]
+
+In February 2014, Duolingo announced that it had raised $20 million from a Series C funding round led by Kleiner Caufield & Byers, with prior investors also participating.[38] At this time, it had 34 employees, and reported about 25 million registered users and 12.5 million active users;[38] it later reported a figure closer to 60 million users.[39]
+
+In June 2015, it announced that it had raised $45 million from a Series D funding round led by Google Capital, bringing its total funding to $83.3 million. The round valued the company at around $470 million, with 100 million registered users globally.[28][39] In April 2016, it was reported that Duolingo had more than 18 million monthly users.[40][41]
+
+In July 2017, Duolingo announced that it had raised $25 million in a Series E funding round led by Drive Capital, bringing its total funding to $108.3 million. The round valued Duolingo at $700 million, and the company reported passing 200 million registered users, with 25 million active users.[42] It was reported that Duolingo had 95 employees.[43] Funds from the Series E round would be directed toward creating initiatives such as a related educational flashcard app, TinyCards, and testbeds for initiatives related to reading and listening comprehension.[44] On August 1, 2018, Duolingo surpassed 300 million registered users.[45]
+
+In December 2019, it was announced that Duolingo raised $30 million in a Series F funding round from Alphabet's investment company, CapitalG.[21] The round valued Duolingo at $1.5 billion. Duolingo reported 30 million active users at this time. The headcount at the company had increased to around two hundred, and new offices had been opened in Seattle, New York, and Beijing.[46] Duolingo planned to use the funds to develop new products and further expand its team in sectors like engineering, business development, design, curriculum and content creators, community outreach, and marketing.[47]
+
+Features and media
+
+Duolingo in 2017
+In October 2013, Duolingo launched a crowdsourced language incubator.[48] In March 2021, it announced that it would be ending its volunteer contributor program and donating money to its volunteer contributors who helped develop it. The company said that from now on, language courses would be maintained and developed by professional linguists aligning with CEFR standards.[49] On June 28, 2021, Duolingo filed for an initial public offering on NASDAQ under the ticker DUOL.[50] From August 2021 to June 2022, the Duolingo language learning app was removed from some app stores in China.[51] In the early 2020s, Duolingo was noted for its viral videos on the social media platform TikTok.[52][53]
+
+In August 2022, Duolingo overhauled its interface, changing its course structure from a tree-like design, where users could choose from a range of lessons after completing previous ones, to a linear progression. This update has been criticized by users across social media outlets, such as Reddit and Twitter.[20] CEO Luis von Ahn stated that there were no plans to reverse the changes—intended to simplify Duolingo for its new users—maintaining both the old and new versions would be difficult.[54] In October 2022, Duolingo acquired Detroit-based animation studio Gunner; it is the studio that produces art assets and animation for Duolingo and Duolingo ABC and its marketing campaigns.
+
+In March 2023, Duolingo officially announced the planned Duolingo Max, a subscription tier above Super Duolingo, in their blog.[55] In July 2023, Duolingo launched a feature using the iOS widget feature. In October 2023, Duolingo released math and music courses in English and Spanish for iOS users.[56][57]
+
+In 2024, Duolingo made several changes: it replaced some contractor tasks with AI in January,[58] launched the widget feature on Android in March,[59] acquired Detroit-based design studio Hobbes, introduced Friend Streak in August, allowing students to share a streak together with their friends,[60] and released math and music courses for Android in September.[61][62][63] During Duocon 2024 Duolingo introduced various new features, including Video Call and mini games called Adventures. In October Duolingo introduced Duolingo Score.[64]
+
+Products and services
+Courses
+Language courses
+Duolingo has 44 available language courses.[65]
+
+Arabic[c]
+Catalan[d]
+Chinese (Cantonese)[e]
+Chinese (Mandarin)[c][f][g]
+Czech[c]
+Danish[c]
+Dutch[c]
+English[h][i][j][k][l][m][n][o][p][q][r][f][s][e][t][u][v][w][d][x][y][z][aa][ab][ac][g]
+English (Intermediate)[c]
+Esperanto[c]
+Finnish[c]
+French[h][k][c][m] [n][o][p][q][r][f][s][e][t][u][v][w][d][x][ac]
+German[h][k][c][l][p][r][u][w][d][ab]
+Greek[c]
+Guarani[d]
+Haitian Creole[c]
+Hawaiian[c]
+Hebrew[c]
+High Valyrian[c]
+Hindi[c]
+Hungarian[c]
+Indonesian[c]
+Irish[c]
+Italian[c][l][m][e][u][d]
+Japanese[c][e]
+Klingon[c]
+Korean[c][f][e]
+Latin[c]
+Navajo[c]
+Norwegian[c]
+Polish[c]
+Portuguese[c][l][d]
+Romanian[c]
+Russian[c][d][ab]
+Scottish Gaelic[c]
+Spanish[h][i][j][c][l][m][n][o][q][r][f][s][e][t][u][v][w][x][y][z][aa][ab][ac][g]
+Swahili[c]
+Swedish[h][c][d]
+Turkish[c]
+Ukrainian[c]
+Vietnamese[c]
+Welsh[c]
+Yiddish[c]
+Zulu[c]
+Duolingo Math
+Duolingo Math is an app course for learning elementary mathematics. It was announced on YouTube on August 27, 2022, at the Duocon 2022 event.[66] Duolingo Math covers math topics through an interactive and gradual approach. It starts with basic arithmetic—addition, subtraction, multiplication, and division. The app also teaches fractions and decimals, focusing on comparing, converting, and calculating. Geometry lessons include understanding shapes, calculating area and volume. Measurement is another focus, with exercises on using and converting different units like length and time. Duolingo also allows its users to play math games.[67]
+
+Duolingo Music
+In March 2023, Duolingo was reportedly developing a new music course that would allow users to learn how to read and play music through its gamified learning experience.[68][69] On October 11, 2023, Duolingo formally unveiled Duolingo Music in a YouTube Short,[57] a new platform within the existing app that provides basic music learning through piano and sheet music lessons.[70][71] As of April 2024, it is currently available on iOS and Android devices.[72] Since August 2024, users can practice music by playing pop songs in the course.[73]
+
+Subscriptions
+Super Duolingo
+Most of Duolingo's language learning features are free, with advertising in its mobile and web browser applications, which users can remove by paying a subscription fee or promoting referral links.[74] This program, known as Super Duolingo, includes benefits such as unlimited hearts (retries), personalized practice, no ads, focused listening and speaking exercises, free and unlimited entries to legendary challenges and side quests, and is otherwise identical to Duolingo for Schools.[75] [76]
+
+Duolingo Max
+Duolingo Max is a subscription above Super Duolingo that adds additional functions using generative AI: RolePlay, an AI conversation partner, Explain My Answer, which breaks down the rules with a modified GPT-4 when the user makes a mistake, and Video Call, where users can have video chat with one of the characters, Lily. Intended to provide further immersion through "free-flowing conversation",[77] it is available in selected courses and markets.[78]
+
+Duolingo for Schools
+Duolingo for Schools is designed to help teachers use Duolingo in their classrooms. It allows teachers to create classrooms, assign lessons, track student progress, and personalize learning.[79]
+
+Duolingo ABC
+Duolingo ABC is a free app designed for young children to learn letters, their sounds, phonics, and other early reading concepts. Released in 2020, it does not contain ads or in-app purchases. As of April 2024, iOS and Android versions are available, but only in English.[8][80][81]
+
+Duolingo piano
+The Duolingo x Loog Piano is a 37-key portable digital piano created through a partnership between Duolingo and Loog. It features velocity-sensitive keys, built-in speakers, and ports for USB-C, a sustain pedal, and headphones. The piano is designed to work with Duolingo's music lessons.[82]
+
+Duolingo English test
+Main article: Duolingo English Test
+The Duolingo English Test (DET) is an online English proficiency test that measures proficiency in reading, writing, speaking, and listening in English. It is a computer-based test scored on a scale of 10–160, with scores above 120 considered English proficiency. The test's questions algorithmically adjust to the test-takers' ability level. The test's certificate is reportedly accepted by over 5,500 programs internationally,[83] albeit with exceptions.[84]
+
+Learning model
+On Duolingo, learners learn by engaging with the language. Users complete lessons using words they are learning.[85] Duolingo uses a gamified approach to language learning, with lessons that incorporate translating, interactive exercises, quizzes, and stories.[86] It also uses an algorithm that adapts to each learner and can provide personalized feedback and recommendations. Lessons are designed to be brief, allowing users to learn in manageable chunks.[87][88] The app has a personalized bandit algorithm system (later the A/B tested variant recovering difference softmax algorithm) that determines the daily notification that will be sent out to the user.[89]
+
+Duolingo provides a competitive space,[90] such as in Leagues, where people can compete with randomly selected worldwide player groupings of up to 30 users. Users can also create their own avatars and compete against each other in Duolingo Clash.[91][92] Rankings in leagues are determined by the number of "XP" (experience points) earned in a week. Badges in Duolingo represent achievements earned from completing specific objectives.[93]
+
+Duolingo has a widget feature on iOS and Android. The widget feature initially started as Duolingo's annual hackathon project. The iOS widget has 39 illustrations designed by Kyle Ruane that were intended to be another daily reminder to complete lessons. On the top part of the widgets is the user's daily streak. On the Duolingo Blog, they wrote that they "decided to come up with a series of illustrations that would show Duo’s mood at different parts of the day".[62] Any lesson completed in Duolingo will count towards the user's daily streak.[94] The daily streak's visual symbol in the app is fire. Duolingo's "Friend Streak" lets users maintain streaks with up to five friends.[95]
+
+Business model
+Duolingo operates on a freemium business model, offering free access to its learning platforms with ads. Revenue is primarily generated through subscriptions, which remove ads, and provide other perks like unlimited hearts and generative AI. The app also generates income from in-app purchases of virtual currency (Gems) and power-ups that enhance the learning experience. Another key revenue stream is the Duolingo English Test (DET), a low-cost English proficiency test.[96]
+
+In April 2020, it passed one million paid subscribers;[97] it reached 2.9 million in March 2022,[98] and 4.8 million at the end of March 2023.[99] As of June 2024 Duolingo has 8 million paying subscribers.
+
+Duolingo had revenue of $531 million in 2023, compared to $250.77 million in 2021,[100] $36 million in 2018,[101] $13 million in 2017,[45] and $1 million in 2016. In May 2022, it was reported that 6.8% of its monthly active users paid for the ad-free version of the app.[102]
+
+Reception
+Effectiveness
+A 2017 study found no significant difference between elementary students learning Spanish through the "gamification" of the Duolingo app and those learning in classroom environments, with both groups demonstrating a similar increase in achievements and self-efficacy.[103]
+
+Duolingo's occasional use of 'erratic' phrases—such as "The bride is a woman and the groom is a hedgehog" or "The man eats ice cream with mustard"[104]—is reportedly derived from research published in 2018 by psychologists at Ghent University in Belgium,[105] which concluded that such "semantically unpredictable sentences" were more effective for language learning than conventional and predictable phrases, based on the concept of "reward prediction errors", in which unexpected or surprising outcomes are more rewarding and thus encourage further learning.[106][104]
+
+A 2022 study on adults using Duolingo as their only language learning tool, published in the journal Foreign Language Annals, found that participants who completed a course had similar reading and listening proficiency to university students after four semesters of study, concluding that Duolingo could be an effective tool for language learning.[107] Another 2022 study of Malaysian students learning French, published by the National University of Malaysia Press, found that the app facilitated the acquisition of vocabulary and concluded that it was "well suited" for beginners in this regard.[108]
+
+According to Duolingo's own 2021 study, five sections of the app are roughly equivalent to five semesters of university instruction, and Duolingo is an "effective tool [...] at an intermediate level".[109][110] A 2023 study funded by Duolingo concluded that Duolingo English learners did not significantly learn much grammar.[111] Duolingo English learners in Colombia and Spain were found to gain significantly more proficiency than students in a classroom, except for listening.[112]
+
+Criticism
+Some language professionals have criticized the app for its limitations and gamified design.[113] Others have pointed out that Duolingo and similar apps can be a starting point but lack the human interaction required to be fluent in a language and for real-life conversations.[114] For instance, Bruno Estigarribia stated that, as of 2019, the Guarani course was "seemingly in a development phase" and that it "had many inconsistencies". He added it could serve as a complement to one's studies, but it would not "magically teach" the language.[115] Players have also reported that "gamification" has led to cheating, hacking, and incentivized game strategies that conflict with actual learning.[116]
+
+In March 2022, Duolingo forums were discontinued,[117] and Sentence discussions became read-only.[118] The change has been criticized on some social media sites.
+
+In January 2023, Duolingo's data on over 2.6 million users' usernames, names, and phone numbers was sold in a hacker forum. Duolingo later stated that they would investigate the "dark web post".[119] They concluded that the data was obtained by scraping publicly available information based on an exposed application programming interface (API).[120][121] Duolingo's spokesperson states that the API is intentionally publicly visible.
+
+Since the end of October 2023, Duolingo has stopped updating its Welsh course to "focus on languages in higher demand". Some users criticized this decision because it came at the expense of learners of a language with limited resources on the market and the potential halting of the Welsh Government's "Cymraeg 2050" strategy to promote Welsh language learning.[122][123]
+
+Awards
+In 2013, Apple chose Duolingo as its iPhone App of the Year, a first for an educational application.[124] That year, Duolingo ranked No. 7 on Fast Company's "The World's Most Innovative Companies: Education Honorees" list "for crowdsourcing web translation by turning it into a free language-learning program".[125][126][127] Duolingo won Best Education Startup at the 2014 Crunchies,[128][129] and was the most downloaded 'education app' in Google Play in 2013 and 2014.[130] In July 2020, PCMag named it "The Best Free Language Learning App".[131]
+
+As a company, Duolingo has likewise won several awards and recognitions. In 2015, it was announced as that year's Index Award winner in the Play & Learning category by The Index Project.[132] It won Inc. magazine's Best Workplaces 2018,[133] made Entrepreneur magazine's Top Company Culture List 2018,[134] was among CNBC's "Disruptor 50" lists for 2018 and 2019,[135][136][137] and was ranked as one of TIME magazine's 50 Genius Companies.[138] Duolingo was named one of Forbes's "Next Billion-Dollar Startups 2019".[139] In 2023, Duolingo won a Design Award during the 2023 edition of the Apple Design Awards.[140]
+
+Image and brand
+Duolingo's characters
+
+Duo, the mascot of Duolingo
+Duolingo has brand characters that are used for engagement and creating storylines.[141][142] The main characters include:[143]
+
+Bea: A smart and energetic young girl.
+Duo: The green owl mascot. Duo serves as the motivational face of the app, encouraging users to complete their lessons and maintain their learning streaks. It's also famous for sending reminders to practice, often with a humorous or slightly dramatic tone.
+Eddy: An optimistic character with a passion for sports, father of Junior.
+Falstaff: An older, intellectual grizzly bear with a love for literature.
+Junior: A curious and eager young boy.
+Lily: A sarcastic teenager with a witty and somewhat apathetic personality.[144]
+Lin: A creative and adventurous artist and motorcyclist.
+Lucy: A venturesome elderly lady, grandmother of Lin.
+Oscar: A prim lover of art and culture.
+Vikram: A calm and responsible professional.
+Zari: A confident and enthusiastic Middle Eastern teenager girl. She dresses in pink and blue and wears a headscarf/hijab. She is Lily's best friend.
+All characters mentioned above are human, with the exceptions of Duo, who is an owl, and Falstaff, who is a bear.
+
+In popular culture
+Due to the app's frequent reminder notifications, Duolingo's mascot, a green cartoon owl named Duo, has been the subject of Internet memes antagonising him, with the character often depicted stalking or threatening users if they do not continue using the app.[145][146]
+
+Duolingo has leaned into its online reputation and has adjusted its social media and marketing strategies accordingly.[147] Acknowledging the meme, Duolingo released a video on April Fools' Day 2019, depicting a facetious new feature called "Duolingo Push". In the video, users of "Duolingo Push" are reminded to use the app by Duo himself (depicted by a person wearing a Duolingo mascot costume), who stares at and follows them until they comply.[148][149] It was also acknowledged during Duolingo's 2022 April Fools' Day video, "Lawyer Fights Duolingo Owl for $2,700,000", where a fictitious law firm fights for those that have been harmed by Duolingo's owl mascot.[150] This was further referenced by the company in its 2024 April Fools' Day skit "Duo on Ice", in which the owl, in a mix of Spanish and English, admitted to having an appetite for human flesh, and if the user failed to continue their streak, they would "eat their head like a praying mantis."[151] In February 2020, as part of the company's partnership with the developers of the video game Angry Birds 2, a skit depicting Duo and the red Angry Bird attacking a crowd was uploaded.[152]
+
+In November 2019, Saturday Night Live parodied Duolingo in a sketch where adults learned to communicate with children by using a fictitious course called "Duolingo for Talking to Children".[153]
+
+The 2023 film Barbie contains a running gag where the husband of disgruntled Mattel employee Gloria uses Duolingo to learn Spanish, Gloria's native language.
+
+Duocon
+Duocon is Duolingo's annual conference, launched in 2019, aimed at gathering Duolingo users, language enthusiasts, and educational technology professionals. The conference serves as a platform to share the latest updates, features, and future plans of the app, while also exploring broader topics related to language learning and technology.
+
+The inaugural Duocon in 2019 featured presentations from Duolingo's team, interactive sessions, and announcements about new developments. The 2020 event was adapted to a virtual format due to the COVID-19 pandemic. Subsequent events have also been held online.[154]
+
+Duo's Taqueria
+Duo's Taqueria is a taqueria (a Mexican taco restaurant) in Pittsburgh, Pennsylvania, operated by Duolingo. The taqueria offers a variety of authentic Mexican tacos and other traditional dishes.[155] The restaurant encourages patrons to order in Spanish, aligning with Duolingo's mission of making language learning fun and accessible. Duolingo's taco shop brought in $700,000 in 2023.[156]
+
+Offices and workforce
+Duolingo is headquartered in Pittsburgh, Pennsylvania, and has offices in Seattle, New York,[157] Detroit,[158] Beijing, and Berlin.[159]
+
+In 2024, Duolingo opened a new office in New York City, featuring an art gallery in which the company's characters are depicted in the style of famous historical paintings. The gallery showcases moving images of Duo and other characters in a range of artistic styles.[160][161]
+
+Duolingo employs around 850 people.[162][163]
+
+See also
+Distance education
+Language assessment
+Language education
+Language pedagogy
+Mathematics education
+Music education
+Notes
+ One can use Duolingo for a few lessons before requiring an account to progress.
+ Pronunciation: /ˌdjuːoʊˈlɪŋɡoʊ/ (DEW-oh-LING-goh)
+ For speakers of English
+ For speakers of Spanish
+ For speakers of Mandarin Chinese
+ For speakers of Japanese
+ For speakers of Vietnamese
+ For speakers of Arabic
+ For speakers of Bengali
+ For speakers of Czech
+ For speakers of Dutch
+ For speakers of French
+ For speakers of German
+ For speakers of Greek
+ For speakers of Hindi
+ For speakers of Hungarian
+ For speakers of Indonesian
+ For speakers of Italian
+ For speakers of Korean
+ For speakers of Polish
+ For speakers of Portuguese
+ For speakers of Romanian
+ For speakers of Russian
+ For speakers of Swedish
+ For speakers of Tagalog
+ For speakers of Telugu
+ For speakers of Thai
+ For speakers of Turkish
+ For speakers of Ukrainian
+References
+ "Duolingo, Inc. 2023 Annual Report (Form 10-K)". U.S. Securities and Exchange Commission. February 29, 2024. Retrieved March 1, 2024.
+ "Migrating Duolingo's Android app to 100% Kotlin". blog.duolingo.com. April 6, 2020. Archived from the original on December 23, 2020. Retrieved September 17, 2020.
+ "Real World Swift – Making Duolingo Blog". making.duolingo.com. January 7, 2015. Archived from the original on June 6, 2019. Retrieved October 22, 2018.
+ "Rewriting Duolingo's engine in Scala – Making Duolingo Blog". making.duolingo.com. January 31, 2017. Archived from the original on August 4, 2019. Retrieved February 1, 2017.
+ Matt (February 20, 2023). "The Complete List Of EVERY Duolingo Language". Duoplanet. Archived from the original on September 21, 2022. Retrieved September 21, 2022.
+ Higgins-Dunn, Noah (April 14, 2019). "If you are a 'Game of Thrones' fan, this app will teach you how to speak in High Valyrian". CNBC. Archived from the original on November 12, 2019. Retrieved May 23, 2022.
+ Ortiz, Sabrina. "Duolingo opens waitlist for its new, free music course. Here's how to sign up". ZDNET. Archived from the original on October 12, 2023. Retrieved October 11, 2023.
+ Duolingo Team (October 26, 2022). "Duolingo Math makes learning easy as pi(e)". Duolingo. Archived from the original on October 27, 2022. Retrieved October 27, 2022.
+ "Dear Duolingo: Why is spaced repetition so important for learning?". Duolingo Blog. December 26, 2023. Retrieved August 2, 2024.
+ "duolingo reports 45% revenue growth and record profitability in first quarter 2024; raises full year guidance".
+ Ceci, Laura. "Top language learning apps by downloads 2023". Statista. Archived from the original on January 20, 2024. Retrieved October 6, 2023.
+ Transcribing, Motley Fool (August 7, 2024). "Duolingo (DUOL) Q2 2024 Earnings Call Transcript". The Motley Fool. Retrieved August 9, 2024.
+ "Cem Kansu on LinkedIn: How Duolingo Turned a Free Language App Into a $7.7 Billion Business". www.linkedin.com. Retrieved September 15, 2024.
+ Shortt, Mitchell; Tilak, Shantanu; Kuznetcova, Irina; Martens, Bethany; Akinkuolie, Babatunde (March 4, 2023). "Gamification in mobile-assisted language learning: a systematic review of Duolingo literature from public release of 2012 to early 2020". Computer Assisted Language Learning. 36 (3): 517–554. doi:10.1080/09588221.2021.1933540. ISSN 0958-8221.
+ Cohen, Ben (June 14, 2024). "The Only App That Always Wins the Battle for Your Attention". The Wall Street Journal.
+ Morley, Olivia (April 5, 2024). "Duolingo's Masterminded Social Listening Tactics". www.adweek.com. Retrieved June 18, 2024.
+ Siegler, M.G. (April 12, 2011). "Meet Duolingo, Google's Next Acquisition Target; Learn A Language, Help The Web". TechCrunch. Archived from the original on November 29, 2020. Retrieved November 21, 2014.
+ Loeb, Steven (June 22, 2018). "When Duolingo was young: the early years". VatorNews. Archived from the original on June 25, 2018. Retrieved December 21, 2019.
+ Ahn, Luis von. "Luis Von Ahn's answer to What made Luis Von Ahn start Duolingo?". Archived from the original on February 22, 2024. Retrieved May 14, 2021 – via Quora.
+ Gifford, Bill (December 2, 2022). "Can Duolingo Actually Teach You Spanish?". Bloomberg Businessweek. Archived from the original on December 2, 2022. Retrieved December 2, 2022.
+ Janardhan, Arun (May 27, 2022). "Duolingo's Luis von Ahn believes in the power of language". Mintlounge. Illustration by Priya Kuriyan. The beginning. Archived from the original on May 27, 2022. Retrieved May 28, 2022.
+ Olson, Parmy. "Crowdsourcing Capitalists: How Duolingo's Founders Offered Free Education To Millions". Forbes. Archived from the original on January 27, 2014. Retrieved August 26, 2017.
+ "Duolingo creator to be inducted into Inventors Hall of Fame" (Video). NBC News. October 27, 2023. Archived from the original on November 2, 2023. Retrieved November 2, 2023.
+ Lee, Dami (December 13, 2018). "Duolingo redesigned its owl to guilt-trip you even harder". The Verge. Archived from the original on March 29, 2024. Retrieved June 6, 2024.
+ Ahn, Luis von (2017). "Online Education as a Vehicle for Human Computation". U.S. National Science Foundation. Archived from the original on March 4, 2016. Retrieved April 6, 2018.
+ Masson-Forsythe, Heather (December 22, 2022). "NSF gave Duolingo its wings!". U.S. National Science Foundation. Archived from the original on March 25, 2023. Retrieved March 25, 2023.
+ Giles, Jim (January 11, 2012). "Learn a language, translate the web". New Scientist. Archived from the original on April 28, 2015. Retrieved August 26, 2017.
+ Lardinois, Frederic (June 10, 2015). "Duolingo Raises $45 Million Series D Round Led By Google Capital, Now Valued At $470M". TechCrunch. Archived from the original on August 4, 2015. Retrieved December 14, 2019. Instead, the company is now using its Test Center certification program as a revenue source (the tests cost $20) and says that it has other plans to monetize.
+ Ahn, Luis von (May 12, 2022). "Duol shareholder letter 2022" (DOC). (anonymous). Archived from the original on May 12, 2022. Retrieved May 28, 2022.
+ "The Daily Start-Up: Kutcher-Backed Language Site Duolingo Finds Its Voice". The Wall Street Journal. June 19, 2012. Archived from the original on April 3, 2019. Retrieved July 13, 2012.
+ Robertson, Adi (December 16, 2011). "Duolingo will translate the internet while teaching languages". The Verge. Archived from the original on January 8, 2012. Retrieved February 3, 2016.
+ Loeb, Steven (June 22, 2018). "When Duolingo was young: the early years". VatorNews. Duolingo's Third Year. Archived from the original on June 25, 2018. Retrieved December 14, 2019.
+ Spice, Byron. "Press Release: Duolingo.com Users Will Translate Web As They Learn a New Language". Carnegie Mellon University. Archived from the original on August 26, 2012. Retrieved May 14, 2021.
+ "Duolingo Raises $15M Series B Round Led By NEA, Will Expand To More Languages And To Mobile Soon". TechCrunch. September 17, 2012. Archived from the original on December 14, 2019. Retrieved December 13, 2019.
+ Lardinois, Frederic (November 13, 2012). "Language Learning Service Duolingo Launches Its First iPhone App". TechCrunch. AOL. Archived from the original on November 13, 2012. Retrieved April 18, 2016.
+ "Free Language Learning Service Duolingo Comes To Android". TechCrunch. May 29, 2013. Archived from the original on May 14, 2021. Retrieved May 14, 2021.
+ Farber, Dan (July 11, 2013). "Duolingo brings free language courses to the iPad". C net. Archived from the original on August 20, 2013. Retrieved February 21, 2014.
+ "Duolingo Raises $20M Series C Led By Kleiner Perkins To Dominate Online Language Learning". TechCrunch. February 14, 2014. Archived from the original on March 10, 2015. Retrieved May 14, 2021.
+ "100M users strong, Duolingo raises $45M led by Google at a $470M valuation to grow language-learning platform". VentureBeat. June 10, 2015. Archived from the original on June 16, 2015. Retrieved December 14, 2019.
+ "Duolingo Case Study – DynamoDB". Amazon Web Services, Inc. 2016. Archived from the original on June 28, 2016. Retrieved December 23, 2019.
+ Duolingo Stores 31 Billion Items on Amazon DynamoDB and Uses AWS to Deliver Language Lessons, April 25, 2016, archived from the original on October 28, 2020, retrieved December 23, 2019 – via YouTube.
+ "Duolingo raises $25M at a $700M valuation". TechCrunch. July 25, 2017. Archived from the original on April 21, 2019. Retrieved December 14, 2019.
+ Duolingo. "Duolingo Now Valued at $1.5 Billion". www.prnewswire.com (Press release). Archived from the original on December 12, 2019. Retrieved December 14, 2019.
+ Elaine, Ramirez. "Duolingo Is Launching A Korean Course To Cash In On Asia's Booming Language Market". Forbes. Archived from the original on December 21, 2018. Retrieved October 11, 2017.
+ Lardinois, Frederic (August 2018). "Duolingo hires its first chief marketing officer as active user numbers stagnate but revenue grows". TechCrunch. Archived from the original on May 4, 2019. Retrieved December 14, 2019.
+ Sawers, Paul (December 4, 2019). "Duolingo raises $30 million from Alphabet's CapitalG at $1.5 billion valuation". VentureBeat. Archived from the original on December 4, 2019. Retrieved December 13, 2019.
+ Lindstrom, Natasha (December 4, 2019). "Duolingo touts $1.5B valuation; language company to hire 100 more people, mostly in Pittsburgh". triblive.com. Archived from the original on December 5, 2019. Retrieved December 15, 2019.
+ Munoz, Juan Andres (October 15, 2013). "Duolingo 'incubator' aims to crowdsource language teaching". CNN. Archived from the original on April 18, 2022. Retrieved April 18, 2022.
+ "Ending & honoring our volunteer Contributor program". Duolingo Blog. March 10, 2021. Archived from the original on March 10, 2021. Retrieved April 7, 2022.
+ Sumagaysay, Levi. "Duolingo, the fast-growing language-learning app, files for IPO" (IPO Report). MarketWatch. Archived from the original on June 28, 2021. Retrieved July 5, 2021.
+ "Duolingo back in China app stores after 1 year". TechCrunch. June 10, 2022. Archived from the original on June 10, 2022. Retrieved July 26, 2022.
+ Whateley, Dan; Mangalindan, J.P. (April 6, 2022). "Meet the TikTok whisperers helping 10 top brands stand out on the app — from Netflix to Duolingo". Business Insider. Archived from the original on August 16, 2022. Retrieved August 16, 2022.
+ Haasch, Palmer (November 18, 2021). "Duolingo's mascot went viral on TikTok by twerking on tables and thirsting after Dua Lipa". Insider. Archived from the original on February 22, 2024. Retrieved August 16, 2022.
+ Goggin, Ben (August 26, 2022). "Duolingo's redesign has some fans up in arms. Its CEO says it's not turning back". NBC News. Archived from the original on August 26, 2022. Retrieved August 26, 2022.
+ "Introducing Duolingo Max, a learning experience powered by GPT-4". Duolingo Blog. March 14, 2023. Retrieved April 24, 2024.
+ Lang, Jamie (October 5, 2022). "Duolingo Acquires Detroit-Based Design And Animation Studio Gunner". Cartoon Brew. Archived from the original on March 23, 2023. Retrieved July 16, 2023.
+ "One app to school them all: the expanded Duolingo 🎶 ➗ 🇲🇽". Duolingo Blog. October 11, 2023. Archived from the original on October 11, 2023. Retrieved October 11, 2023.
+ Nolan, Beatrice (January 10, 2024). "Duolingo lays off workers as it leans on AI tools to carry out more tasks". Business Insider. Archived from the original on January 11, 2024. Retrieved January 11, 2024.
+ Perez, Sarah (July 9, 2024). "Duolingo acquires Detroit-based design studio Hobbes". TechCrunch. Retrieved July 14, 2024.
+ "Friend Streak: a new way to stay motivated together". Duolingo Blog. August 5, 2024. Retrieved August 24, 2024.
+ Korn, Jennifer (January 9, 2024). Thorbecke, Catherine (ed.). "Duolingo lays off staff as language learning app shifts toward AI". CNN. Contributed by Catherine Thorbecke. Archived from the original on January 11, 2024. Retrieved January 11, 2024.
+ Mansur, Osman; Shuttleworth, Jackson (August 29, 2023). "How we developed our addictive and delightful widget". Duolingo Blog. Retrieved April 24, 2024.
+ Neowin ·, Paul Hill (September 25, 2024). "Duolingo rolls out math and music courses to Android users ahead of Duocon". Neowin. Retrieved September 25, 2024.
+ "The Duolingo Score Tracks Your Learning Progress". Duolingo Blog. October 23, 2024. Retrieved November 5, 2024.
+ Matt (February 20, 2023). "The Complete List Of EVERY Duolingo Language". Duoplanet. Archived from the original on September 21, 2022. Retrieved September 21, 2022.
+ Siegel, Sammi (August 27, 2022). Duolingo's Path to Math! • Sammi Siegel • Duocon 2022 (Video). Duocon 2022. Duolingo – via YouTube.
+ Duolingo Path (September 7, 2024). Duolingo Math Games: Secret Equation - new game. Retrieved September 28, 2024 – via YouTube.
+ Cesar Cadenas (March 21, 2023). "Is Duolingo building a new music-learning app? We interpret the signs". TechRadar. Archived from the original on October 11, 2023. Retrieved October 11, 2023.
+ "Duolingo will soon offer gamified music lessons". Engadget. September 6, 2023. Archived from the original on October 8, 2023. Retrieved October 6, 2023.
+ Perez, Sarah (September 6, 2023). "Duolingo confirms its app will soon include both math and music lessons". TechCrunch. Archived from the original on October 7, 2023. Retrieved October 6, 2023.
+ Cesar Cadenas (October 11, 2023). "Duolingo's new Music platform will teach you the basics of playing tunes". TechRadar. Archived from the original on October 11, 2023. Retrieved October 11, 2023.
+ Elsas-Queen (July 11, 2024). "Music and math lessons are finally available on Android". r/duolingo. Retrieved July 12, 2024.
+ "New in Music: play songs by your favorite artists". Duolingo Blog. August 15, 2024. Retrieved August 15, 2024.
+ Olson, Parmy (January 22, 2014). "Crowdsourcing Capitalists: How Duolingo's Founders Offered Free Education To Millions". Forbes. Archived from the original on January 27, 2014. Retrieved December 22, 2015.
+ "What is Super Duolingo?". Duolingo Help Center. Archived from the original on September 29, 2023. Retrieved July 16, 2023.
+ "Super Duolingo". Super Duolingo homepage. Retrieved November 22, 2024.
+ Bodge, Edwin; Peterson, Bill (March 14, 2023). "OpenAI customer story: Duolingo". OpenAI. Retrieved April 24, 2024.
+ Matt (May 25, 2023). "How To Get Duolingo Max (Step-by-Step Guide)". duoplanet. u/michaelfarrar for the contributions. Retrieved April 24, 2024.
+ "Duolingo for Schools". schools.duolingo.com. Retrieved September 8, 2024.
+ "Make screentime COUNT for your kids!". teach mama. September 15, 2020. Archived from the original on July 10, 2022. Retrieved May 31, 2022.
+ "Duolingo ABC: Unlocking the magic of reading". Duolingo Blog. August 26, 2020. Archived from the original on May 18, 2022. Retrieved May 31, 2022.
+ "Loog x Duolingo Piano". Duolingo Store. Retrieved September 25, 2024.
+ Lal, Preeti Verma (March 10, 2024). "Study Abroad: All About Duolingo English Test accepted by over 5,000 programs worldwide". Hindustan Times. Archived from the original on June 6, 2024. Retrieved June 7, 2024.
+ Durrani, Anayat (December 8, 2023). "Duolingo English Test and U.S. College Admissions". U.S. News & World Report. Archived from the original on May 26, 2024. Retrieved June 7, 2024.
+ Duolingo (October 11, 2023). Introducing The Duolingo Method - How does Duolingo teach new subjects?. Retrieved August 2, 2024 – via YouTube.
+ Brockbank, Dayna (October 5, 2020). "Everything You Need to Know About Duolingo Stories • Happily Ever Travels". Happily Ever Travels. Archived from the original on October 7, 2021. Retrieved August 26, 2021.
+ Pajak, Bozena; Tsai, Karin (December 11, 2019). "How we've improved the Duolingo learning experience this year (and a sneak peek toward 2020!)". Duolingo Blog. Archived from the original on July 30, 2021. Retrieved August 26, 2021.
+ "Duolingo" (PDF). TESL-EJ. Archived (PDF) from the original on January 22, 2022. Retrieved December 31, 2021.
+ Yancey, Kevin P.; Settles, Burr (August 20, 2020). "A Sleeping, Recovering Bandit Algorithm for Optimizing Recurring Notifications" (PDF). Proceedings of the 26th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining. California, United States: Association for Computing Machinery. pp. 3008–3016. doi:10.1145/3394486.3403351. ISBN 978-1-4503-7998-4.
+ Fians, Guilherme (2021). Esperanto Revolutionaries and Geeks: Language Politics, Digital Media and the Making of an International Community. London and New York: Palgrave Macmillan. doi:10.1007/978-3-030-84230-7. ISBN 978-3-030-84229-1. S2CID 245721938. Archived from the original on October 31, 2022. Retrieved December 2, 2022.
+ Duolingo Path (September 7, 2024). Duolingo Clash. Retrieved September 8, 2024 – via YouTube.
+ "Become a Duolingo character with our new Avatars!". Duolingo Blog. July 19, 2023. Retrieved September 8, 2024.
+ Huynh, Duy; Zuo, Long; Iida, Hiroyuki (2016). "Analyzing Gamification of "Duolingo" with Focus on its Course Structure". Games and Learning Alliance. Lecture Notes in Computer Science. Vol. 10056. Springer, Cham. pp. 268–277. doi:10.1007/978-3-319-50182-6_24. ISBN 978-3319501819.
+ "Duolingo is bringing language, math, and music under one roof!". Duolingo Blog. October 11, 2023. Retrieved April 25, 2024.
+ "Friend Streak: a new way to stay motivated together". Duolingo Blog. August 5, 2024. Retrieved September 8, 2024.
+ "Duolingo shareholder letter 2022". Archived from the original on May 12, 2022. Retrieved May 28, 2022.
+ Doughty, Nate (April 8, 2020). "Duolingo passes one million paid users, expands with new hires". Pittsburgh Business Times. Archived from the original on January 22, 2021. Retrieved December 12, 2020.
+ "Duolingo Announces Record Bookings in First Quarter 2022 and Raises Full Year Guidance". Archived from the original on May 25, 2022. Retrieved May 25, 2022.
+ "Duolingo Reports 62% DAU Growth, 42% Revenue Growth, and Increased Profitability in First Quarter 2023; Raises Full Year Guidance". Archived from the original on May 31, 2023. Retrieved May 31, 2023.
+ Shijia, Ouyang (December 13, 2019). "Language-learning app Duolingo bullish on Chinese market". China Daily. Archived from the original on December 14, 2019. Retrieved December 14, 2019.
+ Adams, Susan. "Game of Tongues: How Duolingo Built A $700 Million Business With Its Addictive Language-Learning App". Forbes. Archived from the original on July 23, 2019. Retrieved December 14, 2019.
+ "Duolingo CEO talks earnings, paid subscribers, and the stock's performance". Yahoo! Finance (an article with a transcription from a video report). May 19, 2022. Archived from the original on May 19, 2022. Retrieved August 8, 2024.
+ Rachels, Jason R.; Rockinson-Szapkiw, Amanda J. (2018). "The effects of a mobile gamification app on elementary students' Spanish achievement and self-efficacy". Computer Assisted Language Learning. 31 (1–2). Routledge: 72–89. doi:10.1080/09588221.2017.1382536. S2CID 67064098.
+ Hu, Jane C. (November 29, 2021). "Why Are Duolingo's Sentences So Weird?". Slate. ISSN 1091-2339. Retrieved July 26, 2024.
+ Loof, Esther De; Ergo, Kate; Naert, Lien; Janssens, Clio; Talsma, Durk; Opstal, Filip Van; Verguts, Tom (January 2, 2018). "Signed reward prediction errors drive declarative learning". PLOS ONE. 13 (1): e0189212. Bibcode:2018PLoSO..1389212D. doi:10.1371/journal.pone.0189212. ISSN 1932-6203. PMC 5749691. PMID 29293493.
+ Benoît, Christian; Grice, Martine; Hazan, Valérie (1996). "The SUS test: A method for the assessment of text-to-speech synthesis intelligibility using Semantically Unpredictable Sentences". Speech Communication. 18 (4): 381–392. doi:10.1016/0167-6393(96)00026-X.
+ Jiang, Xiangying; Rollinson, Joseph; Plonsky, Luke; Gustafson, Erin; Pajak, Bozena (January 11, 2022). "Evaluating the reading and listening outcomes of beginning-level Duolingo courses". Foreign Language Annals. 54 (4): 974–1002. doi:10.1111/flan.12600. ISSN 0015-718X. S2CID 245892888.
+ Saad, Suziana Mat; Rahim, Nur Ameera Abd (2022). "Vocabulary Acquisition Using Duolingo in French Language Learning: A Malaysian Context". E-Bangi: Journal of Social Sciences & Humanities. 19 (2): 256–281. eISSN 1823-884X.
+ "Duolingo Really Works - Learn more about how Duolingo works for learners". Duolingo. Archived from the original on May 30, 2024. Retrieved June 6, 2024.
+ Jiang, Xiangying; Chen, Haoyu; Portnof, Lucy; Gustafson, Erin; Rollinson, Joseph; Plonsky, Luke; Pajak, Bozena (November 11, 2021). "Finishing half of B1 on Duolingo comparable to five university semesters in reading and listening" (PDF). Duolingo. DRR-21-03. Archived (PDF) from the original on June 2, 2024.
+ Rodríguez-Fuentes, Rodrigo A.; Swatek, Aleksandra (December 14, 2023). Ariel, Robert; Jiang, Xiangying (eds.). "A Comparison Between Classroom and MALL Instruction with Duolingo: Learning English at the A2 CEFR Level" (PDF). Amazon Web Services.
+ González-Fernández, Beatriz (November 30, 2023). "The effectiveness of Duolingo vs. classroom instruction on Spanish speakers' L2 English proficiency and lexical development" (PDF). Amazon Web Services. Archived (PDF) from the original on June 2, 2024.
+ Heaney, Katie (January 25, 2019). "Is It Just Me, or Does Duolingo Not Work?". The Cut. Archived from the original on July 9, 2019. Retrieved November 24, 2023.
+ Ravenscraft, Eric (May 4, 2019). "500 Days of Duolingo: What You Can (and Can't) Learn From a Language App". The New York Times. Archived from the original on November 24, 2023. Retrieved November 24, 2023.
+ Estigarribia, Bruno (2020). A Grammar of Paraguayan Guarani. London: UCL Press. p. 23. doi:10.14324/111.9781787352872. ISBN 978-1-78735-287-2.
+ Guthrie, Robert (June 5, 2023). "Duolingo Is An App For Language-Learning, So Why Is It Plagued With Cheaters?". Kotaku. Archived from the original on June 6, 2023. Retrieved June 6, 2023.
+ "Forum Announcement + FAQ". Duolingo. Archived from the original on March 4, 2024. Retrieved June 6, 2024.
+ "How do I report a problem with a sentence or translation?". Duolingo. Archived from the original on September 23, 2023. Retrieved August 12, 2024.
+ Greig, Jonathan (January 24, 2023). "DuoLingo investigating dark web post offering data from 2.6 million accounts". The Record. Archived from the original on October 12, 2023. Retrieved June 6, 2024.
+ Mascellino, Alessandro (August 24, 2023). "Data of 2.6M Duolingo Users Leaked on Hacking Forum". Infosecurity Magazine. Archived from the original on February 21, 2024. Retrieved June 6, 2024.
+ Naprys, Ernestas (November 15, 2023). "Hackers exposed 2.6 million Duolingo users, more available for scraping". Cybernews. Archived from the original on March 3, 2024. Retrieved June 6, 2024.
+ McCarthy, James; Evans, Owain (October 24, 2023). "Welsh course to be 'paused' on language app Duolingo". Additional reporting by Dan Moffat. BBC. Archived from the original on February 10, 2024. Retrieved March 27, 2024.
+ Aitken, Catriona (October 30, 2023). "Duolingo: Language app boss to help Welsh language goal". BBC News. Archived from the original on April 4, 2024. Retrieved June 7, 2024.
+ Hockenson, Lauren (December 17, 2013). "Duolingo snags iPhone App of the Year". Gigaom. Archived from the original on November 12, 2020. Retrieved February 21, 2014.
+ "The World's Most Innovative Companies 2013: Education Honorees". Fast Company. Archived from the original on July 23, 2019. Retrieved December 14, 2019.
+ "The World's Most Innovative Companies 2017: Education Honorees". Fast Company. Archived from the original on January 10, 2020. Retrieved December 14, 2019.
+ "The World's Most Innovative Companies 2017: Social Media Honorees". Fast Company. Archived from the original on January 10, 2020. Retrieved December 14, 2019.
+ Luis. "Duolingo turns two today!". Archived from the original on February 19, 2018. Retrieved November 21, 2014.
+ Empson, Rip (February 12, 2014). "Fast-Growing Duolingo Caps Off a Big Year with the Crunchie for 'Best Education Startup'". TechCrunch. Archived from the original on December 16, 2023. Retrieved October 6, 2023.
+ Abhimanyu Ghoshal (December 11, 2014). "Google Play reveals the most downloaded apps, games and entertainment content from 2014". The Next Web. Archived from the original on November 29, 2020. Retrieved December 29, 2014.
+ "Duolingo Review". PCMAG. Archived from the original on August 26, 2021. Retrieved August 26, 2021.
+ "Duolingo". theindexproject.org. Archived from the original on November 6, 2023. Retrieved October 6, 2023.
+ "Duolingo". Inc.com. Archived from the original on August 1, 2019. Retrieved August 1, 2019.
+ "Top Company Cultures of 2018". Entrepreneur. Archived from the original on February 4, 2023. Retrieved August 1, 2019.
+ "2018 Disruptor 50: No. 35 Duolingo". CNBC. May 22, 2018. Archived from the original on November 5, 2018. Retrieved November 5, 2018.
+ "Duolingo: 2019 Disruptor 50 List". CNBC. May 15, 2019. Archived from the original on October 7, 2019. Retrieved September 4, 2019.
+ "Duolingo Names Gillian Munson to Board of Directors". PR Newswire (Press release). October 7, 2019. Archived from the original on November 20, 2019. Retrieved December 14, 2019.
+ "Duolingo: The 50 Most Genius Companies of 2018". Time. Archived from the original on November 8, 2018. Retrieved November 5, 2018.
+ Feldman, Amy. "Next Billion-Dollar Startups 2019". Forbes. Archived from the original on July 20, 2019. Retrieved July 20, 2019.
+ T., Puja; Ghadashi, S.; Sethi, N. N. (June 9, 2023). "Duolingo wins Apple Design Award for innovation in design". Glamsham. Archived from the original on October 4, 2023. Retrieved June 7, 2024.
+ "Building character: How a cast of characters can help you learn a language". Duolingo Blog. November 10, 2020. Retrieved August 24, 2024.
+ Duolingo (September 26, 2020). Creating Our Duolingo Characters • Greg Hartman • Duocon 2020. Retrieved July 24, 2024 – via YouTube.
+ "How Zari, Bea, Lily, Lucy, and Lin came to life". Duolingo Blog. March 8, 2022. Retrieved September 26, 2024. Archived 11 March 2024 at the Wayback Machine at Duolingo Blog
+ Duolingo (September 30, 2022). Duocon 2022. Retrieved November 25, 2024 – via YouTube.
+ Anderson, Sage (March 27, 2019). "The Duolingo owl is out for vengeance in these threatening memes". Mashable. Archived from the original on January 4, 2021. Retrieved June 7, 2019.
+ Gibbs, Alice (December 5, 2023). "Threatening note from the Duolingo owl leaves internet in stitches". Newsweek. Retrieved June 25, 2024.
+ Bajaj, Sunil (November 23, 2023). "How a 23-year-old graduate helped transform Duolingo's social media marketing". Contagious. Retrieved April 13, 2024.
+ Introducing Duolingo Push. Duolingo. March 31, 2019. Archived from the original on February 18, 2023. Retrieved June 7, 2019 – via YouTube.
+ "How Duolingo Took over the Meme World and What Marketers Can Learn from It". rypl.io. April 30, 2019. Archived from the original on June 7, 2019. Retrieved June 7, 2019.
+ "Lawyer Fights Duolingo Owl for $2,700,000". Duolingo. April 1, 2022. Retrieved April 13, 2024 – via YouTube.
+ "Spanish or Vanish (full song) from Duolingo On Ice". Duolingo. April 2024. Retrieved April 13, 2024 – via YouTube.
+ Veselic, Ana; Alexander, Anne; Chermayeff, Jessica; Gavazzi, Andrea; Goldberg, Alexander; Marotta, Lily; Register, Julia (February 18, 2020). Duolingo X Angry Birds 2: The Team-Up (Trailer). Duolingo – via YouTube.
+ Lee, Madasyn (November 5, 2019). "Pittsburgh-based Duolingo a fan of talk-to-kids 'SNL' sketch". Pittsburgh Tribune-Review. Archived from the original on December 13, 2019. Retrieved December 13, 2019.
+ "Learn a language for free". Duolingo. Retrieved August 1, 2024.
+ "Duo's Taqueria". Duo's Taqueria. Retrieved August 24, 2024.
+ Agarwal, Aakanksha (June 12, 2024). "Duolingo's viral taco shop pulls in $700k in first year". Technical.ly. Retrieved August 24, 2024.
+ Budds, Diana (September 5, 2024). "Inside Duolingo's stunning new NYC office, where employees get to choose where and how they work". Fast Company. Retrieved September 5, 2024.
+ Perez, Sarah (July 9, 2024). "Duolingo acquires Detroit-based design studio Hobbes". TechCrunch. Retrieved July 22, 2024.
+ "Duolingo Careers". careers.duolingo.com. Retrieved November 3, 2024.
+ Inside Duolingo's Stunning New NYC Office: Art Gallery & Innovative Workspaces Revealed!. Retrieved September 7, 2024 – via www.youtube.com.
+ Duolingo Path (September 7, 2024). Duolingo Opens New Office in NYC. Retrieved September 7, 2024 – via YouTube.
+ SeanColombo (September 27, 2024). "I'm not sure, we don…". r/duolingo. Retrieved September 28, 2024.
+ Patel, Nilay (October 14, 2024). "Duolingo CEO Luis von Ahn thinks AI has a lot to teach us". The Verge. Retrieved November 2, 2024.
+External links
+Duolingo
+at Wikipedia's sister projects
+Media from Commons
+Data from Wikidata
+Official website Edit this at Wikidata
+Business data for Duolingo, Inc.: BloombergGoogleReutersSEC filingsYahoo!
+vte
+Duolingo
+Services	
+Language coursesABCMathMusicEnglish Test
+
+People	
+Founders	
+Luis von AhnSeverin Hacker
+Key people	
+Luis von Ahn (CEO)Severin Hacker (CTO)Cammie Dunaway (CMO)Linda Simensky (Head of Animation and Scripted Content)Alina von Davier (Chief of Assessment)
+ Category Commons
+vte
+S&P 400 companies
+Categories: Duolingo2011 establishments in Pennsylvania2021 initial public offeringsAmerican educational websitesAndroid (operating system) gamesAndroid (operating system) softwareCompanies based in PittsburghCompanies in the S&P 400Companies listed on the NasdaqEducation companies established in 2011Educational math softwareEsperanto educationInternet memesInternet properties established in 2011IOS gamesIOS softwareLanguage assessmentMusical training softwareProprietary language learning software
+This page was last edited on 14 December 2024, at 04:03 (UTC).
+Text is available under the Creative Commons Attribution-ShareAlike 4.0 License; additional terms may apply. By using this site, you agree to the Terms of Use and Privacy Policy. Wikipedia® is a registered trademark of the Wikimedia Foundation, Inc., a non-profit organization.
+Privacy policyAbout WikipediaDisclaimersContact WikipediaCode of ConductDevelopersStatisticsCookie statementMobile view
+Wikimedia FoundationPowered by MediaWiki
