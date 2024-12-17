@@ -10,33 +10,14 @@ import {
   SidebarGroup,
   SidebarGroupContent,
 } from "@/components/ui/sidebar";
-import { useScrollSync } from "@/app/components/blocks/layout/scroll-sync";
-import { useBlockToc } from "@/app/components/blocks/layout/use-block-toc";
+import { useScrollSync } from "./scroll-sync";
+import { useBlockToc } from "./use-block-toc";
+import type { NavigationItem, NavigationSection } from "@/app/types/navigation";
 
 interface BlockNavigationProps {
-  sections?: {
-    id: string;
-    title: string;
-    items: {
-      id: string;
-      title: string;
-      href?: string;
-      onClick?: () => void;
-    }[];
-  }[];
+  sections?: NavigationSection[];
   className?: string;
   containerSelector?: string;
-}
-
-interface Section {
-  id: string;
-  title: string;
-  items: {
-    id: string;
-    title: string;
-    href?: string;
-    onClick?: () => void;
-  }[];
 }
 
 export const BlockNavigation = ({
@@ -57,7 +38,7 @@ export const BlockNavigation = ({
     }
   };
 
-  const renderItems = (items: any[]) => {
+  const renderItems = (items: NavigationItem[]) => {
     return items.map((item) => (
       <React.Fragment key={item.id}>
         <SidebarMenuItem>
@@ -108,7 +89,7 @@ export const BlockNavigation = ({
         On this page
       </div>
 
-      {sections.map((section: Section) => (
+      {sections.map((section) => (
         <SidebarGroup key={section.id} className="px-1">
           <SidebarGroupContent>
             <SidebarMenu>{renderItems(section.items)}</SidebarMenu>

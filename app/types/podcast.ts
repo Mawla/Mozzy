@@ -4,7 +4,6 @@ import {
   Section,
   ContentAnalysis,
 } from "@/app/schemas/podcast/analysis";
-import { MetricData } from "@/app/components/blocks/types";
 
 export interface TimelineEvent {
   title: string;
@@ -12,6 +11,12 @@ export interface TimelineEvent {
   date: string;
   type: "milestone" | "event" | "decision";
   importance: "high" | "medium" | "low";
+}
+
+export interface MetricData {
+  label: string;
+  value: string | number;
+  icon?: React.ReactNode;
 }
 
 export interface ProcessedPodcast extends Omit<ContentAnalysis, "themes"> {

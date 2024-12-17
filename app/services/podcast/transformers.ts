@@ -4,7 +4,18 @@ import {
   FieldMetadata,
   SectionMetadata,
 } from "@/app/types/metadata";
-import { BlockRow, BlockConfig } from "@/app/components/blocks/block-builder";
+import { BlockRow, BlockConfig } from "@/app/types/blocks";
+
+export function transformToBlocks(analysis?: ProcessedPodcast): BlockRow[] {
+  if (!analysis) return [];
+
+  return [
+    transformQuickFacts(analysis),
+    transformMetrics(analysis),
+    transformKeyPoints(analysis),
+    transformThemes(analysis),
+  ];
+}
 
 export function transformPodcastData(
   podcast: Podcast,
@@ -99,21 +110,24 @@ function transformQuickFacts(analysis: ProcessedPodcast): BlockRow {
     showDescription: false,
   };
 
-  return {
-    id: "quick-facts",
-    blocks: [
+  const block: BlockConfig = {
+    id: "quick-facts-block",
+    layout: "full",
+    sections: [
       {
-        id: "quick-facts-block",
-        layout: "full",
-        sections: [
-          {
-            title: "Quick Facts",
-            fields,
-            metadata: sectionMetadata,
-          },
-        ],
+        title: "Quick Facts",
+        fields,
+        metadata: sectionMetadata,
       },
     ],
+    metadata: {
+      placement: "sidebar",
+    },
+  };
+
+  return {
+    id: "quick-facts",
+    blocks: [block],
   };
 }
 
@@ -135,28 +149,28 @@ function transformKeyPoints(analysis: ProcessedPodcast): BlockRow {
     background: true,
   };
 
-  return {
-    id: "key-points",
-    blocks: [
+  const block: BlockConfig = {
+    id: "key-points-block",
+    layout: "full",
+    sections: [
       {
-        id: "key-points-block",
-        layout: "full",
-        sections: [
+        title: "Key Points",
+        fields: [
           {
-            title: "Key Points",
-            fields: [
-              {
-                type: "list",
-                label: "Main Takeaways",
-                value: analysis.keyPoints,
-                metadata: fieldMetadata,
-              } as ViewField,
-            ],
-            metadata: sectionMetadata,
-          },
+            type: "list",
+            label: "Main Takeaways",
+            value: analysis.keyPoints,
+            metadata: fieldMetadata,
+          } as ViewField,
         ],
+        metadata: sectionMetadata,
       },
     ],
+  };
+
+  return {
+    id: "key-points",
+    blocks: [block],
   };
 }
 
@@ -175,29 +189,32 @@ function transformMetrics(analysis: ProcessedPodcast): BlockRow {
     showDescription: false,
   };
 
-  return {
-    id: "metrics",
-    blocks: [
+  const block: BlockConfig = {
+    id: "metrics-block",
+    layout: "full",
+    sections: [
       {
-        id: "metrics-block",
-        layout: "full",
-        sections: [
-          {
-            title: "Key Metrics",
-            fields: analysis.metrics.map(
-              (metric) =>
-                ({
-                  type: "number",
-                  label: metric.label,
-                  value: metric.value,
-                  metadata: fieldMetadata,
-                } as ViewField)
-            ),
-            metadata: sectionMetadata,
-          },
-        ],
+        title: "Key Metrics",
+        fields: analysis.metrics.map(
+          (metric) =>
+            ({
+              type: "number",
+              label: metric.label,
+              value: metric.value,
+              metadata: fieldMetadata,
+            } as ViewField)
+        ),
+        metadata: sectionMetadata,
       },
     ],
+    metadata: {
+      placement: "sidebar",
+    },
+  };
+
+  return {
+    id: "metrics",
+    blocks: [block],
   };
 }
 
@@ -366,46 +383,4 @@ function transformSections(analysis: ProcessedPodcast): BlockRow {
       },
     ],
   };
-}
-
-export function transformToBlocks(
-  analysis: ProcessedPodcast | undefined | null
-): BlockRow[] {
-  // Return empty array if analysis is not provided
-  if (!analysis) {
-    return [];
-  }
-
-  const rows: BlockRow[] = [];
-
-  // Add quick facts to the sidebar
-  if (analysis.quickFacts) {
-    rows.push(transformQuickFacts(analysis));
-  }
-
-  // Add metrics to the sidebar
-  if (analysis.metrics?.length > 0) {
-    rows.push(transformMetrics(analysis));
-  }
-
-  // Add key points
-  if (analysis.keyPoints?.length > 0) {
-    rows.push(transformKeyPoints(analysis));
-  }
-
-  // Add main content blocks
-  if (analysis.themes?.length > 0) {
-    rows.push(transformThemes(analysis));
-  }
-
-  if (analysis.timeline?.length > 0) {
-    rows.push(transformTimeline(analysis));
-  }
-
-  // Add sections
-  if (analysis.sections?.length > 0) {
-    rows.push(transformSections(analysis));
-  }
-
-  return rows;
 }

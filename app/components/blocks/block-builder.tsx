@@ -1,21 +1,9 @@
 import * as React from "react";
 import { BaseView } from "./base-block";
-import { ViewSection } from "@/app/types/metadata";
+import type { BlockConfig, BlockRow } from "@/app/types/blocks";
+import type { BlockBuilderProps } from "@/app/types/renderer";
 
-export interface BlockConfig {
-  id: string;
-  layout: "full" | "half" | "third";
-  sections: ViewSection[];
-}
-
-export interface BlockRow {
-  id: string;
-  blocks: BlockConfig[];
-}
-
-interface BlockBuilderProps {
-  rows: BlockRow[];
-}
+export type { BlockConfig, BlockRow };
 
 export function BlockBuilder({ rows }: BlockBuilderProps) {
   return (

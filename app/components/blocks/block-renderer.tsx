@@ -1,104 +1,112 @@
 "use client";
 
 import * as React from "react";
-import { BlockBuilder } from "./block-builder";
-import { BlockRow } from "./block-builder";
-import {
-  BlockLayout,
-  BlockNavigation,
-  BlockSidebar,
-  BlockContent,
-} from "./layout";
+import { BlockBuilder, type BlockRow } from "./block-builder";
+import { BlockLayout } from "./layout/block-layout";
+import { BlockNavigation } from "./layout/block-navigation";
+import { BlockSidebar } from "./layout/block-sidebar";
+import { BlockContent } from "./layout/block-content";
+import { cn } from "@/lib/utils";
+import type { NavigationSection } from "@/app/types/navigation";
+import type { BlockRendererProps } from "@/app/types/renderer";
 
-export interface BlockRendererProps {
-  blocks: BlockRow[];
-  title?: string;
-  subtitle?: string;
-  actions?: React.ReactNode;
-  className?: string;
-}
-
-export const BlockRenderer = ({
+export function BlockRenderer({
   blocks,
   title,
   subtitle,
   actions,
   className,
-}: BlockRendererProps) => {
-  // Separate blocks into main content and sidebar
-  const sidebarBlocks = blocks.filter(
-    (row) => row.id === "quick-facts" || row.id === "metrics"
+}: BlockRendererProps) {
+  // Split blocks into main content and sidebar
+  const mainBlocks = React.useMemo(
+    () =>
+      blocks.filter(
+        (row) =>
+          !row.blocks.some((block) => block.metadata?.placement === "sidebar")
+      ),
+    [blocks]
   );
-  const mainBlocks = blocks.filter(
-    (row) => row.id !== "quick-facts" && row.id !== "metrics"
+
+  const sidebarBlocks = React.useMemo(
+    () =>
+      blocks.filter((row) =>
+        row.blocks.some((block) => block.metadata?.placement === "sidebar")
+      ),
+    [blocks]
   );
 
-  // Create navigation sections based on main blocks
-  const navigationSections = [
-    {
-      id: "main",
-      title: "Main Sections",
-      items: mainBlocks.map((block) => {
-        const title = block.blocks[0]?.sections[0]?.title || "";
-        return {
-          id: block.id,
-          title: title,
-        };
-      }),
-    },
-  ];
+  // Create navigation sections from blocks
+  const navigationSections = React.useMemo<NavigationSection[]>(
+    () => [
+      {
+        id: "main",
+        title: "Main Sections",
+        items: mainBlocks.map((row) => ({
+          id: row.id,
+          title: row.blocks[0]?.sections[0]?.title || "",
+          onClick: () => {
+            const element = document.querySelector(
+              `[data-section-id="${row.id}"]`
+            );
+            if (element) {
+              element.scrollIntoView({ behavior: "smooth" });
+              window.history.pushState({}, "", `#${row.id}`);
+            }
+          },
+        })),
+      },
+    ],
+    [mainBlocks]
+  );
 
-  // Transform sidebar blocks into block sidebar sections
-  const sidebarSections = sidebarBlocks.map((block) => ({
-    id: block.id,
-    title: block.blocks[0]?.sections[0]?.title || "",
-    content: <BlockBuilder rows={[block]} />,
-  }));
-
-  // Render each main block as a block section
-  const renderMainBlocks = (blocks: BlockRow[]) => {
-    return blocks.map((block) => (
-      <div
-        key={block.id}
-        id={block.id}
-        data-section-id={block.id}
-        className="mb-8"
-      >
-        <BlockBuilder rows={[block]} />
-      </div>
-    ));
-  };
+  // Create sidebar sections
+  const sidebarSections = React.useMemo(
+    () =>
+      sidebarBlocks.map((row) => ({
+        id: row.id,
+        title: row.blocks[0]?.sections[0]?.title || "",
+        content: <BlockBuilder rows={[row]} />,
+      })),
+    [sidebarBlocks]
+  );
 
   return (
-    <div className="flex flex-col min-h-0 flex-1 bg-background">
-      {/* Header */}
-      {(title || subtitle || actions) && (
-        <div className="flex-none border-b border-border bg-card">
-          <div className="flex items-center justify-between h-[60px] px-6">
-            <div>
-              {title && <h1 className="text-2xl font-bold">{title}</h1>}
+    <BlockLayout
+      navigation={<BlockNavigation sections={navigationSections} />}
+      sidebar={
+        sidebarBlocks.length > 0 ? (
+          <BlockSidebar sections={sidebarSections} />
+        ) : undefined
+      }
+      defaultNavigationWidth={160}
+      defaultSidebarWidth={320}
+      className={className}
+    >
+      <BlockContent>
+        {(title || subtitle || actions) && (
+          <div className="sticky top-0 z-10 flex items-center justify-between gap-4 bg-background/95 px-6 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="flex-1 space-y-1">
+              {title && (
+                <h1 className="text-2xl font-semibold tracking-tight">
+                  {title}
+                </h1>
+              )}
               {subtitle && (
-                <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                  {subtitle}
-                </div>
+                <div className="text-sm text-muted-foreground">{subtitle}</div>
               )}
             </div>
             {actions && (
               <div className="flex items-center gap-2">{actions}</div>
             )}
           </div>
+        )}
+        <div
+          className={cn("px-6 pb-6", !title && !subtitle && !actions && "pt-6")}
+          data-block-main-content
+        >
+          <BlockBuilder rows={mainBlocks} />
         </div>
-      )}
-
-      {/* Block Layout */}
-      <BlockLayout
-        navigation={<BlockNavigation sections={navigationSections} />}
-        sidebar={<BlockSidebar sections={sidebarSections} />}
-        defaultNavigationWidth={160}
-        defaultSidebarWidth={320}
-      >
-        <BlockContent>{renderMainBlocks(mainBlocks)}</BlockContent>
-      </BlockLayout>
-    </div>
+      </BlockContent>
+    </BlockLayout>
   );
-};
+}
