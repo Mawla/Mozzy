@@ -3,58 +3,79 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { TimelineView } from "./timeline-block";
-
-export type ViewField = {
-  type:
-    | "text"
-    | "number"
-    | "badge"
-    | "list"
-    | "grid"
-    | "comparison"
-    | "timeline";
-  label: string;
-  value: any;
-  variant?: string;
-  metadata?: Record<string, any>;
-};
-
-export type ViewSection = {
-  title: string;
-  description?: string;
-  fields: ViewField[];
-};
+import {
+  ViewField,
+  ViewSection,
+  BlockMetadata,
+  ViewFieldType,
+} from "@/app/types/metadata";
 
 interface BaseViewProps {
   sections: ViewSection[];
+  metadata?: BlockMetadata;
 }
 
-export function BaseView({ sections }: BaseViewProps) {
+export function BaseView({ sections, metadata }: BaseViewProps) {
   const renderField = (field: ViewField) => {
+    const fieldMetadata = field.metadata || {};
+    const fieldClasses = cn(
+      "text-sm",
+      fieldMetadata.variant === "compact" && "text-xs",
+      fieldMetadata.variant === "expanded" && "text-base",
+      fieldMetadata.interactive &&
+        "cursor-pointer hover:bg-accent/50 rounded p-1 transition-colors"
+    );
+
     switch (field.type) {
       case "badge":
         return (
-          <Badge variant={field.variant as any} className="text-sm">
+          <Badge variant={field.variant as any} className={fieldClasses}>
             {field.value}
           </Badge>
         );
       case "list":
+        const listClasses = cn(
+          "space-y-2",
+          fieldMetadata.renderAs === "grid" &&
+            "grid grid-cols-2 gap-4 space-y-0",
+          fieldMetadata.gap && `gap-${fieldMetadata.gap}`
+        );
+
+        const items = fieldMetadata.maxItems
+          ? field.value.slice(0, fieldMetadata.maxItems)
+          : field.value;
+
         return (
-          <ul className="list-disc pl-4 space-y-2">
-            {field.value.map((item: string, i: number) => (
-              <li key={i} className="text-sm">
+          <div className={listClasses}>
+            {items.map((item: string, i: number) => (
+              <div key={i} className={fieldClasses}>
                 {item}
-              </li>
+              </div>
             ))}
-          </ul>
+            {fieldMetadata.showMore &&
+              field.value.length > (fieldMetadata.maxItems || 0) && (
+                <div className="text-sm text-muted-foreground cursor-pointer hover:text-foreground">
+                  Show {field.value.length - (fieldMetadata.maxItems || 0)}{" "}
+                  more...
+                </div>
+              )}
+          </div>
         );
       case "grid":
+        const gridClasses = cn(
+          "grid gap-4",
+          fieldMetadata.columns
+            ? `grid-cols-${fieldMetadata.columns}`
+            : "grid-cols-2",
+          fieldMetadata.gap && `gap-${fieldMetadata.gap}`
+        );
+
         return (
-          <div className="grid grid-cols-2 gap-4">
+          <div className={gridClasses}>
             {field.value.map((item: any, i: number) => (
               <div key={i} className="space-y-2">
                 {Object.entries(item).map(([key, value]) => (
-                  <div key={key}>
+                  <div key={key} className={fieldClasses}>
                     <span className="font-medium">{key}: </span>
                     <span>{String(value)}</span>
                   </div>
@@ -64,42 +85,79 @@ export function BaseView({ sections }: BaseViewProps) {
           </div>
         );
       case "comparison":
+        const comparisonMetadata = fieldMetadata.comparison || {};
         return (
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <h4 className="font-medium mb-2">{field.metadata?.leftLabel}</h4>
+              <h4 className="font-medium mb-2">
+                {comparisonMetadata.leftLabel}
+              </h4>
               {renderField({
                 ...field,
                 value: field.value.left,
-                type: field.metadata?.subType,
+                type: comparisonMetadata.subType || "text",
               })}
             </div>
             <div>
-              <h4 className="font-medium mb-2">{field.metadata?.rightLabel}</h4>
+              <h4 className="font-medium mb-2">
+                {comparisonMetadata.rightLabel}
+              </h4>
               {renderField({
                 ...field,
                 value: field.value.right,
-                type: field.metadata?.subType,
+                type: comparisonMetadata.subType || "text",
               })}
             </div>
           </div>
         );
       case "timeline":
+        const timelineMetadata = fieldMetadata.timeline || {};
         return (
           <TimelineView
             title={field.label}
             events={field.value}
-            description={field.metadata?.description}
+            description={timelineMetadata.description}
           />
         );
       default:
-        return <p className="text-sm text-muted-foreground">{field.value}</p>;
+        return <p className={fieldClasses}>{field.value}</p>;
     }
   };
 
+  const renderSectionContent = (section: ViewSection) => {
+    const sectionMetadata = section.metadata || {};
+    const contentClasses = cn(
+      "space-y-4",
+      sectionMetadata.spacing === "sm" && "space-y-2",
+      sectionMetadata.spacing === "lg" && "space-y-6",
+      sectionMetadata.padding === "sm" && "p-2",
+      sectionMetadata.padding === "md" && "p-4",
+      sectionMetadata.padding === "lg" && "p-6"
+    );
+
+    return (
+      <div className={contentClasses}>
+        {section.fields.map((field, j) => (
+          <div key={j} className="space-y-2">
+            <h4 className="font-medium">{field.label}</h4>
+            {renderField(field)}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const blockClasses = cn(
+    "space-y-4",
+    metadata?.spacing === "sm" && "space-y-2",
+    metadata?.spacing === "lg" && "space-y-6"
+  );
+
   return (
-    <div className="space-y-4">
+    <div className={blockClasses}>
       {sections.map((section, i) => {
+        const sectionMetadata = section.metadata || {};
+
         // Check if the section contains only a timeline field
         const isTimelineSection =
           section.fields.length === 1 && section.fields[0].type === "timeline";
@@ -109,27 +167,43 @@ export function BaseView({ sections }: BaseViewProps) {
           return renderField(section.fields[0]);
         }
 
+        // If noCard is true, render without Card wrapper
+        if (sectionMetadata.noCard) {
+          return <div key={i}>{renderSectionContent(section)}</div>;
+        }
+
+        // Build card classes based on metadata
+        const cardClasses = cn(
+          sectionMetadata.variant === "bordered" && "border-2",
+          sectionMetadata.variant === "plain" &&
+            "border-0 shadow-none bg-transparent",
+          !sectionMetadata.rounded && "rounded-none",
+          !sectionMetadata.shadow && "shadow-none",
+          !sectionMetadata.background && "bg-transparent"
+        );
+
+        // Build title classes based on metadata
+        const titleClasses = cn(
+          sectionMetadata.titleSize === "sm" && "text-sm",
+          sectionMetadata.titleSize === "lg" && "text-lg",
+          sectionMetadata.titleSize === "xl" && "text-xl"
+        );
+
         // Otherwise, render the normal Card layout
         return (
-          <Card key={i}>
-            <CardHeader>
-              <CardTitle>{section.title}</CardTitle>
-              {section.description && (
-                <p className="text-sm text-muted-foreground">
-                  {section.description}
-                </p>
-              )}
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {section.fields.map((field, j) => (
-                  <div key={j} className="space-y-2">
-                    <h4 className="font-medium">{field.label}</h4>
-                    {renderField(field)}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
+          <Card key={i} className={cardClasses}>
+            {sectionMetadata.showTitle !== false && (
+              <CardHeader>
+                <CardTitle className={titleClasses}>{section.title}</CardTitle>
+                {section.description &&
+                  sectionMetadata.showDescription !== false && (
+                    <p className="text-sm text-muted-foreground">
+                      {section.description}
+                    </p>
+                  )}
+              </CardHeader>
+            )}
+            <CardContent>{renderSectionContent(section)}</CardContent>
           </Card>
         );
       })}

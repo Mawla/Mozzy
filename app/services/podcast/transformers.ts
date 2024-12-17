@@ -1,6 +1,10 @@
 import { ProcessedPodcast, Podcast } from "@/app/types/podcast";
+import {
+  ViewField,
+  FieldMetadata,
+  SectionMetadata,
+} from "@/app/types/metadata";
 import { BlockRow, BlockConfig } from "@/app/components/blocks/block-builder";
-import { ViewField } from "@/app/components/blocks/base-block";
 
 export function transformPodcastData(
   podcast: Podcast,
@@ -18,8 +22,16 @@ function transformTheme(
   theme: { name: string; description: string; relatedConcepts: string[] },
   index: number
 ): ViewField {
+  const metadata: FieldMetadata = {
+    layout: "grid",
+    columns: 1,
+    gap: 4,
+    variant: "bordered",
+    interactive: true,
+  };
+
   return {
-    type: "grid" as const,
+    type: "grid",
     label: theme.name,
     value: [
       {
@@ -27,36 +39,65 @@ function transformTheme(
         concepts: theme.relatedConcepts,
       },
     ],
+    metadata,
   };
 }
 
 function transformQuickFacts(analysis: ProcessedPodcast): BlockRow {
-  const fields = [
+  const fields: ViewField[] = [
     ...(analysis.quickFacts.duration
       ? [
           {
-            type: "text" as const,
+            type: "text",
             label: "Duration",
             value: analysis.quickFacts.duration,
-          },
+            metadata: {
+              variant: "compact",
+              iconPosition: "left",
+            },
+          } as ViewField,
         ]
       : []),
     {
-      type: "list" as const,
+      type: "list",
       label: "Participants",
       value: analysis.quickFacts.participants,
-    },
+      metadata: {
+        renderAs: "grid",
+        columns: 1,
+        gap: 2,
+        interactive: true,
+        maxItems: 5,
+        showMore: true,
+      },
+    } as ViewField,
     {
-      type: "text" as const,
+      type: "text",
       label: "Main Topic",
       value: analysis.quickFacts.mainTopic,
-    },
+      metadata: {
+        variant: "compact",
+        iconPosition: "left",
+      },
+    } as ViewField,
     {
-      type: "text" as const,
+      type: "text",
       label: "Expertise Level",
       value: analysis.quickFacts.expertise,
-    },
+      metadata: {
+        variant: "compact",
+        iconPosition: "left",
+      },
+    } as ViewField,
   ];
+
+  const sectionMetadata: SectionMetadata = {
+    noCard: true,
+    spacing: "sm",
+    padding: "sm",
+    titleSize: "sm",
+    showDescription: false,
+  };
 
   return {
     id: "quick-facts",
@@ -68,6 +109,7 @@ function transformQuickFacts(analysis: ProcessedPodcast): BlockRow {
           {
             title: "Quick Facts",
             fields,
+            metadata: sectionMetadata,
           },
         ],
       },
@@ -76,6 +118,23 @@ function transformQuickFacts(analysis: ProcessedPodcast): BlockRow {
 }
 
 function transformKeyPoints(analysis: ProcessedPodcast): BlockRow {
+  const fieldMetadata: FieldMetadata = {
+    renderAs: "cards",
+    gap: 4,
+    interactive: true,
+    maxItems: 10,
+    showMore: true,
+  };
+
+  const sectionMetadata: SectionMetadata = {
+    variant: "bordered",
+    spacing: "md",
+    padding: "md",
+    shadow: true,
+    rounded: true,
+    background: true,
+  };
+
   return {
     id: "key-points",
     blocks: [
@@ -87,11 +146,13 @@ function transformKeyPoints(analysis: ProcessedPodcast): BlockRow {
             title: "Key Points",
             fields: [
               {
-                type: "list" as const,
+                type: "list",
                 label: "Main Takeaways",
                 value: analysis.keyPoints,
-              },
+                metadata: fieldMetadata,
+              } as ViewField,
             ],
+            metadata: sectionMetadata,
           },
         ],
       },
@@ -100,6 +161,20 @@ function transformKeyPoints(analysis: ProcessedPodcast): BlockRow {
 }
 
 function transformMetrics(analysis: ProcessedPodcast): BlockRow {
+  const fieldMetadata: FieldMetadata = {
+    layout: "metric",
+    iconPosition: "left",
+    variant: "compact",
+  };
+
+  const sectionMetadata: SectionMetadata = {
+    noCard: true,
+    spacing: "sm",
+    padding: "sm",
+    titleSize: "sm",
+    showDescription: false,
+  };
+
   return {
     id: "metrics",
     blocks: [
@@ -109,11 +184,16 @@ function transformMetrics(analysis: ProcessedPodcast): BlockRow {
         sections: [
           {
             title: "Key Metrics",
-            fields: analysis.metrics.map((metric) => ({
-              type: "number" as const,
-              label: metric.label,
-              value: metric.value,
-            })),
+            fields: analysis.metrics.map(
+              (metric) =>
+                ({
+                  type: "number",
+                  label: metric.label,
+                  value: metric.value,
+                  metadata: fieldMetadata,
+                } as ViewField)
+            ),
+            metadata: sectionMetadata,
           },
         ],
       },
@@ -126,6 +206,15 @@ function transformThemes(analysis: ProcessedPodcast): BlockRow {
   const firstHalf = analysis.themes.slice(0, midPoint);
   const secondHalf = analysis.themes.slice(midPoint);
 
+  const sectionMetadata: SectionMetadata = {
+    variant: "bordered",
+    spacing: "md",
+    padding: "md",
+    shadow: true,
+    rounded: true,
+    background: true,
+  };
+
   const blocks: BlockConfig[] = [];
 
   if (firstHalf.length > 0) {
@@ -136,6 +225,7 @@ function transformThemes(analysis: ProcessedPodcast): BlockRow {
         {
           title: "Key Themes",
           fields: firstHalf.map((theme, index) => transformTheme(theme, index)),
+          metadata: sectionMetadata,
         },
       ],
     });
@@ -151,6 +241,7 @@ function transformThemes(analysis: ProcessedPodcast): BlockRow {
           fields: secondHalf.map((theme, index) =>
             transformTheme(theme, index + midPoint)
           ),
+          metadata: sectionMetadata,
         },
       ],
     });
@@ -163,6 +254,23 @@ function transformThemes(analysis: ProcessedPodcast): BlockRow {
 }
 
 function transformTimeline(analysis: ProcessedPodcast): BlockRow {
+  const fieldMetadata: FieldMetadata = {
+    layout: "timeline",
+    interactive: true,
+    timeline: {
+      description: "Timeline of key events and milestones",
+    },
+  };
+
+  const sectionMetadata: SectionMetadata = {
+    variant: "bordered",
+    spacing: "lg",
+    padding: "lg",
+    shadow: true,
+    rounded: true,
+    background: true,
+  };
+
   return {
     id: "timeline",
     blocks: [
@@ -174,7 +282,7 @@ function transformTimeline(analysis: ProcessedPodcast): BlockRow {
             title: "Timeline",
             fields: [
               {
-                type: "timeline" as const,
+                type: "timeline",
                 label: "Event Timeline",
                 value: analysis.timeline.map((event) => ({
                   title: event.title,
@@ -188,8 +296,10 @@ function transformTimeline(analysis: ProcessedPodcast): BlockRow {
                       : "event",
                   importance: event.importance,
                 })),
-              },
+                metadata: fieldMetadata,
+              } as ViewField,
             ],
+            metadata: sectionMetadata,
           },
         ],
       },
@@ -198,6 +308,28 @@ function transformTimeline(analysis: ProcessedPodcast): BlockRow {
 }
 
 function transformSections(analysis: ProcessedPodcast): BlockRow {
+  const contentFieldMetadata: FieldMetadata = {
+    variant: "expanded",
+  };
+
+  const qaFieldMetadata: FieldMetadata = {
+    layout: "grid",
+    columns: 1,
+    gap: 4,
+    interactive: true,
+  };
+
+  const sectionMetadata: SectionMetadata = {
+    variant: "bordered",
+    spacing: "md",
+    padding: "md",
+    shadow: true,
+    rounded: true,
+    background: true,
+    isCollapsible: true,
+    defaultCollapsed: false,
+  };
+
   return {
     id: "sections",
     blocks: [
@@ -208,14 +340,15 @@ function transformSections(analysis: ProcessedPodcast): BlockRow {
           title: section.title,
           fields: [
             {
-              type: "text" as const,
+              type: "text",
               label: "Content",
               value: section.content,
-            },
+              metadata: contentFieldMetadata,
+            } as ViewField,
             ...(section.qa
               ? [
                   {
-                    type: "grid" as const,
+                    type: "grid",
                     label: "Q&A",
                     value: section.qa.map((qa) => ({
                       question: qa.question,
@@ -223,10 +356,12 @@ function transformSections(analysis: ProcessedPodcast): BlockRow {
                       context: qa.context,
                       topics: qa.topics,
                     })),
-                  },
+                    metadata: qaFieldMetadata,
+                  } as ViewField,
                 ]
               : []),
           ],
+          metadata: sectionMetadata,
         })),
       },
     ],
