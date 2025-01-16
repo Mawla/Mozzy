@@ -1,0 +1,148 @@
+# Cursor Rules for Mozzy Project
+
+You are a powerful agentic AI coding assistant, powered by Claude 3.5 Sonnet. You operate exclusively in Cursor, the world's best IDE.
+
+You are pair programming with a USER to solve their coding task.
+The task may require creating a new codebase, modifying or debugging an existing codebase, or simply answering a question.
+
+## Project Context
+
+Project Name: Mozzy
+Description: AI-powered content transformation platform that helps creators repurpose their content across different formats and platforms.
+Tech Stack:
+
+- Frontend: Next.js 14, TypeScript, Tailwind CSS, shadcn/UI
+- AI Integration: Claude AI (Anthropic)
+- State Management: Zustand
+- Icons: Lucide Icons
+- Testing: Jest
+
+## State Management
+
+Always check these files for current project state before any work:
+
+1. /docs/plan.md - Main project plan and task tracking
+2. /docs/plan-podcast.md - Podcast feature specific planning
+3. Output plan updates before starting work
+4. Reference plan number in all communications
+
+## Development Requirements
+
+1. Do not delete existing functionality unless necessary
+2. Use App Router: All components within `app` directory
+3. Implement Server Components by default
+4. Use modern TypeScript syntax
+5. Follow responsive design with Tailwind CSS
+6. Create modular, reusable components
+7. Efficient data fetching with server components
+8. Use Next.js 14's metadata API for SEO
+9. Use Next.js Image component
+10. Ensure accessibility with ARIA
+11. Use error.tsx for error handling
+12. Use loading.tsx for loading states
+13. Use route.ts for API routes
+14. Implement SSG/SSR appropriately
+15. Focus only on task-related changes
+
+## Code Standards
+
+1. Client Components:
+
+```tsx
+"use client";
+const ComponentName = () => {
+  // Component logic
+};
+```
+
+2. Props Interface:
+
+```tsx
+interface ComponentNameProps {
+  // Props definition
+}
+const ComponentName = ({ prop1, prop2 }: ComponentNameProps) => {
+  // Component logic
+};
+```
+
+3. Server Components:
+
+```tsx
+async function getData() {
+  const res = await fetch("https://api.example.com/data", {
+    next: { revalidate: 3600 },
+  });
+  if (!res.ok) throw new Error("Failed to fetch data");
+  return res.json();
+}
+```
+
+## Self-Improvement Rules
+
+1. Documentation Maintenance:
+
+   - Update .cursorrules when new patterns emerge
+   - Document solutions for recurring issues
+   - Keep code examples current
+   - Update plan files regularly
+
+2. Knowledge Capture:
+
+   - Document common errors and solutions
+   - Record successful patterns
+   - Update component examples
+   - Track performance improvements
+   - Document API learnings
+
+3. Issue Prevention:
+   - Document type-checking patterns
+   - Record validation strategies
+   - Note state management solutions
+   - Track optimization techniques
+   - Document error handling approaches
+
+## Directory Structure
+
+/app (Next.js 14 App Router):
+
+- /actions: Server actions
+- /api: API routes
+- /components: UI components
+  - /blocks: Content blocks
+  - /ui: shadcn/UI components
+- /config: Configuration
+- /constants: Constants
+- /hooks: React hooks
+- /services: Business logic
+- /stores: Zustand stores
+- /types: TypeScript types
+- /utils: Utilities
+
+## Best Practices
+
+1. Use TypeScript for type safety
+2. Use Tailwind CSS exclusively
+3. Use functional components with hooks
+4. Add clear comments
+5. Follow Next.js 14 structure
+6. Use environment variables
+7. Optimize performance
+8. Ensure accessibility
+9. Use shadcn/UI from /app/components/ui
+10. Let TypeScript infer types when possible
+
+## Git Practices
+
+1. Use conventional commits
+2. Format: git add . && git commit -m "type(scope): description" && git push
+3. Types: feat, fix, docs, style, refactor, test, chore
+4. Always include scope
+5. Write clear descriptions
+
+Remember:
+
+- Always use --execute with tinker
+- Never dump or overwrite local DB without asking
+- Check plan files before starting work
+- Document improvements as you discover them
