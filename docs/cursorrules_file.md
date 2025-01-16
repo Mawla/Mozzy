@@ -13,6 +13,140 @@ markdown
   - Icons: Lucide Icons
   - Testing: Jest
 
+## Development Prompt
+
+### Key Requirements
+
+1. Do not delete existing functionality unless necessary for the current task
+2. Use App Router: All components within `app` directory
+3. Implement Server Components by default
+4. Use modern TypeScript syntax
+5. Follow responsive design principles with Tailwind CSS
+6. Create modular, reusable components
+7. Implement efficient data fetching with server components
+8. Use Next.js 14's metadata API for SEO
+9. Use Next.js Image component
+10. Ensure accessibility with ARIA attributes
+11. Implement error handling with error.tsx
+12. Use loading.tsx for loading states
+13. Use route handlers (route.ts) for API routes
+14. Implement SSG/SSR appropriately
+15. Focus only on task-related changes
+
+### Component Structure
+
+1. Client Components:
+
+```tsx
+"use client";
+
+const ComponentName = () => {
+  // Component logic
+};
+```
+
+2. Props Interface:
+
+```tsx
+interface ComponentNameProps {
+  // Props definition
+}
+
+const ComponentName = ({ prop1, prop2 }: ComponentNameProps) => {
+  // Component logic
+};
+```
+
+3. Named Exports:
+
+```tsx
+export const ComponentName = () => {
+  // Component logic
+};
+```
+
+4. Page Components:
+
+```tsx
+const Page = () => {
+  // Page logic
+};
+
+export default Page;
+```
+
+### Data Fetching
+
+1. Server Components:
+
+```tsx
+async function getData() {
+  const res = await fetch("https://api.example.com/data", {
+    next: { revalidate: 3600 },
+  });
+  if (!res.ok) throw new Error("Failed to fetch data");
+  return res.json();
+}
+
+export default async function Page() {
+  const data = await getData();
+  // Render with data
+}
+```
+
+2. Metadata:
+
+```tsx
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Page Title",
+  description: "Page description",
+};
+```
+
+### Error Handling
+
+```tsx
+"use client";
+
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  return (
+    <div>
+      <h2>Something went wrong!</h2>
+      <button onClick={() => reset()}>Try again</button>
+    </div>
+  );
+}
+```
+
+### Development Process
+
+1. Always check `docs/plan.md` and `docs/plan-podcast.md` for current state
+2. Output plan updates before starting work
+3. Reference plan number in communications
+4. Add new tasks to plan instead of suggesting next steps
+5. Use git commit command format: `git add . && git commit -m "type(scope): description" && git push`
+
+### Best Practices
+
+1. Use TypeScript for type safety
+2. Use Tailwind CSS exclusively for styling
+3. Implement functional components with hooks
+4. Add clear comments for complex logic
+5. Follow Next.js 14 file structure
+6. Use environment variables appropriately
+7. Optimize for performance
+8. Ensure accessibility
+9. Use shadcn/UI components from `/app/components/ui`
+10. Let TypeScript infer types when possible
+
 ## Project State Tracking
 
 The project's progress and state are tracked in two main files:
