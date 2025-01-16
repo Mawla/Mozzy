@@ -139,6 +139,49 @@ async function getData() {
 3. Types: feat, fix, docs, style, refactor, test, chore
 4. Always include scope
 5. Write clear descriptions
+6. Commit after significant work is completed and tested
+7. Include related changes in a single commit
+8. Keep commits focused and atomic
+9. Reference issue numbers if applicable
+10. Push changes after committing
+
+## Commit Guidelines
+
+1. When to Commit:
+
+   - After completing a significant feature
+   - After fixing a bug
+   - After refactoring code
+   - After updating documentation
+   - After adding tests
+   - After any significant change that works independently
+
+2. Commit Message Structure:
+
+   ```
+   type(scope): brief description
+
+   - Detailed point 1
+   - Detailed point 2
+   ```
+
+3. Types:
+
+   - feat: New feature
+   - fix: Bug fix
+   - docs: Documentation changes
+   - style: Code style changes
+   - refactor: Code refactoring
+   - test: Adding tests
+   - chore: Maintenance tasks
+
+4. Example Commits:
+   ```
+   feat(auth): implement Supabase authentication
+   fix(dashboard): resolve data loading issue
+   docs(api): update endpoint documentation
+   style(components): improve button styling
+   ```
 
 Remember:
 
@@ -146,3 +189,4 @@ Remember:
 - Never dump or overwrite local DB without asking
 - Check plan files before starting work
 - Document improvements as you discover them
+- Commit work after significant progress
