@@ -1,39 +1,255 @@
-### Introduction
+# Mozzy Frontend Guidelines
 
-PodcastFlow Pro is a comprehensive platform designed to transform traditional audio podcasts into dynamic, interactive web content. It empowers podcasters and content marketers by providing tools for advanced transcript processing, dynamic visualization of episodes, and secure user management. The platform is important because it simplifies the entire process from audio recording to audience engagement, providing a seamless user experience and contributing significantly to the reach and effectiveness of content marketing.
+## Introduction
 
-### Frontend Architecture
+Mozzy is an AI-powered content transformation platform that helps creators repurpose their content across different formats and platforms. The frontend architecture is designed to provide a seamless experience for content creation, transformation, and management. This document outlines the key principles, patterns, and best practices for frontend development in Mozzy.
 
-The frontend of PodcastFlow Pro is built using Laravel Livewire, facilitating the creation of modern, dynamic interfaces without leaving the comfort of Laravel's ecosystem. This approach provides efficiency and enhanced performance with minimal JavaScript. Tailwind CSS is utilized for crafting responsive, utility-first designs that ensure consistency across devices. The use of shadcn/UI, Radix UI, and Lucide Icons provides a rich set of ready-made components and icons, expediting the development process and ensuring a cohesive design. This architecture supports scalability and maintainability by modularizing the code and using components across various sections of the application, making it easier to manage and extend.
+## Frontend Architecture
 
-### Design Principles
+### Framework and Core Technologies
 
-Key design principles guiding the frontend development of PodcastFlow Pro include usability, which ensures that the platform is intuitive and easy to navigate, accessibility to cater to users with disabilities, and responsiveness to provide an optimal viewing experience across different devices. These principles are applied through features such as keyboard navigations, ARIA labels for improved accessibility, and responsive layouts that adjust automatically according to screen size, enhancing the overall user experience.
+- **Next.js 14 with App Router**
 
-### Styling and Theming
+  - Server Components by default
+  - Client Components when needed for interactivity
+  - App directory structure for routing
+  - Server Actions for data mutations
 
-The styling approach for PodcastFlow Pro leverages Tailwind CSS, allowing developers to apply utility-first classes directly in HTML for consistent and customizable designs. This method supports efficient theming, where modifications to color schemes or font styles can be propagated across the application quickly, ensuring a consistent look and feel. Tailwind CSS allows for creating themes such as dark mode or minimalist layouts, offering users options to tailor the experience to their preferences.
+- **TypeScript**
 
-### Component Structure
+  - Strict type checking
+  - Interface-first development
+  - Type inference where appropriate
 
-The application follows a component-based structure, where each UI element or feature is encapsulated within its own component. This approach enhances maintainability by allowing developers to reuse components across different parts of the application. Components are organized logically within the project directory, facilitating ease of access and modification as the application grows. This modular system allows for efficient testing and updates, ensuring that changes in one component do not inadvertently affect others.
+- **Styling**
+  - Tailwind CSS for utility-first styling
+  - shadcn/UI for core components
+  - Custom components built on Radix UI primitives
+  - Lucide Icons for consistent iconography
 
 ### State Management
 
-State management is efficiently handled using Laravel Livewire's features, allowing components to share data and respond to changes in real time without writing extensive JavaScript code. This method keeps the state management centralized and efficient, contributing to a smoother user experience as users interact with different parts of the application.
+1. **Zustand for Global State**
 
-### Routing and Navigation
+   ```typescript
+   import create from "zustand";
 
-Routing within PodcastFlow Pro is managed through Laravel’s built-in routing capabilities, enabling the application to handle different routes efficiently and provide a seamless navigation experience. The navigation structure is intuitive, with a clear hierarchy that guides users through various sections—from dashboard management to episode visualization—ensuring that they can easily move between different features.
+   interface Store {
+     count: number;
+     increment: () => void;
+   }
 
-### Performance Optimization
+   export const useStore = create<Store>((set) => ({
+     count: 0,
+     increment: () => set((state) => ({ count: state.count + 1 })),
+   }));
+   ```
 
-Performance optimization is a priority, with strategies such as lazy loading used to defer the loading of non-essential resources until they are needed. Code splitting is implemented to break down the application into smaller bundles that can be loaded on-demand, improving load times. Asset optimization ensures that images, scripts, and styles are compressed and served efficiently, contributing to an overall improved user experience.
+2. **React Hooks for Local State**
 
-### Testing and Quality Assurance
+   ```typescript
+   const useLocalState = () => {
+     const [state, setState] = useState<State>(initialState);
+     // ... state logic
+     return { state, setState };
+   };
+   ```
 
-Testing strategies include a combination of unit tests, integration tests, and end-to-end tests using tools like Laravel Dusk and PHPUnit. These tools ensure that each component functions correctly on its own and when integrated with others. The testing suite is designed to maintain high code quality and reliability, ensuring that new updates do not introduce regressions and that the user experience remains smooth and uninterrupted.
+3. **Server Components for Data Fetching**
+   ```typescript
+   async function getData() {
+     const res = await fetch("api/endpoint", {
+       next: { revalidate: 3600 },
+     });
+     if (!res.ok) throw new Error("Failed to fetch");
+     return res.json();
+   }
+   ```
 
-### Conclusion and Overall Frontend Summary
+## Component Guidelines
 
-In conclusion, the frontend setup for PodcastFlow Pro is tailored to meet the needs of modern podcasters and content marketers by leveraging advanced technologies and design principles. The use of Laravel Livewire enhances the development process by providing a seamless way to integrate dynamic frontend features without extensive use of JavaScript. The modular architecture and use of modern frameworks and libraries foster a scalable, maintainable, and high-performing application. The emphasis on usability, accessibility, and responsiveness aligns with the project’s goals to enhance the user experience and engagement, ultimately differentiating PodcastFlow Pro from other platforms in the market.
+### 1. Server vs Client Components
+
+Server Components (Default):
+
+```typescript
+async function ServerComponent() {
+  const data = await getData();
+  return <div>{data.content}</div>;
+}
+```
+
+Client Components (When needed):
+
+```typescript
+"use client";
+
+const ClientComponent = () => {
+  const [state, setState] = useState();
+  return <button onClick={() => setState()}>Click</button>;
+};
+```
+
+### 2. Component Structure
+
+```typescript
+interface ComponentProps {
+  // Props definition
+}
+
+export const Component = ({ prop1, prop2 }: ComponentProps) => {
+  // Component logic
+  return <div>{/* Component JSX */}</div>;
+};
+```
+
+### 3. Error Handling
+
+```typescript
+"use client";
+
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  return (
+    <div>
+      <h2>Something went wrong!</h2>
+      <button onClick={() => reset()}>Try again</button>
+    </div>
+  );
+}
+```
+
+## Performance Optimization
+
+1. **Server Components**
+
+   - Use Server Components by default
+   - Move client-side logic to leaf components
+   - Implement streaming where appropriate
+
+2. **Image Optimization**
+
+   ```typescript
+   import Image from "next/image";
+
+   export const OptimizedImage = () => (
+     <Image
+       src="/image.jpg"
+       alt="Description"
+       width={800}
+       height={600}
+       priority={true}
+     />
+   );
+   ```
+
+3. **Route Handlers**
+
+   ```typescript
+   import { NextResponse } from "next/server";
+
+   export async function GET() {
+     try {
+       const data = await getData();
+       return NextResponse.json(data);
+     } catch (error) {
+       return NextResponse.error();
+     }
+   }
+   ```
+
+## Accessibility Guidelines
+
+1. **ARIA Attributes**
+
+   ```typescript
+   <button aria-label="Close menu" aria-expanded={isOpen} onClick={toggleMenu}>
+     {/* Button content */}
+   </button>
+   ```
+
+2. **Keyboard Navigation**
+   ```typescript
+   const handleKeyDown = (e: KeyboardEvent) => {
+     if (e.key === "Enter" || e.key === " ") {
+       // Handle action
+     }
+   };
+   ```
+
+## Testing Strategy
+
+1. **Component Testing**
+
+   ```typescript
+   import { render, screen } from "@testing-library/react";
+
+   describe("Component", () => {
+     it("renders correctly", () => {
+       render(<Component />);
+       expect(screen.getByRole("button")).toBeInTheDocument();
+     });
+   });
+   ```
+
+2. **Integration Testing**
+   ```typescript
+   test("user flow works", async () => {
+     render(<Feature />);
+     await userEvent.click(screen.getByRole("button"));
+     expect(screen.getByText("Success")).toBeVisible();
+   });
+   ```
+
+## Best Practices
+
+1. **Code Organization**
+
+   - Keep components small and focused
+   - Use feature-based directory structure
+   - Implement proper error boundaries
+   - Use loading states appropriately
+
+2. **State Management**
+
+   - Use Zustand for global state
+   - Implement React hooks for local state
+   - Leverage server state when possible
+   - Cache responses appropriately
+
+3. **Performance**
+
+   - Implement proper loading states
+   - Use proper caching strategies
+   - Optimize API calls and data fetching
+   - Use proper image optimization
+
+4. **Security**
+   - Validate all user inputs
+   - Implement proper CSRF protection
+   - Use environment variables for sensitive data
+   - Follow security best practices
+
+## Development Workflow
+
+1. **Code Standards**
+
+   - Follow TypeScript best practices
+   - Use ESLint and Prettier
+   - Write clear comments
+   - Document complex logic
+
+2. **Git Workflow**
+   - Use conventional commits
+   - Create focused pull requests
+   - Write clear commit messages
+   - Follow branch naming conventions
+
+## Conclusion
+
+These frontend guidelines ensure consistency and maintainability across Mozzy's codebase. By following these patterns and best practices, we maintain a high-quality, performant, and accessible application that serves our users effectively.
