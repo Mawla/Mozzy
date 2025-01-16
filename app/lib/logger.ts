@@ -30,8 +30,30 @@ class Logger {
   private static instance: Logger;
   private logs: LogEntry[] = [];
   private maxLogs: number = 1000;
+  private initialized: boolean = false;
 
-  private constructor() {}
+  private constructor() {
+    this.initialize();
+  }
+
+  private async initialize() {
+    if (this.initialized) return;
+
+    try {
+      // Add initialization logs
+      this.info("Logger initializing");
+
+      // Mark as initialized
+      this.initialized = true;
+      this.info("Logger initialized successfully");
+    } catch (error) {
+      this.error(
+        "Logger initialization failed",
+        error instanceof Error ? error : new Error(String(error))
+      );
+      // Don't mark as initialized if there was an error
+    }
+  }
 
   static getInstance(): Logger {
     if (!Logger.instance) {
@@ -228,17 +250,26 @@ class Logger {
   clearLogs() {
     this.logs = [];
   }
+
+  isInitialized(): boolean {
+    return this.initialized;
+  }
+
+  getInitializationStatus(): { initialized: boolean; logs: LogEntry[] } {
+    return {
+      initialized: this.initialized,
+      logs: this.logs.filter(
+        (log) =>
+          log.message.includes("Logger initializing") ||
+          log.message.includes("Logger initialized") ||
+          log.message.includes("Logger initialization failed")
+      ),
+    };
+  }
 }
 
 export const logger = Logger.getInstance();
 
-// Add some test logs
-logger.info("Application started");
-logger.debug("Initializing components");
-logger.warn("Cache miss for user preferences");
-logger.error(
-  "Failed to load configuration",
-  new Error("Config file not found")
-);
-logger.info("Using default configuration");
-logger.debug("Components initialized successfully");
+// Remove test logs that were causing confusion
+// Add initialization log instead
+logger.info("Application logger ready");
