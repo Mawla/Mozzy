@@ -5,10 +5,14 @@ export async function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   const pathname = request.nextUrl.pathname;
 
-  // Only protect admin routes
-  if (!pathname.startsWith("/admin")) {
+  // Public routes that don't need protection
+  const publicRoutes = ["/auth", "/login", "/", "/api/auth"];
+  if (publicRoutes.some((route) => pathname.startsWith(route))) {
     return NextResponse.next();
   }
+
+  // Admin routes require additional checks
+  const isAdminRoute = pathname.startsWith("/admin");
 
   try {
     const supabase = createServerClient(
@@ -39,11 +43,14 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(redirectUrl);
     }
 
-    // TODO: Add role check for admin access
-    // const { data: { user } } = await supabase.auth.getUser();
-    // if (!user?.app_metadata?.isAdmin) {
-    //   return NextResponse.redirect(new URL("/", request.url));
-    // }
+    // Additional check for admin routes
+    if (isAdminRoute) {
+      // TODO: Add role check for admin access
+      // const { data: { user } } = await supabase.auth.getUser();
+      // if (!user?.app_metadata?.isAdmin) {
+      //   return NextResponse.redirect(new URL("/", request.url));
+      // }
+    }
 
     return NextResponse.next({
       request: {
@@ -57,5 +64,20 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: [
+    // Admin routes
+    "/admin/:path*",
+    // Dashboard routes
+    "/dashboard/:path*",
+    // Settings routes
+    "/settings/:path*",
+    // Protected API routes
+    "/api/debug/:path*",
+    "/api/podcasts/:path*",
+    "/api/templates/:path*",
+    "/api/openai/:path*",
+    "/api/anthropic/:path*",
+    "/api/ideas/:path*",
+    "/api/icp/:path*",
+  ],
 };
