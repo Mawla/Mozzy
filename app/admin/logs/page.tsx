@@ -4,8 +4,8 @@ import { redirect } from "next/navigation";
 import { LogsViewer } from "../../components/logs/logs-viewer";
 
 export const metadata = {
-  title: "System Logs | Mozzy Admin",
-  description: "View system logs and error tracking",
+  title: "Logs | Admin",
+  description: "View application logs",
 };
 
 export default async function LogsPage() {
@@ -30,37 +30,46 @@ export default async function LogsPage() {
   );
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  if (!user) {
-    redirect("/login");
+  if (!session) {
+    redirect("/auth/login");
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">System Logs</h1>
+    <div className="container mx-auto py-8 space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold mb-4">Application Logs</h1>
+        <p className="text-muted-foreground mb-8">
+          View and monitor application logs. Use the dropdown to switch between
+          live logs and log files.
+        </p>
       </div>
 
-      <div className="grid gap-6">
+      <div className="space-y-8">
         <div>
-          <h2 className="text-lg font-semibold mb-3">Error Logs</h2>
+          <h2 className="text-xl font-semibold mb-4">All Logs</h2>
+          <LogsViewer showFileSelector={true} limit={100} />
+        </div>
+
+        <div>
+          <h2 className="text-xl font-semibold mb-4">Error Logs</h2>
           <LogsViewer level="error" limit={50} />
         </div>
 
         <div>
-          <h2 className="text-lg font-semibold mb-3">Warning Logs</h2>
+          <h2 className="text-xl font-semibold mb-4">Warning Logs</h2>
           <LogsViewer level="warn" limit={50} />
         </div>
 
         <div>
-          <h2 className="text-lg font-semibold mb-3">Info Logs</h2>
+          <h2 className="text-xl font-semibold mb-4">Info Logs</h2>
           <LogsViewer level="info" limit={50} />
         </div>
 
         <div>
-          <h2 className="text-lg font-semibold mb-3">Debug Logs</h2>
+          <h2 className="text-xl font-semibold mb-4">Debug Logs</h2>
           <LogsViewer level="debug" limit={50} />
         </div>
       </div>
