@@ -134,6 +134,47 @@ export default function Error({
 4. Add new tasks to plan instead of suggesting next steps
 5. Use git commit command format: `git add . && git commit -m "type(scope): description" && git push`
 
+### Self-Improvement and Documentation Maintenance
+
+1. Documentation Updates:
+
+   - Update cursorrules_file.md when new patterns or best practices emerge
+   - Add solutions for recurring issues to prevent future occurrences
+   - Document any workarounds or fixes that could benefit future development
+   - Keep code examples current with latest implementations
+
+2. Plan Maintenance:
+
+   - Regularly review and update plan files
+   - Mark completed tasks with completion dates
+   - Add new tasks discovered during development
+   - Update task descriptions with learned insights
+   - Remove or archive obsolete tasks
+   - Add notes about successful approaches or pitfalls to avoid
+
+3. Knowledge Capture:
+
+   - Document common errors and their solutions
+   - Add new TypeScript patterns that prove effective
+   - Update component examples with real-world usage
+   - Document performance improvements and their impact
+   - Add notes about API integration learnings
+
+4. Continuous Improvement:
+
+   - Review and update directory structure as it evolves
+   - Keep tech stack information current
+   - Update setup instructions based on new requirements
+   - Add new testing strategies that prove effective
+   - Document new security considerations
+
+5. Issue Prevention:
+   - Document type-checking patterns that prevent bugs
+   - Add validation patterns that catch common errors
+   - Document state management patterns that work well
+   - Add notes about component optimization techniques
+   - Document successful error handling strategies
+
 ### Best Practices
 
 1. Use TypeScript for type safety
