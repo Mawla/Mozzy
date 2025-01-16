@@ -24,11 +24,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const navItems = [
-  { icon: Home, name: "Dashboard", href: "/dashboard" },
   { icon: FileText, name: "Posts", href: "/dashboard/posts" },
-  { icon: LineChart, name: "Content Bank", href: "/dashboard/analytics" },
-  { icon: Users, name: "ICP", href: "/dashboard/icp" },
-  { icon: Lightbulb, name: "Ideas", href: "/dashboard/ideas" },
   { icon: FileText, name: "Templates", href: "/dashboard/templates" },
   { icon: Mic, name: "Podcasts", href: "/dashboard/podcasts" },
   { icon: Settings, name: "Settings", href: "/dashboard/settings" },

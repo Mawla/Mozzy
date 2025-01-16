@@ -1,32 +1,49 @@
-"use client";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { SignOutButton } from "../components/auth/sign-out-button";
 
-import { useEffect } from "react";
-import { usePostStore } from "@/app/stores/postStore";
+export default async function DashboardPage() {
+  const cookieStore = cookies();
 
-const DashboardPage = () => {
-  const { loadPosts, posts } = usePostStore();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          cookieStore.set({ name, value, ...options });
+        },
+        remove(name: string, options: CookieOptions) {
+          cookieStore.set({ name, value: "", ...options });
+        },
+      },
+    }
+  );
 
-  useEffect(() => {
-    loadPosts();
-  }, [loadPosts]);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold mb-4">Dashboard Overview</h1>
-      <p>
-        Welcome to your dashboard. Here you can view key metrics and summaries.
-      </p>
-      <div className="mt-6">
-        <h2 className="text-xl font-semibold mb-2">Recent Posts</h2>
-        <ul className="list-disc pl-5">
-          {posts.slice(0, 5).map((post) => (
-            <li key={post.id}>{post.title || "Untitled Post"}</li>
-          ))}
-        </ul>
+    <div className="container mx-auto py-10">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <SignOutButton />
       </div>
-      {/* Add more dashboard widgets, charts, or summary cards here */}
+      <div className="bg-card rounded-lg p-6">
+        <h2 className="text-xl font-semibold mb-4">Welcome, {user.email}</h2>
+        <pre className="bg-muted p-4 rounded-md">
+          {JSON.stringify(user, null, 2)}
+        </pre>
+      </div>
     </div>
   );
-};
-
-export default DashboardPage;
+}

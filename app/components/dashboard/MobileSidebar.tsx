@@ -20,22 +20,10 @@ const MobileSidebar = () => {
           <span className="sr-only">Acme Inc</span>
         </Link>
         <NavItem
-          href="/dashboard"
-          icon={Home}
-          label="Dashboard"
-          active={pathname === "/dashboard"}
-        />
-        <NavItem
           href="/dashboard/posts"
           icon={FileText}
           label="Posts"
           active={pathname?.startsWith("/dashboard/posts") ?? false}
-        />
-        <NavItem
-          href="/dashboard/analytics"
-          icon={LineChart}
-          label="Analytics"
-          active={pathname === "/dashboard/analytics"}
         />
         <NavItem
           href="/dashboard/settings"
