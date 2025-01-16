@@ -26,7 +26,7 @@ export function LogsViewer({
 
   useEffect(() => {
     if (showFileSelector) {
-      setLogFiles(logger.getLogFiles());
+      fetchLogFiles();
     }
   }, [showFileSelector]);
 
@@ -35,8 +35,7 @@ export function LogsViewer({
 
     const interval = setInterval(() => {
       if (selectedFile) {
-        const content = logger.readLogFile(selectedFile);
-        setFileContent(content);
+        fetchFileContent(selectedFile);
       } else {
         setLogs(logger.getLogs(level, limit));
       }
@@ -45,11 +44,36 @@ export function LogsViewer({
     return () => clearInterval(interval);
   }, [autoRefresh, refreshInterval, level, limit, selectedFile]);
 
-  const handleFileSelect = (filePath: string) => {
+  const fetchLogFiles = async () => {
+    try {
+      const response = await fetch("/api/debug/logs/files");
+      const data = await response.json();
+      if (data.files) {
+        setLogFiles(data.files);
+      }
+    } catch (error) {
+      console.error("Failed to fetch log files:", error);
+    }
+  };
+
+  const fetchFileContent = async (filePath: string) => {
+    try {
+      const response = await fetch(
+        `/api/debug/logs/files?path=${encodeURIComponent(filePath)}`
+      );
+      const data = await response.json();
+      if (data.content) {
+        setFileContent(data.content);
+      }
+    } catch (error) {
+      console.error("Failed to fetch file content:", error);
+    }
+  };
+
+  const handleFileSelect = async (filePath: string) => {
     setSelectedFile(filePath);
     if (filePath) {
-      const content = logger.readLogFile(filePath);
-      setFileContent(content);
+      await fetchFileContent(filePath);
     } else {
       setFileContent("");
     }
