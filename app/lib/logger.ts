@@ -18,6 +18,14 @@ export interface LogFile {
   created: Date;
 }
 
+export interface LogSummary {
+  totalEntries: number;
+  errorCount: number;
+  warnCount: number;
+  lastError?: LogEntry;
+  recentLogs: LogEntry[];
+}
+
 class Logger {
   private static instance: Logger;
   private logs: LogEntry[] = [];
@@ -181,6 +189,63 @@ class Logger {
 
   clearLogs() {
     this.logs = [];
+  }
+
+  /**
+   * Get a summary of logs for quick review by the Cursor agent
+   * Includes total entries, error counts, and recent logs
+   */
+  getLogSummary(): LogSummary {
+    const errorLogs = this.logs.filter((log) => log.level === "error");
+    const warnLogs = this.logs.filter((log) => log.level === "warn");
+
+    return {
+      totalEntries: this.logs.length,
+      errorCount: errorLogs.length,
+      warnCount: warnLogs.length,
+      lastError: errorLogs[errorLogs.length - 1],
+      recentLogs: this.logs.slice(-10), // Last 10 logs
+    };
+  }
+
+  /**
+   * Get logs from a specific time range
+   * Useful for reviewing logs during a specific operation or debugging session
+   */
+  getLogsByTimeRange(startTime: Date, endTime: Date): LogEntry[] {
+    return this.logs.filter((log) => {
+      const logTime = new Date(log.timestamp);
+      return logTime >= startTime && logTime <= endTime;
+    });
+  }
+
+  /**
+   * Search logs for specific terms or patterns
+   * Helps in finding relevant log entries quickly
+   */
+  searchLogs(
+    searchTerm: string,
+    options: {
+      caseSensitive?: boolean;
+      level?: LogLevel;
+      limit?: number;
+    } = {}
+  ): LogEntry[] {
+    const { caseSensitive = false, level, limit } = options;
+
+    let filteredLogs = this.logs;
+
+    if (level) {
+      filteredLogs = filteredLogs.filter((log) => log.level === level);
+    }
+
+    filteredLogs = filteredLogs.filter((log) => {
+      const term = caseSensitive ? searchTerm : searchTerm.toLowerCase();
+      const message = caseSensitive ? log.message : log.message.toLowerCase();
+      return message.includes(term);
+    });
+
+    return limit ? filteredLogs.slice(-limit) : filteredLogs;
   }
 }
 
