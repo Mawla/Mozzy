@@ -1,86 +1,49 @@
 "use client";
 
-import * as React from "react";
-import { AlertCircle } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { logger } from "@/app/services/logger";
+import { Component, ErrorInfo, ReactNode } from "react";
+import { logger } from "@/app/lib/logger";
 
-interface ErrorBoundaryProps {
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
-  name?: string; // Component name for better error tracking
+interface Props {
+  children: ReactNode;
 }
 
-interface ErrorBoundaryState {
+interface State {
   hasError: boolean;
   error: Error | null;
 }
 
-export class ErrorBoundary extends React.Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
-  constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
+export class ErrorBoundary extends Component<Props, State> {
+  public state: State = {
+    hasError: false,
+    error: null,
+  };
 
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+  public static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Log the error using our logger service
-    logger.error(`Error in ${this.props.name || "unknown component"}`, error, {
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    logger.error("React Error Boundary Caught", error, {
       componentStack: errorInfo.componentStack,
-      name: this.props.name,
     });
   }
 
-  render() {
+  public render() {
     if (this.state.hasError) {
-      // You can render any custom fallback UI
       return (
-        this.props.fallback || (
-          <Alert variant="destructive" className="my-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Something went wrong</AlertTitle>
-            <AlertDescription className="mt-2 flex flex-col gap-2">
-              <p>
-                {this.state.error?.message ||
-                  "An unexpected error occurred. Please try again."}
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => this.setState({ hasError: false, error: null })}
-              >
-                Try again
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )
+        <div className="p-4 rounded-md bg-destructive/15 text-destructive">
+          <h2 className="text-lg font-semibold mb-2">Something went wrong</h2>
+          <p className="text-sm mb-4">{this.state.error?.message}</p>
+          <button
+            onClick={() => this.setState({ hasError: false, error: null })}
+            className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            Try again
+          </button>
+        </div>
       );
     }
 
     return this.props.children;
   }
-}
-
-// Higher-order component to wrap components with error boundary
-export function withErrorBoundary<P extends object>(
-  Component: React.ComponentType<P>,
-  options?: {
-    fallback?: React.ReactNode;
-    name?: string;
-  }
-) {
-  return function WithErrorBoundary(props: P) {
-    return (
-      <ErrorBoundary fallback={options?.fallback} name={options?.name}>
-        <Component {...props} />
-      </ErrorBoundary>
-    );
-  };
 }

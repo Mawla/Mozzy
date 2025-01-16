@@ -5,271 +5,425 @@ export interface LogEntry {
   level: LogLevel;
   message: string;
   data?: any;
-  error?: Error;
+  error?: {
+    name?: string;
+    message: string;
+    stack?: string;
+    [key: string]: any;
+  };
   source?: "browser" | "server";
   url?: string;
   userAgent?: string;
 }
 
-export interface LogFile {
-  name: string;
-  path: string;
-  size: number;
-  created: Date;
-}
-
-export interface LogSummary {
-  totalEntries: number;
-  errorCount: number;
-  warnCount: number;
-  lastError?: LogEntry;
-  recentLogs: LogEntry[];
-}
-
 class Logger {
   private static instance: Logger;
   private logs: LogEntry[] = [];
+  private logQueue: LogEntry[] = [];
   private maxLogs: number = 1000;
-  private initialized: boolean = false;
+  private isConsoleOverride: boolean = false;
+  private isInitialized: boolean = false;
+  private initializationPromise: Promise<void> | null = null;
+  private originalConsole: Record<string, (...args: any[]) => void> | null =
+    null;
+  private queueProcessor: number | null = null;
 
   private constructor() {
-    this.initialize();
-  }
-
-  private async initialize() {
-    if (this.initialized) return;
-
-    try {
-      // Add initialization logs
-      this.info("Logger initializing");
-
-      // Mark as initialized
-      this.initialized = true;
-      this.info("Logger initialized successfully");
-    } catch (error) {
-      this.error(
-        "Logger initialization failed",
-        error instanceof Error ? error : new Error(String(error))
-      );
-      // Don't mark as initialized if there was an error
+    if (typeof window !== "undefined") {
+      this.initializationPromise = this.initialize();
+    } else {
+      this.setupServerLogging();
     }
   }
 
-  static getInstance(): Logger {
+  private async initialize() {
+    if (this.isInitialized) return;
+
+    try {
+      await this.setupBrowserLogging();
+      this.isInitialized = true;
+    } catch (err) {
+      console.error("Failed to initialize logger:", err);
+    }
+  }
+
+  public static getInstance(): Logger {
     if (!Logger.instance) {
       Logger.instance = new Logger();
     }
     return Logger.instance;
   }
 
-  private formatLog(
-    level: LogLevel,
-    message: string,
-    data?: any,
-    error?: Error
-  ): LogEntry {
-    return {
-      timestamp: new Date().toISOString(),
-      level,
-      message,
-      data,
-      error,
-    };
-  }
+  // Internal logging - never touches console
+  private async internalLog(entry: LogEntry) {
+    // Wait for initialization if needed
+    if (this.initializationPromise) {
+      await this.initializationPromise;
+    }
 
-  private addLog(entry: LogEntry) {
-    // Console output
-    console[entry.level](
-      `[${entry.timestamp}] ${entry.level.toUpperCase()}: ${entry.message}`,
-      entry.data ? { data: entry.data } : "",
-      entry.error ? { error: entry.error } : ""
-    );
+    // Ensure timestamp
+    if (!entry.timestamp) {
+      entry.timestamp = new Date().toISOString();
+    }
 
-    // Memory storage
+    // Ensure source
+    if (!entry.source) {
+      entry.source = typeof window !== "undefined" ? "browser" : "server";
+    }
+
+    // Store in memory
     this.logs.push(entry);
     if (this.logs.length > this.maxLogs) {
       this.logs.shift();
     }
 
-    // Send to server if in browser
-    if (typeof window !== "undefined" && entry.source === "browser") {
-      this.sendToServer(entry);
+    // Queue for server if browser-side
+    if (entry.source === "browser") {
+      this.logQueue.push(entry);
+      this.ensureQueueProcessing();
+    } else {
+      // Server-side: write directly to file
+      await this.writeToFile(entry);
     }
   }
 
-  private async sendToServer(entry: LogEntry) {
+  private ensureQueueProcessing() {
+    if (this.queueProcessor === null) {
+      this.queueProcessor = window.setTimeout(() => {
+        this.processQueue();
+      }, 1000);
+    }
+  }
+
+  private async processQueue() {
+    this.queueProcessor = null;
+
+    if (this.logQueue.length === 0) return;
+
+    const entry = this.logQueue.shift();
+    if (!entry) return;
+
     try {
-      await fetch("/api/debug/logs/files", {
+      const response = await fetch("/api/debug/logs/files", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ entry }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(this.simplifyForJSON(entry)),
+        credentials: "include",
       });
-    } catch (error) {
-      console.error("Failed to send log to server:", error);
+
+      if (!response.ok && this.originalConsole) {
+        this.originalConsole.error("Failed to send log to server:", {
+          status: response.status,
+          statusText: response.statusText,
+        });
+      }
+    } catch (err) {
+      if (this.originalConsole) {
+        this.originalConsole.error("Error sending log to server");
+      }
+    }
+
+    // Process next item if queue not empty
+    if (this.logQueue.length > 0) {
+      this.ensureQueueProcessing();
     }
   }
 
-  setupBrowserErrorCapture() {
+  private simplifyForJSON(obj: any): any {
+    const seen = new WeakSet();
+
+    const simplify = (value: any): any => {
+      if (value === null || value === undefined) {
+        return value;
+      }
+
+      if (typeof value === "object") {
+        if (seen.has(value)) {
+          return "[Circular Reference]";
+        }
+
+        if (value instanceof Error) {
+          return {
+            errorType: value.name,
+            errorMessage: value.message,
+            stackTrace: value.stack,
+          };
+        }
+
+        if (Array.isArray(value)) {
+          seen.add(value);
+          return value.map((item) => simplify(item));
+        }
+
+        seen.add(value);
+        const result: Record<string, any> = {};
+        for (const key of Object.keys(value)) {
+          try {
+            result[key] = simplify(value[key]);
+          } catch (err) {
+            result[key] = "[Unable to serialize]";
+          }
+        }
+        return result;
+      }
+
+      return value;
+    };
+
+    return simplify(obj);
+  }
+
+  public getLogs(): LogEntry[] {
+    return this.logs;
+  }
+
+  public getLogSummary() {
+    const summary = {
+      total: this.logs.length,
+      byLevel: {
+        debug: 0,
+        info: 0,
+        warn: 0,
+        error: 0,
+      },
+      recentErrors: [] as LogEntry[],
+    };
+
+    // Count logs by level and collect recent errors
+    this.logs.forEach((log) => {
+      summary.byLevel[log.level]++;
+      if (log.level === "error") {
+        summary.recentErrors.push(log);
+      }
+    });
+
+    // Keep only the last 5 errors
+    summary.recentErrors = summary.recentErrors.slice(-5);
+
+    return summary;
+  }
+
+  private createConsoleOverride(
+    method: keyof typeof console,
+    logLevel: LogLevel
+  ) {
+    return (...args: any[]) => {
+      if (!this.isConsoleOverride && this.originalConsole) {
+        this.isConsoleOverride = true;
+        try {
+          // First call original console to maintain proper stack traces
+          this.originalConsole[method](...args);
+
+          // Then log to internal system
+          const safeArgs = args.map((arg) => {
+            try {
+              return this.simplifyForJSON(arg);
+            } catch (err) {
+              return "[Unable to serialize]";
+            }
+          });
+
+          this.internalLog({
+            level: logLevel,
+            message: `Console.${method}`,
+            data: { args: safeArgs },
+            timestamp: new Date().toISOString(),
+          });
+        } finally {
+          this.isConsoleOverride = false;
+        }
+      } else if (this.originalConsole) {
+        // Direct pass-through if already in override
+        this.originalConsole[method](...args);
+      }
+    };
+  }
+
+  public setupBrowserLogging() {
     if (typeof window === "undefined") return;
 
-    // Capture unhandled errors
+    // Only set up once
+    if (this.originalConsole) return;
+
+    // Store original console methods
+    this.originalConsole = {
+      log: console.log.bind(console),
+      info: console.info.bind(console),
+      warn: console.warn.bind(console),
+      error: console.error.bind(console),
+      debug: console.debug.bind(console),
+    };
+
+    // Apply console overrides
+    console.debug = this.createConsoleOverride("debug", "debug");
+    console.log = this.createConsoleOverride("log", "info");
+    console.info = this.createConsoleOverride("info", "info");
+    console.warn = this.createConsoleOverride("warn", "warn");
+    console.error = this.createConsoleOverride("error", "error");
+
+    // Error handlers
     window.addEventListener("error", (event) => {
-      this.error(
-        "Unhandled browser error",
-        event.error || new Error(event.message),
-        {
-          filename: event.filename,
-          lineno: event.lineno,
-          colno: event.colno,
-          source: "browser",
-          url: window.location.href,
-          userAgent: window.navigator.userAgent,
+      if (!this.isConsoleOverride) {
+        this.isConsoleOverride = true;
+        try {
+          this.internalLog({
+            level: "error",
+            message: "Unhandled browser error",
+            error: this.simplifyForJSON({
+              name: "Error",
+              message: event.message,
+              stack: event.error?.stack,
+            }),
+            data: this.simplifyForJSON({
+              filename: event.filename,
+              lineno: event.lineno,
+              colno: event.colno,
+            }),
+            timestamp: new Date().toISOString(),
+          });
+        } finally {
+          this.isConsoleOverride = false;
         }
-      );
-      return false;
+      }
+    });
+
+    window.addEventListener("unhandledrejection", (event) => {
+      if (!this.isConsoleOverride) {
+        this.isConsoleOverride = true;
+        try {
+          const error =
+            event.reason instanceof Error
+              ? event.reason
+              : new Error(String(event.reason));
+          this.internalLog({
+            level: "error",
+            message: "Unhandled promise rejection",
+            error: this.simplifyForJSON({
+              name: error.name,
+              message: error.message,
+              stack: error.stack,
+            }),
+            timestamp: new Date().toISOString(),
+          });
+        } finally {
+          this.isConsoleOverride = false;
+        }
+      }
+    });
+  }
+
+  private async writeToFile(logEntry: LogEntry) {
+    if (typeof window !== "undefined") {
+      // Client-side: use API
+      try {
+        const response = await fetch("/api/logs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(logEntry),
+        });
+        if (!response.ok) {
+          console.error("Failed to send log to server:", response.statusText);
+        }
+      } catch (err) {
+        console.error("Error sending log to server:", err);
+      }
+    } else {
+      // Server-side: use direct file system access
+      try {
+        const { writeFile } = require("fs/promises");
+        const { join } = require("path");
+        const logDir = join(process.cwd(), "logs");
+        const logFile = join(
+          logDir,
+          `app-${new Date().toISOString().split("T")[0]}.log`
+        );
+        await writeFile(logFile, JSON.stringify(logEntry) + "\n", {
+          flag: "a",
+        });
+      } catch (err) {
+        console.error("Failed to write log to file:", err);
+      }
+    }
+  }
+
+  public setupServerLogging() {
+    if (typeof window !== "undefined") return;
+
+    // Capture unhandled exceptions
+    process.on("uncaughtException", async (error: Error) => {
+      const logEntry: LogEntry = {
+        timestamp: new Date().toISOString(),
+        level: "error" as const,
+        message: "Uncaught Exception",
+        error: {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+        },
+        source: "server",
+      };
+
+      await this.writeToFile(logEntry);
+      this.error("Uncaught Exception", error);
     });
 
     // Capture unhandled promise rejections
-    window.addEventListener("unhandledrejection", (event) => {
-      const error =
-        event.reason instanceof Error
-          ? event.reason
-          : new Error(String(event.reason));
-      this.error("Unhandled promise rejection", error, {
-        source: "browser",
-        url: window.location.href,
-        userAgent: window.navigator.userAgent,
-      });
-      return false;
+    process.on("unhandledRejection", (reason: any, promise: Promise<any>) => {
+      this.error("Unhandled Promise Rejection", reason);
     });
 
-    // Capture console methods
-    const consoleMethods: LogLevel[] = ["debug", "info", "warn", "error"];
-    consoleMethods.forEach((level) => {
-      const originalMethod = console[level];
-      console[level] = (...args: any[]) => {
-        // Call original method
-        originalMethod.apply(console, args);
+    // Override console methods for server
+    console.error = this.createConsoleOverride("error", "error");
+    console.warn = this.createConsoleOverride("warn", "warn");
+    console.info = this.createConsoleOverride("info", "info");
+    console.debug = this.createConsoleOverride("debug", "debug");
+    console.log = this.createConsoleOverride("log", "info");
+  }
 
-        // Log to our system
-        const message = args
-          .map((arg) =>
-            typeof arg === "string"
-              ? arg
-              : arg instanceof Error
-              ? arg.message
-              : JSON.stringify(arg)
-          )
-          .join(" ");
-
-        const error = args.find((arg) => arg instanceof Error) || undefined;
-
-        this.addLog({
-          timestamp: new Date().toISOString(),
-          level,
-          message,
-          error,
-          source: "browser",
-          url: window.location.href,
-          userAgent: window.navigator.userAgent,
-        });
-      };
+  // Public API
+  public debug(message: string, data?: any) {
+    this.internalLog({
+      level: "debug",
+      message,
+      data,
+      timestamp: new Date().toISOString(),
     });
   }
 
-  debug(message: string, data?: any) {
-    this.addLog(this.formatLog("debug", message, data));
-  }
-
-  info(message: string, data?: any) {
-    this.addLog(this.formatLog("info", message, data));
-  }
-
-  warn(message: string, data?: any) {
-    this.addLog(this.formatLog("warn", message, data));
-  }
-
-  error(message: string, error?: Error, data?: any) {
-    this.addLog(this.formatLog("error", message, data, error));
-  }
-
-  getLogs(level?: LogLevel, limit?: number): LogEntry[] {
-    let filteredLogs = level
-      ? this.logs.filter((log) => log.level === level)
-      : this.logs;
-    return limit ? filteredLogs.slice(-limit) : filteredLogs;
-  }
-
-  getLogSummary(): LogSummary {
-    const errorLogs = this.logs.filter((log) => log.level === "error");
-    const warnLogs = this.logs.filter((log) => log.level === "warn");
-
-    return {
-      totalEntries: this.logs.length,
-      errorCount: errorLogs.length,
-      warnCount: warnLogs.length,
-      lastError: errorLogs[errorLogs.length - 1],
-      recentLogs: this.logs.slice(-10), // Last 10 logs
-    };
-  }
-
-  getLogsByTimeRange(startTime: Date, endTime: Date): LogEntry[] {
-    return this.logs.filter((log) => {
-      const logTime = new Date(log.timestamp);
-      return logTime >= startTime && logTime <= endTime;
+  public info(message: string, data?: any) {
+    this.internalLog({
+      level: "info",
+      message,
+      data,
+      timestamp: new Date().toISOString(),
     });
   }
 
-  searchLogs(
-    searchTerm: string,
-    options: {
-      caseSensitive?: boolean;
-      level?: LogLevel;
-      limit?: number;
-    } = {}
-  ): LogEntry[] {
-    const { caseSensitive = false, level, limit } = options;
-
-    let filteredLogs = this.logs;
-
-    if (level) {
-      filteredLogs = filteredLogs.filter((log) => log.level === level);
-    }
-
-    filteredLogs = filteredLogs.filter((log) => {
-      const term = caseSensitive ? searchTerm : searchTerm.toLowerCase();
-      const message = caseSensitive ? log.message : log.message.toLowerCase();
-      return message.includes(term);
+  public warn(message: string, data?: any) {
+    this.internalLog({
+      level: "warn",
+      message,
+      data,
+      timestamp: new Date().toISOString(),
     });
-
-    return limit ? filteredLogs.slice(-limit) : filteredLogs;
   }
 
-  clearLogs() {
-    this.logs = [];
-  }
-
-  isInitialized(): boolean {
-    return this.initialized;
-  }
-
-  getInitializationStatus(): { initialized: boolean; logs: LogEntry[] } {
-    return {
-      initialized: this.initialized,
-      logs: this.logs.filter(
-        (log) =>
-          log.message.includes("Logger initializing") ||
-          log.message.includes("Logger initialized") ||
-          log.message.includes("Logger initialization failed")
-      ),
-    };
+  public error(message: string, error?: any, data?: any) {
+    this.internalLog({
+      level: "error",
+      message,
+      error:
+        error instanceof Error
+          ? {
+              name: error.name,
+              message: error.message,
+              stack: error.stack,
+            }
+          : error,
+      data,
+      timestamp: new Date().toISOString(),
+    });
   }
 }
 
 export const logger = Logger.getInstance();
-
-// Remove test logs that were causing confusion
-// Add initialization log instead
-logger.info("Application logger ready");

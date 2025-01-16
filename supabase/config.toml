@@ -24,7 +24,7 @@ max_client_conn = 100
 
 [realtime]
 enabled = true
-ip_version = "IPv6"
+ip_version = "IPv4"
 
 [studio]
 enabled = true
@@ -116,11 +116,10 @@ redirect_uri = ""
 url = ""
 
 [auth.external.github]
-enabled = false
-client_id = ""
-secret = ""
-redirect_uri = ""
-url = ""
+enabled = true
+client_id = "your-github-client-id"
+secret = "your-github-client-secret"
+redirect_uri = "http://localhost:3000/auth/callback"
 
 [auth.external.gitlab]
 enabled = false
@@ -130,11 +129,10 @@ redirect_uri = ""
 url = ""
 
 [auth.external.google]
-enabled = false
-client_id = ""
-secret = ""
-redirect_uri = ""
-url = ""
+enabled = true
+client_id = "your-google-client-id"
+secret = "your-google-client-secret"
+redirect_uri = "http://localhost:3000/auth/callback"
 
 [auth.external.keycloak]
 enabled = false

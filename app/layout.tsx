@@ -1,16 +1,8 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css"; // Ensure this import is present
-import "@/app/styles/tiptap.css";
-import { Toaster } from "react-hot-toast";
+import "./styles/globals.css";
+import "./styles/tiptap.css";
+import { Toaster } from "@/components/ui/toaster";
+import { ErrorBoundary } from "./components/error-boundary";
 import { LogProvider } from "./providers/log-provider";
-
-const inter = Inter({ subsets: ["latin"] });
-
-export const metadata: Metadata = {
-  title: "Dashboard App",
-  description: "A Next.js 14 application with a default dashboard page",
-};
 
 export default function RootLayout({
   children,
@@ -18,10 +10,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
-        <LogProvider>{children}</LogProvider>
-        <Toaster position="bottom-right" />
+        <LogProvider>
+          <ErrorBoundary>
+            {children}
+            <Toaster />
+          </ErrorBoundary>
+        </LogProvider>
       </body>
     </html>
   );

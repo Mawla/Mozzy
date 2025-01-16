@@ -1,34 +1,23 @@
 import { logger } from "../../../lib/logger";
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 
 export async function GET() {
+  // Generate some test logs
+  logger.debug("Test debug message");
+  logger.info("Test info message");
+  logger.warn("Test warning message");
   try {
-    const headersList = headers();
-    const host = headersList.get("host") || "";
-
-    // Only allow access from localhost in development
-    if (process.env.NODE_ENV !== "development" || !host.includes("localhost")) {
-      return new NextResponse("Not available", { status: 403 });
-    }
-
-    const summary = logger.getLogSummary();
-    const errorLogs = logger.getLogs("error");
-
-    return NextResponse.json({
-      summary,
-      errorLogs,
-      timestamp: new Date().toISOString(),
-    });
+    throw new Error("Test error");
   } catch (error) {
-    console.error("Error retrieving logs:", error);
-    return NextResponse.json(
-      {
-        error: "Failed to retrieve logs",
-        details: error instanceof Error ? error.message : String(error),
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 }
-    );
+    logger.error("Test error message", error);
   }
+
+  const summary = logger.getLogSummary();
+  const errorLogs = summary.recentErrors;
+
+  return NextResponse.json({
+    summary,
+    errorLogs,
+    timestamp: new Date().toISOString(),
+  });
 }

@@ -1,11 +1,19 @@
-import { AuthForm } from "../components/auth/auth-form";
+"use client";
 
-export const metadata = {
-  title: "Login | Mozzy",
-  description: "Login to your Mozzy account",
-};
+import { AuthForm } from "../components/auth/auth-form";
+import { useEffect, useState } from "react";
 
 export default function LoginPage() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <div className="container relative min-h-screen flex items-center justify-center">
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">

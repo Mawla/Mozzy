@@ -1,0 +1,30 @@
+{
+  "id": "example-run-20240116",
+  "status": "pending",
+  "steps": [
+    {
+      "id": "init",
+      "description": "Initialize composer run",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null
+    }
+  ],
+  "metadata": {
+    "createdAt": "2024-01-16T00:00:00Z",
+    "updatedAt": "2024-01-16T00:00:00Z",
+    "sourceContent": "example-content.md",
+    "targetFormat": "twitter-thread",
+    "config": {
+      "threadLength": 5,
+      "includeHashtags": true
+    }
+  },
+  "strategicPlanItems": [
+    {
+      "id": "41",
+      "status": "pending",
+      "notes": "Testing multi-template merge feature"
+    }
+  ]
+} 

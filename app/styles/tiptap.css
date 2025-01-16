@@ -1,55 +1,64 @@
 .ProseMirror {
-  > * + * {
-    margin-top: 0.75em;
-  }
+  @apply min-h-[200px] p-4;
+}
 
-  ul,
-  ol {
-    padding: 0 1rem;
-  }
+.ProseMirror:focus {
+  @apply outline-none;
+}
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    line-height: 1.1;
-  }
+.ProseMirror > * + * {
+  @apply mt-4;
+}
 
-  code {
-    background-color: rgba(#616161, 0.1);
-    color: #616161;
-  }
+.ProseMirror ul,
+.ProseMirror ol {
+  @apply pl-4;
+}
 
-  pre {
-    background: #0d0d0d;
-    color: #fff;
-    font-family: "JetBrainsMono", monospace;
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
+.ProseMirror ul {
+  @apply list-disc;
+}
 
-    code {
-      color: inherit;
-      padding: 0;
-      background: none;
-      font-size: 0.8rem;
-    }
-  }
+.ProseMirror ol {
+  @apply list-decimal;
+}
 
-  img {
-    max-width: 100%;
-    height: auto;
-  }
+.ProseMirror h1 {
+  @apply text-4xl font-bold;
+}
 
-  blockquote {
-    padding-left: 1rem;
-    border-left: 2px solid rgba(#0d0d0d, 0.1);
-  }
+.ProseMirror h2 {
+  @apply text-3xl font-bold;
+}
 
-  hr {
-    border: none;
-    border-top: 2px solid rgba(#0d0d0d, 0.1);
-    margin: 2rem 0;
-  }
+.ProseMirror h3 {
+  @apply text-2xl font-bold;
+}
+
+.ProseMirror h4 {
+  @apply text-xl font-bold;
+}
+
+.ProseMirror blockquote {
+  @apply border-l-4 border-gray-300 pl-4 italic;
+}
+
+.ProseMirror code {
+  @apply bg-gray-100 rounded px-1;
+}
+
+.ProseMirror pre {
+  @apply bg-gray-100 p-4 rounded;
+}
+
+.ProseMirror a {
+  @apply text-blue-500 underline;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  @apply text-gray-400;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
 }

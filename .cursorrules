@@ -5,6 +5,51 @@ You are a powerful agentic AI coding assistant, powered by Claude 3.5 Sonnet. Yo
 You are pair programming with a USER to solve their coding task.
 The task may require creating a new codebase, modifying or debugging an existing codebase, or simply answering a question.
 
+## Problem-Solving Approach
+
+When addressing issues or implementing new features, follow this structured approach:
+
+1. Problem Analysis:
+
+   - Clearly identify and describe the issue
+   - List potential causes
+   - Identify affected components/systems
+   - Document any recursive or performance implications
+
+2. Solution Design:
+
+   - Outline potential solutions
+   - List pros and cons of each approach
+   - Consider performance implications
+   - Consider maintainability
+   - Consider scalability
+
+3. Implementation Plan:
+   - Break down the solution into steps
+   - Identify potential risks
+   - Plan for error handling
+   - Consider testing requirements
+
+Example:
+
+```typescript
+// Problem: Infinite loops in logging system
+// Causes:
+// 1. Console methods triggering their own logs
+// 2. Nested logging operations
+// 3. Synchronous server communication
+
+// Solution:
+// 1. Separate internal and external logging paths
+// 2. Use queue for server communication
+// 3. Add recursion prevention flags
+
+// Implementation:
+// 1. Create separate logging paths
+// 2. Implement queue system
+// 3. Add proper flag management
+```
+
 ## Project Context
 
 Project Name: Mozzy
@@ -195,9 +240,11 @@ Remember:
 
 1. Accessing Logs:
 
-   - Development endpoint: GET http://localhost:3000/api/debug/logs
-   - Only available in development and from localhost
-   - Returns log summary, error logs, and log file information
+   - View recent logs: `tail -f logs/app-$(date +%Y-%m-%d).log`
+   - View specific number of lines: `tail -n 100 logs/app-$(date +%Y-%m-%d).log`
+   - View all logs from today: `cat logs/app-$(date +%Y-%m-%d).log`
+   - Search logs: `grep "error" logs/app-$(date +%Y-%m-%d).log`
+   - Follow multiple log files: `tail -f logs/app-*.log`
 
 2. Log Structure:
 
@@ -214,23 +261,24 @@ Remember:
 3. Available Methods:
 
    - `logger.getLogSummary()`: Quick overview of logging state
-   - `logger.getLogs(level?, limit?)`: Get filtered logs
-   - `logger.getLogsByTimeRange(startTime, endTime)`: Get logs from a time period
-   - `logger.searchLogs(searchTerm, options)`: Search logs with pattern matching
+   - `logger.getLogs()`: Get all logs from memory
+   - `logger.getLogs().filter(log => log.level === "error")`: Get error logs
+   - `logger.getLogs().slice(-100)`: Get last 100 logs
 
 4. Log Files:
 
-   - Location: `/logs/app-YYYY-MM-DD.log`
+   - Location: `logs/app-YYYY-MM-DD.log`
    - Daily rotation
    - Maximum 1000 entries in memory
    - Full stack traces for errors
+   - Use `ls -ltr logs/` to list log files by date
 
 5. Review Process:
 
-   1. Check log summary for error/warning counts
-   2. Review any recent errors in detail
-   3. Search logs for specific issues or patterns
-   4. Check log files for historical context
+   1. Check recent logs: `tail -n 50 logs/app-$(date +%Y-%m-%d).log`
+   2. Filter for errors: `grep "ERROR" logs/app-$(date +%Y-%m-%d).log`
+   3. Search for patterns: `grep -r "pattern" logs/`
+   4. Monitor live: `tail -f logs/app-$(date +%Y-%m-%d).log`
 
 6. Common Log Patterns:
    - Application startup sequence
@@ -241,11 +289,11 @@ Remember:
 
 Remember:
 
-- Always check logs when debugging issues
-- Review error patterns for systemic problems
-- Monitor warning counts for potential issues
-- Use time-range queries for specific incidents
-- Search functionality for targeted investigation
+- Use `tail -f` for real-time monitoring
+- Use `grep` for searching specific patterns
+- Use `cat` for viewing entire log files
+- Use `wc -l` to count log entries
+- Use `| less` for paginated viewing
 
 ## Best Practices
 
@@ -271,3 +319,257 @@ Remember:
    - Add more detailed logging
    - Create monitoring alerts
    - Update documentation
+
+## Logging Best Practices
+
+1. Use the Centralized Logger:
+
+   - Import from `@/lib/logger`
+   - Use singleton instance: `import { logger } from "@/lib/logger"`
+   - Never create new logger instances
+   - Never override console methods directly
+
+2. Log Levels:
+
+   - debug: Development details and verbose information
+   - info: General operational events
+   - warn: Warning conditions that should be reviewed
+   - error: Error conditions that need immediate attention
+
+3. Logging Methods:
+
+   ```typescript
+   logger.debug(message: string, data?: any)
+   logger.info(message: string, data?: any)
+   logger.warn(message: string, data?: any)
+   logger.error(message: string, error?: any, data?: any)
+   ```
+
+4. Error Handling:
+
+   ```typescript
+   try {
+     // Operation that may fail
+   } catch (error) {
+     logger.error("Operation failed", error, { context: "additional data" });
+   }
+   ```
+
+5. Data Serialization:
+
+   - Avoid circular references
+   - Keep data structures simple
+   - Don't log sensitive information
+   - Use the error parameter for Error objects
+
+6. Performance Considerations:
+
+   - Log at appropriate levels
+   - Avoid excessive logging in loops
+   - Use debug level for development-only logs
+   - Consider log rotation and cleanup
+
+7. Browser vs Server:
+
+   - Logger automatically detects environment
+   - Browser logs are queued and sent to server
+   - Server logs are written directly to file
+   - Console methods are safely wrapped
+
+8. Log Review:
+
+   ```typescript
+   // Get log summary
+   const summary = logger.getLogSummary();
+
+   // Get all logs
+   const logs = logger.getLogs();
+   ```
+
+9. Common Patterns:
+
+   ```typescript
+   // Feature initialization
+   logger.info("Feature initialized", { featureId, config });
+
+   // API calls
+   logger.debug("API request", { endpoint, params });
+   logger.info("API response received", { status, data });
+
+   // Error handling
+   logger.error("API request failed", error, { endpoint, params });
+
+   // User actions
+   logger.info("User action", { action, userId, details });
+
+   // Performance metrics
+   logger.debug("Performance metric", { operation, duration });
+
+   // UI changes
+   logger.info("UI update", { component, change, reason });
+   ```
+
+10. Log Provider Setup:
+    - Always wrap app with LogProvider
+    - Ensures proper browser setup
+    - Handles error boundaries
+    - Manages console overrides
+
+## Composer History and Planning
+
+1. File Structure:
+
+   ```
+   /docs/composer-history/
+   ├── {composer-id}/
+   │   ├── .plan         # Tactical plan for this specific run
+   │   ├── history.json  # Execution history for this run
+   │   └── metadata.json # Run-specific configuration
+   ```
+
+2. Plan File Format:
+
+   ```typescript
+   interface ComposerPlan {
+     id: string;
+     status: "pending" | "in-progress" | "completed" | "failed";
+     steps: {
+       id: string;
+       description: string;
+       status: "pending" | "in-progress" | "completed" | "failed";
+       startedAt?: string;
+       completedAt?: string;
+       error?: string;
+       outputs?: any;
+     }[];
+     metadata: {
+       createdAt: string;
+       updatedAt: string;
+       sourceContent: string;
+       targetFormat: string;
+       config: Record<string, any>;
+     };
+     // Reference to strategic plan items being worked on
+     strategicPlanItems: {
+       id: string; // Number from plan.md
+       status: "pending" | "in-progress" | "completed" | "failed";
+       notes?: string;
+     }[];
+   }
+   ```
+
+3. History File Format:
+
+   ```typescript
+   interface ComposerHistory {
+     runs: {
+       id: string;
+       startedAt: string;
+       completedAt: string;
+       status: "completed" | "failed";
+       error?: string;
+       metrics: {
+         duration: number;
+         tokensUsed: number;
+         stepCount: number;
+       };
+       outputs: {
+         files: string[];
+         content: string[];
+       };
+       // Strategic plan updates made by this run
+       strategicUpdates?: {
+         planItemId: string;
+         type: "new" | "update" | "complete";
+         description: string;
+         timestamp: string;
+       }[];
+     }[];
+   }
+   ```
+
+4. Usage Rules:
+
+   - Create new plan before starting composition
+   - Link to relevant items in plan.md via strategicPlanItems
+   - Update plan.md when strategic changes are identified
+   - Log all steps with timestamps
+   - Store outputs and errors
+   - Keep history for debugging
+   - Use atomic writes for updates
+   - Document all UI changes with component, change type, and rationale
+
+5. Best Practices:
+
+   - One plan file per composition run
+   - Include all context in metadata
+   - Version control friendly format
+   - Human readable structure
+   - Clear error messages
+   - Update plan.md for strategic changes
+   - Keep composer history for tactical details
+
+6. Example Plan:
+
+   ```json
+   {
+     "id": "blog-to-twitter-20240116",
+     "status": "in-progress",
+     "steps": [
+       {
+         "id": "parse-content",
+         "description": "Parse blog content into sections",
+         "status": "completed",
+         "startedAt": "2024-01-16T10:00:00Z",
+         "completedAt": "2024-01-16T10:00:01Z",
+         "outputs": {
+           "sections": ["intro", "main", "conclusion"]
+         }
+       }
+     ],
+     "metadata": {
+       "createdAt": "2024-01-16T10:00:00Z",
+       "updatedAt": "2024-01-16T10:00:01Z",
+       "sourceContent": "blog-post-1.md",
+       "targetFormat": "twitter-thread",
+       "config": {
+         "threadLength": 5,
+         "includeHashtags": true
+       }
+     },
+     "strategicPlanItems": [
+       {
+         "id": "41",
+         "status": "in-progress",
+         "notes": "Working on multi-template merge feature"
+       }
+     ]
+   }
+   ```
+
+7. Monitoring:
+
+   - Track success/failure rates
+   - Measure performance metrics
+   - Analyze common errors
+   - Monitor resource usage
+   - Alert on failures
+   - Track strategic plan progress
+
+8. Cleanup:
+   - Archive completed plans
+   - Rotate history files
+   - Clean up temporary files
+   - Maintain disk usage
+   - Backup important data
+   - Update plan.md with completed items
+
+Remember:
+
+- Always create plan first
+- Link to strategic plan items
+- Update plan.md for strategic changes
+- Keep tactical details in composer history
+- Log all important events
+- Keep history for analysis
+- Clean up old files

@@ -1,0 +1,20 @@
+{
+    "runs": [
+        {
+            "id": "example-run-20240116",
+            "startedAt": "2024-01-16T00:00:00Z",
+            "completedAt": null,
+            "status": "in-progress",
+            "metrics": {
+                "duration": 0,
+                "tokensUsed": 0,
+                "stepCount": 0
+            },
+            "outputs": {
+                "files": [],
+                "content": []
+            },
+            "strategicUpdates": []
+        }
+    ]
+}
