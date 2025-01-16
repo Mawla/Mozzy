@@ -128,8 +128,7 @@ function BaseViewComponent({ sections, metadata }: BaseViewProps) {
           if (fieldMetadata.component === "TopicBlock") {
             const props =
               fieldMetadata.props as CustomComponentProps["TopicBlock"];
-            const noCard = props.noCard || fieldMetadata.noCard;
-            return <TopicBlock {...props} noCard={noCard} />;
+            return <TopicBlock {...props} noCard={props.noCard} />;
           }
           return null;
         default:
