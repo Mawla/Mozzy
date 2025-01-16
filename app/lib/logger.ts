@@ -11,6 +11,13 @@ export interface LogEntry {
   error?: Error;
 }
 
+export interface LogFile {
+  name: string;
+  path: string;
+  size: number;
+  created: Date;
+}
+
 class Logger {
   private static instance: Logger;
   private logs: LogEntry[] = [];
