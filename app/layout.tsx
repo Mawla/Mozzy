@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css"; // Ensure this import is present
 import "@/app/styles/tiptap.css";
 import { Toaster } from "react-hot-toast";
+import { LogProvider } from "./providers/log-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
+        <LogProvider>{children}</LogProvider>
         <Toaster position="bottom-right" />
       </body>
     </html>

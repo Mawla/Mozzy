@@ -6,6 +6,9 @@ export interface LogEntry {
   message: string;
   data?: any;
   error?: Error;
+  source?: "browser" | "server";
+  url?: string;
+  userAgent?: string;
 }
 
 export interface LogFile {
@@ -65,6 +68,93 @@ class Logger {
     if (this.logs.length > this.maxLogs) {
       this.logs.shift();
     }
+
+    // Send to server if in browser
+    if (typeof window !== "undefined" && entry.source === "browser") {
+      this.sendToServer(entry);
+    }
+  }
+
+  private async sendToServer(entry: LogEntry) {
+    try {
+      await fetch("/api/debug/logs/files", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ entry }),
+      });
+    } catch (error) {
+      console.error("Failed to send log to server:", error);
+    }
+  }
+
+  setupBrowserErrorCapture() {
+    if (typeof window === "undefined") return;
+
+    // Capture unhandled errors
+    window.addEventListener("error", (event) => {
+      this.error(
+        "Unhandled browser error",
+        event.error || new Error(event.message),
+        {
+          filename: event.filename,
+          lineno: event.lineno,
+          colno: event.colno,
+          source: "browser",
+          url: window.location.href,
+          userAgent: window.navigator.userAgent,
+        }
+      );
+      return false;
+    });
+
+    // Capture unhandled promise rejections
+    window.addEventListener("unhandledrejection", (event) => {
+      const error =
+        event.reason instanceof Error
+          ? event.reason
+          : new Error(String(event.reason));
+      this.error("Unhandled promise rejection", error, {
+        source: "browser",
+        url: window.location.href,
+        userAgent: window.navigator.userAgent,
+      });
+      return false;
+    });
+
+    // Capture console methods
+    const consoleMethods: LogLevel[] = ["debug", "info", "warn", "error"];
+    consoleMethods.forEach((level) => {
+      const originalMethod = console[level];
+      console[level] = (...args: any[]) => {
+        // Call original method
+        originalMethod.apply(console, args);
+
+        // Log to our system
+        const message = args
+          .map((arg) =>
+            typeof arg === "string"
+              ? arg
+              : arg instanceof Error
+              ? arg.message
+              : JSON.stringify(arg)
+          )
+          .join(" ");
+
+        const error = args.find((arg) => arg instanceof Error) || undefined;
+
+        this.addLog({
+          timestamp: new Date().toISOString(),
+          level,
+          message,
+          error,
+          source: "browser",
+          url: window.location.href,
+          userAgent: window.navigator.userAgent,
+        });
+      };
+    });
   }
 
   debug(message: string, data?: any) {
