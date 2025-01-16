@@ -190,3 +190,84 @@ Remember:
 - Check plan files before starting work
 - Document improvements as you discover them
 - Commit work after significant progress
+
+## Log Review Guidelines
+
+1. Accessing Logs:
+
+   - Development endpoint: GET http://localhost:3000/api/debug/logs
+   - Only available in development and from localhost
+   - Returns log summary, error logs, and log file information
+
+2. Log Structure:
+
+   ```typescript
+   interface LogEntry {
+     timestamp: string;
+     level: "debug" | "info" | "warn" | "error";
+     message: string;
+     data?: any;
+     error?: Error;
+   }
+   ```
+
+3. Available Methods:
+
+   - `logger.getLogSummary()`: Quick overview of logging state
+   - `logger.getLogs(level?, limit?)`: Get filtered logs
+   - `logger.getLogsByTimeRange(startTime, endTime)`: Get logs from a time period
+   - `logger.searchLogs(searchTerm, options)`: Search logs with pattern matching
+
+4. Log Files:
+
+   - Location: `/logs/app-YYYY-MM-DD.log`
+   - Daily rotation
+   - Maximum 1000 entries in memory
+   - Full stack traces for errors
+
+5. Review Process:
+
+   1. Check log summary for error/warning counts
+   2. Review any recent errors in detail
+   3. Search logs for specific issues or patterns
+   4. Check log files for historical context
+
+6. Common Log Patterns:
+   - Application startup sequence
+   - Authentication events
+   - API calls and responses
+   - Error conditions and recovery
+   - Performance issues
+
+Remember:
+
+- Always check logs when debugging issues
+- Review error patterns for systemic problems
+- Monitor warning counts for potential issues
+- Use time-range queries for specific incidents
+- Search functionality for targeted investigation
+
+## Best Practices
+
+1. When to Check Logs:
+
+   - After deployment changes
+   - When investigating bugs
+   - During performance analysis
+   - After security incidents
+   - For user issue reports
+
+2. What to Look For:
+
+   - Unexpected error patterns
+   - Repeated warnings
+   - Authentication failures
+   - API timeouts or failures
+   - Database connection issues
+
+3. Response Actions:
+   - Document new error patterns
+   - Update error handling if needed
+   - Add more detailed logging
+   - Create monitoring alerts
+   - Update documentation

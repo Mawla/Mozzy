@@ -250,3 +250,14 @@ class Logger {
 }
 
 export const logger = Logger.getInstance();
+
+// Add some test logs
+logger.info("Application started");
+logger.debug("Initializing components");
+logger.warn("Cache miss for user preferences");
+logger.error(
+  "Failed to load configuration",
+  new Error("Config file not found")
+);
+logger.info("Using default configuration");
+logger.debug("Components initialized successfully");

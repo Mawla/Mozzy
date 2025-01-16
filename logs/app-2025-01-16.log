@@ -1,0 +1,45 @@
+[2025-01-16T14:44:21.087Z] INFO: Application started
+[2025-01-16T14:44:21.088Z] DEBUG: Initializing components
+[2025-01-16T14:44:21.088Z] WARN: Cache miss for user preferences
+[2025-01-16T14:44:21.088Z] ERROR: Failed to load configuration
+Error: Error: Config file not found
+    at eval (webpack-internal:///(rsc)/./app/lib/logger.ts:177:46)
+    at (rsc)/./app/lib/logger.ts (/Users/dan/dev/frontend/mozzy/.next/server/app/api/debug/logs/route.js:112:1)
+    at __webpack_require__ (/Users/dan/dev/frontend/mozzy/.next/server/webpack-runtime.js:33:42)
+    at eval (webpack-internal:///(rsc)/./app/api/debug/logs/route.ts:5:69)
+    at (rsc)/./app/api/debug/logs/route.ts (/Users/dan/dev/frontend/mozzy/.next/server/app/api/debug/logs/route.js:102:1)
+    at __webpack_require__ (/Users/dan/dev/frontend/mozzy/.next/server/webpack-runtime.js:33:42)
+    at eval (webpack-internal:///(rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fdebug%2Flogs%2Froute&page=%2Fapi%2Fdebug%2Flogs%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fdebug%2Flogs%2Froute.ts&appDir=%2FUsers%2Fdan%2Fdev%2Ffrontend%2Fmozzy%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fdan%2Fdev%2Ffrontend%2Fmozzy&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!:15:115)
+    at (rsc)/./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fdebug%2Flogs%2Froute&page=%2Fapi%2Fdebug%2Flogs%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fdebug%2Flogs%2Froute.ts&appDir=%2FUsers%2Fdan%2Fdev%2Ffrontend%2Fmozzy%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fdan%2Fdev%2Ffrontend%2Fmozzy&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D! (/Users/dan/dev/frontend/mozzy/.next/server/app/api/debug/logs/route.js:92:1)
+    at __webpack_require__ (/Users/dan/dev/frontend/mozzy/.next/server/webpack-runtime.js:33:42)
+    at __webpack_exec__ (/Users/dan/dev/frontend/mozzy/.next/server/app/api/debug/logs/route.js:122:39)
+    at /Users/dan/dev/frontend/mozzy/.next/server/app/api/debug/logs/route.js:123:114
+    at __webpack_require__.X (/Users/dan/dev/frontend/mozzy/.next/server/webpack-runtime.js:168:21)
+    at /Users/dan/dev/frontend/mozzy/.next/server/app/api/debug/logs/route.js:123:47
+    at Object.<anonymous> (/Users/dan/dev/frontend/mozzy/.next/server/app/api/debug/logs/route.js:126:3)
+    at Module._compile (node:internal/modules/cjs/loader:1375:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1434:10)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1234:19)
+    at mod.require (/Users/dan/dev/frontend/mozzy/node_modules/next/dist/server/require-hook.js:65:28)
+    at require (node:internal/modules/helpers:176:18)
+    at requirePage (/Users/dan/dev/frontend/mozzy/node_modules/next/dist/server/require.js:109:84)
+    at /Users/dan/dev/frontend/mozzy/node_modules/next/dist/server/load-components.js:98:84
+    at async loadComponentsImpl (/Users/dan/dev/frontend/mozzy/node_modules/next/dist/server/load-components.js:98:26)
+    at async DevServer.findPageComponentsImpl (/Users/dan/dev/frontend/mozzy/node_modules/next/dist/server/next-server.js:710:36)
+    at async DevServer.findPageComponents (/Users/dan/dev/frontend/mozzy/node_modules/next/dist/server/dev/next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (/Users/dan/dev/frontend/mozzy/node_modules/next/dist/server/base-server.js:1917:24)
+    at async DevServer.renderToResponseImpl (/Users/dan/dev/frontend/mozzy/node_modules/next/dist/server/base-server.js:1969:32)
+    at async DevServer.pipeImpl (/Users/dan/dev/frontend/mozzy/node_modules/next/dist/server/base-server.js:920:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/dan/dev/frontend/mozzy/node_modules/next/dist/server/next-server.js:272:17)
+    at async DevServer.handleRequestImpl (/Users/dan/dev/frontend/mozzy/node_modules/next/dist/server/base-server.js:816:17)
+    at async /Users/dan/dev/frontend/mozzy/node_modules/next/dist/server/dev/next-dev-server.js:339:20
+    at async Span.traceAsyncFn (/Users/dan/dev/frontend/mozzy/node_modules/next/dist/trace/trace.js:154:20)
+    at async DevServer.handleRequest (/Users/dan/dev/frontend/mozzy/node_modules/next/dist/server/dev/next-dev-server.js:336:24)
+    at async invokeRender (/Users/dan/dev/frontend/mozzy/node_modules/next/dist/server/lib/router-server.js:174:21)
+    at async handleRequest (/Users/dan/dev/frontend/mozzy/node_modules/next/dist/server/lib/router-server.js:353:24)
+    at async requestHandlerImpl (/Users/dan/dev/frontend/mozzy/node_modules/next/dist/server/lib/router-server.js:377:13)
+    at async Server.requestListener (/Users/dan/dev/frontend/mozzy/node_modules/next/dist/server/lib/start-server.js:141:13)
+[2025-01-16T14:44:21.090Z] INFO: Using default configuration
+[2025-01-16T14:44:21.090Z] DEBUG: Components initialized successfully
