@@ -2,7 +2,7 @@ import "./styles/globals.css";
 import "./styles/tiptap.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ErrorBoundary } from "./components/error-boundary";
-import { LogProvider } from "./providers/log-provider";
+// import { LogProvider } from "./providers/log-provider";
 import { ThemeProvider } from "next-themes";
 import type { Metadata } from "next";
 import React from "react";
@@ -29,12 +29,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <LogProvider>
-            <ErrorBoundary>
-              {children}
-              <Toaster />
-            </ErrorBoundary>
-          </LogProvider>
+          {/* <LogProvider> */}
+          <ErrorBoundary>
+            {children}
+            <Toaster />
+          </ErrorBoundary>
+          {/* </LogProvider> */}
         </ThemeProvider>
       </body>
     </html>

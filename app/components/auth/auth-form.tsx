@@ -4,163 +4,98 @@ import { createBrowserClient } from "@supabase/ssr";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { logger } from "@/lib/logger";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useSearchParams } from "next/navigation";
 
 export function AuthForm() {
-  const router = useRouter();
-  const [supabase, setSupabase] = useState<ReturnType<
-    typeof createBrowserClient
-  > | null>(null);
+  console.log("AuthForm: Component rendering");
   const [mounted, setMounted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const next = searchParams?.get("next") ?? "/dashboard";
+
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   useEffect(() => {
-    try {
-      if (
-        !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-        !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      ) {
-        const logData = {
-          url: process.env.NEXT_PUBLIC_SUPABASE_URL,
-          hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-        };
-        logger.error(
-          "Missing Supabase environment variables",
-          new Error("Missing configuration"),
-          logData
-        );
-        setError("Missing Supabase configuration");
-        return;
-      }
+    setMounted(true);
+    console.log("AuthForm: Component mounted");
+  }, []);
 
-      logger.debug("Initializing Supabase client", {
-        url: process.env.NEXT_PUBLIC_SUPABASE_URL,
-      });
-
-      const client = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      );
-
-      logger.debug("Supabase client created", {
-        hasClient: !!client,
-        hasAuth: !!client?.auth,
-      });
-
-      setSupabase(client);
-      setMounted(true);
-
-      const {
-        data: { subscription },
-      } = client.auth.onAuthStateChange((event, session) => {
-        logger.debug("Auth state changed", { event, userId: session?.user.id });
-        if (event === "SIGNED_IN") {
-          logger.info("User signed in successfully", {
-            userId: session?.user.id,
-          });
-          router.push("/dashboard");
-          router.refresh();
-        }
-      });
-
-      return () => {
-        subscription.unsubscribe();
-      };
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to initialize auth";
-      logger.error("Auth form initialization failed", err as Error, {
-        error: errorMessage,
-      });
-      setError(errorMessage);
-    }
-  }, [router]);
-
-  if (!mounted || !supabase) {
-    return (
-      <div className="w-full max-w-[400px] mx-auto p-4 mt-8 space-y-4">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-      </div>
-    );
+  if (!mounted) {
+    return null;
   }
 
-  if (error) {
-    return (
-      <div className="w-full max-w-[400px] mx-auto p-4 mt-8">
-        <div className="p-4 bg-destructive/10 text-destructive rounded-md">
-          <p>Failed to load authentication: {error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-2 text-sm underline"
-          >
-            Try again
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const redirectUrl = `${
+    window.location.origin
+  }/auth/callback?next=${encodeURIComponent(next)}`;
 
   return (
-    <div className="w-full max-w-[400px] mx-auto p-4 mt-8">
+    <div className="w-full max-w-[400px] mx-auto p-8 border border-red-500">
+      <div className="flex flex-col space-y-2 text-center mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
+        <p className="text-sm text-muted-foreground">
+          Sign in to your account to continue
+        </p>
+      </div>
       <Auth
         supabaseClient={supabase}
         view="sign_in"
         appearance={{
           theme: ThemeSupa,
-          extend: true,
           variables: {
             default: {
               colors: {
-                brand: "rgb(var(--foreground))",
-                brandAccent: "rgb(var(--muted))",
-                inputBackground: "rgb(var(--background))",
-                inputText: "rgb(var(--foreground))",
-                inputPlaceholder: "rgb(var(--muted-foreground))",
+                brand: "hsl(var(--primary))",
+                brandAccent: "hsl(var(--primary))",
+                inputBackground: "transparent",
+                inputText: "hsl(var(--foreground))",
+                inputPlaceholder: "hsl(var(--muted-foreground))",
+                messageText: "hsl(var(--foreground))",
+                messageTextDanger: "hsl(var(--destructive))",
+                anchorTextColor: "hsl(var(--primary))",
+                dividerBackground: "hsl(var(--border))",
               },
             },
           },
           className: {
             container: "space-y-4",
+            label:
+              "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+            input:
+              "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
             button:
-              "w-full bg-primary text-primary-foreground hover:bg-primary/90",
-            divider: "my-4",
-            label: "text-foreground",
-            input: "bg-background border-input",
-            message: "text-foreground",
-            anchor: "text-primary hover:text-primary/80",
+              "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full",
+            divider: "relative my-4",
+            message: "text-sm text-muted-foreground",
+            anchor:
+              "text-sm text-primary hover:text-primary/80 underline-offset-4 hover:underline",
           },
         }}
         localization={{
           variables: {
             sign_in: {
-              email_label: "Email address",
+              email_label: "Email",
               password_label: "Password",
               button_label: "Sign in",
-              loading_button_label: "Signing in ...",
+              loading_button_label: "Signing in...",
+              social_provider_text: "Sign in with {{provider}}",
             },
             sign_up: {
-              email_label: "Email address",
+              email_label: "Email",
               password_label: "Create a password",
               button_label: "Create account",
-              loading_button_label: "Creating account ...",
+              loading_button_label: "Creating account...",
+              social_provider_text: "Sign up with {{provider}}",
             },
           },
         }}
-        providers={["google", "github"]}
-        redirectTo={`${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`}
+        providers={["github", "google"]}
+        redirectTo={redirectUrl}
+        onlyThirdPartyProviders={false}
+        magicLink={false}
         showLinks={true}
       />
-      {process.env.NODE_ENV === "development" && (
-        <div className="mt-4 p-4 bg-muted rounded-md">
-          <p className="text-sm text-muted-foreground">Test credentials:</p>
-          <p className="text-sm">Email: test@example.com</p>
-          <p className="text-sm">Password: password123</p>
-        </div>
-      )}
     </div>
   );
 }

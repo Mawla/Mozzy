@@ -4,11 +4,12 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { logger } from "@/lib/logger";
-import { AuthError } from "@supabase/supabase-js";
+import { cookies } from "next/headers";
 
 export async function signIn(email: string, password: string) {
+  const cookieStore = cookies();
   try {
-    const supabase = await createClient();
+    const supabase = await createClient(cookieStore);
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -29,8 +30,9 @@ export async function signIn(email: string, password: string) {
 }
 
 export async function signOut() {
+  const cookieStore = cookies();
   try {
-    const supabase = await createClient();
+    const supabase = await createClient(cookieStore);
     const { error } = await supabase.auth.signOut();
 
     if (error) {
@@ -48,8 +50,9 @@ export async function signOut() {
 }
 
 export async function getUser() {
+  const cookieStore = cookies();
   try {
-    const supabase = await createClient();
+    const supabase = await createClient(cookieStore);
     const {
       data: { user },
       error,
@@ -74,8 +77,9 @@ export async function getUser() {
 }
 
 export async function getSession() {
+  const cookieStore = cookies();
   try {
-    const supabase = await createClient();
+    const supabase = await createClient(cookieStore);
     const {
       data: { session },
       error,
