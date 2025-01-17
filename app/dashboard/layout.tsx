@@ -1,24 +1,32 @@
-import React from "react";
-import { DashboardSidebar } from "@/app/components/dashboard/Sidebar";
-import Header from "../components/dashboard/Header";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { redirect } from "next/navigation";
+import { Sidebar } from "@/components/ui/Sidebar";
+import { SignOutButton } from "@/app/components/auth/sign-out-button";
+import { getUser } from "@/app/actions/auth";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const user = await getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
   return (
-    <SidebarProvider defaultOpen={true}>
-      <div className="flex h-screen bg-background">
-        <DashboardSidebar />
-        <SidebarInset>
-          <Header />
-          <main className="flex-1 overflow-x-hidden overflow-y-auto p-6">
-            {children}
-          </main>
-        </SidebarInset>
+    <div className="h-full relative bg-background text-foreground">
+      <div className="hidden h-full md:flex md:w-72 md:flex-col md:fixed md:inset-y-0 z-[80] bg-gray-900">
+        <div className="flex flex-col flex-grow">
+          <Sidebar />
+          <div className="p-4">
+            <SignOutButton />
+          </div>
+        </div>
       </div>
-    </SidebarProvider>
+      <main className="md:pl-72">
+        <div className="px-4 py-6 lg:px-8">{children}</div>
+      </main>
+    </div>
   );
 }
