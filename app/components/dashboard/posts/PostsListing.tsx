@@ -5,25 +5,48 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Settings } from "lucide-react";
 import { postService } from "@/app/services/postService";
 import { Post } from "@/app/types/post";
+import { logger } from "@/lib/logger";
 
 export const PostsListing: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [selectedPosts, setSelectedPosts] = useState<string[]>([]);
   const [isSelectMode, setIsSelectMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(
     null
   );
   const router = useRouter();
 
   useEffect(() => {
-    const fetchPosts = () => {
-      const fetchedPosts = postService.getPosts();
-      setPosts(fetchedPosts);
+    const fetchPosts = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const fetchedPosts = await postService.getPosts();
+        setPosts(fetchedPosts);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to fetch posts";
+        logger.error(
+          "Failed to fetch posts",
+          err instanceof Error ? err : new Error(errorMessage)
+        );
+        setError(errorMessage);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchPosts();
@@ -91,6 +114,29 @@ export const PostsListing: React.FC = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-destructive/10 text-destructive p-4 rounded-md">
+        <p>Error: {error}</p>
+        <Button
+          variant="outline"
+          className="mt-2"
+          onClick={() => window.location.reload()}
+        >
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-4 space-y-8">
       <div className="flex justify-between items-center">
@@ -144,35 +190,35 @@ export const PostsListing: React.FC = () => {
                 </Button>
               </div>
             )}
-            <div className="flex items-center p-4">
-              {isSelectMode && (
-                <Checkbox
-                  checked={selectedPosts.includes(post.id)}
-                  onCheckedChange={() => {}}
-                  className="mr-4 pointer-events-none"
-                />
-              )}
-              <div className="flex-grow">
-                <CardHeader>
+            <CardHeader>
+              <div className="flex items-center">
+                {isSelectMode && (
+                  <Checkbox
+                    checked={selectedPosts.includes(post.id)}
+                    onCheckedChange={() => {}}
+                    className="mr-4 pointer-events-none"
+                  />
+                )}
+                <div className="flex-grow">
                   <CardTitle>{post.title || "Untitled"}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-500 mb-2">
+                  <p className="text-sm text-muted-foreground">
                     Created: {new Date(post.createdAt).toLocaleDateString()}
                   </p>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {post.tags.map((tag, tagIndex) => (
-                      <Badge key={tagIndex} variant="secondary">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                  <p className="text-sm text-gray-700 line-clamp-3">
-                    {post.content}
-                  </p>
-                </CardContent>
+                </div>
               </div>
-            </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {post.tags.map((tag, tagIndex) => (
+                  <Badge key={tagIndex} variant="secondary">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+              <p className="text-sm text-gray-700 line-clamp-3">
+                {post.content}
+              </p>
+            </CardContent>
           </Card>
         ))}
       </div>

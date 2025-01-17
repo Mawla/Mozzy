@@ -2,9 +2,9 @@
 
 import { createServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import type { Database } from "@/types/supabase";
 import { logger } from "@/lib/logger";
 import { Post } from "@/app/types/post";
+import { PostgrestError } from "@supabase/supabase-js";
 
 export type ServerActionResponse<T> = {
   data?: T;
@@ -21,13 +21,18 @@ export async function getPosts(): Promise<ServerActionResponse<Post[]>> {
       .order("created_at", { ascending: false });
 
     if (error) {
-      logger.error("Failed to fetch posts", error);
-      return { error: error.message };
+      const errorMessage =
+        (error as PostgrestError).message || "Failed to fetch posts";
+      logger.error("Failed to fetch posts", new Error(errorMessage));
+      return { error: errorMessage };
     }
 
     return { data: posts };
   } catch (error) {
-    logger.error("Unexpected error fetching posts", error);
+    logger.error(
+      "Unexpected error fetching posts",
+      error instanceof Error ? error : new Error(String(error))
+    );
     return { error: "An unexpected error occurred while fetching posts" };
   }
 }
@@ -45,13 +50,18 @@ export async function getPostById(
       .single();
 
     if (error) {
-      logger.error(`Failed to fetch post ${id}`, error);
-      return { error: error.message };
+      const errorMessage =
+        (error as PostgrestError).message || `Failed to fetch post ${id}`;
+      logger.error(`Failed to fetch post ${id}`, new Error(errorMessage));
+      return { error: errorMessage };
     }
 
     return { data: post };
   } catch (error) {
-    logger.error(`Unexpected error fetching post ${id}`, error);
+    logger.error(
+      "Unexpected error fetching post",
+      error instanceof Error ? error : new Error(String(error))
+    );
     return { error: "An unexpected error occurred while fetching the post" };
   }
 }
@@ -88,14 +98,21 @@ export async function createPost(data: {
       .single();
 
     if (error) {
-      logger.error("Failed to create post", error, { postData });
-      return { error: error.message };
+      const errorMessage =
+        (error as PostgrestError).message || "Failed to create post";
+      logger.error("Failed to create post", new Error(errorMessage), {
+        postData,
+      });
+      return { error: errorMessage };
     }
 
     revalidatePath("/dashboard/posts");
     return { data: post };
   } catch (error) {
-    logger.error("Unexpected error creating post", error);
+    logger.error(
+      "Unexpected error creating post",
+      error instanceof Error ? error : new Error(String(error))
+    );
     return { error: "An unexpected error occurred while creating the post" };
   }
 }
@@ -135,14 +152,21 @@ export async function updatePost(
       .single();
 
     if (error) {
-      logger.error(`Failed to update post ${id}`, error, { data });
-      return { error: error.message };
+      const errorMessage =
+        (error as PostgrestError).message || `Failed to update post ${id}`;
+      logger.error(`Failed to update post ${id}`, new Error(errorMessage), {
+        data,
+      });
+      return { error: errorMessage };
     }
 
     revalidatePath("/dashboard/posts");
     return { data: updatedPost };
   } catch (error) {
-    logger.error(`Unexpected error updating post ${id}`, error);
+    logger.error(
+      "Unexpected error updating post",
+      error instanceof Error ? error : new Error(String(error))
+    );
     return { error: "An unexpected error occurred while updating the post" };
   }
 }
@@ -176,14 +200,19 @@ export async function deletePost(
     const { error } = await supabase.from("posts").delete().eq("id", id);
 
     if (error) {
-      logger.error(`Failed to delete post ${id}`, error);
-      return { error: error.message };
+      const errorMessage =
+        (error as PostgrestError).message || `Failed to delete post ${id}`;
+      logger.error(`Failed to delete post ${id}`, new Error(errorMessage));
+      return { error: errorMessage };
     }
 
     revalidatePath("/dashboard/posts");
     return {};
   } catch (error) {
-    logger.error(`Unexpected error deleting post ${id}`, error);
+    logger.error(
+      "Unexpected error deleting post",
+      error instanceof Error ? error : new Error(String(error))
+    );
     return { error: "An unexpected error occurred while deleting the post" };
   }
 }

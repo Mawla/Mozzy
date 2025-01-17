@@ -90,6 +90,7 @@ Always check these files for current project state before any work:
 13. Use route.ts for API routes
 14. Implement SSG/SSR appropriately
 15. Focus only on task-related changes
+16. Endevor to use components over in-line html. If a component doesn't exist, check shadecn for it. If it doesn't exist there, create it.
 
 ## Code Standards
 

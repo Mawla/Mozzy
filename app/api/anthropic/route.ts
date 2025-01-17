@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as AnthropicActions from "@/app/actions/anthropicActions";
+import {
+  mergeTranscriptAndTemplatePrompt,
+  generateSummaryPrompt,
+  generateImprovedTranscriptPrompt,
+  generateTitlePrompt,
+} from "@/prompts/anthropicPrompts";
 
 // Define a type for the response structure
 type ApiResponse<T> = {
@@ -29,10 +35,20 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case "mergeContent":
+        const prompt = mergeTranscriptAndTemplatePrompt(
+          data.transcript,
+          data.template,
+          data.metadata || {
+            categories: [],
+            tags: [],
+            topics: [],
+            keyPeople: [],
+            industries: [],
+            contentType: [],
+          }
+        );
         return NextResponse.json(
-          createSuccessResponse(
-            await AnthropicActions.mergeContent(data.transcript, data.template)
-          )
+          createSuccessResponse(await AnthropicActions.mergeContent(prompt))
         );
       case "suggestTags":
         return NextResponse.json(
@@ -45,6 +61,14 @@ export async function POST(request: NextRequest) {
           createSuccessResponse(
             await AnthropicActions.chooseBestTemplate(
               data.transcript,
+              data.metadata || {
+                categories: [],
+                tags: [],
+                topics: [],
+                keyPeople: [],
+                industries: [],
+                contentType: [],
+              },
               data.templates
             )
           )
@@ -52,19 +76,25 @@ export async function POST(request: NextRequest) {
       case "generateTitle":
         return NextResponse.json(
           createSuccessResponse(
-            await AnthropicActions.generateTitle(data.transcript)
+            await AnthropicActions.generateTitle(
+              generateTitlePrompt(data.transcript)
+            )
           )
         );
       case "generateImprovedTranscript":
         return NextResponse.json(
           createSuccessResponse(
-            await AnthropicActions.generateImprovedTranscript(data.transcript)
+            await AnthropicActions.generateImprovedTranscript(
+              generateImprovedTranscriptPrompt(data.transcript)
+            )
           )
         );
       case "generateSummary":
         return NextResponse.json(
           createSuccessResponse(
-            await AnthropicActions.generateSummary(data.transcript)
+            await AnthropicActions.generateSummary(
+              generateSummaryPrompt(data.transcript)
+            )
           )
         );
       case "mergeMultipleContents":
@@ -72,7 +102,15 @@ export async function POST(request: NextRequest) {
           createSuccessResponse(
             await AnthropicActions.mergeMultipleContents(
               data.transcript,
-              data.templates
+              data.templates,
+              data.metadata || {
+                categories: [],
+                tags: [],
+                topics: [],
+                keyPeople: [],
+                industries: [],
+                contentType: [],
+              }
             )
           )
         );
