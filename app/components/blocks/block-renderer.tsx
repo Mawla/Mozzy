@@ -53,6 +53,7 @@ function BlockRendererComponent({
           items: mainBlocks.map((row) => ({
             id: row.id,
             title: row.blocks[0]?.sections[0]?.title || "",
+            href: `#${row.id}`,
             onClick: () => {
               const element = document.querySelector(
                 `[data-section-id="${row.id}"]`
@@ -127,6 +128,4 @@ function BlockRendererComponent({
 }
 
 // Wrap with error boundary
-export const BlockRenderer = withErrorBoundary(BlockRendererComponent, {
-  name: "BlockRenderer",
-});
+export const BlockRenderer = withErrorBoundary(BlockRendererComponent);

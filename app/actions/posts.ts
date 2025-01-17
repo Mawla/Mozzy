@@ -1,10 +1,11 @@
 "use server";
 
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { logger } from "@/lib/logger";
 import { Post } from "@/app/types/post";
 import { PostgrestError } from "@supabase/supabase-js";
+import { redirect } from "next/navigation";
 
 export type ServerActionResponse<T> = {
   data?: T;
@@ -12,22 +13,65 @@ export type ServerActionResponse<T> = {
 };
 
 export async function getPosts(): Promise<ServerActionResponse<Post[]>> {
-  const supabase = createServerClient();
-
   try {
-    const { data: posts, error } = await supabase
-      .from("posts")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const supabase = await createClient();
 
-    if (error) {
-      const errorMessage =
-        (error as PostgrestError).message || "Failed to fetch posts";
-      logger.error("Failed to fetch posts", new Error(errorMessage));
-      return { error: errorMessage };
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { error: "User not authenticated" };
     }
 
-    return { data: posts };
+    // First get user's own posts
+    const { data: userPosts, error: userPostsError } = await supabase
+      .from("posts")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (userPostsError) {
+      logger.error("Failed to fetch user posts", userPostsError);
+      return { error: "Failed to fetch user posts" };
+    }
+
+    // Then get team IDs the user is a member of
+    const { data: teamMemberships, error: teamError } = await supabase
+      .from("team_members")
+      .select("team_id")
+      .eq("user_id", user.id);
+
+    if (teamError) {
+      logger.error("Failed to fetch team memberships", teamError);
+      return { data: userPosts }; // Return just user posts if team fetch fails
+    }
+
+    if (!teamMemberships?.length) {
+      return { data: userPosts }; // Return just user posts if no team memberships
+    }
+
+    // Get team posts
+    const teamIds = teamMemberships.map((tm) => tm.team_id);
+    const { data: teamPosts, error: teamPostsError } = await supabase
+      .from("posts")
+      .select("*")
+      .in("team_id", teamIds)
+      .order("created_at", { ascending: false });
+
+    if (teamPostsError) {
+      logger.error("Failed to fetch team posts", teamPostsError);
+      return { data: userPosts }; // Return just user posts if team posts fetch fails
+    }
+
+    // Combine and sort all posts
+    const allPosts = [...userPosts, ...teamPosts].sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+
+    return { data: allPosts };
   } catch (error) {
     logger.error(
       "Unexpected error fetching posts",
@@ -40,13 +84,19 @@ export async function getPosts(): Promise<ServerActionResponse<Post[]>> {
 export async function getPostById(
   id: string
 ): Promise<ServerActionResponse<Post>> {
-  const supabase = createServerClient();
-
   try {
+    const supabase = await createClient();
+
+    const user = await supabase.auth.getUser();
+    if (!user.data?.user) {
+      return { error: "User not authenticated" };
+    }
+
     const { data: post, error } = await supabase
       .from("posts")
       .select("*")
       .eq("id", id)
+      .eq("user_id", user.data.user.id)
       .single();
 
     if (error) {
@@ -74,9 +124,9 @@ export async function createPost(data: {
   mergedContents?: Record<string, string>;
   status?: "draft" | "published";
 }): Promise<ServerActionResponse<Post>> {
-  const supabase = createServerClient();
-
   try {
+    const supabase = await createClient();
+
     const user = await supabase.auth.getUser();
     if (!user.data?.user) {
       return { error: "User not authenticated" };
@@ -121,9 +171,9 @@ export async function updatePost(
   id: string,
   data: Partial<Post>
 ): Promise<ServerActionResponse<Post>> {
-  const supabase = createServerClient();
-
   try {
+    const supabase = await createClient();
+
     const user = await supabase.auth.getUser();
     if (!user.data?.user) {
       return { error: "User not authenticated" };
@@ -134,14 +184,11 @@ export async function updatePost(
       .from("posts")
       .select("user_id")
       .eq("id", id)
+      .eq("user_id", user.data.user.id)
       .single();
 
     if (!existingPost) {
       return { error: "Post not found" };
-    }
-
-    if (existingPost.user_id !== user.data.user.id) {
-      return { error: "Not authorized to update this post" };
     }
 
     const { data: updatedPost, error } = await supabase
@@ -174,9 +221,9 @@ export async function updatePost(
 export async function deletePost(
   id: string
 ): Promise<ServerActionResponse<void>> {
-  const supabase = createServerClient();
-
   try {
+    const supabase = await createClient();
+
     const user = await supabase.auth.getUser();
     if (!user.data?.user) {
       return { error: "User not authenticated" };
@@ -187,14 +234,11 @@ export async function deletePost(
       .from("posts")
       .select("user_id")
       .eq("id", id)
+      .eq("user_id", user.data.user.id)
       .single();
 
     if (!existingPost) {
       return { error: "Post not found" };
-    }
-
-    if (existingPost.user_id !== user.data.user.id) {
-      return { error: "Not authorized to delete this post" };
     }
 
     const { error } = await supabase.from("posts").delete().eq("id", id);
