@@ -1,14 +1,120 @@
-1. Separate State Management: ✅
+# Project Plan
+
+## Authentication (auth-5)
+
+- [x] Initial Supabase setup
+- [x] Basic auth flow implementation
+- [x] Update Supabase clients to use recommended cookie handling methods
+- [x] Fix cookie modification errors in server components (auth-fix-20240117)
+- [x] Fix authentication persistence issues (auth-fix-20240117)
+- [x] Add proper error handling for auth failures (auth-fix-20240117)
+- [x] Implement proper session management in server components (auth-fix-20240117)
+- [x] Fix login page display issues (auth-fix-20240117)
+  - [x] Debug empty white screen on /login
+  - [x] Ensure Supabase Auth UI is properly rendered
+  - [x] Add proper loading state
+  - [x] Test auth flow end-to-end
+  - [x] Verify styling and theme consistency
+
+## Current Issues
+
+1. Supabase SSR Migration (auth-fix-20240320):
+
+   - [ ] Package Updates
+     - [ ] Remove @supabase/supabase-js
+     - [ ] Update @supabase/ssr to latest version
+     - [ ] Update related dependencies
+   - [ ] Client Migration
+     - [ ] Update browser client to use only createBrowserClient
+     - [ ] Remove supabase-js imports
+     - [ ] Update type imports
+   - [ ] Server Migration
+     - [ ] Update server client to use only createServerClient
+     - [ ] Implement proper cookie handling
+     - [ ] Add session validation
+   - [ ] Component Updates
+     - [ ] Update AuthProvider
+     - [ ] Create AuthErrorBoundary
+     - [ ] Update AuthGuard
+     - [ ] Add loading states
+
+2. Authentication Flow:
+   - [ ] Test social login providers
+     - [ ] Test Google authentication
+     - [ ] Test GitHub authentication
+     - [ ] Verify OAuth redirects
+     - [ ] Test error handling for OAuth
+     - [ ] Update documentation for social login
+   - [ ] Implement session recovery
+     - [ ] Add retry logic for failed refreshes
+     - [ ] Add offline detection
+     - [ ] Add reconnection handling
+   - [ ] Add proper error boundaries
+     - [ ] Create AuthErrorBoundary component
+     - [ ] Add fallback UI for auth errors
+     - [ ] Add retry mechanisms
+
+## Critical Fixes (auth-fix-20240320)
+
+1. Fix SSR Integration:
+
+   - [ ] Remove @supabase/supabase-js dependency
+   - [ ] Update all components to use @supabase/ssr
+   - [ ] Implement proper cookie handling
+   - [ ] Add session validation and recovery
+   - [ ] Update error handling
+
+2. Fix Session Management:
+
+   - [ ] Centralize session handling in auth actions
+   - [ ] Implement proper refresh mechanism
+   - [ ] Add session recovery for failures
+   - [ ] Handle offline scenarios
+   - [ ] Add proper error handling
+
+3. Fix Error Handling:
+   - [ ] Create AuthErrorBoundary component
+   - [ ] Add retry mechanisms
+   - [ ] Implement user-friendly error messages
+   - [ ] Add proper error logging
+   - [ ] Add monitoring
+
+## Next Steps
+
+1. Authentication Migration (auth-fix-20240320):
+
+   - [ ] Update package.json and clean install
+   - [ ] Migrate client and server code
+   - [ ] Update components and routes
+   - [ ] Test all auth flows
+   - [ ] Monitor for issues
+
+2. Testing:
+
+   - [ ] Test authentication flow with SSR client
+   - [ ] Verify cookie handling in all contexts
+   - [ ] Test session refresh scenarios
+   - [ ] Test error handling and recovery
+   - [ ] Test offline scenarios
+
+3. Documentation:
+
+   - [ ] Update auth flow documentation
+   - [ ] Document error handling procedures
+   - [ ] Add troubleshooting guide
+   - [ ] Update API documentation
+
+4. Separate State Management: ✅
    [✓] Created app/hooks/useCreatePost.ts
    [✓] Moved all state declarations and related useEffects to this custom hook
    [✓] Exported a function that returns all necessary state and update functions
 
-2. Extract API Service Calls: ✅
+5. Extract API Service Calls: ✅
    [✓] Created app/services/postService.ts
    [✓] Moved all API-related functions to this service
    [✓] Ensured these functions are pure and don't directly manipulate state
 
-3. Create Separate Components: ✅
+6. Create Separate Components: ✅
    [✓] 3.1. Created app/components/dashboard/posts/PostHeader.tsx
    [✓] Extracted header section with buttons
    [✓] Passed necessary props
@@ -22,82 +128,82 @@
    [✓] Passed necessary props
    [✓] Updated imports in parent component
 
-4. Simplify CreatePostPage: ✅
+7. Simplify CreatePostPage: ✅
    [✓] Updated app/dashboard/posts/create/page.tsx to use the new custom hook
    [✓] Rendered new separate components
    [✓] Passed necessary props and callbacks to child components
    [✓] Removed redundant code
 
-5. Create a Constants File: ⏳ (To Do)
+8. Create a Constants File: ⏳ (To Do)
    [ ] Create app/constants/editorConfig.ts
    [ ] Move tab names to constants
    [ ] Move button texts to constants
    [ ] Move other relevant constant values
    [ ] Update imports in affected files
 
-6. Update Import Statements: ✅
+9. Update Import Statements: ✅
    [✓] Updated imports in refactored files
    [✓] Updated imports for new components
    [ ] Update imports for constants (pending creation of constants file)
    [✓] Ensured all imports use absolute paths
 
-7. Refactor LinkedIn Service: ⏳ (To Do)
-   [ ] Remove existing LinkedIn posting functionality
-   [ ] Update postService.ts to remove LinkedIn-related functions
-   [ ] Remove LinkedIn-related UI elements and state
-   [ ] Update documentation to reflect removal of LinkedIn integration
+10. Refactor LinkedIn Service: ⏳ (To Do)
+    [ ] Remove existing LinkedIn posting functionality
+    [ ] Update postService.ts to remove LinkedIn-related functions
+    [ ] Remove LinkedIn-related UI elements and state
+    [ ] Update documentation to reflect removal of LinkedIn integration
 
-8. Create a Types File: ✅
-   [✓] Created app/types/post.ts
-   [✓] Moved Pack type definition
-   [✓] Moved Template type definition
-   [✓] Moved other shared type definitions
-   [✓] Updated imports in affected files
+11. Create a Types File: ✅
+    [✓] Created app/types/post.ts
+    [✓] Moved Pack type definition
+    [✓] Moved Template type definition
+    [✓] Moved other shared type definitions
+    [✓] Updated imports in affected files
 
-9. Update TipTapEditor Component: ⏳ (To Do)
-   [ ] Refactor app/components/TipTapEditor.tsx for reusability
-   [ ] Add config prop for customization
-   [ ] Update usage in PostContent component
-   [ ] Add proper TypeScript types
+12. Update TipTapEditor Component: ⏳ (To Do)
+    [ ] Refactor app/components/TipTapEditor.tsx for reusability
+    [ ] Add config prop for customization
+    [ ] Update usage in PostContent component
+    [ ] Add proper TypeScript types
 
-10. Create a Utilities File: ⏳ (To Do)
+13. Create a Utilities File: ⏳ (To Do)
     [ ] Create app/utils/formatters.ts
     [ ] Move formatContent function
     [ ] Add other utility functions as needed
     [ ] Update imports in affected files
 
-11. Test and Debug: ⏳ (Ongoing)
+14. Test and Debug: ⏳ (Ongoing)
     [ ] Write unit tests for hooks
     [ ] Write unit tests for services
     [ ] Write integration tests for main functionality
     [ ] Perform manual testing of all features
     [ ] Fix any bugs discovered during testing
 
-12. Update Documentation: ⏳ (To Do)
+15. Update Documentation: ⏳ (To Do)
     [ ] Update README.md with new project structure
     [ ] Add comments to new files explaining their purpose
     [ ] Update existing comments for clarity
     [ ] Create/update API documentation
 
-13. Implement Anthropic API Integration: ✅
+16. Implement Anthropic API Integration: ✅
     [✓] Created utils/AnthropicHelper.ts
     [✓] Implemented AnthropicHelper class with necessary methods
     [✓] Add error handling for API calls
     [✓] Update related services to use AnthropicHelper
 
-14. Update API Route: ✅
+17. Update API Route: ✅
     [✓] Created app/api/anthropic/route.ts
     [✓] Implemented POST handler for mergeContent action
     [✓] Implemented POST handler for suggestTags action
     [✓] Implemented POST handler for chooseBestTemplate action
 
-15. Update Prompts: ✅
+18. Update Prompts: ✅
     [✓] Updated mergeTranscriptAndTemplatePrompt in anthropicPrompts.ts
     [✓] Updated suggestTagsPrompt in anthropicPrompts.ts
     [✓] Updated chooseBestTemplatePrompt in anthropicPrompts.ts
     [✓] Ensure prompts are optimized for Claude 3.5 Sonnet
 
-16. Implement Error Handling: ✅
+19. Implement Error Handling: ✅
     [✓] Added basic error handling in API routes
     [✓] Added basic error handling in services
     [✓] Implement global error boundary
@@ -109,27 +215,27 @@
     [✓] Add error handling to BlockBuilder
     [✓] Add error handling to BaseView
 
-17. Implement Caching: ⏳ (To Do)
+20. Implement Caching: ⏳ (To Do)
     [ ] Research caching strategies for API responses
     [ ] Implement caching for frequently used data
     [ ] Add cache invalidation mechanism
     [ ] Update services to use caching
 
-18. Optimize Performance: ⏳ (To Do)
+21. Optimize Performance: ⏳ (To Do)
     [ ] Analyze current performance with dev tools
     [ ] Optimize API calls (e.g., debounce, throttle)
     [ ] Optimize state updates
     [ ] Implement lazy loading for components
     [ ] Use memoization where appropriate
 
-19. Implement User Authentication: ⏳ (To Do)
+22. Implement User Authentication: ⏳ (To Do)
     [ ] Research authentication options
     [ ] Set up authentication provider
     [ ] Create login/logout functionality
     [ ] Implement protected routes
     [ ] Add user-specific data handling
 
-20. Implement Logging: 🚧
+23. Implement Logging: 🚧
     Problem Analysis:
 
     - Need to capture all console logs and errors
@@ -166,7 +272,7 @@
     [ ] Test memory usage
     [ ] Test queue processing
 
-21. Implement Audio Recording and Transcription: ⏳ (To Do)
+24. Implement Audio Recording and Transcription: ⏳ (To Do)
     [ ] Implement audio recording functionality in AudioRecorder component
     [ ] Set up backend endpoint for receiving audio data
     [ ] Integrate OpenAI Whisper API for transcription
@@ -174,31 +280,31 @@
     [ ] Add loading state for transcription process
     [ ] Update UI to show transcription progress
 
-22. Refactor LinkedIn Integration: ⏳ (To Do)
+25. Refactor LinkedIn Integration: ⏳ (To Do)
     [ ] Remove existing LinkedIn posting functionality
     [ ] Update postService.ts to remove LinkedIn-related functions
     [ ] Remove LinkedIn-related UI elements and state
     [ ] Update documentation to reflect removal of LinkedIn integration
 
-23. Optimize Audio Processing: ⏳ (To Do)
+26. Optimize Audio Processing: ⏳ (To Do)
     [ ] Research and implement audio compression before sending to server
     [ ] Implement chunking for long audio files
     [ ] Add progress indicator for audio upload and processing
     [ ] Implement cancellation for ongoing audio processing
 
-24. Enhance Audio Playback: ⏳ (To Do)
+27. Enhance Audio Playback: ⏳ (To Do)
     [ ] Add audio playback functionality for recorded audio
     [ ] Implement audio waveform visualization
     [ ] Add ability to trim audio before transcription
     [ ] Implement volume normalization for recorded audio
 
-25. Implement Transcription Review: ⏳ (To Do)
+28. Implement Transcription Review: ⏳ (To Do)
     [ ] Create UI for reviewing and editing transcriptions
     [ ] Implement word-level timestamps in transcriptions
     [ ] Add ability to re-transcribe specific sections of audio
     [ ] Implement confidence scores for transcribed words
 
-26. Implement OpenAI Whisper Integration: ✅
+29. Implement OpenAI Whisper Integration: ✅
     [✓] Set up OpenAI API client using the new API key
     [✓] Create a service function to send audio data to Whisper API
     [✓] Implement error handling for API calls
@@ -207,17 +313,17 @@
     [✓] Create abstract OpenAI route for handling different OpenAI API calls
     [ ] Test the integration with various audio inputs
 
-27. Fix linter error in useCreatePost hook: ✅
+30. Fix linter error in useCreatePost hook: ✅
     [✓] Ensure `loadedPost` is not null before using it
 
-28. Trigger re-render of ContentTab editor when content is imported: ✅
+31. Trigger re-render of ContentTab editor when content is imported: ✅
     [✓] Add state management to trigger re-render
     [✓] Update ContentHubImportModal to trigger re-render
     [✓] Ensure state changes propagate correctly to ContentTab
     [✓] Add a state change in ContentHubImportModal to force re-render
     [✓] Ensure ContentTab listens to the correct state changes
 
-29. Implement Ideas Section:
+32. Implement Ideas Section:
     [✓] Create a new page for Ideas within the dashboard folder
     [✓] Implement a services controller for Ideas using local storage
     [✓] Create an API route for Ideas using local storage
@@ -227,14 +333,14 @@
     [ ] Implement UI for displaying and managing ideas
     [ ] Test the new Ideas functionality
 
-30. Enhance Content Bank UI: ⏳ (To Do)
+33. Enhance Content Bank UI: ⏳ (To Do)
     [ ] Implement search functionality for recordings
     [ ] Add ability to edit transcripts
     [ ] Implement pagination or infinite scroll for large numbers of recordings
     [ ] Add sorting options (e.g., by date, length of transcript)
     [ ] Implement delete functionality for recordings
 
-31. Implement Enhanced Content Bank Interface: ⏳ (In Progress)
+34. Implement Enhanced Content Bank Interface: ⏳ (In Progress)
     [✓] Update StoredRecording interface to include title, improved transcript, and tags
     [✓] Modify ContentBank component to display new recording details
     [✓] Implement AI service for generating titles
@@ -246,7 +352,7 @@
     [✓] Display tags in the UI
     [ ] Add ability to edit titles, improved transcripts, and tags
 
-32. Implement Local Storage for Posts:
+35. Implement Local Storage for Posts:
     [✓] Update CreatePostPage to save posts to local storage
     [✓] Replace 'Post to LinkedIn' button with 'Save' button
     [✓] Modify PostContent component to handle saving
@@ -259,7 +365,7 @@
     [✓] Implement ability to edit saved posts
     [ ] Add error handling and validation for saved posts
 
-33. Enhance TipTap Editor Component:
+36. Enhance TipTap Editor Component:
     [✓] Add support for read-only mode
     [✓] Adjust styling for consistency with application design
     [✓] Restore responsive prose classes for proper styling
@@ -267,7 +373,7 @@
     [ ] Implement additional markdown features (e.g., tables, code blocks)
     [ ] Add custom styles for better markdown rendering
 
-34. Implement Edit Post Functionality:
+37. Implement Edit Post Functionality:
     [✓] Create EditPostPage component
     [ ] Modify CreatePostPage to handle both creation and editing
     [✓] Update useCreatePost hook to include setTags
@@ -275,7 +381,7 @@
     [ ] Add validation for edited posts
     [ ] Implement optimistic updates for better UX
 
-35. Implement YouTube Transcript Extraction Service Badge:
+38. Implement YouTube Transcript Extraction Service Badge:
     [✓] Add YouTube transcript extraction service badge to ContentHubImportModal
     [✓] Add YouTube transcript extraction service badge to PostContent's Content tab
     [✓] Style tags with rounded background and icon in PostContent component
@@ -286,7 +392,7 @@
     [ ] Add hover effects and animations to improve user interaction
     [ ] Ensure accessibility for all UI components
 
-36. Enhance UI Components:
+39. Enhance UI Components:
     [✓] Add YouTube transcript extraction service badge to ContentHubImportModal
     [✓] Add YouTube transcript extraction service badge to PostContent's Content tab
     [✓] Style tags with rounded background and icon in PostContent component
@@ -302,13 +408,13 @@
     [ ] Add hover effects and animations to improve user interaction
     [ ] Ensure accessibility for all UI components
 
-37. Improve Layout and Navigation: ⏳ (In Progress)
+40. Improve Layout and Navigation: ⏳ (In Progress)
     [✓] Add header to dashboard layout
     [ ] Implement breadcrumbs for better navigation
     [ ] Create a responsive design for mobile devices
     [ ] Add collapsible sidebar for smaller screens
 
-38. Implement Ideal Customer Profile (ICP) Feature:
+41. Implement Ideal Customer Profile (ICP) Feature:
     [✓] Create ICP service using local storage
     [✓] Implement API route for ICP
     [✓] Create ICP page component with ICPInfo component as empty state
@@ -325,7 +431,7 @@
     [✓] Merge multiple return statements in ICPPage component
     [ ] Test ICP functionality
 
-39. Enhance ICP Feature: ⏳ (In Progress)
+42. Enhance ICP Feature: ⏳ (In Progress)
     [✓] Add form validation for ICP creation and editing
     [✓] Implement error handling for ICP operations
     [✓] Add confirmation dialog for ICP deletion
@@ -334,12 +440,12 @@
     [ ] Add pagination or infinite scroll for large numbers of ICPs
     [✓] Remove embedded scroll from IcpFullPageFormUpdated component
 
-40. Optimize ICP Form Layout: ✅
+43. Optimize ICP Form Layout: ✅
     [✓] Adjust IcpFullPageFormUpdated component to use natural page scroll
     [✓] Improve responsiveness of the ICP form
     [✓] Ensure consistent styling across different screen sizes
 
-41. Implement Multi-Template Merge Feature: ✅
+44. Implement Multi-Template Merge Feature: ✅
     [✓] Update useCreatePost hook to handle multiple template selections
     [✓] Modify PostContent component to allow selection of up to 8 templates
     [✓] Update postService to handle merging with multiple templates
@@ -401,13 +507,13 @@
     [ ] Add inline comments explaining new functions and components
     [ ] Update any existing documentation about post creation process
 
-42. Refactor and Optimize Multi-Template Merge Feature: ⏳ (To Do)
+45. Refactor and Optimize Multi-Template Merge Feature: ⏳ (To Do)
     [ ] Review and optimize performance of multi-template merging
     [ ] Implement caching for merged contents to improve responsiveness
     [ ] Refactor code for better maintainability and readability
     [ ] Ensure all edge cases are handled properly
 
-43. Refactor and optimize existing components:
+46. Refactor and optimize existing components:
     [✓] Review and refactor ContentTab.tsx for performance improvements
     [ ] Optimize PostEditor.tsx for better rendering performance
     [ ] Implement lazy loading for non-critical components
@@ -415,13 +521,13 @@
     [ ] Implement proper loading states for async operations
     [ ] Optimize data fetching strategies in PostProvider
 
-44. Fix Sidebar Icon Overlap: ✅
+47. Fix Sidebar Icon Overlap: ✅
     [✓] Adjust sidebar layout to prevent icon overlap
     [✓] Ensure proper spacing between icons and text
     [✓] Maintain responsive design for different screen sizes
     [✓] Test sidebar layout across different viewport sizes
 
-45. Implement Consistent Badge and Tag Styling:
+48. Implement Consistent Badge and Tag Styling:
     [ ] Create a reusable Badge component with standardized styling
     [ ] Update all existing badge and tag instances to use the new component
     [ ] Implement consistent color scheme for different badge types
@@ -431,7 +537,7 @@
     [ ] Implement proper accessibility attributes for badges
     [ ] Add documentation for badge usage and styling guidelines
 
-46. Restructure Block-based Architecture:
+49. Restructure Block-based Architecture:
     [ ] Create new folder structure under app/components/blocks
     [ ] Move layout components from wiki to blocks/layout
     [ ] Move navigation components from wiki to blocks/navigation
@@ -441,7 +547,7 @@
     [ ] Ensure all components use consistent naming conventions
     [ ] Test all functionality after restructuring
 
-47. Migrate Post Storage to Supabase: ⏳ (In Progress)
+50. Migrate Post Storage to Supabase: ⏳ (In Progress)
     [ ] Create server actions for Supabase CRUD operations
     [ ] Update postService to use server actions instead of localStorage
     [ ] Add proper error handling and loading states
@@ -450,3 +556,11 @@
     [ ] Add offline support with local caching
     [ ] Update documentation to reflect new storage system
     [ ] Add tests for new storage functionality
+
+## Current Sprint
+
+42. [IN PROGRESS] Dashboard Improvements
+    - Fixed team members policy recursion by restructuring posts fetching
+    - Improved error handling and logging for posts actions
+    - Split posts fetching into separate user and team queries
+    - Next: Implement proper error UI for failed fetches

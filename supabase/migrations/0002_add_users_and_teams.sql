@@ -125,21 +125,19 @@ CREATE POLICY "Team owners and admins can update team"
 CREATE POLICY "Team members can view other team members"
     ON team_members FOR SELECT
     USING (
-        EXISTS (
-            SELECT 1 FROM team_members my_teams
-            WHERE my_teams.team_id = team_members.team_id
-            AND my_teams.user_id = auth.uid()
+        team_id IN (
+            SELECT team_id FROM team_members
+            WHERE user_id = auth.uid()
         )
     );
 
 CREATE POLICY "Team owners can manage team members"
     ON team_members FOR ALL
     USING (
-        EXISTS (
-            SELECT 1 FROM team_members owners
-            WHERE owners.team_id = team_members.team_id
-            AND owners.user_id = auth.uid()
-            AND owners.role = 'owner'
+        team_id IN (
+            SELECT team_id FROM team_members
+            WHERE user_id = auth.uid()
+            AND role = 'owner'
         )
     );
 

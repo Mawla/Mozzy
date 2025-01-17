@@ -12,9 +12,11 @@ The tech stack for Mozzy comprises modern technologies designed to provide a rob
 - **Language**: TypeScript for type safety
 - **Styling**: Tailwind CSS with shadcn/UI components
 - **State Management**: Zustand for global state
+- **Authentication**: Supabase Auth with SSR
 - **AI Integration**: Claude AI (Anthropic)
 - **Icons**: Lucide Icons
 - **Testing**: Jest
+- **Logging**: Custom logger implementation
 
 ## Root Directory Structure
 
@@ -28,12 +30,14 @@ The root directory contains configuration files and main project directories:
    - `package.json` - Dependencies and scripts
    - `.env.local` - Environment variables
    - `.cursorrules` - Cursor IDE configuration
+   - `middleware.ts` - Auth and routing middleware
 
 2. **Main Directories**:
    - `/app` - Next.js 14 App Router directory
    - `/docs` - Project documentation
    - `/public` - Static assets
    - `/__tests__` - Test files
+   - `/lib` - Core library code
 
 ## App Directory Structure (Next.js 14 App Router)
 
@@ -45,11 +49,16 @@ The `/app` directory follows Next.js 14 conventions with a feature-based organiz
 
   - Server actions for API integrations
   - Direct communication with external services
+  - `auth.ts` - Authentication server actions
+  - `posts.ts` - Post management actions
+  - `anthropicActions.ts` - AI integration actions
+  - `podcastActions.ts` - Podcast feature actions
 
 - **/api**
 
   - API route handlers
   - RESTful endpoints
+  - Auth-related endpoints
 
 - **/components**
 
@@ -71,6 +80,7 @@ The `/app` directory follows Next.js 14 conventions with a feature-based organiz
 
   - Custom React hooks
   - Shared state logic
+  - Authentication hooks
 
 - **/services**
 
@@ -86,10 +96,26 @@ The `/app` directory follows Next.js 14 conventions with a feature-based organiz
 
   - TypeScript type definitions
   - Shared interfaces
+  - Supabase type definitions
 
 - **/utils**
   - Utility functions
   - Helper methods
+
+## Library Directory Structure (/lib)
+
+The `/lib` directory contains core functionality:
+
+- **/supabase**
+
+  - `server.ts` - Server-side Supabase client
+  - Authentication utilities
+  - Session management
+
+- **/logger**
+  - Centralized logging system
+  - Error tracking
+  - Debug utilities
 
 ### Feature Directories
 
@@ -97,10 +123,17 @@ The `/app` directory follows Next.js 14 conventions with a feature-based organiz
 
   - Dashboard-specific pages
   - Dashboard components
+  - Protected routes
 
 - **/templates**
+
   - Content templates
   - Template management
+
+- **/auth**
+  - Authentication pages
+  - Login/signup flows
+  - Password reset
 
 ### Supporting Directories
 
@@ -113,6 +146,7 @@ The `/app` directory follows Next.js 14 conventions with a feature-based organiz
 
   - React context providers
   - Global providers
+  - Auth providers
 
 - **/schemas**
   - Data validation schemas
@@ -124,15 +158,33 @@ The `/docs` directory contains:
 
 - `plan.md` - Main project plan and task tracking
 - `plan-podcast.md` - Podcast feature specific planning
-- Other feature-specific documentation
+- `file_structure_document.md` - This documentation
+- `/composer-history` - Task execution history
 
-## Testing Structure
+## Authentication Structure
 
-The `/__tests__` directory follows the same structure as the `/app` directory:
+Authentication is implemented across several key areas:
 
-- Unit tests for components
-- Integration tests for features
-- Mock data and utilities
+1. **Server Actions** (`/app/actions/auth.ts`):
+
+   - `signIn` - User authentication
+   - `signOut` - Session termination
+   - `getUser` - User data retrieval
+   - `getSession` - Session management
+   - `hasRole` - Role-based access control
+
+2. **Middleware** (`middleware.ts`):
+
+   - Route protection
+   - Session validation
+   - Cookie management
+   - Error handling
+
+3. **Supabase Integration** (`/lib/supabase/server.ts`):
+   - Client creation
+   - Session utilities
+   - Cookie handling
+   - Error management
 
 ## Best Practices
 
@@ -155,9 +207,18 @@ The `/__tests__` directory follows the same structure as the `/app` directory:
    - Use camelCase for functions and variables
 
 4. **Code Organization**:
+
    - Group related functionality
    - Maintain clear separation of concerns
    - Follow Next.js 14 conventions
+
+5. **Authentication Best Practices**:
+
+   - Use server actions for auth operations
+   - Implement proper error handling
+   - Add comprehensive logging
+   - Maintain session security
+   - Use role-based access control
 
 ## Conclusion
 

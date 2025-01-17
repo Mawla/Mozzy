@@ -1,0 +1,111 @@
+# Auth Fix Plan (auth-fix-20240320)
+
+## Problem Analysis
+
+1. Current Issues:
+   - Using both @supabase/supabase-js and @supabase/ssr
+   - Potential cookie handling conflicts between libraries
+   - Non-standard session management
+   - Inconsistent client initialization
+
+2. Affected Components:
+   - lib/supabase/server.ts
+   - lib/supabase/client.ts
+   - app/actions/auth.ts
+   - app/components/auth/*
+   - app/auth/*
+   - middleware.ts
+
+3. Impact:
+   - Potential session management issues
+   - Cookie handling inconsistencies
+   - Unnecessary bundle size from multiple libraries
+   - Possible race conditions in auth state
+
+## Solution Design
+
+1. Migration to @supabase/ssr:
+   - Remove @supabase/supabase-js
+   - Update all server components to use createServerClient
+   - Update all client components to use createBrowserClient
+   - Implement proper cookie handling through Server Actions
+
+2. Session Management:
+   - Centralize session handling in auth actions
+   - Implement proper refresh mechanism
+   - Add session recovery for failures
+   - Handle offline scenarios
+
+3. Error Handling:
+   - Create AuthErrorBoundary component
+   - Add retry mechanisms
+   - Implement user-friendly error messages
+   - Add proper error logging
+
+## Implementation Steps
+
+1. Package Updates:
+   - [ ] Remove @supabase/supabase-js from package.json
+   - [ ] Update @supabase/ssr to latest version
+   - [ ] Update related dependencies
+   - [ ] Clean install node_modules
+
+2. Client Migration:
+   - [ ] Update lib/supabase/client.ts to use only createBrowserClient
+   - [ ] Remove any supabase-js imports
+   - [ ] Update type imports to use @supabase/ssr
+   - [ ] Add proper error handling
+
+3. Server Migration:
+   - [ ] Update lib/supabase/server.ts to use only createServerClient
+   - [ ] Implement proper cookie handling
+   - [ ] Add session validation
+   - [ ] Update error handling
+
+4. Auth Actions:
+   - [ ] Update app/actions/auth.ts to use new client
+   - [ ] Implement proper session management
+   - [ ] Add retry logic for failures
+   - [ ] Update error handling
+
+5. Components:
+   - [ ] Update AuthProvider to use new client
+   - [ ] Create AuthErrorBoundary component
+   - [ ] Update AuthGuard with new error handling
+   - [ ] Add loading states
+
+6. Routes:
+   - [ ] Update auth routes to use new client
+   - [ ] Implement proper error responses
+   - [ ] Add session validation
+   - [ ] Update middleware
+
+7. Testing:
+   - [ ] Test auth flow end-to-end
+   - [ ] Test error scenarios
+   - [ ] Test offline handling
+   - [ ] Test session recovery
+
+## Success Criteria
+
+1. All components using @supabase/ssr exclusively
+2. Proper session management and recovery
+3. Consistent error handling across app
+4. Improved user feedback for auth issues
+5. Reduced bundle size from removing supabase-js
+
+## Monitoring
+
+1. Watch for:
+   - Session refresh failures
+   - Cookie inconsistencies
+   - Auth state changes
+   - Error boundary triggers
+   - Client initialization issues
+
+2. Metrics:
+   - Auth success rate
+   - Session refresh success rate
+   - Error frequency
+   - Client initialization time
+   - Bundle size reduction 

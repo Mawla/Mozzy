@@ -1,0 +1,176 @@
+# Auth Fix Plan (auth-fix-20240117-3)
+
+## Current Issues (from logs)
+
+1. Cookie deletion in read-only context
+
+   - Error: "Cookies can only be modified in a Server Action or Route Handler"
+   - Location: lib/supabase/server.ts:45
+   - Component: SupabaseAuthClient.\_removeSession
+
+2. Invalid refresh token errors
+
+   - Error: "Invalid Refresh Token: Refresh Token Not Found"
+   - Status: 400, Code: refresh_token_not_found
+   - Multiple occurrences in auth flow
+
+3. Cookie state inconsistencies
+   - Multiple cookie get attempts (sb-127-auth-token.0 through .4)
+   - Main token exists but fragments don't
+   - Improper cleanup of old tokens
+
+## File Structure Updates
+
+1. Auth Routes (app/auth/):
+
+   - [x] callback/route.ts - Handle auth callback and session creation
+   - [x] confirm/route.ts - Handle email confirmations
+   - [ ] sign-out/route.ts - Handle sign out and cookie cleanup
+   - [ ] refresh/route.ts - Handle token refresh
+   - [ ] session/route.ts - Handle session management
+
+2. Auth Components (app/components/auth/):
+
+   - [x] auth-form.tsx - Main auth UI component
+   - [ ] auth-provider.tsx - Auth context provider
+   - [ ] auth-guard.tsx - Protected route wrapper
+
+3. Auth Utils (lib/supabase/):
+   - [ ] actions.ts - Server actions for auth operations
+   - [ ] cookies.ts - Cookie management utilities
+   - [ ] server.ts - Server-side Supabase client
+   - [ ] middleware.ts - Auth middleware functions
+
+## Implementation Details
+
+1. Server Actions (lib/supabase/actions.ts):
+
+```typescript
+"use server";
+
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
+import { type CookieOptions } from "@supabase/ssr";
+
+export async function signOut() {
+  const cookieStore = cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          cookieStore.set({ name, value, ...options });
+        },
+        remove(name: string, options: CookieOptions) {
+          cookieStore.delete({ name, ...options });
+        },
+      },
+    }
+  );
+
+  await supabase.auth.signOut();
+}
+
+export async function refreshSession() {
+  const cookieStore = cookies();
+  // ... implementation
+}
+```
+
+2. Cookie Management (lib/supabase/cookies.ts):
+
+```typescript
+import { cookies } from "next/headers";
+import { type CookieOptions } from "@supabase/ssr";
+
+export function getAuthCookie(name: string) {
+  return cookies().get(name)?.value;
+}
+
+export async function setAuthCookie(
+  name: string,
+  value: string,
+  options: CookieOptions
+) {
+  cookies().set(name, value, options);
+}
+
+export async function deleteAuthCookie(name: string) {
+  cookies().delete(name);
+}
+
+export async function clearAuthCookies() {
+  const cookieStore = cookies();
+  const authCookies = [
+    "sb-127-auth-token",
+    ...Array(5)
+      .keys()
+      .map((i) => `sb-127-auth-token.${i}`),
+  ];
+  authCookies.forEach((name) => cookieStore.delete(name));
+}
+```
+
+3. Auth Routes (app/auth/sign-out/route.ts):
+
+```typescript
+import { NextResponse } from "next/server";
+import { clearAuthCookies } from "@/lib/supabase/cookies";
+
+export async function POST() {
+  try {
+    await clearAuthCookies();
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to sign out" }, { status: 500 });
+  }
+}
+```
+
+## Tactical Steps
+
+1. Fix Cookie Handling in Server Components
+
+   - [ ] Create server actions for auth operations
+   - [ ] Move cookie management to dedicated module
+   - [ ] Update auth routes to use server actions
+   - [ ] Add proper error handling
+
+2. Fix Session Management
+
+   - [ ] Implement session refresh route
+   - [ ] Add session recovery mechanism
+   - [ ] Clean up token fragments
+   - [ ] Add session validation
+
+3. Update Auth Client Configuration
+
+   - [ ] Update Supabase client initialization
+   - [ ] Implement proper cookie storage
+   - [ ] Add error boundaries
+   - [ ] Add retry logic
+
+4. Testing
+   - [ ] Test auth flow end-to-end
+   - [ ] Verify cookie operations
+   - [ ] Test session refresh
+   - [ ] Validate error handling
+
+## Success Criteria
+
+1. No cookie deletion errors in server components
+2. Proper session refresh without token errors
+3. Clean cookie state without fragments
+4. Graceful error handling and recovery
+5. No redirect loops on auth failures
+
+## Monitoring
+
+1. Watch for cookie deletion errors in logs
+2. Monitor refresh token failures
+3. Track session recovery attempts
+4. Log cookie state changes
