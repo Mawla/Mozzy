@@ -440,3 +440,13 @@
     [ ] Update PodcastResults to use new block-based components
     [ ] Ensure all components use consistent naming conventions
     [ ] Test all functionality after restructuring
+
+47. Migrate Post Storage to Supabase: ⏳ (In Progress)
+    [ ] Create server actions for Supabase CRUD operations
+    [ ] Update postService to use server actions instead of localStorage
+    [ ] Add proper error handling and loading states
+    [ ] Create data migration utility for existing posts
+    [ ] Remove localStorage code after successful migration
+    [ ] Add offline support with local caching
+    [ ] Update documentation to reflect new storage system
+    [ ] Add tests for new storage functionality
