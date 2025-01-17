@@ -1,15 +1,15 @@
-export interface Block {
+import { ViewSection } from "./metadata";
+
+export interface BlockConfig {
   id: string;
-  type: string;
-  content: string;
+  layout: "full" | "half" | "third";
+  sections: ViewSection[];
   metadata?: {
-    [key: string]: any;
+    placement?: "main" | "sidebar";
   };
 }
 
-export interface BlockProps {
-  block: Block;
-  isEditing?: boolean;
-  onEdit?: (id: string, content: string) => void;
-  onDelete?: (id: string) => void;
+export interface BlockRow {
+  id: string;
+  blocks: BlockConfig[];
 }

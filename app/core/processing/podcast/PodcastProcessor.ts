@@ -2,7 +2,7 @@ import { Processor } from "../base/Processor";
 import type { ProcessingResult, TextChunk } from "../types";
 import { PodcastChunker } from "../podcast";
 import { PodcastProcessingStrategy } from "./PodcastProcessingStrategy";
-import { ProcessingLogger } from "../utils/logger";
+import { ProcessingLogger } from "@/lib/logger";
 import { PodcastEntities, EntityDetails } from "@/app/schemas/podcast/entities";
 import {
   PodcastAnalysis,

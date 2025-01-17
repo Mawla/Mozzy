@@ -1,60 +1,11 @@
-export type LogLevel = "debug" | "info" | "warn" | "error";
+type LogLevel = "debug" | "info" | "warn" | "error";
 
-export interface LogEntry {
+interface LogEntry {
   timestamp: string;
   level: LogLevel;
   message: string;
   data?: any;
   error?: Error;
-}
-
-export interface LogFile {
-  entries: LogEntry[];
-  summary: {
-    errorCount: number;
-    warningCount: number;
-    lastError?: LogEntry;
-    lastWarning?: LogEntry;
-  };
-}
-
-export class ProcessingLogger {
-  private logs: LogEntry[] = [];
-
-  log(level: LogLevel, message: string, data?: any) {
-    const entry: LogEntry = {
-      timestamp: new Date().toISOString(),
-      level,
-      message,
-      data,
-    };
-    this.logs.push(entry);
-    console[level](message, data);
-  }
-
-  debug(message: string, data?: any) {
-    this.log("debug", message, data);
-  }
-
-  info(message: string, data?: any) {
-    this.log("info", message, data);
-  }
-
-  warn(message: string, data?: any) {
-    this.log("warn", message, data);
-  }
-
-  error(message: string, error?: Error, data?: any) {
-    this.log("error", message, { error, ...data });
-  }
-
-  getLogs(): LogEntry[] {
-    return this.logs;
-  }
-
-  clearLogs() {
-    this.logs = [];
-  }
 }
 
 class Logger {

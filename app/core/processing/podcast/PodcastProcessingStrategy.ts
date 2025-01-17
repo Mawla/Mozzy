@@ -8,7 +8,7 @@ import {
   MetadataResponse,
 } from "../types";
 
-import { ProcessingLogger } from "../utils/logger";
+import { ProcessingLogger } from "@/lib/logger";
 import { ProcessingStrategy } from "../base/ProcessingStrategy";
 import { ProcessingStep } from "../types";
 import { ProcessingError } from "../errors/ProcessingError";

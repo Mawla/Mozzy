@@ -2,8 +2,8 @@
 
 import { generateObject } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { TextChunk } from "@/app/types/podcast/processing";
-import { ProcessingLogger } from "@/app/core/processing/utils/logger";
+import { TextChunk } from "@/app/utils/textChunking";
+import { logger } from "@/lib/logger";
 import {
   refinedTranscriptSchema,
   contentAnalysisSchema,
@@ -57,9 +57,8 @@ export async function processTranscript(chunk: TextChunk) {
 
     return object.refinedContent;
   } catch (error) {
-    ProcessingLogger.log("error", "Failed to process transcript", {
-      error,
-      chunkId: chunk.id,
+    logger.error("Failed to process transcript", error as Error, {
+      chunkIndex: chunk.index,
     });
     throw error;
   }
@@ -94,9 +93,8 @@ export async function analyzeContent(chunk: TextChunk) {
 
     return object;
   } catch (error) {
-    ProcessingLogger.log("error", "Failed to analyze content", {
-      error,
-      chunkId: chunk.id,
+    logger.error("Failed to analyze content", error as Error, {
+      chunkIndex: chunk.index,
     });
     throw error;
   }
@@ -134,9 +132,8 @@ export async function extractEntities(chunk: TextChunk) {
 
     return object;
   } catch (error) {
-    ProcessingLogger.log("error", "Failed to extract entities", {
-      error,
-      chunkId: chunk.id,
+    logger.error("Failed to extract entities", error as Error, {
+      chunkIndex: chunk.index,
     });
     throw error;
   }
@@ -175,9 +172,8 @@ export async function detectEvents(chunk: TextChunk) {
 
     return object;
   } catch (error) {
-    ProcessingLogger.log("error", "Failed to detect events", {
-      error,
-      chunkId: chunk.id,
+    logger.error("Failed to detect events", error as Error, {
+      chunkIndex: chunk.index,
     });
     throw error;
   }

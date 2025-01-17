@@ -3,6 +3,7 @@ import { TemplateParser } from "@/utils/templateParser";
 import { Post } from "@/app/types/post";
 import { refinePodcastTranscriptPrompt } from "@/prompts/refinePodcastTranscript";
 import * as AnthropicActions from "@/app/actions/anthropicActions";
+import * as PostActions from "@/app/actions/posts";
 import { ContentMetadata } from "@/app/types/contentMetadata";
 import { useLoadingStore } from "@/app/stores/loadingStore";
 
@@ -29,60 +30,57 @@ export const postService = {
     return parser.getPacks();
   },
 
-  getPosts(): Post[] {
-    const posts = localStorage.getItem("posts");
-    return posts ? JSON.parse(posts) : [];
+  async getPosts(): Promise<Post[]> {
+    const response = await PostActions.getPosts();
+    if (response.error) {
+      console.error("Error fetching posts:", response.error);
+      return [];
+    }
+    return response.data || [];
   },
 
-  getPostById(id: string): Post | null {
-    const posts = this.getPosts();
-    return posts.find((p) => p.id === id) || null;
+  async getPostById(id: string): Promise<Post | null> {
+    const response = await PostActions.getPostById(id);
+    if (response.error) {
+      console.error(`Error fetching post ${id}:`, response.error);
+      return null;
+    }
+    return response.data || null;
   },
 
-  createNewPost(): Post {
-    const newPost: Post = {
-      id: Date.now().toString(),
+  async createNewPost(): Promise<Post | null> {
+    const newPost = {
       title: "",
       content: "",
       tags: [],
       tweetThreadContent: [],
       transcript: "",
       mergedContents: {},
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
       templateIds: [],
       templates: [],
+      status: "draft" as const,
     };
-    const posts = this.getPosts();
-    posts.push(newPost);
-    localStorage.setItem("posts", JSON.stringify(posts));
-    return newPost;
+
+    const response = await PostActions.createPost(newPost);
+    if (response.error) {
+      console.error("Error creating post:", response.error);
+      return null;
+    }
+    return response.data || null;
   },
 
-  async handleSave(post: Post): Promise<Post> {
+  async handleSave(post: Post): Promise<Post | null> {
     try {
       console.log("Handling save for post:", post);
-      const posts = this.getPosts();
-      const existingPostIndex = posts.findIndex((p) => p.id === post.id);
+      const response = await PostActions.updatePost(post.id, post);
 
-      if (existingPostIndex !== -1) {
-        posts[existingPostIndex] = {
-          ...posts[existingPostIndex],
-          ...post,
-          updatedAt: new Date().toISOString(),
-        };
-      } else {
-        posts.push({
-          ...post,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        });
+      if (response.error) {
+        console.error("Error saving post:", response.error);
+        return null;
       }
 
-      console.log("Saving posts to localStorage:", posts);
-      localStorage.setItem("posts", JSON.stringify(posts));
-      console.log("Posts saved to localStorage");
-      return post;
+      console.log("Post saved successfully:", response.data);
+      return response.data || null;
     } catch (error) {
       console.error("Error saving post:", error);
       throw error;
@@ -90,9 +88,11 @@ export const postService = {
   },
 
   async deletePost(id: string): Promise<void> {
-    const posts = this.getPosts();
-    const updatedPosts = posts.filter((post) => post.id !== id);
-    localStorage.setItem("posts", JSON.stringify(updatedPosts));
+    const response = await PostActions.deletePost(id);
+    if (response.error) {
+      console.error(`Error deleting post ${id}:`, response.error);
+      throw new Error(response.error);
+    }
   },
 
   async suggestTags(transcript: string): Promise<ContentMetadata> {
@@ -331,16 +331,14 @@ export const postService = {
     }
   },
 
+  async bulkDeletePosts(ids: string[]): Promise<void> {
+    for (const id of ids) {
+      await this.deletePost(id);
+    }
+  },
+
   clearPostData(): void {
-    localStorage.removeItem("post");
-    localStorage.removeItem("transcript");
-    localStorage.removeItem("template");
-    localStorage.removeItem("content");
-    localStorage.removeItem("merge");
-    localStorage.removeItem("selectedTemplate");
-    localStorage.removeItem("mergedContents");
-    localStorage.removeItem("selectedTemplates");
-    localStorage.removeItem("suggestedTags");
+    console.warn("clearPostData is deprecated with Supabase storage");
   },
 
   async refinePodcastTranscript(
@@ -492,18 +490,12 @@ export const postService = {
     return chunks;
   },
 
-  bulkDeletePosts(ids: string[]): void {
-    let posts = this.getPosts();
-    posts = posts.filter((post) => !ids.includes(post.id));
-    localStorage.setItem("posts", JSON.stringify(posts));
-  },
-
   async handleMerge(postId: string): Promise<void> {
     const { setLoading } = useLoadingStore.getState();
     setLoading(true, 0, "Starting merge process...");
 
     try {
-      const post = this.getPostById(postId);
+      const post = await this.getPostById(postId);
       if (!post) throw new Error("Post not found");
 
       const { mergedContents, suggestedTitle } =

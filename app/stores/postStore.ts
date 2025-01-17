@@ -16,11 +16,11 @@ interface PostState {
 }
 
 interface PostActions {
-  loadPosts: () => void;
-  loadPost: (id: string) => void;
+  loadPosts: () => Promise<void>;
+  loadPost: (id: string) => Promise<void>;
   setCurrentPost: (post: Post | null) => void;
   updatePost: (updates: Partial<Post>) => void;
-  createNewPost: () => void;
+  createNewPost: () => Promise<void>;
   deletePost: (id: string) => Promise<void>;
   generateMetadata: () => Promise<void>;
   suggestTemplates: () => Promise<void>;
@@ -32,7 +32,6 @@ interface PostActions {
   handleSave: () => Promise<void>;
   handleRemoveTemplate: (index: number) => void;
   handleTemplateSelection: (selectedTemplate: Template) => void;
-  clearLocalStorage: () => void;
   setLoading: (
     isLoading: boolean,
     progress?: number,
@@ -54,21 +53,21 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
   mergeInstructions: "",
 
   // Actions
-  loadPosts: () => {
-    const loadedPosts = postService.getPosts().map((post) => ({
+  loadPosts: async () => {
+    const loadedPosts = await postService.getPosts();
+    const processedPosts = loadedPosts.map((post) => ({
       ...post,
       templates: post.templates || [],
       templateIds: post.templateIds || [],
       mergedContents: post.mergedContents || {},
     }));
 
-    console.log("Loading all posts with templates:", loadedPosts);
-
-    set({ posts: loadedPosts });
+    console.log("Loading all posts with templates:", processedPosts);
+    set({ posts: processedPosts });
   },
 
-  loadPost: (id: string) => {
-    const loadedPost = postService.getPostById(id);
+  loadPost: async (id: string) => {
+    const loadedPost = await postService.getPostById(id);
     if (loadedPost) {
       const fullPost = {
         ...loadedPost,
@@ -104,24 +103,33 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
         : null,
     })),
 
-  createNewPost: () => {
-    const newPost = postService.createNewPost();
-    set((state) => ({
-      posts: [...state.posts, newPost],
-      currentPost: newPost,
-      wordCount: 0,
-      mergeInstructions: "",
-      refinementInstructions: "",
-    }));
+  createNewPost: async () => {
+    const newPost = await postService.createNewPost();
+    if (newPost) {
+      set((state) => ({
+        posts: [...state.posts, newPost],
+        currentPost: newPost,
+        wordCount: 0,
+        mergeInstructions: "",
+        refinementInstructions: "",
+      }));
+    } else {
+      console.error("Failed to create new post");
+    }
   },
 
   deletePost: async (id: string) => {
-    await postService.deletePost(id);
-    set((state) => ({
-      posts: state.posts.filter((p) => p.id !== id),
-      currentPost: state.currentPost?.id === id ? null : state.currentPost,
-      wordCount: state.currentPost?.id === id ? 0 : state.wordCount,
-    }));
+    try {
+      await postService.deletePost(id);
+      set((state) => ({
+        posts: state.posts.filter((p) => p.id !== id),
+        currentPost: state.currentPost?.id === id ? null : state.currentPost,
+        wordCount: state.currentPost?.id === id ? 0 : state.wordCount,
+      }));
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      throw error;
+    }
   },
 
   generateMetadata: async () => {
@@ -223,12 +231,15 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
         mergeInstructions,
       };
 
-      // Update the posts array and currentPost
-      set((state) => ({
-        posts: state.posts.map((p) => (p.id === postId ? updatedPost : p)),
-        currentPost:
-          state.currentPost?.id === postId ? updatedPost : state.currentPost,
-      }));
+      // Save to Supabase and update local state
+      const savedPost = await postService.handleSave(updatedPost);
+      if (savedPost) {
+        set((state) => ({
+          posts: state.posts.map((p) => (p.id === postId ? savedPost : p)),
+          currentPost:
+            state.currentPost?.id === postId ? savedPost : state.currentPost,
+        }));
+      }
 
       console.log(`Successfully merged content for template ${templateIndex}`);
     } catch (error) {
@@ -242,40 +253,15 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
     if (!currentPost) return;
     try {
       console.log("Saving post:", currentPost);
-
-      // Get fresh posts array from localStorage
-      const posts = postService.getPosts();
-      const existingPostIndex = posts.findIndex((p) => p.id === currentPost.id);
-
-      // Update or add the post
-      if (existingPostIndex !== -1) {
-        posts[existingPostIndex] = {
-          ...posts[existingPostIndex],
-          ...currentPost,
-          updatedAt: new Date().toISOString(),
-        };
-      } else {
-        posts.push({
-          ...currentPost,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        });
+      const savedPost = await postService.handleSave(currentPost);
+      if (savedPost) {
+        set((state) => ({
+          posts: state.posts.map((p) =>
+            p.id === savedPost.id ? savedPost : p
+          ),
+          currentPost: savedPost,
+        }));
       }
-
-      // Save to localStorage
-      localStorage.setItem("posts", JSON.stringify(posts));
-
-      // Update the store's posts array
-      set((state) => ({
-        ...state,
-        posts: posts,
-        currentPost: {
-          ...currentPost,
-          updatedAt: new Date().toISOString(),
-        },
-      }));
-
-      console.log("Post saved successfully. Updated posts:", posts);
     } catch (error) {
       console.error("Error saving post:", error);
       throw error;
@@ -283,56 +269,58 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
   },
 
   handleRemoveTemplate: (index: number) => {
-    set((state) => {
-      if (!state.currentPost) return state;
-      const updatedTemplates = [...(state.currentPost.templates || [])];
-      updatedTemplates.splice(index, 1);
-      return {
-        currentPost: {
-          ...state.currentPost,
-          templates: updatedTemplates,
-          templateIds: updatedTemplates.map((t) => t.id),
-        },
-      };
+    const { currentPost } = get();
+    if (!currentPost || !currentPost.templates) return;
+
+    const updatedTemplates = [...currentPost.templates];
+    const removedTemplate = updatedTemplates.splice(index, 1)[0];
+
+    if (!removedTemplate) return;
+
+    const updatedTemplateIds = currentPost.templateIds.filter(
+      (id) => id !== removedTemplate.id
+    );
+
+    const { [removedTemplate.id]: removedContent, ...remainingContents } =
+      currentPost.mergedContents;
+
+    get().updatePost({
+      templates: updatedTemplates,
+      templateIds: updatedTemplateIds,
+      mergedContents: remainingContents,
     });
   },
 
   handleTemplateSelection: (selectedTemplate: Template) => {
-    set((state) => {
-      if (!state.currentPost) return state;
-      const updatedTemplates = [
-        ...(state.currentPost.templates || []),
-        selectedTemplate,
-      ];
-      return {
-        currentPost: {
-          ...state.currentPost,
-          templates: updatedTemplates,
-          templateIds: updatedTemplates.map((t) => t.id),
-        },
-      };
-    });
-  },
+    const { currentPost } = get();
+    if (!currentPost) return;
 
-  clearLocalStorage: () => {
-    postService.clearPostData();
-    set({ currentPost: null, wordCount: 0 });
+    const updatedTemplates = [...(currentPost.templates || [])];
+    const updatedTemplateIds = [...(currentPost.templateIds || [])];
+
+    // Check if template is already selected
+    const existingIndex = updatedTemplates.findIndex(
+      (t) => t.id === selectedTemplate.id
+    );
+
+    if (existingIndex === -1) {
+      // Add template if not already selected
+      updatedTemplates.push(selectedTemplate);
+      updatedTemplateIds.push(selectedTemplate.id);
+    }
+
+    get().updatePost({
+      templates: updatedTemplates,
+      templateIds: updatedTemplateIds,
+    });
   },
 
   setLoading: (isLoading: boolean, progress = 0, loadingMessage = "") =>
     set({ isLoading, progress, loadingMessage }),
 
-  setRefinementInstructions: (instructions: string) => {
-    set({ refinementInstructions: instructions });
-    if (get().currentPost) {
-      get().updatePost({ refinementInstructions: instructions });
-    }
-  },
+  setRefinementInstructions: (instructions: string) =>
+    set({ refinementInstructions: instructions }),
 
-  setMergeInstructions: (instructions: string) => {
-    set({ mergeInstructions: instructions });
-    if (get().currentPost) {
-      get().updatePost({ mergeInstructions: instructions });
-    }
-  },
+  setMergeInstructions: (instructions: string) =>
+    set({ mergeInstructions: instructions }),
 }));

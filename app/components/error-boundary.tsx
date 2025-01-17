@@ -1,7 +1,7 @@
 "use client";
 
-import { Component, ErrorInfo, ReactNode } from "react";
-import { logger } from "@/app/lib/logger";
+import { Component, ComponentType, ErrorInfo, ReactNode } from "react";
+import { logger } from "@/lib/logger";
 
 interface Props {
   children: ReactNode;
@@ -46,4 +46,16 @@ export class ErrorBoundary extends Component<Props, State> {
 
     return this.props.children;
   }
+}
+
+export function withErrorBoundary<P extends object>(
+  WrappedComponent: ComponentType<P>
+) {
+  return function WithErrorBoundary(props: P) {
+    return (
+      <ErrorBoundary>
+        <WrappedComponent {...props} />
+      </ErrorBoundary>
+    );
+  };
 }

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { TimelineBlock } from "./timeline-block";
-import { logger } from "@/app/services/logger";
+import { logger } from "@/lib/logger";
 import { ErrorBoundaryWrapper } from "./error-boundary-wrapper";
 import {
   ViewField,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { logger } from "@/app/lib/logger";
+import { logger } from "@/lib/logger";
 
 export default function GlobalError({
   error,

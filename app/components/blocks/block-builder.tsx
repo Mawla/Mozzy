@@ -1,6 +1,6 @@
 import * as React from "react";
 import { BaseView } from "./base-block";
-import { logger } from "@/app/services/logger";
+import { logger } from "@/lib/logger";
 import { withErrorBoundary } from "@/app/components/error-boundary";
 import type { BlockConfig, BlockRow } from "@/app/types/blocks";
 import type { BlockBuilderProps } from "@/app/types/renderer";

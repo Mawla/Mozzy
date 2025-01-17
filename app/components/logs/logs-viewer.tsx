@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { logger } from "../../lib/logger";
-import type { LogEntry, LogLevel, LogFile } from "../../lib/logger";
+import { logger } from "@/lib/logger";
+import type { LogEntry, LogLevel, LogFile } from "@/lib/logger";
 
 interface LogsViewerProps {
   level?: LogLevel;

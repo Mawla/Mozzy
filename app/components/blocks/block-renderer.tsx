@@ -7,7 +7,7 @@ import { BlockNavigation } from "./layout/block-navigation";
 import { BlockSidebar } from "./layout/block-sidebar";
 import { BlockContent } from "./layout/block-content";
 import { cn } from "@/lib/utils";
-import { logger } from "@/app/services/logger";
+import { logger } from "@/lib/logger";
 import { withErrorBoundary } from "@/app/components/error-boundary";
 import type { NavigationSection } from "@/app/types/navigation";
 import type { BlockRendererProps } from "@/app/types/renderer";
