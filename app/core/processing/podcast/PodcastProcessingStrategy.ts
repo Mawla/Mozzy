@@ -8,7 +8,7 @@ import {
   MetadataResponse,
 } from "../types";
 
-import { ProcessingLogger } from "@/lib/logger";
+import { logger } from "@/lib/logger";
 import { ProcessingStrategy } from "../base/ProcessingStrategy";
 import { ProcessingStep } from "../types";
 import { ProcessingError } from "../errors/ProcessingError";
@@ -203,21 +203,25 @@ export class PodcastProcessingStrategy extends ProcessingStrategy<
       this.results.push(result);
       return result;
     } catch (error) {
-      ProcessingLogger.log("error", `Failed to process chunk ${chunk.id}`, {
-        error,
-      });
+      logger.error(
+        "Failed to process chunk",
+        error instanceof Error ? error : new Error(String(error)),
+        {
+          chunkId: chunk.id,
+        }
+      );
       throw error;
     }
   }
 
   public validate(chunk: TextChunk): boolean {
     if (!chunk || typeof chunk !== "object") {
-      ProcessingLogger.log("error", "Invalid chunk: not an object", { chunk });
+      logger.error("Invalid chunk: not an object", undefined, { chunk });
       return false;
     }
 
     if (typeof chunk.text !== "string" || chunk.text.length === 0) {
-      ProcessingLogger.log("error", "Invalid chunk: invalid text", {
+      logger.error("Invalid chunk: invalid text", undefined, {
         textType: typeof chunk.text,
         textLength: chunk.text?.length,
       });
@@ -229,7 +233,7 @@ export class PodcastProcessingStrategy extends ProcessingStrategy<
       !Number.isInteger(chunk.id) ||
       chunk.id < 0
     ) {
-      ProcessingLogger.log("error", "Invalid chunk: invalid id", {
+      logger.error("Invalid chunk: invalid id", undefined, {
         idType: typeof chunk.id,
         id: chunk.id,
       });

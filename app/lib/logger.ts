@@ -19,37 +19,60 @@ export interface LogFile {
 }
 
 export class ProcessingLogger {
+  private static instance: ProcessingLogger;
   private logs: LogEntry[] = [];
 
-  log(level: LogLevel, message: string, data?: any) {
+  private constructor() {}
+
+  public static getInstance(): ProcessingLogger {
+    if (!ProcessingLogger.instance) {
+      ProcessingLogger.instance = new ProcessingLogger();
+    }
+    return ProcessingLogger.instance;
+  }
+
+  log(level: LogLevel, message: string, error?: unknown, data?: any) {
     const entry: LogEntry = {
       timestamp: new Date().toISOString(),
       level,
       message,
+      error: error instanceof Error ? error : new Error(String(error)),
       data,
     };
     this.logs.push(entry);
-    console[level](message, data);
+    console[level](message, error, data);
   }
 
   debug(message: string, data?: any) {
-    this.log("debug", message, data);
+    this.log("debug", message, undefined, data);
   }
 
   info(message: string, data?: any) {
-    this.log("info", message, data);
+    this.log("info", message, undefined, data);
   }
 
-  warn(message: string, data?: any) {
-    this.log("warn", message, data);
+  warn(message: string, error?: unknown, data?: any) {
+    this.log("warn", message, error, data);
   }
 
-  error(message: string, error?: Error, data?: any) {
-    this.log("error", message, { error, ...data });
+  error(message: string, error?: unknown, data?: any) {
+    this.log("error", message, error, data);
   }
 
   getLogs(): LogEntry[] {
     return this.logs;
+  }
+
+  getLogSummary(): LogFile["summary"] {
+    const errorLogs = this.logs.filter((log) => log.level === "error");
+    const warningLogs = this.logs.filter((log) => log.level === "warn");
+
+    return {
+      errorCount: errorLogs.length,
+      warningCount: warningLogs.length,
+      lastError: errorLogs[errorLogs.length - 1],
+      lastWarning: warningLogs[warningLogs.length - 1],
+    };
   }
 
   clearLogs() {
@@ -57,83 +80,5 @@ export class ProcessingLogger {
   }
 }
 
-class Logger {
-  private static instance: Logger;
-  private logs: LogEntry[] = [];
-  private readonly maxLogs = 1000;
-
-  private constructor() {}
-
-  public static getInstance(): Logger {
-    if (!Logger.instance) {
-      Logger.instance = new Logger();
-    }
-    return Logger.instance;
-  }
-
-  private log(level: LogLevel, message: string, error?: Error, data?: any) {
-    const entry: LogEntry = {
-      timestamp: new Date().toISOString(),
-      level,
-      message,
-      data,
-      error,
-    };
-
-    this.logs.unshift(entry);
-    if (this.logs.length > this.maxLogs) {
-      this.logs.pop();
-    }
-
-    // Also log to console in development
-    if (process.env.NODE_ENV === "development") {
-      const consoleMethod = console[level] || console.log;
-      consoleMethod(
-        `[${level.toUpperCase()}] ${message}`,
-        error || "",
-        data || ""
-      );
-    }
-  }
-
-  public debug(message: string, data?: any) {
-    this.log("debug", message, undefined, data);
-  }
-
-  public info(message: string, data?: any) {
-    this.log("info", message, undefined, data);
-  }
-
-  public warn(message: string, data?: any) {
-    this.log("warn", message, undefined, data);
-  }
-
-  public error(message: string, error?: Error, data?: any) {
-    this.log("error", message, error, data);
-  }
-
-  public getLogs(): LogEntry[] {
-    return [...this.logs];
-  }
-
-  public getLogSummary() {
-    const errorCount = this.logs.filter((log) => log.level === "error").length;
-    const warningCount = this.logs.filter((log) => log.level === "warn").length;
-    const lastError = this.logs.find((log) => log.level === "error");
-    const lastWarning = this.logs.find((log) => log.level === "warn");
-
-    return {
-      totalLogs: this.logs.length,
-      errorCount,
-      warningCount,
-      lastError,
-      lastWarning,
-    };
-  }
-
-  public clearLogs() {
-    this.logs = [];
-  }
-}
-
-export const logger = Logger.getInstance();
+export const processingLogger = ProcessingLogger.getInstance();
+export const logger = ProcessingLogger.getInstance();

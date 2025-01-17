@@ -20,9 +20,13 @@ import {
 } from "@/utils/stringUtils";
 import { extractEntitiesPrompt } from "../prompts/podcasts";
 import {
-  Entity,
-  EntityResponse,
-  PodcastEntities,
+  PersonEntity,
+  OrganizationEntity,
+  LocationEntity,
+  EventEntity,
+  EntityMention,
+  EntityRelationship,
+  ProcessingResult,
 } from "@/app/types/podcast/processing";
 
 const anthropicHelper = AnthropicHelper.getInstance();
@@ -31,6 +35,24 @@ const anthropicHelper = AnthropicHelper.getInstance();
 const DEFAULT_COMPLETION_LENGTH = 8192;
 const TITLE_COMPLETION_LENGTH = 50;
 const SIMILAR_TEMPLATES_COMPLETION_LENGTH = 4096;
+
+// Local type alias for entities structure
+type PodcastEntities = {
+  people: PersonEntity[];
+  organizations: OrganizationEntity[];
+  locations: LocationEntity[];
+  events: EventEntity[];
+};
+
+// Define the response type from the AI
+interface EntityResponse {
+  entities: {
+    people: Array<{ name: string }>;
+    organizations: Array<{ name: string }>;
+    locations: Array<{ name: string }>;
+    events: Array<{ name: string }>;
+  };
+}
 
 export async function mergeContent(prompt: string): Promise<string> {
   const mergeResult = await anthropicHelper.getCompletion(
@@ -301,10 +323,31 @@ export const extractEntities = async (
     const { entities } = parsedResponse;
 
     return {
-      people: entities.people.map((p) => p.name),
-      organizations: entities.organizations.map((o) => o.name),
-      locations: entities.locations.map((l) => l.name),
-      events: entities.events.map((e) => e.name),
+      people: entities.people.map((p: { name: string }) => ({
+        name: p.name,
+        type: "PERSON" as const,
+        context: "",
+        mentions: [{ text: p.name, sentiment: "neutral" as const }],
+        role: "",
+      })),
+      organizations: entities.organizations.map((o: { name: string }) => ({
+        name: o.name,
+        type: "ORGANIZATION" as const,
+        context: "",
+        mentions: [{ text: o.name, sentiment: "neutral" as const }],
+      })),
+      locations: entities.locations.map((l: { name: string }) => ({
+        name: l.name,
+        type: "LOCATION" as const,
+        context: "",
+        mentions: [{ text: l.name, sentiment: "neutral" as const }],
+      })),
+      events: entities.events.map((e: { name: string }) => ({
+        name: e.name,
+        type: "EVENT" as const,
+        context: "",
+        mentions: [{ text: e.name, sentiment: "neutral" as const }],
+      })),
     };
   } catch (error) {
     console.error("Failed to parse entity extraction response:", error);

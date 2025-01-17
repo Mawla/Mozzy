@@ -2,49 +2,51 @@ import {
   PodcastAnalysis as BasePodcastAnalysis,
   PodcastEntities as BasePodcastEntities,
   Section,
+  ProcessingStatus,
+  ProcessingStep,
+  ProcessingResult as BaseProcessingResult,
+  TimelineEvent as BaseTimelineEvent,
 } from "./models";
+
+import {
+  PersonEntity,
+  OrganizationEntity,
+  LocationEntity,
+  EventEntity,
+  EntityMention,
+  EntityRelationship,
+} from "@/app/schemas/podcast/entities";
 
 // Re-export the base types with sections
 export interface PodcastAnalysis extends Omit<BasePodcastAnalysis, "sections"> {
   sections?: Section[];
 }
 
-// Re-export PodcastEntities type
-export interface EntityMention {
-  text: string;
-  timestamp?: string;
-  sentiment?: string;
-}
-
-export interface EntityRelationship {
-  entity: string;
-  relationship: string;
-}
-
-export interface EntityDetails {
-  name: string;
-  type: string;
-  context?: string;
-  mentions: EntityMention[];
-  relationships?: EntityRelationship[];
-}
-
-export interface PodcastEntities {
-  people: EntityDetails[];
-  organizations: EntityDetails[];
-  locations: EntityDetails[];
-  events: EntityDetails[];
-  topics?: EntityDetails[];
-  concepts?: EntityDetails[];
-}
-
-export type { Section };
+// Re-export types
+export type {
+  PersonEntity,
+  OrganizationEntity,
+  LocationEntity,
+  EventEntity,
+  EntityMention,
+  EntityRelationship,
+  Section,
+  ProcessingStatus,
+  ProcessingStep,
+};
 
 // Processing State Types
 export interface ProcessingState {
   chunks: ProcessingChunk[];
   networkLogs: NetworkLog[];
   currentTranscript: string;
+}
+
+export interface TextChunk {
+  id: number;
+  text: string;
+  startIndex: number;
+  endIndex: number;
 }
 
 export interface ProcessingChunk {
@@ -54,14 +56,62 @@ export interface ProcessingChunk {
   response?: string;
   error?: string;
   analysis?: PodcastAnalysis;
-  entities?: PodcastEntities;
-  timeline?: TimelineEvent[];
+  entities?: {
+    people: PersonEntity[];
+    organizations: OrganizationEntity[];
+    locations: LocationEntity[];
+    events: EventEntity[];
+  };
+  timeline?: BaseTimelineEvent[];
+}
+
+export interface ProcessingChunkResult {
+  entities: {
+    people: PersonEntity[];
+    organizations: OrganizationEntity[];
+    locations: LocationEntity[];
+    events: EventEntity[];
+  };
+  analysis: {
+    summary: string;
+    topics: string[];
+    sentiment: string;
+    keywords: string[];
+    keyPoints?: Array<{
+      title: string;
+      description: string;
+      relevance: string;
+    }>;
+    themes?: Array<{
+      name: string;
+      description: string;
+      relatedConcepts: string[];
+    }>;
+  };
+  timeline?: BaseTimelineEvent[];
+  refinedText?: string;
+}
+
+export interface ProcessingResult extends BaseProcessingResult {
+  success: boolean;
+  error?: string;
+  transcript: string;
+  refinedTranscript: string;
+  analysis: PodcastAnalysis;
+  entities: {
+    people: PersonEntity[];
+    organizations: OrganizationEntity[];
+    locations: LocationEntity[];
+    events: EventEntity[];
+  };
+  timeline: BaseTimelineEvent[];
 }
 
 export interface NetworkLog {
   timestamp: string;
   type: "request" | "response" | "error";
   message: string;
+  data?: any;
 }
 
 // Analysis Types
@@ -83,20 +133,6 @@ export interface Theme {
   name: string;
   description: string;
   relatedConcepts: string[];
-}
-
-export interface TimelineEvent {
-  time: string;
-  event: string;
-  importance: "high" | "medium" | "low";
-}
-
-// Processing Step Types
-export interface TextChunk {
-  id: number;
-  text: string;
-  startIndex: number;
-  endIndex: number;
 }
 
 export interface ChunkOptions {
@@ -139,165 +175,5 @@ export type StepData = {
   organizations?: string[];
   locations?: string[];
   events?: string[];
-  timeline?: TimelineEvent[];
+  timeline?: BaseTimelineEvent[];
 };
-
-export type ProcessingStatus = "idle" | "processing" | "completed" | "error";
-
-export interface ProcessingStep {
-  id: string;
-  name: string;
-  status: ProcessingStatus;
-  data: StepData | null;
-  error?: Error | string;
-}
-
-// Add ChunkResult interface
-export interface ChunkResult {
-  id: number;
-  refinedText: string;
-  analysis: PodcastAnalysis;
-  entities: PodcastEntities;
-  timeline: TimelineEvent[];
-}
-
-// Update ProcessingResult to include transcript
-export interface ProcessingResult {
-  transcript: string;
-  refinedTranscript: string;
-  analysis: PodcastAnalysis;
-  entities: PodcastEntities;
-  timeline: TimelineEvent[];
-}
-
-// Component Props Types
-export interface ChunkVisualizerProps {
-  chunks: ProcessingChunk[];
-}
-
-export interface NetworkLoggerProps {
-  logs: NetworkLog[];
-  className?: string;
-}
-
-export interface ProcessingPipelineProps {
-  steps: ProcessingStep[];
-  onRetryStep: (stepName: string) => void;
-  isProcessing: boolean;
-}
-
-export type ProcessingTab = "progress" | "chunks" | "result" | "logs";
-
-export interface SynthesisResult {
-  synthesis: {
-    title: string;
-    summary: string;
-    quickFacts: {
-      duration: string;
-      participants: string[];
-      mainTopics: string[];
-      expertise: string;
-    };
-    keyPoints: Array<{
-      title: string;
-      description: string;
-      relevance: string;
-      sourceChunks: number[];
-    }>;
-    themes: Array<{
-      name: string;
-      description: string;
-      relatedConcepts: string[];
-      progression: string;
-    }>;
-    narrative: {
-      beginning: string;
-      development: string;
-      conclusion: string;
-      transitions: string[];
-    };
-    connections: {
-      crossReferences: string[];
-      conceptualLinks: string[];
-      thematicArcs: string[];
-    };
-  };
-  analysis?: PodcastAnalysis;
-}
-
-export interface ContentMetadata {
-  duration?: string;
-  speakers?: string[];
-  mainTopic?: string;
-  expertise?: string;
-  keyPoints?: Array<{
-    title: string;
-    description: string;
-    relevance: string;
-  }>;
-  themes?: Array<{
-    name: string;
-    description: string;
-    relatedConcepts: string[];
-  }>;
-}
-
-// Add a type for the metadata response
-export interface MetadataResponse extends ContentMetadata {
-  duration: string;
-  speakers: string[];
-  mainTopic: string;
-  expertise: string;
-  keyPoints: Array<{
-    title: string;
-    description: string;
-    relevance: string;
-  }>;
-  themes: Array<{
-    name: string;
-    description: string;
-    relatedConcepts: string[];
-  }>;
-}
-
-// Add Entity types for processing
-export interface Entity {
-  name: string;
-  role?: string;
-  context?: string;
-  timeContext?: string;
-  firstMention?: boolean;
-}
-
-export interface EntityResponse {
-  entities: {
-    people: Entity[];
-    organizations: Entity[];
-    locations: Entity[];
-    events: Entity[];
-  };
-  continuity: {
-    referencesPrevious: string[];
-    incompleteReferences: string[];
-  };
-}
-
-// Update Anthropic response types to match the actual API
-export interface ContentBlock {
-  text: string;
-  type: "text";
-}
-
-export interface ToolUseBlock {
-  type: "tool_use" | "tool_result";
-  text: string;
-}
-
-export type MessageContentBlock = ContentBlock | ToolUseBlock;
-
-export interface Message {
-  id: string;
-  content: MessageContentBlock[];
-  role: string;
-  model: string;
-}
