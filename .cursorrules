@@ -418,161 +418,110 @@ Remember:
     - Handles error boundaries
     - Manages console overrides
 
-## Composer History and Planning
+## Working Memory Rules
 
-1. File Structure:
+1. Directory Structure:
 
    ```
-   /docs/composer-history/
-   ├── {composer-id}/
-   │   ├── .plan         # Tactical plan for this specific run
-   │   ├── history.json  # Execution history for this run
-   │   └── metadata.json # Run-specific configuration
+   /docs/working-memory/
+   ├── open/                # Active tasks
+   │   └── {task-id}/
+   │       └── .plan       # Tactical plan for this specific task
+   │
+   └── done/               # Completed tasks
+       └── {task-id}/
+           └── .plan       # Completed task plan
    ```
 
-2. Plan File Format:
+2. Naming Conventions:
 
-   ```typescript
-   interface ComposerPlan {
-     id: string;
-     status: "pending" | "in-progress" | "completed" | "failed";
-     steps: {
-       id: string;
-       description: string;
-       status: "pending" | "in-progress" | "completed" | "failed";
-       startedAt?: string;
-       completedAt?: string;
-       error?: string;
-       outputs?: any;
-     }[];
-     metadata: {
-       createdAt: string;
-       updatedAt: string;
-       sourceContent: string;
-       targetFormat: string;
-       config: Record<string, any>;
-     };
-     // Reference to strategic plan items being worked on
-     strategicPlanItems: {
-       id: string; // Number from plan.md
-       status: "pending" | "in-progress" | "completed" | "failed";
-       notes?: string;
-     }[];
-   }
+   - Task ID format: `{feature-name}-{date}-{sequence}`
+     Example: `auth-fix-20240117-3`
+
+3. Plan File Format:
+
+   ```markdown
+   # Task Plan ({task-id})
+
+   ## Problem Analysis
+
+   - Clear description of issues
+   - List of affected components
+   - Impact assessment
+
+   ## Solution Design
+
+   - Proposed solutions
+   - Technical approach
+   - Risk assessment
+
+   ## Implementation Steps
+
+   - Detailed steps with checkboxes
+   - Dependencies and order
+   - Success criteria
+
+   ## Monitoring
+
+   - What to watch for
+   - Metrics to track
+   - Success indicators
    ```
 
-3. History File Format:
+4. Task Lifecycle:
 
-   ```typescript
-   interface ComposerHistory {
-     runs: {
-       id: string;
-       startedAt: string;
-       completedAt: string;
-       status: "completed" | "failed";
-       error?: string;
-       metrics: {
-         duration: number;
-         tokensUsed: number;
-         stepCount: number;
-       };
-       outputs: {
-         files: string[];
-         content: string[];
-       };
-       // Strategic plan updates made by this run
-       strategicUpdates?: {
-         planItemId: string;
-         type: "new" | "update" | "complete";
-         description: string;
-         timestamp: string;
-       }[];
-     }[];
-   }
-   ```
+   - Create new folder in `open/` with task ID
+   - Create .plan file with full details
+   - Track progress in .plan
+   - Update plan.md as needed
+   - When complete, move to `done/` directory
 
-4. Usage Rules:
+5. Completion Requirements:
 
-   - Create new plan before starting composition
-   - Link to relevant items in plan.md via strategicPlanItems
-   - Update plan.md when strategic changes are identified
-   - Log all steps with timestamps
-   - Store outputs and errors
-   - Keep history for debugging
-   - Use atomic writes for updates
-   - Document all UI changes with component, change type, and rationale
+   - All tasks in .plan marked as complete
+   - Plan.md updated with completion status
+   - Task folder moved from `open/` to `done/`
 
-5. Best Practices:
+6. Best Practices:
 
-   - One plan file per composition run
-   - Include all context in metadata
-   - Version control friendly format
-   - Human readable structure
-   - Clear error messages
-   - Update plan.md for strategic changes
-   - Keep composer history for tactical details
+   - One plan file per task
+   - Clear problem analysis
+   - Detailed implementation steps
+   - Proper task tracking
+   - Regular plan.md updates
 
-6. Example Plan:
+7. Documentation:
+   - Keep plans focused and atomic
+   - Include clear success criteria
+   - Document dependencies
+   - Track strategic plan items
 
-   ```json
-   {
-     "id": "blog-to-twitter-20240116",
-     "status": "in-progress",
-     "steps": [
-       {
-         "id": "parse-content",
-         "description": "Parse blog content into sections",
-         "status": "completed",
-         "startedAt": "2024-01-16T10:00:00Z",
-         "completedAt": "2024-01-16T10:00:01Z",
-         "outputs": {
-           "sections": ["intro", "main", "conclusion"]
-         }
-       }
-     ],
-     "metadata": {
-       "createdAt": "2024-01-16T10:00:00Z",
-       "updatedAt": "2024-01-16T10:00:01Z",
-       "sourceContent": "blog-post-1.md",
-       "targetFormat": "twitter-thread",
-       "config": {
-         "threadLength": 5,
-         "includeHashtags": true
-       }
-     },
-     "strategicPlanItems": [
-       {
-         "id": "41",
-         "status": "in-progress",
-         "notes": "Working on multi-template merge feature"
-       }
-     ]
-   }
-   ```
+## Authentication Standards
 
-7. Monitoring:
+1. Use @supabase/ssr exclusively for Next.js integration:
 
-   - Track success/failure rates
-   - Measure performance metrics
-   - Analyze common errors
-   - Monitor resource usage
-   - Alert on failures
-   - Track strategic plan progress
+   - No direct usage of @supabase/supabase-js
+   - Use createServerClient for server components
+   - Use createBrowserClient for client components
+   - Handle cookies through Server Actions
 
-8. Cleanup:
-   - Archive completed plans
-   - Rotate history files
-   - Clean up temporary files
-   - Maintain disk usage
-   - Backup important data
-   - Update plan.md with completed items
+2. Session Management:
 
-Remember:
+   - Use Server Actions for auth operations
+   - Implement proper cookie handling
+   - Add session refresh mechanism
+   - Handle token cleanup
+   - Add error recovery
 
-- Always create plan first
-- Link to strategic plan items
-- Update plan.md for strategic changes
-- Keep tactical details in composer history
-- Log all important events
-- Keep history for analysis
-- Clean up old files
+3. Protected Routes:
+
+   - Use AuthGuard component
+   - Implement role-based access
+   - Add proper loading states
+   - Handle unauthorized access
+
+4. Error Handling:
+   - Use AuthErrorBoundary
+   - Implement retry mechanisms
+   - Add user feedback
+   - Log auth failures
