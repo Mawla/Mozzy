@@ -2,11 +2,8 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { Database } from "@/types/supabase";
 import { logger } from "@/lib/logger";
-import { AuthError } from "@supabase/supabase-js";
 
-export async function createClient() {
-  const cookieStore = cookies();
-
+export async function createClient(cookieStore = cookies()) {
   try {
     const client = createServerClient<Database>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,24 +17,41 @@ export async function createClient() {
           },
           set(name: string, value: string, options: CookieOptions) {
             try {
+              if (cookieStore instanceof Response) {
+                logger.warn("Cookie set attempted on Response object");
+                return;
+              }
               cookieStore.set({ name, value, ...options });
               logger.debug("Cookie set", { name });
             } catch (error) {
-              logger.warn(
-                "Cookie modification attempted in read-only context",
-                { name, error: error as Error }
-              );
+              // Only log warning if not in a Server Action
+              if (!(error as Error).message.includes("Server Action")) {
+                logger.warn(
+                  "Cookie modification attempted in read-only context",
+                  {
+                    name,
+                    error: error as Error,
+                  }
+                );
+              }
             }
           },
           remove(name: string, options: CookieOptions) {
             try {
-              cookieStore.delete(name);
+              if (cookieStore instanceof Response) {
+                logger.warn("Cookie removal attempted on Response object");
+                return;
+              }
+              cookieStore.delete({ name, ...options });
               logger.debug("Cookie removed", { name });
             } catch (error) {
-              logger.warn("Cookie deletion attempted in read-only context", {
-                name,
-                error: error as Error,
-              });
+              // Only log warning if not in a Server Action
+              if (!(error as Error).message.includes("Server Action")) {
+                logger.warn("Cookie deletion attempted in read-only context", {
+                  name,
+                  error: error as Error,
+                });
+              }
             }
           },
         },

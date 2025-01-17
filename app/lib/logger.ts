@@ -21,6 +21,7 @@ export interface LogFile {
 export class ProcessingLogger {
   private static instance: ProcessingLogger;
   private logs: LogEntry[] = [];
+  private isBrowserLoggingSetup = false;
 
   private constructor() {}
 
@@ -29,6 +30,47 @@ export class ProcessingLogger {
       ProcessingLogger.instance = new ProcessingLogger();
     }
     return ProcessingLogger.instance;
+  }
+
+  setupBrowserLogging() {
+    if (this.isBrowserLoggingSetup) return;
+
+    // Store original console methods
+    const originalConsole = {
+      log: console.log,
+      info: console.info,
+      warn: console.warn,
+      error: console.error,
+      debug: console.debug,
+    };
+
+    // Override console methods
+    console.log = (...args: any[]) => {
+      this.debug(args[0], args.slice(1));
+      originalConsole.log.apply(console, args);
+    };
+
+    console.info = (...args: any[]) => {
+      this.info(args[0], args.slice(1));
+      originalConsole.info.apply(console, args);
+    };
+
+    console.warn = (...args: any[]) => {
+      this.warn(args[0], args.slice(1));
+      originalConsole.warn.apply(console, args);
+    };
+
+    console.error = (...args: any[]) => {
+      this.error(args[0], args.slice(1));
+      originalConsole.error.apply(console, args);
+    };
+
+    console.debug = (...args: any[]) => {
+      this.debug(args[0], args.slice(1));
+      originalConsole.debug.apply(console, args);
+    };
+
+    this.isBrowserLoggingSetup = true;
   }
 
   log(level: LogLevel, message: string, error?: unknown, data?: any) {

@@ -418,83 +418,148 @@ Remember:
     - Handles error boundaries
     - Manages console overrides
 
-## Working Memory Rules
+## Memory Management
 
-1. Directory Structure:
+### Memory Types
 
-   ```
-   /docs/working-memory/
-   ├── open/                # Active tasks
-   │   └── {task-id}/
-   │       └── .plan       # Tactical plan for this specific task
-   │
-   └── done/               # Completed tasks
-       └── {task-id}/
-           └── .plan       # Completed task plan
-   ```
+1. Working Memory:
 
-2. Naming Conventions:
+   - Location: `/docs/working-memory/`
+   - Purpose: Active task tracking and current context
+   - Lifecycle: Task duration
+   - Updates: Real-time during task execution
+   - Feature Documentation Integration:
+     - Every task plan must reference affected feature docs
+     - Documentation updates must be tracked in progress history
+     - Feature changes require documentation review
+     - Component changes must update feature docs
 
-   - Task ID format: `{feature-name}-{date}-{sequence}`
-     Example: `auth-fix-20240117-3`
+2. Project Memory:
 
-3. Plan File Format:
+   - Location: `/docs/`
+   - Purpose: Long-term project knowledge
+   - Lifecycle: Project duration
+   - Updates: After significant milestones
+   - Feature Documentation Integration:
+     - Maintain `/docs/features/` directory
+     - Track feature documentation versions
+     - Link features to architectural decisions
+     - Monitor documentation health
 
-   ```markdown
-   # Task Plan ({task-id})
+3. Documentation Memory:
 
-   ## Problem Analysis
+   - Location: `/docs/templates/`
+   - Purpose: Standards and patterns
+   - Lifecycle: Evolves with project
+   - Updates: Monthly reviews
+   - Feature Documentation Integration:
+     - Maintain feature documentation templates
+     - Update templates based on learnings
+     - Track template usage patterns
+     - Document best practices
 
-   - Clear description of issues
-   - List of affected components
-   - Impact assessment
+### Directory Structure
 
-   ## Solution Design
+```
+/docs/
+├── working-memory/           # Active context
+│   ├── open/                # Active tasks
+│   │   └── {task-id}/
+│   │       └── .plan       # Task plan
+│   └── done/               # Completed tasks
+├── templates/              # Project templates
+└── standards/             # Project standards
+```
 
-   - Proposed solutions
-   - Technical approach
-   - Risk assessment
+### Memory Retention Policy
 
-   ## Implementation Steps
+1. Working Memory:
 
-   - Detailed steps with checkboxes
-   - Dependencies and order
-   - Success criteria
+   - Keep active tasks in `open/`
+   - Move completed tasks to `done/`
+   - Archive tasks older than 30 days
+   - Maintain task relationships
 
-   ## Monitoring
+2. Project Memory:
 
-   - What to watch for
-   - Metrics to track
-   - Success indicators
-   ```
+   - Regular updates to plan.md
+   - Document major decisions
+   - Track architectural changes
+   - Keep dependency updates
 
-4. Task Lifecycle:
+3. Documentation Memory:
+   - Monthly template reviews
+   - Update patterns library
+   - Maintain examples
+   - Version control changes
 
-   - Create new folder in `open/` with task ID
-   - Create .plan file with full details
-   - Track progress in .plan
-   - Update plan.md as needed
-   - When complete, move to `done/` directory
+## Documentation Standards
 
-5. Completion Requirements:
+### Documentation Types
 
-   - All tasks in .plan marked as complete
-   - Plan.md updated with completion status
-   - Task folder moved from `open/` to `done/`
+1. Project Documentation:
 
-6. Best Practices:
+   - Location: `/docs/`
+   - Purpose: Project overview, architecture, decisions
+   - Format: Markdown with code examples
+   - Updates: After major changes
 
-   - One plan file per task
-   - Clear problem analysis
-   - Detailed implementation steps
-   - Proper task tracking
-   - Regular plan.md updates
+2. Technical Documentation:
 
-7. Documentation:
-   - Keep plans focused and atomic
-   - Include clear success criteria
-   - Document dependencies
-   - Track strategic plan items
+   - Location: `/docs/technical/`
+   - Purpose: Implementation details, APIs, patterns
+   - Format: Markdown with TypeScript examples
+   - Updates: With code changes
+
+3. Task Documentation:
+   - Location: `/docs/working-memory/`
+   - Purpose: Current work tracking
+   - Format: Task plan template
+   - Updates: Real-time
+
+### Documentation Guidelines
+
+1. File Structure:
+
+   - Clear hierarchical organization
+   - Consistent naming conventions
+   - Related files grouped together
+   - Version controlled
+
+2. Content Standards:
+
+   - Clear and concise writing
+   - Code examples for technical concepts
+   - Links to related documentation
+   - Regular updates and reviews
+
+3. Cross-Referencing:
+   - Use relative links between docs
+   - Reference related tasks
+   - Link to external resources
+   - Maintain relationship graphs
+
+### Maintenance Rules
+
+1. Regular Reviews:
+
+   - Monthly template updates
+   - Quarterly content review
+   - Remove outdated information
+   - Update examples
+
+2. Version Control:
+
+   - Document significant changes
+   - Keep change history
+   - Tag major versions
+   - Archive old versions
+
+3. Quality Checks:
+   - Validate links
+   - Check code examples
+   - Verify formatting
+   - Update timestamps
 
 ## Authentication Standards
 
@@ -525,3 +590,600 @@ Remember:
    - Implement retry mechanisms
    - Add user feedback
    - Log auth failures
+
+## Task Plan Templates
+
+1. Template Location:
+
+   - All task templates are in `/docs/templates/`
+   - Main template: `task-plan-template.md`
+
+2. Creating New Tasks:
+
+   ```bash
+   # Create new task directory
+   mkdir -p docs/working-memory/open/{feature-name}-{YYYYMMDD}
+   # Copy template
+   cp docs/templates/task-plan-template.md docs/working-memory/open/{feature-name}-{YYYYMMDD}/.plan
+   ```
+
+3. Template Usage Rules:
+
+   - Always copy from template for new tasks
+   - Keep all sections, mark as N/A if not applicable
+   - Current Status at top (snapshot of NOW)
+   - Progress History at bottom (chronological record)
+   - Use checkboxes for implementation steps
+   - Include paths in backticks
+   - Document all major decisions
+   - Update affected components section as work progresses
+
+4. Required Sections:
+
+   - Current Status: Snapshot of current state
+   - Problem Analysis: Clear issue definition
+   - Solution Design: Approaches considered
+   - Implementation Steps: Detailed breakdown
+   - Affected Components: Files/systems impacted
+   - Progress History: Chronological record
+
+5. Current Status Format:
+
+   ```markdown
+   ### YYYY-MM-DD HH:mm
+
+   **Status**: {In Progress/Blocked/Completed}
+
+   - What's working: {current state}
+   - What's not: {current issues}
+   - Blocking issues: {if any}
+   - Next actions: {immediate next steps}
+   ```
+
+6. Implementation Steps Format:
+
+   ```markdown
+   - [ ] High-level step
+     - [ ] Detailed sub-task
+     - Success criteria
+     - Dependencies
+   ```
+
+7. Progress History Format:
+
+   ```markdown
+   ### YYYY-MM-DD HH:mm - {Brief Title}
+
+   - ✓ Completed: Specific work completed
+   - 🤔 Decisions: Why we chose X over Y
+   - ❌ Issues: Problems hit and how we solved them
+   - ⏭️ Led to: What this enabled/unblocked
+   ```
+
+8. Task Completion:
+
+   - All implementation steps checked
+   - Final status update added
+   - Move to completed:
+     ```bash
+     mv docs/working-memory/open/{task-id} docs/working-memory/done/
+     ```
+
+9. Best Practices:
+
+   - Update status before starting work
+   - Document decisions as they're made
+   - Keep progress log updated
+   - Link to relevant issues/PRs
+   - Include rollback steps for risky changes
+   - Reference affected components
+
+10. Template Maintenance:
+    - Review template monthly
+    - Update based on team feedback
+    - Keep example sections current
+    - Document common patterns
+    - Remove unused sections
+
+## Version Control Integration
+
+### Memory File Version Control
+
+1. Commit Patterns:
+
+   - Prefix memory-related commits with `docs(memory)`
+   - Include task ID in commit message
+   - Reference affected memory types
+   - Example: `docs(memory): update task-123 working memory`
+
+2. Plan Updates:
+
+   - Commit plan.md changes separately
+   - Use `docs(plan)` prefix
+   - Include change summary
+   - Example: `docs(plan): update project milestones for Q2`
+
+3. Documentation Changes:
+   - Use `docs(type)` prefix
+   - Specify documentation type
+   - Include change scope
+   - Example: `docs(tech): update API authentication docs`
+
+### Branch Management
+
+1. Memory Branches:
+
+   - Format: `docs/memory/{task-id}`
+   - Short-lived, task-specific
+   - Merge after task completion
+   - Example: `docs/memory/auth-update-20240320`
+
+2. Documentation Branches:
+
+   - Format: `docs/{type}/{feature}`
+   - Type: tech, project, standards
+   - Feature: specific area of change
+   - Example: `docs/tech/auth-flow`
+
+3. Plan Branches:
+   - Format: `docs/plan/{milestone}`
+   - Used for major plan updates
+   - Requires review before merge
+   - Example: `docs/plan/q2-roadmap`
+
+### Version Tagging
+
+1. Documentation Releases:
+
+   - Format: `docs/v{major}.{minor}`
+   - Major: Breaking changes
+   - Minor: Feature additions
+   - Example: `docs/v1.2`
+
+2. Memory Snapshots:
+
+   - Format: `memory/{YYYY-MM}`
+   - Monthly snapshots
+   - Archive old working memory
+   - Example: `memory/2024-03`
+
+3. Plan Milestones:
+   - Format: `plan/{milestone}`
+   - Track major project phases
+   - Link to documentation versions
+   - Example: `plan/phase-1`
+
+## Cross-Reference System
+
+### Reference Types
+
+1. Task References:
+
+   - Format: `[task-id]`
+   - Links to task plans
+   - Indicates dependencies
+   - Example: `[auth-update-20240320]`
+
+2. Documentation Links:
+
+   - Use relative paths
+   - Format: `[title](path/to/doc.md)`
+   - Include section anchors
+   - Example: `[Auth Flow](/docs/technical/auth-flow.md#session-management)`
+
+3. Component References:
+   - Format: `{component-type}/{name}`
+   - Links to implementation
+   - Example: `ui/auth-form`
+
+### Reference Relationships
+
+1. Task Dependencies:
+
+   ```markdown
+   ## Dependencies
+
+   - Blocks: [task-id-1], [task-id-2]
+   - Blocked by: [task-id-3]
+   - Related: [task-id-4]
+   ```
+
+2. Documentation Hierarchy:
+
+   ```markdown
+   ## Related Documentation
+
+   - Parent: [System Overview](/docs/system.md)
+   - Children:
+     - [Component A](/docs/components/a.md)
+     - [Component B](/docs/components/b.md)
+   ```
+
+3. Implementation Links:
+
+   ```markdown
+   ## Implementation
+
+   - Component: {ui/auth-form}
+   - Tests: {tests/auth-form.test.tsx}
+   - Types: {types/auth.ts}
+   ```
+
+### Reference Management
+
+1. Link Validation:
+
+   - Check broken links monthly
+   - Update references on file moves
+   - Remove obsolete links
+   - Keep paths relative
+
+2. Dependency Tracking:
+
+   - Update task dependencies daily
+   - Mark completed dependencies
+   - Note blocking relationships
+   - Track circular dependencies
+
+3. Reference Documentation:
+   - Document all reference types
+   - Keep examples current
+   - Note deprecated references
+   - Track reference patterns
+
+## Observability
+
+### System Monitoring
+
+1. Performance Monitoring:
+
+   - Track page load times
+   - Monitor API response times
+   - Watch memory usage
+   - Track component render times
+   - Monitor database queries
+
+2. Error Tracking:
+
+   - Capture client-side errors
+   - Monitor API failures
+   - Track authentication issues
+   - Log database errors
+   - Monitor build failures
+
+3. User Analytics:
+   - Track feature usage
+   - Monitor user flows
+   - Capture performance metrics
+   - Track error rates
+   - Monitor conversion paths
+
+### Logging Standards
+
+1. Log Levels:
+
+   - debug: Development details and verbose information
+   - info: General operational events
+   - warn: Warning conditions that should be reviewed
+   - error: Error conditions that need immediate attention
+
+2. Logging Methods:
+
+   ```typescript
+   logger.debug(message: string, data?: any)
+   logger.info(message: string, data?: any)
+   logger.warn(message: string, data?: any)
+   logger.error(message: string, error?: any, data?: any)
+   ```
+
+3. Error Handling:
+
+   ```typescript
+   try {
+     // Operation that may fail
+   } catch (error) {
+     logger.error("Operation failed", error, { context: "additional data" });
+   }
+   ```
+
+4. Common Log Patterns:
+
+   ```typescript
+   // Feature initialization
+   logger.info("Feature initialized", { featureId, config });
+
+   // API calls
+   logger.debug("API request", { endpoint, params });
+   logger.info("API response received", { status, data });
+
+   // Error handling
+   logger.error("API request failed", error, { endpoint, params });
+
+   // User actions
+   logger.info("User action", { action, userId, details });
+   ```
+
+### Debugging Guidelines
+
+1. Development Tools:
+
+   - Use React DevTools
+   - Enable source maps
+   - Use browser debugger
+   - Enable verbose logging
+   - Use performance profiler
+
+2. Common Issues:
+
+   - Component rendering
+   - State management
+   - API integration
+   - Authentication flows
+   - Performance bottlenecks
+
+3. Debug Process:
+   - Reproduce the issue
+   - Check error logs
+   - Review recent changes
+   - Test in isolation
+   - Document findings
+
+### Alerting
+
+1. Critical Alerts:
+
+   - Authentication failures
+   - API downtime
+   - Database errors
+   - Memory leaks
+   - Build failures
+
+2. Warning Alerts:
+
+   - High latency
+   - Error rate spikes
+   - Low disk space
+   - Cache misses
+   - Slow queries
+
+3. Alert Management:
+   - Define severity levels
+   - Set thresholds
+   - Establish on-call rotation
+   - Document response procedures
+   - Track resolution times
+
+## Feature Documentation
+
+### Structure
+
+1. Location:
+
+   - `/docs/features/{feature-name}/`
+   - Example: `/docs/features/podcast/`
+
+2. Required Files:
+   ```
+   /docs/features/{feature-name}/
+   ├── README.md           # Feature overview
+   ├── architecture.md     # Technical design
+   ├── components.md       # Component documentation
+   ├── api.md             # API endpoints
+   └── testing.md         # Test scenarios
+   ```
+
+### Feature Overview (README.md)
+
+```markdown
+# {Feature Name}
+
+## Overview
+
+- Purpose and goals
+- User stories
+- Key functionalities
+- Dependencies
+
+## Status
+
+- Current state
+- Planned improvements
+- Known limitations
+
+## Quick Links
+
+- [Architecture](./architecture.md)
+- [Components](./components.md)
+- [API Documentation](./api.md)
+- [Testing](./testing.md)
+```
+
+### Architecture Documentation
+
+```markdown
+# {Feature Name} Architecture
+
+## System Design
+
+- High-level overview
+- Component relationships
+- Data flow diagrams
+
+## Technical Decisions
+
+- Technology choices
+- Design patterns
+- Performance considerations
+
+## Dependencies
+
+- External services
+- Internal dependencies
+- Configuration requirements
+```
+
+### Component Documentation
+
+```markdown
+# {Feature Name} Components
+
+## Component Tree
+
+- Parent/child relationships
+- Component hierarchy
+- State management
+
+## Individual Components
+
+### {ComponentName}
+
+- Purpose
+- Props interface
+- Usage examples
+- State management
+- Event handlers
+```
+
+### Implementation Guidelines
+
+1. Documentation Creation:
+
+   - Create feature directory on feature branch
+   - Start with README.md
+   - Add other docs as feature develops
+   - Keep diagrams in `/assets`
+
+2. Maintenance:
+
+   - Update on significant changes
+   - Review monthly
+   - Archive deprecated features
+   - Track feature dependencies
+
+3. Cross-Referencing:
+   - Link to related features
+   - Reference components
+   - Document API dependencies
+   - Track feature flags
+
+### Feature Lifecycle
+
+1. Planning:
+
+   - Create feature directory
+   - Draft README.md
+   - Define architecture
+   - Plan component structure
+
+2. Development:
+
+   - Update docs with implementation
+   - Document API changes
+   - Add component details
+   - Include code examples
+
+3. Testing:
+
+   - Document test scenarios
+   - Add edge cases
+   - Include performance tests
+   - Document test data
+
+4. Maintenance:
+   - Track feature versions
+   - Document improvements
+   - Note deprecations
+   - Update dependencies
+
+### Documentation Enforcement
+
+1. Task Requirements:
+
+   - Every feature task plan MUST include documentation updates
+   - Documentation changes MUST be reviewed before task completion
+   - Feature cannot be marked as complete without documentation
+   - All component changes require component.md updates
+
+2. Review Checklist:
+
+   ```markdown
+   ## Documentation Review
+
+   - [ ] README.md is complete and current
+   - [ ] Architecture decisions documented
+   - [ ] Component documentation updated
+   - [ ] API endpoints documented
+   - [ ] Test scenarios added
+   - [ ] Cross-references verified
+   - [ ] Examples are up to date
+   ```
+
+3. Working Memory Integration:
+
+   - Link feature docs in task plans
+   - Track documentation debt
+   - Include doc updates in progress history
+   - Reference affected documentation
+
+4. Validation Rules:
+
+   - No empty documentation sections
+   - All components must be documented
+   - API endpoints must include examples
+   - Test scenarios must be current
+   - Dependencies must be listed
+
+5. Monthly Documentation Health:
+   - Review all feature documentation
+   - Update outdated sections
+   - Remove deprecated features
+   - Verify cross-references
+   - Update examples
+
+### Working Memory Feature Integration
+
+1. Task Plan Requirements:
+
+   ```markdown
+   ## Feature Documentation Impact
+
+   ### Affected Features
+
+   - Feature: {feature-name}
+     - Files to update:
+       - [ ] README.md
+       - [ ] architecture.md
+       - [ ] components.md
+       - [ ] api.md
+       - [ ] testing.md
+     - Changes needed:
+       - Description of changes
+       - Impact assessment
+       - Cross-reference updates
+
+   ### Documentation Review
+
+   - [ ] Feature documentation is current
+   - [ ] All affected components documented
+   - [ ] API changes reflected
+   - [ ] Test cases updated
+   - [ ] Cross-references maintained
+   ```
+
+2. Progress Tracking:
+
+   ```markdown
+   ### YYYY-MM-DD HH:mm - Documentation Update
+
+   - ✓ Updated: List of updated docs
+   - 🤔 Decisions: Documentation decisions
+   - ❌ Issues: Documentation challenges
+   - ⏭️ Next: Pending documentation tasks
+   ```
+
+3. Completion Requirements:
+   - Documentation updates must be completed before task completion
+   - Feature changes require documentation review
+   - Component changes must update relevant feature docs
+   - API changes must update API documentation
+   - Test changes must update test documentation

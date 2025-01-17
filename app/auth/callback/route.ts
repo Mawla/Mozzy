@@ -10,11 +10,12 @@ export async function GET(request: Request) {
 
   if (!code) {
     logger.error("Auth callback: No code provided");
-    return NextResponse.redirect(new URL("/auth/auth-code-error", request.url));
+    return NextResponse.redirect(new URL("/auth/auth-code-error", origin));
   }
 
   try {
     const cookieStore = cookies();
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -27,7 +28,7 @@ export async function GET(request: Request) {
             cookieStore.set({ name, value, ...options });
           },
           remove(name: string, options: CookieOptions) {
-            cookieStore.set({ name, value: "", ...options });
+            cookieStore.delete({ name, ...options });
           },
         },
       }
@@ -40,21 +41,42 @@ export async function GET(request: Request) {
 
     if (error) {
       logger.error("Auth callback: Failed to exchange code for session", error);
-      return NextResponse.redirect(
-        new URL("/auth/auth-code-error", request.url)
-      );
+      return NextResponse.redirect(new URL("/auth/auth-code-error", origin));
     }
 
     if (session) {
       logger.info("Auth callback: Successfully exchanged code for session", {
         userId: session.user.id,
       });
+
+      // Create response with redirect
+      const response = NextResponse.redirect(new URL(next, origin));
+
+      // Get all cookies
+      const supabaseCookies = cookieStore.getAll();
+
+      // Set all Supabase-related cookies on the response
+      for (const cookie of supabaseCookies) {
+        if (cookie.name.includes("sb-")) {
+          response.cookies.set({
+            name: cookie.name,
+            value: cookie.value,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            path: "/",
+            maxAge: 60 * 60 * 24 * 7, // 1 week
+          });
+        }
+      }
+
+      return response;
     }
 
-    const redirectUrl = new URL(next, origin);
-    return NextResponse.redirect(redirectUrl);
+    logger.error("Auth callback: No session after code exchange");
+    return NextResponse.redirect(new URL("/auth/auth-code-error", origin));
   } catch (err) {
     logger.error("Auth callback: Unexpected error", err as Error);
-    return NextResponse.redirect(new URL("/auth/auth-code-error", request.url));
+    return NextResponse.redirect(new URL("/auth/auth-code-error", origin));
   }
 }
