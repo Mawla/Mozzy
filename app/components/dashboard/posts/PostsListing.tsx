@@ -5,52 +5,48 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Settings } from "lucide-react";
-import { postService } from "@/app/services/postService";
 import { Post } from "@/app/types/post";
 import { logger } from "@/lib/logger";
+import { postService } from "@/app/services/postService";
+import { toast } from "sonner";
 
-export const PostsListing: React.FC = () => {
-  const [posts, setPosts] = useState<Post[]>([]);
+interface PostsListingProps {
+  initialPosts: Post[];
+}
+
+export const PostsListing: React.FC<PostsListingProps> = ({ initialPosts }) => {
+  const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [selectedPosts, setSelectedPosts] = useState<string[]>([]);
   const [isSelectMode, setIsSelectMode] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(
     null
   );
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const fetchedPosts = await postService.getPosts();
-        setPosts(fetchedPosts);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to fetch posts";
-        logger.error(
-          "Failed to fetch posts",
-          err instanceof Error ? err : new Error(errorMessage)
-        );
-        setError(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const fetchPosts = async () => {
+    try {
+      const fetchedPosts = await postService.getPosts();
+      setPosts(fetchedPosts);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to fetch posts";
+      logger.error(
+        "Failed to fetch posts",
+        err instanceof Error ? err : new Error(errorMessage)
+      );
+      toast.error(errorMessage);
+    }
+  };
 
-    fetchPosts();
-  }, []);
+  useEffect(() => {
+    // Only fetch if we need to refresh
+    if (!initialPosts.length) {
+      fetchPosts();
+    }
+  }, [initialPosts.length]);
 
   const handleSelectPost = (id: string, index: number, shiftKey: boolean) => {
     if (shiftKey && lastSelectedIndex !== null && isSelectMode) {
@@ -79,18 +75,32 @@ export const PostsListing: React.FC = () => {
     );
   };
 
-  const handleBulkDelete = () => {
+  const handleBulkDelete = async () => {
     if (
       window.confirm(
         `Are you sure you want to delete ${selectedPosts.length} posts?`
       )
     ) {
-      postService.bulkDeletePosts(selectedPosts);
-      setPosts((prev) =>
-        prev.filter((post) => !selectedPosts.includes(post.id))
-      );
-      setSelectedPosts([]);
-      setIsSelectMode(false);
+      try {
+        await Promise.all(
+          selectedPosts.map((id) => postService.deletePost(id))
+        );
+        setPosts((prev) =>
+          prev.filter((post) => !selectedPosts.includes(post.id))
+        );
+        setSelectedPosts([]);
+        setIsSelectMode(false);
+        toast.success("Posts deleted successfully");
+        router.refresh();
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to delete posts";
+        logger.error(
+          "Failed to delete posts",
+          err instanceof Error ? err : new Error(errorMessage)
+        );
+        toast.error(errorMessage);
+      }
     }
   };
 
@@ -113,29 +123,6 @@ export const PostsListing: React.FC = () => {
       setLastSelectedIndex(null);
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[200px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-destructive/10 text-destructive p-4 rounded-md">
-        <p>Error: {error}</p>
-        <Button
-          variant="outline"
-          className="mt-2"
-          onClick={() => window.location.reload()}
-        >
-          Retry
-        </Button>
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto p-4 space-y-8">
@@ -209,7 +196,7 @@ export const PostsListing: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2 mb-4">
-                {post.tags.map((tag, tagIndex) => (
+                {post.tags?.map((tag, tagIndex) => (
                   <Badge key={tagIndex} variant="secondary">
                     {tag}
                   </Badge>

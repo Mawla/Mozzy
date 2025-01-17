@@ -48,6 +48,4 @@ function BlockBuilderComponent({ rows }: BlockBuilderProps) {
 }
 
 // Wrap with error boundary
-export const BlockBuilder = withErrorBoundary(BlockBuilderComponent, {
-  name: "BlockBuilder",
-});
+export const BlockBuilder = withErrorBoundary(BlockBuilderComponent);

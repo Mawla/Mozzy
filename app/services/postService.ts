@@ -6,6 +6,7 @@ import * as AnthropicActions from "@/app/actions/anthropicActions";
 import * as PostActions from "@/app/actions/posts";
 import { ContentMetadata } from "@/app/types/contentMetadata";
 import { useLoadingStore } from "@/app/stores/loadingStore";
+import { logger } from "@/lib/logger";
 
 // Define constants for magic numbers
 const MAX_TOKENS = 1500;
@@ -33,8 +34,8 @@ export const postService = {
   async getPosts(): Promise<Post[]> {
     const response = await PostActions.getPosts();
     if (response.error) {
-      console.error("Error fetching posts:", response.error);
-      return [];
+      logger.error("Error fetching posts", new Error(response.error));
+      throw new Error(response.error);
     }
     return response.data || [];
   },
@@ -42,13 +43,13 @@ export const postService = {
   async getPostById(id: string): Promise<Post | null> {
     const response = await PostActions.getPostById(id);
     if (response.error) {
-      console.error(`Error fetching post ${id}:`, response.error);
-      return null;
+      logger.error(`Error fetching post ${id}`, new Error(response.error));
+      throw new Error(response.error);
     }
     return response.data || null;
   },
 
-  async createNewPost(): Promise<Post | null> {
+  async createNewPost(): Promise<Post> {
     const newPost = {
       title: "",
       content: "",
@@ -63,26 +64,29 @@ export const postService = {
 
     const response = await PostActions.createPost(newPost);
     if (response.error) {
-      console.error("Error creating post:", response.error);
-      return null;
+      logger.error("Error creating post", new Error(response.error));
+      throw new Error(response.error);
     }
-    return response.data || null;
+    return response.data!;
   },
 
-  async handleSave(post: Post): Promise<Post | null> {
+  async handleSave(post: Post): Promise<Post> {
     try {
-      console.log("Handling save for post:", post);
+      logger.info("Handling save for post", { postId: post.id });
       const response = await PostActions.updatePost(post.id, post);
 
       if (response.error) {
-        console.error("Error saving post:", response.error);
-        return null;
+        logger.error("Error saving post", new Error(response.error));
+        throw new Error(response.error);
       }
 
-      console.log("Post saved successfully:", response.data);
-      return response.data || null;
+      logger.info("Post saved successfully", { postId: post.id });
+      return response.data!;
     } catch (error) {
-      console.error("Error saving post:", error);
+      logger.error(
+        "Error saving post",
+        error instanceof Error ? error : new Error(String(error))
+      );
       throw error;
     }
   },
@@ -90,7 +94,7 @@ export const postService = {
   async deletePost(id: string): Promise<void> {
     const response = await PostActions.deletePost(id);
     if (response.error) {
-      console.error(`Error deleting post ${id}:`, response.error);
+      logger.error(`Error deleting post ${id}`, new Error(response.error));
       throw new Error(response.error);
     }
   },
