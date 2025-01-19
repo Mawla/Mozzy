@@ -28,8 +28,8 @@ export class PodcastChunker {
         chunks.push({
           id: chunks.length,
           text: currentChunk.trim(),
-          startIndex,
-          endIndex: startIndex + currentChunk.length,
+          start: startIndex,
+          end: startIndex + currentChunk.length,
         });
 
         // Start new chunk with overlap
@@ -49,8 +49,8 @@ export class PodcastChunker {
       chunks.push({
         id: chunks.length,
         text: currentChunk.trim(),
-        startIndex,
-        endIndex: startIndex + currentChunk.length,
+        start: startIndex,
+        end: startIndex + currentChunk.length,
       });
     }
 
