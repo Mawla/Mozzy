@@ -1187,3 +1187,67 @@ Remember:
    - Component changes must update relevant feature docs
    - API changes must update API documentation
    - Test changes must update test documentation
+
+## Documentation Standards
+
+### API Documentation Format
+
+1. Overview Section:
+
+   - Start with a clear, high-level description
+   - Explain the purpose and context
+   - Outline key features and capabilities
+
+2. Component Documentation:
+
+   - Lead with descriptive text explaining purpose
+   - Include use cases and examples
+   - Follow with relevant code samples
+   - Add implementation details last
+
+3. Code Sample Guidelines:
+
+   - Always precede code with explanatory text
+   - Include parameter descriptions
+   - Explain return values
+   - Add usage examples where helpful
+   - Keep code samples focused and minimal
+
+4. Section Structure:
+
+   - Overview
+   - Key Features
+   - Implementation Details
+   - Examples
+   - Security Considerations
+   - Error Handling
+   - Testing Guidelines
+
+5. Writing Style:
+   - Use clear, descriptive language
+   - Explain concepts before showing code
+   - Include real-world use cases
+   - Add context for technical details
+   - Use proper formatting and headers
+
+Example Format:
+
+```markdown
+### Feature Name
+
+A clear description of what this feature does and why it's useful.
+
+**Key Features:**
+
+- Feature 1 description
+- Feature 2 description
+- Feature 3 description
+
+**Implementation Details:**
+Explanation of how it works and important considerations.
+
+`code sample`
+
+**Usage Examples:**
+Real-world examples of how to use this feature.
+```
