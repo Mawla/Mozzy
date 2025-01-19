@@ -2,7 +2,166 @@
 
 ## Component Overview
 
-The core processing feature is composed of several key components that work together to provide content transformation capabilities:
+The core processing feature consists of the following main components:
+
+1. **Processing Service**
+
+   - Central orchestration
+   - Adapter management
+   - Processing coordination
+   - Error handling
+
+2. **Feature Adapters**
+   - PodcastProcessingAdapter
+   - PostProcessingAdapter
+   - Common interface implementation
+   - Feature-specific processing
+
+## Component Details
+
+### Processing Service
+
+The processing service manages the overall processing flow and coordinates between different adapters:
+
+```typescript
+class ProcessingService {
+  private adapters: Map<string, ProcessingAdapter>;
+
+  constructor() {
+    this.adapters = new Map();
+  }
+
+  registerAdapter(format: string, adapter: ProcessingAdapter): void {
+    this.adapters.set(format, adapter);
+  }
+
+  async process(
+    format: string,
+    input: string,
+    options: ProcessingOptions
+  ): Promise<ProcessingResult> {
+    // Implementation details...
+  }
+}
+```
+
+### PodcastProcessingAdapter
+
+Handles podcast-specific content processing:
+
+```typescript
+class PodcastProcessingAdapter implements ProcessingAdapter {
+  async validate(input: string | any): Promise<boolean> {
+    // Input validation logic
+  }
+
+  async process(
+    input: string,
+    options: ProcessingOptions
+  ): Promise<ProcessingResult> {
+    // Podcast processing implementation
+  }
+
+  async getStatus(id: string): Promise<ProcessingResult> {
+    // Status tracking implementation
+  }
+}
+```
+
+### PostProcessingAdapter
+
+Handles post-specific content processing:
+
+```typescript
+class PostProcessingAdapter implements ProcessingAdapter {
+  async validate(input: string | any): Promise<boolean> {
+    // Input validation logic
+  }
+
+  async process(
+    input: string,
+    options: ProcessingOptions
+  ): Promise<ProcessingResult> {
+    // Post processing implementation
+  }
+
+  async getStatus(id: string): Promise<ProcessingResult> {
+    // Status tracking implementation
+  }
+}
+```
+
+## Component Interactions
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Service as ProcessingService
+    participant Adapter as Feature Adapter
+
+    Client->>Service: process(format, input, options)
+    Service->>Service: getAdapter(format)
+    Service->>Adapter: validate(input)
+    Adapter-->>Service: validation result
+
+    alt validation successful
+        Service->>Adapter: process(input, options)
+        Adapter-->>Service: processing result
+    else validation failed
+        Service-->>Client: error result
+    end
+
+    Service-->>Client: final result
+```
+
+## Error Handling
+
+Both adapters implement consistent error handling:
+
+1. **Validation Errors**
+
+   - Input format validation
+   - Content requirements
+   - Size limits
+
+2. **Processing Errors**
+
+   - Transformation failures
+   - Analysis errors
+   - Resource constraints
+
+3. **Status Tracking**
+   - Process monitoring
+   - Error reporting
+   - Result delivery
+
+## Testing
+
+Components are tested with:
+
+- Unit tests (~94% coverage)
+- Error handling tests
+- Integration tests (pending)
+- Performance tests (pending)
+
+## Future Considerations
+
+1. **New Adapters**
+
+   - Additional content types
+   - Platform-specific adapters
+   - Custom processing needs
+
+2. **Optimizations**
+
+   - Performance improvements
+   - Resource utilization
+   - Caching strategies
+
+3. **Extensions**
+   - Additional analysis types
+   - New processing features
+   - Enhanced error handling
 
 ```mermaid
 graph TD

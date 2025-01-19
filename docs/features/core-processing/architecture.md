@@ -2,183 +2,189 @@
 
 ## System Design
 
+The core processing system uses an adapter pattern to provide a unified interface for processing different content formats while allowing format-specific implementations.
+
 ### High-Level Overview
 
-The core processing module is designed as a shared library that provides content transformation capabilities across different features. It follows a modular architecture with:
-
-```mermaid
-graph TD
-    A[Content Input] --> B[Core Processor]
-    B --> C[Content Analysis]
-    C --> D[Structure Extraction]
-    D --> E[Template Application]
-    E --> F[Visual Output]
-
-    B -.-> G[Feature Adapters]
-    G --> H[Podcast Adapter]
-    G --> I[Post Adapter]
+```
+┌─────────────────┐
+│ ProcessingService│
+└────────┬────────┘
+         │
+         │ manages
+         ▼
+┌─────────────────┐
+│ ProcessingAdapter│
+└────────┬────────┘
+         │
+         │ implements
+         ▼
+┌─────────────────┐     ┌─────────────────┐
+│PodcastAdapter   │     │PostAdapter      │
+└─────────────────┘     └─────────────────┘
 ```
 
-### Key Components
+### Component Relationships
 
-1. **Core Processor**
+1. ProcessingService
 
-   - Central processing engine
-   - Content type agnostic
-   - Pipeline orchestration
-   - State management
+   - Manages format adapters
+   - Provides unified processing interface
+   - Handles common validation and errors
+   - Manages processing state
 
-2. **Feature Adapters**
+2. ProcessingAdapter Interface
 
-   - Feature-specific implementations
-   - Custom processing rules
-   - Input/output transformations
-   - Feature-specific optimizations
+   - Defines common processing contract
+   - Specifies validation methods
+   - Defines status tracking
+   - Standardizes error handling
 
-3. **Processing Pipeline**
-   - Content analysis
-   - Structure extraction
-   - Template application
-   - Visual generation
+3. Format-Specific Adapters
+   - Implement ProcessingAdapter interface
+   - Handle format-specific processing
+   - Manage format-specific metadata
+   - Implement custom validation
 
-## Technical Design
+### Data Flow
 
-### Processing Flow
+1. Input Reception
 
-```mermaid
-sequenceDiagram
-    participant F as Feature
-    participant A as Adapter
-    participant C as Core Processor
-    participant T as Templates
+   ```
+   Client -> ProcessingService -> Format Adapter
+   ```
 
-    F->>A: Process Content
-    A->>C: Transform Input
-    C->>C: Analyze Content
-    C->>C: Extract Structure
-    C->>T: Apply Template
-    T->>C: Generated Output
-    C->>A: Transform Output
-    A->>F: Return Result
-```
+2. Processing Flow
 
-### Design Patterns
+   ```
+   Adapter -> Validation -> Processing -> Result Formation
+   ```
 
-1. **Adapter Pattern**
+3. Status Updates
+   ```
+   Client -> ProcessingService -> Adapter -> Status Check
+   ```
 
-   - Feature-specific adapters
-   - Common interface
-   - Specialized processing
-   - Custom configurations
+## Technical Decisions
 
-2. **Pipeline Pattern**
+### 1. Adapter Pattern
 
-   - Sequential processing
-   - Modular stages
-   - Error handling
-   - Progress tracking
+**Decision**: Use adapter pattern for format handling
 
-3. **Template Method Pattern**
-   - Customizable processing steps
-   - Common workflow
-   - Extension points
-   - Feature overrides
+**Rationale**:
 
-## Implementation Details
+- Decouples core processing from format specifics
+- Enables easy addition of new formats
+- Maintains consistent interface
+- Simplifies testing and maintenance
 
-### Core Interfaces
+### 2. Unified Types
 
-```typescript
-interface ContentProcessor {
-  process(input: ContentInput): Promise<ProcessedContent>;
-  analyze(content: RawContent): Promise<AnalyzedContent>;
-  extract(analyzed: AnalyzedContent): Promise<StructuredContent>;
-  transform(structured: StructuredContent): Promise<VisualContent>;
-}
+**Decision**: Share core types across adapters
 
-interface FeatureAdapter {
-  adapt(input: any): ContentInput;
-  transform(output: VisualContent): any;
-  getConfig(): ProcessingConfig;
-}
-```
+**Rationale**:
 
-### Processing Stages
+- Ensures type safety
+- Reduces duplication
+- Simplifies interface contracts
+- Enables better tooling support
 
-1. **Input Processing**
+### 3. Error Handling
 
-   - Content validation
-   - Format detection
-   - Initial cleanup
-   - Metadata extraction
+**Decision**: Standardized error handling through result objects
 
-2. **Content Analysis**
+**Rationale**:
 
-   - Structure detection
-   - Content classification
-   - Key point extraction
-   - Relationship mapping
+- Consistent error reporting
+- Type-safe error handling
+- Clear error contexts
+- Simplified client handling
 
-3. **Template Application**
-   - Template selection
-   - Content mapping
-   - Style application
-   - Output generation
+### 4. Status Management
+
+**Decision**: Asynchronous status tracking
+
+**Rationale**:
+
+- Supports long-running processes
+- Enables progress monitoring
+- Facilitates error recovery
+- Improves user experience
+
+## Performance Considerations
+
+1. Processing Efficiency
+
+   - Validate before processing
+   - Early error detection
+   - Optimized type checking
+   - Minimal data transformation
+
+2. Memory Management
+
+   - Stream processing where possible
+   - Cleanup of temporary data
+   - Efficient error objects
+   - Type-only imports
+
+3. Error Handling
+   - Fast validation checks
+   - Minimal try-catch blocks
+   - Efficient error creation
+   - Clear error paths
 
 ## Dependencies
 
 ### Internal Dependencies
 
-- Template engine
-- Content analyzers
-- Structure extractors
-- Visual generators
+- `@/app/core/processing/types`: Core type definitions
+- `@/app/core/processing/service`: Service implementation
+- `@/app/core/processing/adapters`: Format adapters
 
-### External Services
+### External Dependencies
 
-- Text processing APIs
-- Media transformation services
-- Storage solutions
-- Analytics services
+- TypeScript: Type system
+- Jest: Testing framework
 
-## Configuration
+## Configuration Requirements
 
-### Processing Options
+1. Service Configuration
 
-```typescript
-interface ProcessingConfig {
-  analysisDepth: "basic" | "detailed";
-  outputFormat: "markdown" | "html" | "json";
-  templateId: string;
-  featureSpecific: Record<string, any>;
-}
-```
+   ```typescript
+   interface ServiceConfig {
+     defaultFormat: ProcessingFormat;
+     timeoutMs: number;
+     maxRetries: number;
+   }
+   ```
 
-### Feature-Specific Settings
-
-- Custom processing rules
-- Template preferences
-- Output formatting
-- Performance tuning
+2. Adapter Configuration
+   ```typescript
+   interface AdapterConfig {
+     validateInput: boolean;
+     throwOnError: boolean;
+     defaultQuality: ProcessingQuality;
+   }
+   ```
 
 ## Security Considerations
 
-1. **Input Validation**
+1. Input Validation
 
-   - Content sanitization
-   - Size limits
-   - Format validation
-   - Source verification
+   - All input is validated
+   - Type checking enforced
+   - Size limits applied
+   - Format verification
 
-2. **Processing Safety**
+2. Error Handling
 
-   - Resource limits
-   - Timeout handling
-   - Error recovery
-   - Audit logging
+   - No sensitive data in errors
+   - Sanitized error messages
+   - Controlled error propagation
+   - Safe error logging
 
-3. **Output Security**
-   - Content sanitization
-   - XSS prevention
-   - Safe template rendering
-   - Output validation
+3. Resource Protection
+   - Timeout enforcement
+   - Memory limits
+   - Processing quotas
+   - Rate limiting

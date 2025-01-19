@@ -1,0 +1,174 @@
+import { ProcessingService } from "@/app/core/processing/service/ProcessingService";
+import { PodcastProcessingAdapter } from "@/app/core/processing/adapters/podcast";
+import { PostProcessingAdapter } from "@/app/core/processing/adapters/post";
+import { ProcessingResult } from "@/app/core/processing/types";
+
+describe("ProcessingService", () => {
+  let service: ProcessingService;
+  let podcastAdapter: PodcastProcessingAdapter;
+  let postAdapter: PostProcessingAdapter;
+
+  const sampleText = `
+    This is a sample text that could be either a podcast transcript
+    or a blog post. The core processing should handle both the same way.
+    
+    It contains multiple paragraphs and potential entities like:
+    - People: John Doe, Jane Smith
+    - Organizations: Acme Corp, TechCo
+    - Locations: New York, London
+  `;
+
+  beforeEach(() => {
+    service = new ProcessingService();
+    podcastAdapter = new PodcastProcessingAdapter();
+    postAdapter = new PostProcessingAdapter();
+
+    service.registerAdapter("podcast", podcastAdapter);
+    service.registerAdapter("post", postAdapter);
+  });
+
+  describe("Core Processing", () => {
+    it("should process content identically regardless of format", async () => {
+      // Process as podcast
+      const podcastResult = await service.process("podcast", sampleText, {
+        analyzeSentiment: true,
+        extractEntities: true,
+      });
+
+      // Process as post
+      const postResult = await service.process("post", sampleText, {
+        analyzeSentiment: true,
+        extractEntities: true,
+      });
+
+      // Core processing results should be identical
+      expect(podcastResult.output).toBe(postResult.output);
+      expect(podcastResult.analysis?.entities).toEqual(
+        postResult.analysis?.entities
+      );
+      expect(podcastResult.analysis?.topics).toEqual(
+        postResult.analysis?.topics
+      );
+      expect(podcastResult.analysis?.sentiment).toEqual(
+        postResult.analysis?.sentiment
+      );
+
+      // Only metadata format should differ
+      expect(podcastResult.metadata.format).toBe("podcast");
+      expect(postResult.metadata.format).toBe("post");
+    });
+
+    it("should handle large content in chunks", async () => {
+      const largeContent = Array(10).fill(sampleText).join("\n\n");
+
+      const result = await service.process("post", largeContent, {
+        analyzeSentiment: true,
+        extractEntities: true,
+      });
+
+      expect(result.status).toBe("completed");
+      expect(result.output).toBeTruthy();
+    });
+
+    it("should extract entities consistently", async () => {
+      const result = await service.process("post", sampleText, {
+        extractEntities: true,
+      });
+
+      expect(result.analysis?.entities?.people).toContain("John Doe");
+      expect(result.analysis?.entities?.people).toContain("Jane Smith");
+      expect(result.analysis?.entities?.organizations).toContain("Acme Corp");
+      expect(result.analysis?.entities?.locations).toContain("New York");
+    });
+  });
+
+  describe("Format-Specific Features", () => {
+    it("should include timeline for podcasts only", async () => {
+      const podcastResult = await service.process("podcast", sampleText, {
+        includeTimestamps: true,
+      });
+      const postResult = await service.process("post", sampleText, {});
+
+      expect(podcastResult.analysis?.timeline).toBeDefined();
+      expect(postResult.analysis?.timeline).toBeUndefined();
+    });
+
+    it("should handle speaker detection for podcasts", async () => {
+      const podcastResult = await service.process("podcast", sampleText, {});
+      const postResult = await service.process("post", sampleText, {});
+
+      expect(podcastResult.metadata.speakers).toBeDefined();
+      expect(postResult.metadata.speakers).toBeUndefined();
+    });
+  });
+
+  describe("Error Handling", () => {
+    it("should handle invalid input consistently", async () => {
+      const emptyInput = "";
+
+      await expect(service.process("podcast", emptyInput, {})).rejects.toThrow(
+        "Invalid input"
+      );
+
+      await expect(service.process("post", emptyInput, {})).rejects.toThrow(
+        "Invalid input"
+      );
+    });
+
+    it("should handle processing failures gracefully", async () => {
+      // Mock a processing failure
+      jest
+        .spyOn(podcastAdapter, "process")
+        .mockRejectedValueOnce(new Error("Processing failed"));
+
+      const result = await service.process("podcast", sampleText, {});
+      expect(result.status).toBe("failed");
+      expect(result.error).toBeDefined();
+    });
+  });
+
+  describe("Performance", () => {
+    it("should process content within timeout", async () => {
+      const startTime = Date.now();
+
+      await service.process("post", sampleText, {
+        analyzeSentiment: true,
+        extractEntities: true,
+      });
+
+      const duration = Date.now() - startTime;
+      expect(duration).toBeLessThan(5000); // 5s timeout
+    });
+
+    it("should handle concurrent processing", async () => {
+      const tasks = Array(5)
+        .fill(null)
+        .map(() => service.process("post", sampleText, {}));
+
+      const results = await Promise.all(tasks);
+      expect(results).toHaveLength(5);
+      expect(
+        results.every((r: ProcessingResult) => r.status === "completed")
+      ).toBe(true);
+    });
+  });
+
+  describe("Validation", () => {
+    it("should validate input consistently across formats", async () => {
+      const isValidPodcast = await podcastAdapter.validate(sampleText);
+      const isValidPost = await postAdapter.validate(sampleText);
+
+      expect(isValidPodcast).toBe(isValidPost);
+    });
+
+    it("should reject malformed content", async () => {
+      const malformedContent = "   ";
+
+      const isValidPodcast = await podcastAdapter.validate(malformedContent);
+      const isValidPost = await postAdapter.validate(malformedContent);
+
+      expect(isValidPodcast).toBe(false);
+      expect(isValidPost).toBe(false);
+    });
+  });
+});

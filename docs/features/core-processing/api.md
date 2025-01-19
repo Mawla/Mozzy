@@ -1,276 +1,267 @@
-# Core Processing API
+# Core Processing API Documentation
 
-## Processing API
+## Overview
 
-### Process Content
+The Core Processing API provides a unified interface for processing different types of content through format-specific adapters. This document outlines the available interfaces, types, and usage patterns.
+
+## Key Features
+
+- Format-agnostic processing interface
+- Type-safe adapter registration
+- Consistent error handling
+- Status tracking
+- Format-specific processing options
+
+## Core Types
+
+### ProcessingFormat
 
 ```typescript
-POST /api/processing/process
-Content-Type: application/json
+export type ProcessingFormat = "podcast" | "post";
+```
 
-{
-  "content": {
-    "type": "podcast" | "post",
-    "data": any,
-    "metadata": {
-      "title": string,
-      "description": string,
-      "tags": string[]
-    }
-  },
-  "config": {
-    "analysisDepth": "basic" | "detailed",
-    "outputFormat": "markdown" | "html" | "json",
-    "templateId": string,
-    "featureSpecific": Record<string, any>
-  }
-}
+Supported content formats for processing.
 
-Response: {
-  "taskId": string,
-  "status": "queued" | "processing" | "completed" | "failed",
-  "result?: ProcessedContent
+### ProcessingQuality
+
+```typescript
+export type ProcessingQuality = "draft" | "final";
+```
+
+Quality level for content processing.
+
+### ProcessingStatus
+
+```typescript
+export type ProcessingStatus =
+  | "pending"
+  | "processing"
+  | "completed"
+  | "failed";
+```
+
+Status of a processing operation.
+
+### ProcessingOptions
+
+```typescript
+export interface ProcessingOptions {
+  format: ProcessingFormat;
+  quality: ProcessingQuality;
+  analyzeSentiment?: boolean;
+  extractEntities?: boolean;
+  includeTimestamps?: boolean;
 }
 ```
 
-### Get Processing Status
+Options for content processing.
+
+### ProcessingResult
 
 ```typescript
-GET /api/processing/:taskId/status
-
-Response: {
-  "taskId": string,
-  "status": "queued" | "processing" | "completed" | "failed",
-  "progress": number,
-  "error"?: string
+export interface ProcessingResult {
+  id: string;
+  status: ProcessingStatus;
+  output: string;
+  error?: string;
+  metadata: ProcessingMetadata;
+  analysis?: ProcessingAnalysis;
 }
 ```
 
-### Cancel Processing
+Result of a processing operation.
+
+### ProcessingMetadata
 
 ```typescript
-POST /api/processing/:taskId/cancel
-
-Response: {
-  "taskId": string,
-  "status": "cancelled"
+export interface ProcessingMetadata {
+  format: ProcessingFormat;
+  platform: string;
+  processedAt: string;
+  title?: string;
+  duration?: string;
+  speakers?: string[];
+  topics?: string[];
 }
 ```
 
-## Template API
+Metadata associated with processed content.
 
-### Get Available Templates
+### ProcessingAnalysis
 
 ```typescript
-GET /api/processing/templates
-
-Response: {
-  "templates": Array<{
-    "id": string,
-    "name": string,
-    "description": string,
-    "supportedTypes": string[]
-  }>
+export interface ProcessingAnalysis {
+  entities?: {
+    people: string[];
+    organizations: string[];
+    locations: string[];
+    concepts: string[];
+  };
+  timeline?: TimelineEvent[];
+  sentiment?: {
+    overall: number;
+    segments: Array<{
+      text: string;
+      score: number;
+    }>;
+  };
 }
 ```
 
-### Get Template Details
+Analysis results from content processing.
+
+## Core Interfaces
+
+### ProcessingAdapter
 
 ```typescript
-GET /api/processing/templates/:templateId
-
-Response: {
-  "id": string,
-  "name": string,
-  "description": string,
-  "schema": object,
-  "preview": string
+export interface ProcessingAdapter {
+  validate: (input: string) => Promise<boolean>;
+  process: (
+    input: string,
+    options: ProcessingOptions
+  ) => Promise<ProcessingResult>;
+  getStatus: (id: string) => Promise<ProcessingResult>;
 }
 ```
 
-## Configuration API
+Interface that all format-specific adapters must implement.
 
-### Get Processing Configuration
+## ProcessingService
+
+The main service for managing content processing.
+
+### Constructor
 
 ```typescript
-GET /api/processing/config
-
-Response: {
-  "defaultConfig": ProcessingConfig,
-  "featureConfigs": Record<string, ProcessingConfig>,
-  "limits": {
-    "maxContentSize": number,
-    "maxProcessingTime": number,
-    "concurrentTasks": number
-  }
+class ProcessingService {
+  constructor();
 }
 ```
 
-### Update Feature Configuration
+Creates a new ProcessingService instance.
+
+### Methods
+
+#### registerAdapter
 
 ```typescript
-PUT /api/processing/config/:feature
-Content-Type: application/json
-
-{
-  "config": ProcessingConfig
-}
-
-Response: {
-  "feature": string,
-  "config": ProcessingConfig,
-  "updated": boolean
-}
+registerAdapter(format: ProcessingFormat, adapter: ProcessingAdapter): void
 ```
 
-## Core Processing Library API
+Registers a format-specific adapter.
 
-### ContentProcessor
+**Parameters:**
+
+- `format`: The content format this adapter handles
+- `adapter`: The adapter implementation
+
+**Example:**
 
 ```typescript
-interface ContentProcessor {
-  // Process content end-to-end
-  process(input: ContentInput): Promise<ProcessedContent>;
-
-  // Individual processing steps
-  analyze(content: RawContent): Promise<AnalyzedContent>;
-  extract(analyzed: AnalyzedContent): Promise<StructuredContent>;
-  transform(structured: StructuredContent): Promise<VisualContent>;
-
-  // Configuration
-  configure(config: ProcessingConfig): void;
-
-  // Event handling
-  on(event: ProcessingEvent, handler: EventHandler): void;
-  off(event: ProcessingEvent, handler: EventHandler): void;
-}
+const service = new ProcessingService();
+service.registerAdapter("podcast", new PodcastProcessingAdapter());
+service.registerAdapter("post", new PostProcessingAdapter());
 ```
 
-### FeatureAdapter
+#### process
 
 ```typescript
-interface FeatureAdapter {
-  // Content adaptation
-  adapt(input: any): ContentInput;
-  transform(output: VisualContent): any;
+async process(
+  format: ProcessingFormat,
+  input: string,
+  options: ProcessingOptions
+): Promise<ProcessingResult>
+```
 
-  // Configuration
-  getConfig(): ProcessingConfig;
+Processes content using the appropriate adapter.
 
-  // Validation
-  validateInput(input: any): boolean;
-  validateOutput(output: any): boolean;
-}
+**Parameters:**
+
+- `format`: The content format to process
+- `input`: The content to process
+- `options`: Processing options
+
+**Example:**
+
+```typescript
+const result = await service.process("podcast", content, {
+  format: "podcast",
+  quality: "draft",
+  analyzeSentiment: true,
+  extractEntities: true,
+});
+```
+
+#### getStatus
+
+```typescript
+async getStatus(
+  format: ProcessingFormat,
+  id: string
+): Promise<ProcessingResult>
+```
+
+Gets the status of a processing operation.
+
+**Parameters:**
+
+- `format`: The content format
+- `id`: The processing operation ID
+
+**Example:**
+
+```typescript
+const status = await service.getStatus("podcast", "process-123");
 ```
 
 ## Error Handling
 
-### Error Types
+The API uses a consistent error handling pattern:
 
-```typescript
-enum ProcessingErrorType {
-  VALIDATION_ERROR = "validation_error",
-  PROCESSING_ERROR = "processing_error",
-  TIMEOUT_ERROR = "timeout_error",
-  TEMPLATE_ERROR = "template_error",
-  ADAPTER_ERROR = "adapter_error",
-}
+1. Validation Errors
 
-interface ProcessingError {
-  type: ProcessingErrorType;
-  message: string;
-  details?: any;
-  taskId?: string;
-}
-```
+   ```typescript
+   // Invalid input
+   {
+     status: "failed",
+     error: "Invalid input",
+     ...
+   }
+   ```
 
-### Error Responses
+2. Processing Errors
 
-```typescript
-// Validation Error
-{
-  "error": {
-    "type": "validation_error",
-    "message": "Invalid input format",
-    "details": {
-      "field": "content.data",
-      "issue": "missing_required_field"
-    }
-  }
-}
+   ```typescript
+   // Processing failure
+   {
+     status: "failed",
+     error: "Processing failed: reason",
+     ...
+   }
+   ```
 
-// Processing Error
-{
-  "error": {
-    "type": "processing_error",
-    "message": "Failed to process content",
-    "taskId": "task-123",
-    "details": {
-      "stage": "analysis",
-      "reason": "content_too_large"
-    }
-  }
-}
-```
+3. Adapter Errors
+   ```typescript
+   // No adapter available
+   Error: "No adapter registered for format: format";
+   ```
 
-## WebSocket API
+## Security Considerations
 
-### Connection
+1. Input Validation
 
-```typescript
-const ws = new WebSocket("/api/processing/ws");
-```
+   - All input is validated before processing
+   - Size limits are enforced
+   - Format verification is performed
 
-### Events
+2. Error Messages
 
-```typescript
-// Task Updates
-{
-  "type": "task_update",
-  "taskId": string,
-  "status": TaskStatus,
-  "progress": number
-}
+   - No sensitive data in errors
+   - Sanitized error messages
+   - Safe error propagation
 
-// Processing Events
-{
-  "type": "processing_event",
-  "event": ProcessingEvent,
-  "data": any
-}
-
-// Error Events
-{
-  "type": "error",
-  "error": ProcessingError
-}
-```
-
-## Rate Limiting
-
-- Maximum concurrent tasks: 5 per user
-- Maximum content size: 100MB
-- Processing timeout: 30 minutes
-- API rate limits: 100 requests per minute
-
-## Security
-
-### Authentication
-
-- Required for all endpoints
-- JWT token in Authorization header
-- WebSocket connection requires initial auth
-
-### Input Validation
-
-- Content size limits
-- Format validation
-- Sanitization rules
-- Type checking
-
-### Output Security
-
-- Content sanitization
-- XSS prevention
-- Safe template rendering
-- Output validation
+3. Resource Protection
+   - Timeout enforcement
+   - Memory limits
+   - Processing quotas

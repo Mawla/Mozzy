@@ -18,3 +18,10 @@ if (typeof global.fetch === "undefined") {
   global.Request = Request;
   global.Response = Response;
 }
+
+// Mock crypto.randomUUID
+Object.defineProperty(global, "crypto", {
+  value: {
+    randomUUID: () => "test-uuid",
+  },
+});
