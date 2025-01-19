@@ -6,6 +6,8 @@
 
 The Social Posts feature follows a modular architecture with clear separation of concerns:
 
+Note: The existing processing logic in the posts feature will be deprecated and removed once the core processing migration is complete. All processing will be handled by the shared core processing module.
+
 ```
 app/dashboard/posts/
 ├── page.tsx           # Main posts listing
@@ -26,7 +28,11 @@ graph TD
     D --> C
     D --> E[ContentHubImportModal]
     D --> F[ProgressNotes]
+    D --> G[Core Processing]
+    G -.-> H[Shared Processing Module]
 ```
+
+Note: Core Processing implementation is currently in progress. The structure and interfaces are in place, but the actual processing logic is pending implementation.
 
 ## Technical Decisions
 
@@ -39,7 +45,10 @@ graph TD
 ### Data Flow
 
 1. Podcast content import via ContentHub
-2. Content processing and entity extraction
+2. Content processing via Core Processing module (Implementation pending)
+   - Structure and interfaces ready
+   - Processing logic to be implemented
+   - Using adapter pattern for flexibility
 3. Template merging
 4. Post generation and preview
 5. Save and publication
@@ -48,8 +57,8 @@ graph TD
 
 ### External Services
 
-- Content processing pipeline
-- Entity extraction service
+- Core Processing module (Structure implemented, processing pending)
+- Entity extraction service (To be implemented)
 - Template management system
 
 ### Internal Dependencies
@@ -58,10 +67,13 @@ graph TD
 - Server Actions
 - UI Components
 - Authentication system
+- Core Processing Adapter (Structure ready, implementation pending)
 
 ## Performance Considerations
 
 - Lazy loading of post content
 - Optimistic updates for better UX
 - Cached template access
-- Efficient content processing pipeline
+- Efficient content processing pipeline (To be implemented)
+
+See [Core Processing Documentation](../core-processing/README.md) for current implementation status and plans.

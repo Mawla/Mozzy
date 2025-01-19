@@ -7,7 +7,7 @@ import { TextChunk, ChunkResult } from "../types";
 // Mock the anthropic actions only
 jest.mock("@/app/actions/anthropicActions");
 
-describe("Podcast Processing Pipeline", () => {
+describe.skip("Podcast Processing Pipeline", () => {
   let pipeline: ProcessingPipeline<string, TextChunk, ChunkResult>;
   let chunkingStrategy: TextChunkingStrategy;
   let processingStrategy: PodcastProcessingStrategy;

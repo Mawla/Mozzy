@@ -1,80 +1,71 @@
-import type { TimelineEvent } from "@/app/types/podcast/processing";
+import { ProcessingResult as PodcastProcessingResult } from "@/app/types/podcast/processing";
 
-export type {
-  ProcessingResult,
-  TextChunk,
-  ChunkResult,
-  PodcastAnalysis,
-  ContentMetadata,
-  MetadataResponse,
-  PodcastEntities,
-} from "@/app/types/podcast/processing";
+export type ProcessingFormat = "podcast" | "post";
 
-export interface ProcessingStep {
-  id: string;
-  name: string;
-  description: string;
-  status: "pending" | "processing" | "completed" | "failed";
-  progress: number;
-  error?: Error;
-  dependencies?: string[];
-}
+export type ProcessingQuality = "draft" | "final";
 
-export interface ProcessingState {
-  id: string;
-  steps: ProcessingStep[];
-  currentStep: number;
-  overallProgress: number;
-  status: "idle" | "processing" | "completed" | "failed";
-  error?: Error;
-}
+export type ProcessingStatus =
+  | "pending"
+  | "processing"
+  | "completed"
+  | "failed";
 
-export interface PodcastProcessingResult {
-  metadata: {
-    title: string;
-    duration: string;
-    speakers: string[];
-    topics: string[];
-  };
-  content: {
-    transcript: string;
-    refinedTranscript: string;
-    summary: string;
-  };
-  analysis: {
-    entities: {
-      people: string[];
-      organizations: string[];
-      locations: string[];
-      concepts: string[];
-    };
-    timeline: TimelineEvent[];
-    topics: TopicAnalysis[];
-    sentiment: SentimentAnalysis;
-  };
-}
-
-export interface TopicAnalysis {
-  name: string;
-  relevance: number;
-  mentions: number;
-  relatedEntities: string[];
-}
-
-export interface SentimentAnalysis {
-  overall: number;
-  segments: {
-    text: string;
-    sentiment: number;
-    confidence: number;
-  }[];
+export interface TimelineEvent {
+  timestamp: string;
+  event: string;
+  speakers?: string[];
+  topics?: string[];
 }
 
 export interface ProcessingOptions {
-  chunkSize?: number;
-  overlap?: number;
-  maxParallelProcessing?: number;
-  includeTimestamps?: boolean;
-  extractEntities?: boolean;
+  format: ProcessingFormat;
+  quality: ProcessingQuality;
   analyzeSentiment?: boolean;
+  extractEntities?: boolean;
+  includeTimestamps?: boolean;
+}
+
+export interface ProcessingMetadata {
+  format: ProcessingFormat;
+  platform: string;
+  processedAt: string;
+  title?: string;
+  duration?: string;
+  speakers?: string[];
+  topics?: string[];
+}
+
+export interface ProcessingAnalysis {
+  entities?: {
+    people: string[];
+    organizations: string[];
+    locations: string[];
+    concepts: string[];
+  };
+  timeline?: TimelineEvent[];
+  sentiment?: {
+    overall: number;
+    segments: Array<{
+      text: string;
+      score: number;
+    }>;
+  };
+}
+
+export interface ProcessingResult {
+  id: string;
+  status: ProcessingStatus;
+  output: string;
+  error?: string;
+  metadata: ProcessingMetadata;
+  analysis?: ProcessingAnalysis;
+}
+
+export interface ProcessingAdapter {
+  validate: (input: string) => Promise<boolean>;
+  process: (
+    input: string,
+    options: ProcessingOptions
+  ) => Promise<ProcessingResult>;
+  getStatus: (id: string) => Promise<ProcessingResult>;
 }

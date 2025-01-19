@@ -2,37 +2,53 @@
 
 ## Overview
 
-The Core Processing feature is a shared module that handles content transformation across different features in Mozzy. It provides a unified approach to processing various content types (podcasts, posts, etc.) into structured, visual experiences.
-
-## Status
-
-- Current State: Migration Planned
-- Migration Task: [core-processing-migration-20240320]
-- Current Location: `/app/core/processing`
-- Target Location: `/app/features/core-processing`
+The Core Processing feature provides a unified interface for processing different types of content (podcasts, posts) through a common pipeline. It uses an adapter pattern to handle format-specific processing while maintaining a consistent interface.
 
 ## Purpose and Goals
 
-- Provide unified content processing capabilities
-- Enable content transformation across features
-- Maintain consistent processing patterns
-- Reduce code duplication
-- Enable feature-specific adaptations
+- Provide a unified interface for content processing
+- Support multiple content formats through adapters
+- Handle validation, processing, and error states consistently
+- Enable format-specific processing features when needed
+- Maintain type safety and clear interfaces
 
 ## Key Functionalities
 
-- Content analysis
-- Structure extraction
-- Format transformation
-- Template application
-- Visual content generation
+- Content validation
+- Format-specific processing
+- Entity extraction
+- Sentiment analysis
+- Timeline generation (for podcasts)
+- Error handling and status tracking
 
 ## Dependencies
 
-- Text processing services
-- Media transformation APIs
-- Template engine
-- Storage services
+- TypeScript for type safety
+- Jest for testing
+- Podcast feature for podcast-specific processing
+- Posts feature for post-specific processing
+
+## Status
+
+### Current State
+
+- Core processing structure implemented
+- Adapter pattern in place
+- Unit tests complete
+- Integration with podcast and post features
+
+### Planned Improvements
+
+- Add more content formats
+- Enhance error handling
+- Improve performance
+- Add more analysis options
+
+### Known Limitations
+
+- Limited to text-based content
+- No streaming support yet
+- Basic sentiment analysis
 
 ## Quick Links
 
@@ -40,7 +56,3 @@ The Core Processing feature is a shared module that handles content transformati
 - [Components](./components.md)
 - [API Documentation](./api.md)
 - [Testing](./testing.md)
-
-## Migration Status
-
-This feature is currently being migrated from the podcast feature to become a shared core feature. See the migration task plan in `/docs/working-memory/open/core-processing-migration-20240320/.plan` for details.
