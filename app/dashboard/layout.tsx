@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Sidebar } from "@/components/ui/Sidebar";
+import { Sidebar } from "@/components/ui/sidebar";
 import { SignOutButton } from "@/app/components/auth/sign-out-button";
 import { getUser } from "@/app/actions/auth";
 

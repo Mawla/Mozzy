@@ -25,6 +25,9 @@ export class PodcastProcessingService {
     chunks: [],
     networkLogs: [],
     currentTranscript: "",
+    status: "idle",
+    steps: [],
+    overallProgress: 0,
   };
   private listeners: Set<(state: ProcessingState) => void> = new Set();
   private stateUpdateTimeout: NodeJS.Timeout | null = null;
@@ -96,24 +99,43 @@ export class PodcastProcessingService {
     }, 100);
   }
 
-  async refineTranscript(transcript: string): Promise<ProcessingResult> {
-    try {
-      // Reset state
-      this.state = {
-        chunks: [],
-        networkLogs: [],
-        currentTranscript: transcript,
-      };
+  private findChunkById(chunkId: string): BaseTextChunk | undefined {
+    return this.state.chunks.find(
+      (c) => c.id.toString() === chunkId.toString()
+    );
+  }
 
-      // Process using podcastService
-      return await podcastService.processTranscript(
-        transcript,
-        this.updateState.bind(this)
-      );
-    } catch (error) {
-      this.updateState({ type: "PROCESSING_ERROR", error: error as Error });
-      throw error;
-    }
+  async processTranscript(transcript: string): Promise<ProcessingResult> {
+    this.state = {
+      chunks: [],
+      networkLogs: [],
+      currentTranscript: transcript,
+      status: "idle",
+      steps: [],
+      overallProgress: 0,
+    };
+
+    const result = await podcastService.processTranscript(transcript);
+    return {
+      id: crypto.randomUUID(),
+      format: "podcast",
+      status: "completed",
+      success: true,
+      output: result.output || "",
+      metadata: {
+        format: "podcast",
+        platform: "default",
+        processedAt: new Date().toISOString(),
+      },
+      analysis: result.analysis,
+      entities: result.entities || {
+        people: [],
+        organizations: [],
+        locations: [],
+        events: [],
+      },
+      timeline: result.timeline || [],
+    };
   }
 
   dispose() {

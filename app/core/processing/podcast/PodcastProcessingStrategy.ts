@@ -1,303 +1,236 @@
 import {
-  ProcessingResult,
-  TextChunk,
+  ProcessingStep,
+  ProcessingState,
+  ProcessingAnalysis,
+  TimelineEvent,
+  BaseProcessingResult,
   ChunkResult,
-  PodcastAnalysis,
-  PodcastEntities,
-  ContentMetadata,
-  MetadataResponse,
-} from "../types";
+  PersonEntity,
+  OrganizationEntity,
+  LocationEntity,
+  EventEntity,
+} from "../types/base";
 
-import { logger } from "@/lib/logger";
 import { ProcessingStrategy } from "../base/ProcessingStrategy";
-import { ProcessingStep } from "../types";
+import { logger } from "../utils/logger";
 import { ProcessingError } from "../errors/ProcessingError";
 import { podcastService } from "@/app/services/podcastService";
+import {
+  ProcessingStep as BaseProcessingStep,
+  ProcessingAnalysis as BaseProcessingAnalysis,
+  TimelineEvent as BaseTimelineEvent,
+  BaseTextChunk,
+} from "../types/base";
 
 interface StepResult {
   refinedText?: string;
-  analysis?: PodcastAnalysis;
-  metadata?: MetadataResponse;
+  analysis?: ProcessingAnalysis;
+  entities?: {
+    people: PersonEntity[];
+    organizations: OrganizationEntity[];
+    locations: LocationEntity[];
+    events: EventEntity[];
+  };
+  timeline?: TimelineEvent[];
 }
 
-export class PodcastProcessingStrategy extends ProcessingStrategy<
-  TextChunk,
-  ChunkResult
-> {
-  private results: ChunkResult[] = [];
+export class PodcastProcessingStrategy extends ProcessingStrategy {
   private stepResults: Map<string, StepResult> = new Map();
 
-  protected defineSteps(): ProcessingStep[] {
-    return [
+  protected initializeSteps(): void {
+    this.state.steps = [
       {
-        id: "refine",
-        name: "Transcript Refinement",
-        description: "Cleaning and formatting the transcript text",
+        id: "transcript",
+        name: "Transcript Processing",
         status: "pending",
         progress: 0,
-        dependencies: [], // No dependencies
+        description: "Cleaning and formatting the transcript text",
       },
       {
-        id: "analyze",
+        id: "analysis",
         name: "Content Analysis",
-        description: "Generating summary and extracting key information",
         status: "pending",
         progress: 0,
-        dependencies: ["refine"], // Depends on refined text
+        description: "Generating summary and extracting key information",
       },
       {
         id: "metadata",
         name: "Metadata Generation",
+        status: "pending",
+        progress: 0,
         description: "Creating tags and content metadata",
-        status: "pending",
-        progress: 0,
-        dependencies: ["refine"], // Depends on refined text
       },
       {
-        id: "events",
-        name: "Event Detection",
+        id: "timeline",
+        name: "Timeline Analysis",
+        status: "pending",
+        progress: 0,
         description: "Detecting and organizing timeline events",
-        status: "pending",
-        progress: 0,
-        dependencies: ["refine", "analyze"], // Depends on refined text and analysis
       },
       {
-        id: "synthesis",
-        name: "Result Synthesis",
-        description: "Combining analysis, metadata, and events",
+        id: "finalize",
+        name: "Finalization",
         status: "pending",
         progress: 0,
-        dependencies: ["analyze", "metadata", "events"], // Depends on all previous steps
+        description: "Combining analysis, metadata, and events",
       },
     ];
   }
 
-  private async executeStepWithDependencies(
-    stepId: string,
-    executor: () => Promise<any>
-  ): Promise<any> {
-    const step = this.state.steps.find((s) => s.id === stepId);
-    if (!step)
-      throw new ProcessingError("Unknown step", "UNKNOWN_STEP", stepId);
+  protected async validateInput(input: string): Promise<boolean> {
+    if (!input || input.trim().length === 0) {
+      throw new Error("Input transcript cannot be empty");
+    }
+    return true;
+  }
 
-    // Check dependencies
-    const dependencies = step.dependencies || [];
-    for (const depId of dependencies) {
-      const depStep = this.state.steps.find((s) => s.id === depId);
-      if (!depStep || depStep.status !== "completed") {
-        throw new ProcessingError(
-          `Dependency ${depId} not met for step ${stepId}`,
-          "DEPENDENCY_ERROR",
-          stepId
-        );
-      }
+  protected async processStep(stepId: string): Promise<void> {
+    const step = this.getStepById(stepId);
+    if (!step) {
+      throw new Error(`Step ${stepId} not found`);
     }
 
     try {
+      await this.validateDependencies(stepId);
       step.status = "processing";
-      const result = await executor();
+
+      switch (stepId) {
+        case "transcript":
+          await this.processTranscript();
+          break;
+        case "analysis":
+          await this.analyzeContent();
+          break;
+        case "metadata":
+          await this.generateMetadata();
+          break;
+        case "timeline":
+          await this.analyzeTimeline();
+          break;
+        case "finalize":
+          await this.finalize();
+          break;
+        default:
+          throw new Error(`Unknown step: ${stepId}`);
+      }
+
       step.status = "completed";
       step.progress = 100;
-      this.stepResults.set(stepId, result);
-      return result;
-    } catch (error) {
-      step.status = "failed";
-      step.error = error as Error;
-      throw error;
-    } finally {
       this.updateOverallProgress();
-    }
-  }
-
-  public async process(chunk: TextChunk): Promise<ChunkResult> {
-    try {
-      this.stepResults.clear();
-
-      // Step 1: Refine the text
-      const refinedText = await this.executeStepWithDependencies(
-        "refine",
-        async () => {
-          const refined = await podcastService.refineText(chunk.text);
-          return { refinedText: refined };
-        }
-      );
-
-      // Step 2: Generate analysis
-      const analysisPromise = this.executeStepWithDependencies(
-        "analyze",
-        async () => {
-          const analysis = await podcastService.analyze(
-            refinedText.refinedText
-          );
-          return { analysis };
-        }
-      );
-
-      // Step 3: Generate metadata
-      const metadataPromise = this.executeStepWithDependencies(
-        "metadata",
-        async () => {
-          const entities = await podcastService.extractEntities(
-            refinedText.refinedText
-          );
-
-          const metadata: MetadataResponse = {
-            duration: "0:00",
-            speakers: entities.people.map((p) => p.name),
-            mainTopic: "Unknown",
-            expertise: "General",
-            keyPoints: [],
-            themes: [],
-          };
-
-          return { metadata, entities };
-        }
-      );
-
-      // Step 4: Detect events
-      const eventsPromise = this.executeStepWithDependencies(
-        "events",
-        async () => {
-          const timeline = await podcastService.detectEvents(
-            refinedText.refinedText
-          );
-          return { timeline };
-        }
-      );
-
-      // Wait for all parallel steps
-      const [analysisResult, metadataResult, eventsResult] = await Promise.all([
-        analysisPromise,
-        metadataPromise,
-        eventsPromise,
-      ]);
-
-      // Step 5: Synthesize results
-      const result = await this.executeStepWithDependencies(
-        "synthesis",
-        async () => {
-          const { analysis } = analysisResult;
-          const { metadata, entities } = metadataResult;
-          const { timeline } = eventsResult;
-
-          // Update analysis with metadata
-          analysis.quickFacts = {
-            duration: metadata.duration,
-            participants: metadata.speakers,
-            mainTopic: metadata.mainTopic,
-            expertise: metadata.expertise,
-          };
-          analysis.keyPoints = metadata.keyPoints ?? [];
-          analysis.themes = metadata.themes ?? [];
-
-          return {
-            id: chunk.id,
-            refinedText: refinedText.refinedText,
-            analysis,
-            entities,
-            timeline: timeline.events,
-          };
-        }
-      );
-
-      this.results.push(result);
-      return result;
     } catch (error) {
-      logger.error(
-        "Failed to process chunk",
-        error instanceof Error ? error : new Error(String(error)),
-        {
-          chunkId: chunk.id,
-        }
-      );
-      throw error;
+      this.handleStepError(stepId, error as Error);
     }
   }
 
-  public validate(chunk: TextChunk): boolean {
-    if (!chunk || typeof chunk !== "object") {
-      logger.error("Invalid chunk: not an object", undefined, { chunk });
-      return false;
-    }
+  protected validateDependencies(stepId: string): boolean {
+    const step = this.getStepById(stepId);
+    if (!step) return false;
 
-    if (typeof chunk.text !== "string" || chunk.text.length === 0) {
-      logger.error("Invalid chunk: invalid text", undefined, {
-        textType: typeof chunk.text,
-        textLength: chunk.text?.length,
-      });
-      return false;
-    }
+    const dependencies: Record<string, string[]> = {
+      transcript: [],
+      analysis: ["transcript"],
+      metadata: ["analysis"],
+      timeline: ["analysis"],
+      finalize: ["metadata", "timeline"],
+    };
 
-    if (
-      typeof chunk.id !== "number" ||
-      !Number.isInteger(chunk.id) ||
-      chunk.id < 0
-    ) {
-      logger.error("Invalid chunk: invalid id", undefined, {
-        idType: typeof chunk.id,
-        id: chunk.id,
-      });
-      return false;
+    const stepDeps = dependencies[stepId] || [];
+    for (const depId of stepDeps) {
+      const depStep = this.getStepById(depId);
+      if (!depStep || depStep.status !== "completed") {
+        return false;
+      }
     }
 
     return true;
   }
 
-  public clearResults(): void {
-    this.results = [];
+  protected handleStepError(stepId: string, error: Error): void {
+    logger.error(`Error in step ${stepId}:`, error);
+    this.setStepError(stepId, error);
+  }
+
+  protected cleanup(): void {
     this.stepResults.clear();
-    this.state.steps.forEach((step) => {
-      step.status = "pending";
-      step.progress = 0;
-    });
-    this.state.overallProgress = 0;
-    this.state.status = "idle";
   }
 
-  public getStepResult(stepId: string): StepResult | undefined {
-    return this.stepResults.get(stepId);
+  private async processTranscript(): Promise<void> {
+    // Implementation
   }
 
-  public async combine(results: ChunkResult[]): Promise<ChunkResult> {
-    if (results.length === 0) {
-      throw new ProcessingError("No results to combine", "NO_RESULTS_ERROR");
+  private async analyzeContent(): Promise<void> {
+    // Implementation
+  }
+
+  private async generateMetadata(): Promise<void> {
+    // Implementation
+  }
+
+  private async analyzeTimeline(): Promise<void> {
+    // Implementation
+  }
+
+  private async finalize(): Promise<void> {
+    // Implementation
+  }
+
+  public async process(input: string): Promise<void> {
+    try {
+      await this.validateInput(input);
+      this.state.currentTranscript = input;
+      this.initializeSteps();
+
+      for (const step of this.state.steps) {
+        await this.processStep(step.id);
+      }
+    } catch (error) {
+      logger.error("Processing failed:", error as Error);
+      throw error;
     }
+  }
 
-    if (results.length === 1) {
-      return results[0];
-    }
+  public validate(input: string): boolean {
+    return Boolean(input && input.trim().length > 0);
+  }
 
-    // Combine all refined texts
-    const refinedText = results.map((r) => r.refinedText).join(" ");
+  public async combine(results: string[]): Promise<string> {
+    const parsedResults = results
+      .map((result) => {
+        try {
+          return JSON.parse(result) as ChunkResult;
+        } catch (error) {
+          logger.error(
+            "Failed to parse chunk result:",
+            error instanceof Error ? error : new Error(String(error))
+          );
+          return null;
+        }
+      })
+      .filter((result): result is ChunkResult => result !== null);
 
-    // Combine analyses
-    const combinedAnalysis: PodcastAnalysis = {
+    const refinedText = parsedResults.map((r) => r.text).join(" ");
+
+    const analysis: ProcessingAnalysis = {
       id: Date.now().toString(),
-      title: results[0].analysis.title,
-      summary: results.map((r) => r.analysis.summary).join("\n"),
-      quickFacts: results[0].analysis.quickFacts,
-      keyPoints: results.flatMap((r) => r.analysis.keyPoints),
-      themes: Array.from(new Set(results.flatMap((r) => r.analysis.themes))),
+      title: "Combined Analysis",
+      summary: "Combined summary of all chunks",
+      entities: {
+        people: Array.from(
+          new Set(parsedResults.flatMap((r) => r.entities?.people || []))
+        ),
+        organizations: Array.from(
+          new Set(parsedResults.flatMap((r) => r.entities?.organizations || []))
+        ),
+        locations: Array.from(
+          new Set(parsedResults.flatMap((r) => r.entities?.locations || []))
+        ),
+        events: Array.from(
+          new Set(parsedResults.flatMap((r) => r.entities?.events || []))
+        ),
+      },
+      timeline: parsedResults.flatMap((r) => r.timeline || []),
     };
 
-    // Combine entities
-    const combinedEntities: PodcastEntities = {
-      people: Array.from(new Set(results.flatMap((r) => r.entities.people))),
-      organizations: Array.from(
-        new Set(results.flatMap((r) => r.entities.organizations))
-      ),
-      locations: Array.from(
-        new Set(results.flatMap((r) => r.entities.locations))
-      ),
-      events: Array.from(new Set(results.flatMap((r) => r.entities.events))),
-    };
-
-    return {
-      id: -1,
-      refinedText,
-      analysis: combinedAnalysis,
-      entities: combinedEntities,
-      timeline: results.flatMap((r) => r.timeline),
-    };
+    return JSON.stringify({ refinedText, analysis });
   }
 }
