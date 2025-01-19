@@ -1,5 +1,17 @@
 # Task Plan (auth-fix-20240320)
 
+## Status Update (2024-03-20 17:15)
+- Refined login page UI with subtle border
+- Removed debug elements and unnecessary containers
+- Kept minimal visual structure for better UX
+- Next: Continue with session persistence fix
+
+## Status Update (2024-03-20 17:00)
+- Removed temporary debug borders from auth form
+- Login form UI cleaned up
+- Session and redirection issues still pending
+- Next: Continue with session persistence fix
+
 ## Status Update (2024-03-20 16:30)
 - Login form now rendering correctly
 - Auth UI working but redirection after login failing

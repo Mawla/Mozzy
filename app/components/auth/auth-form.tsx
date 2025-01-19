@@ -31,7 +31,7 @@ export function AuthForm() {
   }/auth/callback?next=${encodeURIComponent(next)}`;
 
   return (
-    <div className="w-full max-w-[400px] mx-auto p-8 border border-red-500">
+    <div className="w-full max-w-[400px] mx-auto p-8">
       <div className="flex flex-col space-y-2 text-center mb-8">
         <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
         <p className="text-sm text-muted-foreground">
