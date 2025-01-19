@@ -1,7 +1,9 @@
 import {
   ProcessingAdapter,
   ProcessingOptions,
-  ProcessingResult as AdapterResult,
+  ProcessingResult,
+  ProcessingStatus,
+  ProcessingAnalysis,
   SentimentAnalysis,
   TimelineEvent,
   TopicAnalysis,
@@ -9,6 +11,9 @@ import {
 import { PodcastProcessor } from "../podcast/PodcastProcessor";
 import { logger } from "@/lib/logger";
 import { ProcessingResult as PodcastResult } from "@/app/types/podcast/processing";
+import { v4 as uuidv4 } from "uuid";
+
+const generateId = () => uuidv4();
 
 export class PodcastProcessingAdapter implements ProcessingAdapter {
   private processor: PodcastProcessor;
@@ -37,81 +42,55 @@ export class PodcastProcessingAdapter implements ProcessingAdapter {
   async process(
     input: string,
     options: ProcessingOptions
-  ): Promise<AdapterResult> {
-    const id = crypto.randomUUID();
-
-    // Validate input first
-    const isValid = await this.validate(input);
-    if (!isValid) {
-      return {
-        id,
-        status: "failed",
-        output: "",
-        error: "Invalid input for processing",
-        metadata: {
-          format: "podcast",
-          platform: options.targetPlatform || "default",
-          processedAt: new Date().toISOString(),
-        },
-      };
-    }
-
+  ): Promise<ProcessingResult> {
     try {
-      // Use the core processor to process the content
-      const processorResult = await this.processor.process(input);
-
-      // Type assertion after validation
-      if (!this.isValidPodcastResult(processorResult)) {
-        throw new Error("Invalid processor result");
+      const isValid = await this.validate(input);
+      if (!isValid) {
+        return {
+          id: generateId(),
+          status: "failed" as ProcessingStatus,
+          output: "",
+          error: "Invalid input",
+          metadata: {
+            format: "podcast",
+            platform: options.targetPlatform || "default",
+            processedAt: new Date().toISOString(),
+          },
+        };
       }
 
-      const result = processorResult as PodcastResult;
+      const result = await this.processor.process(input);
 
-      // Map the processor result to adapter result
+      const analysis: ProcessingAnalysis = {
+        entities: result.analysis?.entities,
+        sentiment: result.analysis?.sentiment,
+        timeline: result.analysis?.timeline,
+        topics: result.analysis?.themes?.map((theme) => ({
+          name: theme,
+          confidence: 1,
+          keywords: [],
+        })),
+      };
+
       return {
-        id,
-        status: "completed",
-        output: result.refinedTranscript || input,
+        id: generateId(),
+        status: "completed" as ProcessingStatus,
+        output: result.output,
         metadata: {
           format: "podcast",
           platform: options.targetPlatform || "default",
           processedAt: new Date().toISOString(),
-          title: result.analysis?.title || "Untitled Podcast",
-          duration: result.analysis?.quickFacts?.duration || "00:00:00",
-          speakers: result.analysis?.quickFacts?.participants || [],
-          topics: result.analysis?.themes?.map((t) => t.name) || [],
+          speakers: result.metadata?.speakers,
+          duration: result.metadata?.duration,
         },
-        analysis: {
-          entities: {
-            people: result.entities.people.map((p) => p.name),
-            organizations: result.entities.organizations.map((o) => o.name),
-            locations: result.entities.locations.map((l) => l.name),
-            concepts: [],
-          },
-          timeline: result.timeline.map((t) => ({
-            timestamp: t.time,
-            event: t.event,
-            speakers: [], // Timeline events in the adapter don't include speakers
-          })),
-          topics: (result.analysis?.themes || []).map((theme) => ({
-            name: theme.name,
-            relevance: 1,
-            mentions: 1,
-            relatedEntities: theme.relatedConcepts,
-          })),
-        },
+        analysis,
       };
     } catch (error) {
-      logger.error(
-        "Processing error:",
-        error instanceof Error ? error : new Error(String(error))
-      );
       return {
-        id,
-        status: "failed",
+        id: generateId(),
+        status: "failed" as ProcessingStatus,
         output: "",
-        error:
-          error instanceof Error ? error.message : "Unknown error occurred",
+        error: error instanceof Error ? error.message : "Processing failed",
         metadata: {
           format: "podcast",
           platform: options.targetPlatform || "default",
@@ -121,11 +100,11 @@ export class PodcastProcessingAdapter implements ProcessingAdapter {
     }
   }
 
-  async getStatus(id: string): Promise<AdapterResult> {
+  async getStatus(id: string): Promise<ProcessingResult> {
     // In a real implementation, this would check a database or queue
     return {
       id,
-      status: "completed",
+      status: "completed" as ProcessingStatus,
       output: "",
       metadata: {
         format: "podcast",

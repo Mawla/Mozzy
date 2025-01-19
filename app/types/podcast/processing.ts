@@ -1,14 +1,13 @@
-import {
-  PodcastAnalysis as BasePodcastAnalysis,
-  PodcastEntities as BasePodcastEntities,
-  Section,
+import type {
   ProcessingStatus,
-  ProcessingStep,
-  ProcessingResult as BaseProcessingResult,
-  TimelineEvent as BaseTimelineEvent,
-} from "./models";
+  ProcessingAnalysis as BaseProcessingAnalysis,
+  BaseProcessingResult,
+  BaseTextChunk,
+  TimelineEvent,
+  ProcessingMetadata,
+} from "@/app/core/processing/types";
 
-import {
+import type {
   PersonEntity,
   OrganizationEntity,
   LocationEntity,
@@ -16,6 +15,13 @@ import {
   EntityMention,
   EntityRelationship,
 } from "@/app/schemas/podcast/entities";
+
+import type {
+  PodcastAnalysis as BasePodcastAnalysis,
+  PodcastEntities as BasePodcastEntities,
+  Section,
+  ProcessingStep,
+} from "./models";
 
 // Re-export the base types with sections
 export interface PodcastAnalysis extends Omit<BasePodcastAnalysis, "sections"> {
@@ -33,25 +39,34 @@ export type {
   Section,
   ProcessingStatus,
   ProcessingStep,
+  TimelineEvent,
 };
 
 // Processing State Types
 export interface ProcessingState {
+  status: ProcessingStatus;
+  error?: Error;
+  overallProgress: number;
+  steps: Array<{
+    id: string;
+    name: string;
+    description: string;
+    status: ProcessingStatus;
+    progress: number;
+    error?: Error;
+    chunks?: ProcessingChunk[];
+    networkLogs?: NetworkLog[];
+  }>;
   chunks: ProcessingChunk[];
   networkLogs: NetworkLog[];
   currentTranscript: string;
 }
 
-export interface TextChunk {
-  id: number;
-  text: string;
-  startIndex: number;
-  endIndex: number;
+export interface TextChunk extends BaseTextChunk {
+  // Add any podcast-specific fields here
 }
 
-export interface ProcessingChunk {
-  id: number;
-  text: string;
+export interface ProcessingChunk extends TextChunk {
   status: "pending" | "processing" | "completed" | "error";
   response?: string;
   error?: string;
@@ -62,7 +77,7 @@ export interface ProcessingChunk {
     locations: LocationEntity[];
     events: EventEntity[];
   };
-  timeline?: BaseTimelineEvent[];
+  timeline?: TimelineEvent[];
 }
 
 export interface ProcessingChunkResult {
@@ -88,13 +103,12 @@ export interface ProcessingChunkResult {
       relatedConcepts: string[];
     }>;
   };
-  timeline?: BaseTimelineEvent[];
+  timeline?: TimelineEvent[];
   refinedText?: string;
 }
 
 export interface ProcessingResult extends BaseProcessingResult {
   success: boolean;
-  error?: string;
   transcript: string;
   refinedTranscript: string;
   analysis: PodcastAnalysis;
@@ -104,7 +118,7 @@ export interface ProcessingResult extends BaseProcessingResult {
     locations: LocationEntity[];
     events: EventEntity[];
   };
-  timeline: BaseTimelineEvent[];
+  timeline: TimelineEvent[];
 }
 
 export interface NetworkLog {
@@ -175,5 +189,5 @@ export type StepData = {
   organizations?: string[];
   locations?: string[];
   events?: string[];
-  timeline?: BaseTimelineEvent[];
+  timeline?: TimelineEvent[];
 };

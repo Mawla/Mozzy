@@ -13,6 +13,16 @@ import {
   LocationEntity,
   EventEntity,
 } from "@/app/types/podcast/processing";
+import {
+  ProcessingAdapter,
+  ProcessingOptions,
+  ProcessingStatus,
+  ProcessingAnalysis,
+  SentimentAnalysis,
+  TopicAnalysis,
+  TimelineEvent,
+} from "../types";
+import { v4 as uuidv4 } from "uuid";
 
 // Local type alias for entities structure
 type PodcastEntities = {
@@ -21,6 +31,8 @@ type PodcastEntities = {
   locations: LocationEntity[];
   events: EventEntity[];
 };
+
+const generateId = () => uuidv4();
 
 export class PodcastProcessor extends Processor<string, ProcessingResult> {
   private chunker: PodcastChunker;
@@ -121,33 +133,54 @@ export class PodcastProcessor extends Processor<string, ProcessingResult> {
         } as PodcastEntities;
       }, combinedEntities);
 
-      // Combine analysis from all chunks
-      const combinedAnalysis: PodcastAnalysis = {
-        id: "combined-analysis",
-        title: "Combined Analysis",
-        summary:
-          results.find((r) => r.analysis?.summary)?.analysis?.summary || "",
-        quickFacts: {
-          duration: "0:00",
-          participants: [],
-          mainTopic: "",
-          expertise: "General",
-        },
-        keyPoints: Array.from(
-          new Set(results.flatMap((r) => r.analysis?.keyPoints || []))
-        ),
-        themes: Array.from(
-          new Set(results.flatMap((r) => r.analysis?.themes || []))
-        ),
+      // Convert entities to the format expected by ProcessingResult
+      const processedEntities = {
+        people: entities.people.map((p) => p.name),
+        organizations: entities.organizations.map((o) => o.name),
+        locations: entities.locations.map((l) => l.name),
+        concepts: entities.events.map((e) => e.name),
       };
 
+      // Convert timeline events to the format expected by ProcessingResult
+      const processedTimeline =
+        results[0]?.timeline?.map(
+          (event) =>
+            ({
+              timestamp: event.time || new Date().toISOString(),
+              event: event.event,
+            } as TimelineEvent)
+        ) || [];
+
+      // Convert themes to topics
+      const topics = results[0]?.analysis?.themes?.map((theme) => {
+        const themeName = typeof theme === "string" ? theme : theme.name;
+        return {
+          name: themeName,
+          confidence: 1,
+          keywords: [],
+        } as TopicAnalysis;
+      });
+
       return {
-        success: true,
-        transcript: input,
-        refinedTranscript: results[0]?.refinedText || input,
-        analysis: combinedAnalysis,
-        entities: entities,
-        timeline: results[0]?.timeline || [],
+        id: generateId(),
+        status: "completed" as ProcessingStatus,
+        output: results[0]?.refinedText || input,
+        metadata: {
+          format: "podcast",
+          platform: "default",
+          processedAt: new Date().toISOString(),
+          speakers: entities.people.map((p) => p.name),
+          duration: "00:00:00",
+        },
+        analysis: {
+          entities: processedEntities,
+          timeline: processedTimeline,
+          sentiment: {
+            overall: 0,
+            segments: [],
+          },
+          topics,
+        },
       };
     } catch (error) {
       logger.error(
@@ -158,7 +191,17 @@ export class PodcastProcessor extends Processor<string, ProcessingResult> {
           inputPreview: input.slice(0, 100),
         }
       );
-      throw error;
+      return {
+        id: generateId(),
+        status: "failed" as ProcessingStatus,
+        output: "",
+        error: error instanceof Error ? error.message : "Processing failed",
+        metadata: {
+          format: "podcast",
+          platform: "default",
+          processedAt: new Date().toISOString(),
+        },
+      };
     }
   }
 

@@ -1,192 +1,133 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ParallelProcessingStatus } from "../dashboard/podcasts/ParallelProcessingStatus";
-import { ChunkVisualizer } from "../dashboard/podcasts/ChunkVisualizer";
-import { TiptapPreview } from "../dashboard/podcasts/TiptapPreview";
-import { NetworkLogger } from "../dashboard/podcasts/NetworkLogger";
-import { ProcessingPipeline } from "@/app/core/processing";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { ProcessingStep } from "@/app/types/podcast/processing";
-import { Progress } from "@/components/ui/progress";
-import { StepDetails } from "../dashboard/podcasts/StepDetails/StepDetails";
+import { useEffect, useState } from "react";
+import { ProcessingStatus } from "@/app/core/processing/types";
+import { NetworkLogger } from "@/app/components/dashboard/podcasts/NetworkLogger";
+import { ChunkVisualizer } from "@/app/components/dashboard/podcasts/ChunkVisualizer";
+import { ProcessingState } from "@/app/types/podcast/processing";
 
 interface ProcessingPipelineViewProps {
-  pipeline: ProcessingPipeline<string, any, any>;
-  content: string;
+  state: ProcessingState;
+  onRetry?: (stepId: string) => void;
 }
 
 export function ProcessingPipelineView({
-  pipeline,
-  content,
+  state,
+  onRetry,
 }: ProcessingPipelineViewProps) {
-  const [activeTab, setActiveTab] = useState<
-    "overview" | "chunks" | "results" | "logs"
-  >("overview");
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [currentStep, setCurrentStep] = useState<string | null>(null);
-  const [logs, setLogs] = useState<
-    Array<{
-      type: "request" | "response" | "error";
-      message: string;
-      timestamp: string;
-    }>
-  >([]);
-  const [results, setResults] = useState<Record<string, any>>({});
+  const [expanded, setExpanded] = useState<string[]>([]);
 
-  const steps: ProcessingStep[] = [
-    {
-      id: "chunking",
-      name: "Text Chunking",
-      status: isProcessing ? "processing" : "idle",
-      data: results.chunking || null,
-    },
-    {
-      id: "analysis",
-      name: "Content Analysis",
-      status: "idle",
-      data: results.analysis || null,
-    },
-    {
-      id: "entities",
-      name: "Entity Extraction",
-      status: "idle",
-      data: results.entities || null,
-    },
-    {
-      id: "timeline",
-      name: "Timeline Creation",
-      status: "idle",
-      data: results.timeline || null,
-    },
-  ];
+  const toggleStep = (stepId: string) => {
+    setExpanded((prev) =>
+      prev.includes(stepId)
+        ? prev.filter((id) => id !== stepId)
+        : [...prev, stepId]
+    );
+  };
 
-  const handleProcessing = async () => {
-    setIsProcessing(true);
-    try {
-      // Process content
-      setCurrentStep("chunking");
-      const processedChunks = pipeline.getChunks();
-      setResults((prev) => ({
-        ...prev,
-        chunking: { chunks: processedChunks },
-      }));
-
-      // Process each step
-      for (const step of steps) {
-        if (step.id === "chunking") continue;
-
-        setCurrentStep(step.id);
-        const stepResult = await pipeline.processStep(step.id);
-        setResults((prev) => ({ ...prev, [step.id]: stepResult }));
-      }
-
-      setCurrentStep("combining");
-      const finalResult = await pipeline.process(content);
-      setResults((prev) => ({ ...prev, final: finalResult }));
-    } catch (err) {
-      // Type guard for Error objects
-      const error = err as Error;
-      console.error("Processing error:", error);
-      setLogs((prev) => [
-        ...prev,
-        {
-          type: "error",
-          message: error?.message || "An unknown error occurred",
-          timestamp: new Date().toISOString(),
-        },
-      ]);
-    } finally {
-      setIsProcessing(false);
-      setCurrentStep(null);
+  const getStepColor = (status: ProcessingStatus) => {
+    switch (status) {
+      case "completed":
+        return "text-green-500";
+      case "failed":
+        return "text-red-500";
+      case "processing":
+        return "text-blue-500";
+      case "pending":
+        return "text-yellow-500";
+      default:
+        return "text-gray-400";
     }
   };
 
-  const getOverallProgress = () => {
-    const completedSteps = steps.filter((s) => s.status === "completed").length;
-    return (completedSteps / steps.length) * 100;
-  };
-
   return (
-    <Card className="mt-6">
-      <CardHeader>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <CardTitle>Processing Pipeline</CardTitle>
-            <Button onClick={handleProcessing} disabled={isProcessing}>
-              {isProcessing ? "Processing..." : "Start Processing"}
-            </Button>
-          </div>
-          {isProcessing && (
-            <Progress value={getOverallProgress()} className="w-full" />
-          )}
+    <div className="w-full max-w-2xl mx-auto">
+      {/* Overall Progress */}
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="text-lg font-semibold">Processing Progress</h3>
+          <span className="text-sm font-medium">
+            {Math.round(state.overallProgress)}%
+          </span>
         </div>
-      </CardHeader>
+        <div className="w-full bg-gray-200 rounded-full h-2.5">
+          <div
+            className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+            style={{ width: `${state.overallProgress}%` }}
+          />
+        </div>
+      </div>
 
-      <CardContent>
-        <Tabs
-          value={activeTab}
-          onValueChange={(value) => setActiveTab(value as typeof activeTab)}
-        >
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="chunks">Chunks</TabsTrigger>
-            <TabsTrigger value="results">Results</TabsTrigger>
-            <TabsTrigger value="logs">Logs</TabsTrigger>
-          </TabsList>
+      {/* Steps List */}
+      <div className="space-y-4">
+        {state.steps.map((step) => (
+          <div
+            key={step.id}
+            className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+          >
+            <button
+              onClick={() => toggleStep(step.id)}
+              className="w-full flex justify-between items-center"
+            >
+              <div className="flex items-center space-x-3">
+                <span className={`${getStepColor(step.status)} text-lg`}>
+                  {step.status === "completed"
+                    ? "✓"
+                    : step.status === "failed"
+                    ? "✗"
+                    : step.status === "processing"
+                    ? "⟳"
+                    : "○"}
+                </span>
+                <span className="font-medium">{step.name}</span>
+              </div>
+              <span className="text-sm text-gray-500">{step.progress}%</span>
+            </button>
 
-          <TabsContent value="overview">
-            <div className="space-y-6">
-              <ParallelProcessingStatus
-                steps={steps}
-                currentStep={currentStep}
-              />
-              {/* Show current step details */}
-              {currentStep && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-sm">
-                      Current Step Output
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <StepDetails
-                      step={steps.find((s) => s.id === currentStep) || steps[0]}
-                    />
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </TabsContent>
+            {/* Expanded Content */}
+            {expanded.includes(step.id) && (
+              <div className="mt-4 pl-8">
+                <p className="text-sm text-gray-600 mb-2">{step.description}</p>
+                {step.error && (
+                  <div className="bg-red-50 border border-red-200 rounded p-3 mb-2">
+                    <p className="text-sm text-red-700">{step.error.message}</p>
+                    {onRetry && (
+                      <button
+                        onClick={() => onRetry(step.id)}
+                        className="mt-2 text-sm text-red-600 hover:text-red-800 font-medium"
+                      >
+                        Retry Step
+                      </button>
+                    )}
+                  </div>
+                )}
+                {step.chunks && <ChunkVisualizer chunks={step.chunks} />}
+                {step.networkLogs && <NetworkLogger logs={step.networkLogs} />}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
 
-          <TabsContent value="chunks">
-            <ChunkVisualizer chunks={pipeline.getChunks()} />
-          </TabsContent>
-
-          <TabsContent value="results">
-            <div className="space-y-6">
-              {steps.map((step) => (
-                <Card key={step.id}>
-                  <CardHeader>
-                    <CardTitle className="text-sm">
-                      {step.name} Results
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <StepDetails step={step} />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="logs">
-            <NetworkLogger logs={logs} />
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+      {/* Overall Status */}
+      <div
+        className={`mt-6 p-4 rounded-lg ${
+          state.status === "completed"
+            ? "bg-green-50 text-green-700"
+            : state.status === "failed"
+            ? "bg-red-50 text-red-700"
+            : state.status === "processing"
+            ? "bg-blue-50 text-blue-700"
+            : "bg-gray-50 text-gray-700"
+        }`}
+      >
+        <p className="font-medium">
+          Status: {state.status.charAt(0).toUpperCase() + state.status.slice(1)}
+        </p>
+        {state.error && (
+          <p className="text-sm mt-2">Error: {state.error.message}</p>
+        )}
+      </div>
+    </div>
   );
 }

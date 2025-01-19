@@ -1251,3 +1251,42 @@ Explanation of how it works and important considerations.
 **Usage Examples:**
 Real-world examples of how to use this feature.
 ```
+
+## Date and Time Management
+
+1. Always fetch current date and time using terminal command:
+
+   - Use: `date "+%Y-%m-%d %H:%M"`
+   - Required for:
+     - Plan updates
+     - Status updates
+     - Progress tracking
+     - Documentation timestamps
+   - Never manually write or assume timestamps
+   - Always use 24-hour format
+   - Always include both date and time
+
+2. Example Usage:
+
+   ```markdown
+   ### $(date "+%Y-%m-%d %H:%M") - Feature Update
+
+   - ✓ Completed: Task details
+   - 🤔 Decisions: Decision details
+   - ❌ Issues: Issue details
+   - ⏭️ Next: Next steps
+   ```
+
+3. Timestamp Guidelines:
+   - Use consistent format across all documents
+   - Include timezone if working across timezones
+   - Update timestamps in real-time
+   - Never backdate or forward-date entries
+   - Always fetch new timestamp for each update
+
+Remember:
+
+- Run date command before each plan/status update
+- Use exact command output
+- Don't modify or format the timestamp
+- Include both date and time for all entries
