@@ -1,6 +1,6 @@
 "use client";
 
-import { ProcessingStatus as ProcessingStatusType } from "@/app/core/processing/types";
+import { ProcessingStatus as ProcessingStatusType } from "@/app/core/processing/types/base";
 
 interface ProcessingStatusProps {
   status: ProcessingStatusType;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ProcessingStatus } from "@/app/core/processing/types";
+import { ProcessingStatus } from "@/app/core/processing/types/base";
 import { NetworkLogger } from "@/app/components/dashboard/podcasts/NetworkLogger";
 import { ChunkVisualizer } from "@/app/components/dashboard/podcasts/ChunkVisualizer";
 import { ProcessingState } from "@/app/types/podcast/processing";

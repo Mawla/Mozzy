@@ -2,10 +2,10 @@ import { ProcessingService } from "@/app/core/processing/service/ProcessingServi
 import { PodcastProcessingAdapter } from "@/app/core/processing/adapters/podcast";
 import { PostProcessingAdapter } from "@/app/core/processing/adapters/post";
 import {
-  ProcessingResult,
+  BaseProcessingResult,
   ProcessingStatus,
   ProcessingOptions,
-} from "@/app/core/processing/types";
+} from "@/app/core/processing/types/base";
 
 describe("Migration Validation", () => {
   let service: ProcessingService;

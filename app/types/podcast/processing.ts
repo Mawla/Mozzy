@@ -5,7 +5,7 @@ import type {
   BaseTextChunk,
   TimelineEvent,
   ProcessingMetadata,
-} from "@/app/core/processing/types";
+} from "@/app/core/processing/types/base";
 
 import type {
   PersonEntity,
@@ -107,7 +107,8 @@ export interface ProcessingChunkResult {
   refinedText?: string;
 }
 
-export interface ProcessingResult extends BaseProcessingResult {
+export interface ProcessingResult
+  extends Omit<BaseProcessingResult, "analysis"> {
   success: boolean;
   transcript: string;
   refinedTranscript: string;
