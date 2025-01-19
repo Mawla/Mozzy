@@ -1,5 +1,62 @@
 # Project Plan
 
+## File Structure Reference
+
+See `/docs/file_structure_document.md` for complete codebase structure.
+
+Key Directories:
+
+- `/app` - Next.js 14 App Router
+
+  - `/actions` - Server actions (auth.ts, posts.ts)
+  - `/api` - API route handlers
+  - `/components` - UI components
+  - `/config` - Application configuration
+  - `/constants` - Shared constants
+  - `/hooks` - Custom React hooks
+  - `/services` - Business logic
+  - `/stores` - Zustand stores
+  - `/types` - TypeScript definitions
+  - `/utils` - Utility functions
+
+- `/lib` - Core library code
+
+  - `/supabase` - Supabase integration
+  - `/logger` - Logging system
+
+- `/docs` - Project documentation
+  - `/features` - Feature documentation
+  - `/working-memory` - Active tasks
+  - `/templates` - Documentation templates
+
+## Memory Management
+
+### Working Memory
+
+- Location: `/docs/working-memory/`
+- Active Tasks: See `/docs/working-memory/open/`
+- Completed Tasks: See `/docs/working-memory/done/`
+
+### Project Memory
+
+- Location: `/docs/`
+- Documentation: See `/docs/features/`
+- Architecture: See `/docs/technical/`
+
+### Documentation Memory
+
+- Location: `/docs/templates/`
+- Standards: See `/docs/standards/`
+
+## Feature Documentation Status
+
+### Authentication (auth-5)
+
+- Documentation: `/docs/features/auth/`
+- Components: `/docs/features/auth/components.md`
+- API: `/docs/features/auth/api.md`
+- Testing: `/docs/features/auth/testing.md`
+
 ## Authentication (auth-5)
 
 - [x] Initial Supabase setup
@@ -20,6 +77,14 @@
 
 1. Auth UI Rendering (auth-fix-20240320):
 
+   Documentation Impact:
+
+   - Update `/docs/features/auth/components.md` with Auth UI changes
+   - Update error handling documentation in `/docs/features/auth/architecture.md`
+   - Add loading states documentation to `/docs/features/auth/components.md`
+
+   Tasks:
+
    - [ ] Fix login form not rendering
      - [ ] Debug Auth UI component initialization
      - [ ] Verify client-side hydration
@@ -32,6 +97,14 @@
      - [ ] Handle mounting states
 
 2. Session Management:
+
+   Documentation Impact:
+
+   - Update `/docs/features/auth/api.md` with token management
+   - Add cookie handling documentation to `/docs/features/auth/architecture.md`
+
+   Tasks:
+
    - [ ] Fix refresh token errors
      - [ ] Clear invalid tokens
      - [ ] Implement proper token refresh flow
