@@ -3,8 +3,20 @@
 import { ProcessingPipeline } from "./ProcessingPipeline";
 import { usePodcastProcessing } from "@/app/hooks/use-podcast-processing";
 import { useEffect } from "react";
-import { PodcastEntities } from "@/app/schemas/podcast/entities";
-import { KeyPoint, Theme } from "@/app/types/podcast/processing";
+import {
+  ValidatedPodcastEntities,
+  PersonEntity,
+  OrganizationEntity,
+  LocationEntity,
+  EventEntity,
+  TopicEntity,
+  ConceptEntity,
+} from "@/app/types/entities";
+import {
+  KeyPoint,
+  ProcessingChunk,
+  PodcastAnalysis,
+} from "@/app/types/podcast/processing";
 import { usePodcastProcessingStore } from "@/app/store/podcastProcessingStore";
 import { PROCESSING_STEPS } from "@/app/constants/processing";
 
@@ -25,45 +37,61 @@ export const PodcastProcessor = () => {
 
     if (allChunksCompleted) {
       // Combine entities from all chunks
-      const combinedEntities = chunks.reduce((acc, chunk) => {
-        if (!chunk.entities) return acc;
+      const combinedEntities = chunks.reduce<ValidatedPodcastEntities>(
+        (acc, chunk) => {
+          if (!chunk.entities) return acc;
 
-        // Helper function to merge arrays with deduplication
-        const mergeEntities = (accArray: any[] = [], newArray: any[] = []) => {
-          const map = new Map();
-          [...accArray, ...newArray].forEach((e) => map.set(e.name, e));
-          return Array.from(map.values());
-        };
+          // Helper function to merge arrays with deduplication
+          function mergeEntities<T extends { name: string }>(
+            accArray: T[] = [],
+            newArray: T[] = []
+          ): T[] {
+            const map = new Map<string, T>();
+            [...accArray, ...newArray].forEach((e) => map.set(e.name, e));
+            return Array.from(map.values());
+          }
 
-        return {
-          people: mergeEntities(acc.people, chunk.entities.people),
-          organizations: mergeEntities(
-            acc.organizations,
-            chunk.entities.organizations
-          ),
-          locations: mergeEntities(acc.locations, chunk.entities.locations),
-          events: mergeEntities(acc.events, chunk.entities.events),
-          topics: mergeEntities(acc.topics, chunk.entities.topics),
-          concepts: mergeEntities(acc.concepts, chunk.entities.concepts),
-        };
-      }, {} as PodcastEntities);
+          return {
+            people: mergeEntities<PersonEntity>(
+              acc.people || [],
+              chunk.entities.people || []
+            ),
+            organizations: mergeEntities<OrganizationEntity>(
+              acc.organizations || [],
+              chunk.entities.organizations || []
+            ),
+            locations: mergeEntities<LocationEntity>(
+              acc.locations || [],
+              chunk.entities.locations || []
+            ),
+            events: mergeEntities<EventEntity>(
+              acc.events || [],
+              chunk.entities.events || []
+            ),
+          };
+        },
+        {} as ValidatedPodcastEntities
+      );
 
       // Combine analysis from all chunks
-      const combinedAnalysis = chunks.reduce((acc, chunk) => {
+      const combinedAnalysis = chunks.reduce<PodcastAnalysis>((acc, chunk) => {
         if (!chunk.analysis) return acc;
 
         // Helper function to merge arrays
-        const mergeArrays = (accArray: any[] = [], newArray: any[] = []) => {
+        function mergeArrays<T>(accArray: T[] = [], newArray: T[] = []): T[] {
           const set = new Set([...accArray, ...newArray]);
           return Array.from(set);
-        };
+        }
 
         return {
           summary: acc.summary || chunk.analysis.summary,
-          keyPoints: mergeArrays(acc.keyPoints, chunk.analysis.keyPoints),
-          themes: mergeArrays(acc.themes, chunk.analysis.themes),
+          keyPoints: mergeArrays(
+            acc.keyPoints || [],
+            (chunk.analysis.keyPoints as KeyPoint[]) || []
+          ),
+          themes: mergeArrays(acc.themes || [], chunk.analysis.themes || []),
         };
-      }, {} as { summary?: string; keyPoints?: KeyPoint[]; themes?: Theme[] });
+      }, {} as PodcastAnalysis);
 
       // Update steps with combined data
       if (Object.keys(combinedEntities).length > 0) {

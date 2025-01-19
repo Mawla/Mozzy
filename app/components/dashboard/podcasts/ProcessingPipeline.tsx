@@ -20,8 +20,11 @@ import { StepDetails } from "./StepDetails/StepDetails";
 import { usePodcastProcessing } from "@/app/hooks/use-podcast-processing";
 import { cn } from "@/lib/utils";
 import { ParallelProcessingStatus } from "./ParallelProcessingStatus";
-import { ProcessingStep } from "@/app/types/podcast/processing";
-import { PodcastEntities } from "@/app/schemas/podcast/entities";
+import {
+  ProcessingStep,
+  ProcessingStatus,
+} from "@/app/types/podcast/processing";
+import { ValidatedPodcastEntities } from "@/app/types/entities";
 
 interface ProcessingPipelineProps {
   steps: ProcessingStep[];
@@ -31,14 +34,15 @@ interface ProcessingPipelineProps {
   onToggle: () => void;
 }
 
-interface ExtendedProcessingStep extends Omit<ProcessingStep, "data"> {
+interface ExtendedProcessingStep
+  extends Omit<ProcessingStep, "data" | "error"> {
   type?: "transcription" | "entity-extraction" | "summarization";
-  error?: string | Error;
+  error?: Error;
   data?: StepData | null;
 }
 
 interface StepData {
-  entities?: PodcastEntities;
+  entities?: ValidatedPodcastEntities;
   result?: any;
   [key: string]: any;
 }
@@ -67,11 +71,12 @@ export const ProcessingPipeline = ({
   };
 
   const renderStepContent = (step: ExtendedProcessingStep) => {
-    if (step.status === "error") {
+    if (step.status === "error" || step.status === "failed") {
       return (
         <div className="text-red-500 text-sm">
-          {(step.error instanceof Error ? step.error.message : step.error) ||
-            "An error occurred during processing"}
+          {step.error instanceof Error
+            ? step.error.message
+            : "An error occurred during processing"}
         </div>
       );
     }
@@ -90,6 +95,40 @@ export const ProcessingPipeline = ({
     return <StepDetails step={step} />;
   };
 
+  const getBadgeVariant = (status: ProcessingStatus) => {
+    switch (status) {
+      case "completed":
+        return "default";
+      case "error":
+      case "failed":
+        return "destructive";
+      case "processing":
+      case "pending":
+        return "secondary";
+      case "idle":
+        return "outline";
+      default:
+        return "secondary";
+    }
+  };
+
+  const getBadgeContent = (status: ProcessingStatus) => {
+    switch (status) {
+      case "processing":
+      case "pending":
+        return "Processing...";
+      case "completed":
+        return "Completed";
+      case "error":
+      case "failed":
+        return "Error";
+      case "idle":
+        return "Ready";
+      default:
+        return status;
+    }
+  };
+
   return (
     <Card>
       <Accordion type="single" collapsible defaultValue="pipeline">
@@ -100,10 +139,14 @@ export const ProcessingPipeline = ({
                 <CardTitle>Processing Pipeline</CardTitle>
                 <div className="flex items-center gap-2">
                   <Badge
-                    variant={isProcessing ? "secondary" : "outline"}
-                    className={cn(isProcessing && "animate-pulse")}
+                    variant={getBadgeVariant(steps[0].status)}
+                    className={cn(
+                      (steps[0].status === "processing" ||
+                        steps[0].status === "pending") &&
+                        "animate-pulse"
+                    )}
                   >
-                    {isProcessing ? "Processing..." : "Ready"}
+                    {getBadgeContent(steps[0].status)}
                   </Badge>
                 </div>
               </div>
@@ -149,15 +192,14 @@ export const ProcessingPipeline = ({
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <Badge
-                                    variant={
-                                      step.status === "completed"
-                                        ? "default"
-                                        : step.status === "error"
-                                        ? "destructive"
-                                        : "secondary"
-                                    }
+                                    variant={getBadgeVariant(step.status)}
+                                    className={cn(
+                                      (step.status === "processing" ||
+                                        step.status === "pending") &&
+                                        "animate-pulse"
+                                    )}
                                   >
-                                    {step.status}
+                                    {getBadgeContent(step.status)}
                                   </Badge>
                                   {step.status === "error" && (
                                     <Button

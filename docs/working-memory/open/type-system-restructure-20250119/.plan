@@ -1,0 +1,190 @@
+# Type System Restructuring Task
+
+## Current Status
+
+### 2025-01-19 17:36
+
+**Status**: In Progress
+
+- What's working: Created base entity types structure and implemented podcast processing types hierarchy
+- What's not: Need to implement post processing types and update remaining component imports
+- Blocking issues: None currently
+- Next actions: Create post processing type hierarchy and continue component updates
+
+## Problem Analysis
+
+- Multiple type definitions causing conflicts
+- Circular dependencies between modules
+- Inconsistent type extensions
+- Redundant type declarations
+- Poor type organization
+- Missing required fields in existing entity data
+
+## Solution Design
+
+### Approach: Centralized Type System
+
+Structure:
+
+```
+app/types/
+├── entities/                # Shared entity types
+│   ├── base.ts             # Base entity interfaces
+│   ├── podcast.ts          # Podcast-specific entities
+│   └── post.ts             # Post-specific entities
+├── processing/
+│   ├── base.ts            # Core processing interfaces
+│   ├── podcast/           # Podcast processing types
+│   │   ├── index.ts      # Public API
+│   │   └── internal.ts   # Internal types
+│   └── post/             # Post processing types
+│       ├── index.ts      # Public API
+│       └── internal.ts   # Internal types
+└── shared/                # Shared utility types
+    └── index.ts
+```
+
+Pros:
+
+- Clear type hierarchy
+- Single source of truth
+- Better type inference
+- Reduced duplication
+- Easier maintenance
+
+Cons:
+
+- Initial migration effort
+- Potential breaking changes
+- Need to update imports
+- Data migration required for new required fields
+
+### Migration Strategy
+
+1. Entity Type Migration:
+
+   - Add utility functions to handle missing fields
+   - Generate missing IDs using UUID
+   - Set createdAt/updatedAt to current timestamp
+   - Create type guards for validation
+   - Add migration layer in processing service
+
+2. Processing Type Updates:
+   - Update chunk processing to handle new fields
+   - Add validation for required fields
+   - Create type-safe entity builders
+   - Update entity extraction logic
+
+## Implementation Steps
+
+### Phase 1: Entity Types Separation
+
+- [x] Create entity type structure
+  - [x] Create base.ts for shared interfaces
+  - [x] Move podcast entities
+  - [x] Move post entities
+  - [x] Create index.ts for exports
+  - [ ] Update imports in components
+  - [ ] Document entity types
+
+### Phase 2: Processing Types Restructuring
+
+- [x] Set up processing type hierarchy
+  - [x] Create base processing interfaces
+  - [x] Implement podcast processing types
+  - [ ] Implement post processing types
+  - [ ] Add type documentation
+  - [ ] Update cross-references
+
+### Phase 3: Type Usage Updates
+
+- [ ] Update component imports
+  - [x] Fix ProcessingPipeline types
+  - [x] Update StepStatusIcon types
+  - [-] Update PodcastProcessor types (blocked by migration)
+  - [ ] Update remaining components
+  - [ ] Update adapter types
+  - [ ] Fix component prop types
+  - [ ] Update test types
+  - [ ] Document type changes
+
+### Phase 4: Entity Migration
+
+- [ ] Implement entity migration
+  - [ ] Create entity builder utilities
+  - [ ] Add field generators
+  - [ ] Implement type guards
+  - [ ] Add validation layer
+  - [ ] Update processing service
+
+### Phase 5: Validation & Testing
+
+- [ ] Implement type validation
+  - [ ] Add interface validation
+  - [ ] Check circular dependencies
+  - [ ] Verify type inference
+  - [ ] Run type checks
+  - [ ] Update documentation
+
+## Affected Components
+
+### Files to Update
+
+- `/app/types/**/*`
+- `/app/core/processing/**/*`
+- `/app/services/**/*`
+- `/app/components/**/*`
+- Documentation files
+
+### Documentation Updates
+
+- [ ] Update type system docs
+- [ ] Update component docs
+- [ ] Update API docs
+- [ ] Add type examples
+- [ ] Update cross-references
+
+## Dependencies
+
+- Blocks: Future feature development
+- Related: Core processing migration
+- Required by: All type-dependent features
+
+## Progress History
+
+### 2025-01-19 17:36 - Processing Types Implementation
+
+- ✓ Completed: Created podcast processing type hierarchy with public and internal types
+- 🤔 Decisions: Separated public and internal types to better control API surface
+- ❌ Issues: None encountered
+- ⏭️ Next: Implement post processing types and update documentation
+
+### 2025-01-19 17:35 - Entity Type Incompatibilities
+
+- ✓ Identified missing required fields in entity types (id, createdAt, updatedAt)
+- 🤔 Decided to create a migration strategy for handling missing fields
+- ❌ Found type incompatibilities in PodcastProcessor component
+- ⏭️ Next: Create entity migration utilities
+
+### 2025-01-19 17:35 - Component Type Updates
+
+- ✓ Updated ProcessingPipeline component to use new types
+- ✓ Fixed StepStatusIcon to handle all processing statuses
+- 🤔 Decided to keep status handling logic in separate functions
+- ⏭️ Next: Update remaining component imports
+
+### 2025-01-19 17:30 - Entity Types Implementation
+
+- ✓ Created base entity types structure
+- ✓ Implemented base.ts with common interfaces
+- ✓ Created podcast.ts with podcast-specific entities
+- ✓ Created post.ts with post-specific entities
+- ✓ Added index.ts for type exports
+- 🤔 Decided to keep validation schemas with respective entity types
+- ⏭️ Next: Update imports in existing files
+
+### 2025-01-19 17:24 - Task Creation
+
+- ✓ Created task plan
+- 🤔 Decided on centralized type system approach
+- ⏭️ Next: Begin Phase 1 - Entity Types Separation

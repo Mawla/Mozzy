@@ -1,190 +1,233 @@
 # Core Processing Architecture
 
+### 2025-01-19 17:00 - Type System Status
+
+Note: Type system consolidation in progress (200 errors in 59 files). See README.md for details.
+
+## Overview
+
+The core processing system follows a layered architecture with clear separation of concerns:
+
+```
+app/core/processing/
+├── adapters/           # Format-specific adapters
+├── base/              # Abstract base classes
+├── types/             # Core type definitions
+│   └── base.ts        # Base types and interfaces
+├── utils/             # Shared utilities
+└── service/           # Processing service
+```
+
 ## System Design
 
-The core processing system uses an adapter pattern to provide a unified interface for processing different content formats while allowing format-specific implementations.
+### Type System Architecture
 
-### High-Level Overview
+The type system is organized in a hierarchical structure:
 
-```
-┌─────────────────┐
-│ ProcessingService│
-└────────┬────────┘
-         │
-         │ manages
-         ▼
-┌─────────────────┐
-│ ProcessingAdapter│
-└────────┬────────┘
-         │
-         │ implements
-         ▼
-┌─────────────────┐     ┌─────────────────┐
-│PodcastAdapter   │     │PostAdapter      │
-└─────────────────┘     └─────────────────┘
-```
+1. Base Types (`core/processing/types/base.ts`)
 
-### Component Relationships
+   - Core interfaces and types
+   - Common type definitions
+   - Shared utility types
+
+2. Format-Specific Types
+
+   - Extend base types
+   - Add format-specific fields
+   - Maintain type safety
+
+3. Type Relationships
+
+   ```typescript
+   // Base types
+   interface BaseProcessingResult {
+     status: ProcessingStatus;
+     content: string;
+   }
+
+   // Format-specific types
+   interface PodcastProcessingResult extends BaseProcessingResult {
+     transcript: string;
+     analysis: PodcastAnalysis;
+   }
+   ```
+
+### Component Architecture
 
 1. ProcessingService
 
-   - Manages format adapters
-   - Provides unified processing interface
-   - Handles common validation and errors
-   - Manages processing state
+   - Central processing coordinator
+   - Adapter registry
+   - Format-agnostic interface
 
-2. ProcessingAdapter Interface
+2. Processing Adapters
 
-   - Defines common processing contract
-   - Specifies validation methods
-   - Defines status tracking
-   - Standardizes error handling
+   - Format-specific implementations
+   - Extend base processing
+   - Handle unique features
 
-3. Format-Specific Adapters
-   - Implement ProcessingAdapter interface
-   - Handle format-specific processing
-   - Manage format-specific metadata
-   - Implement custom validation
-
-### Data Flow
-
-1. Input Reception
-
-   ```
-   Client -> ProcessingService -> Format Adapter
-   ```
-
-2. Processing Flow
-
-   ```
-   Adapter -> Validation -> Processing -> Result Formation
-   ```
-
-3. Status Updates
-   ```
-   Client -> ProcessingService -> Adapter -> Status Check
-   ```
+3. Processing Pipeline
+   - Step-based processing
+   - Progress tracking
+   - Error handling
 
 ## Technical Decisions
 
-### 1. Adapter Pattern
+### Type System Decisions
 
-**Decision**: Use adapter pattern for format handling
+1. Base Types Consolidation
 
-**Rationale**:
+   - ✓ Moved all base types to `base.ts`
+   - ✓ Simplified type exports
+   - ✓ Removed redundant declarations
 
-- Decouples core processing from format specifics
-- Enables easy addition of new formats
-- Maintains consistent interface
-- Simplifies testing and maintenance
+2. Interface Design
 
-### 2. Unified Types
+   - ✓ Use extension over composition
+   - ✓ Clear type hierarchies
+   - ✓ Minimal type duplication
 
-**Decision**: Share core types across adapters
+3. Current Challenges
+   - Type export organization
+   - Interface compatibility
+   - Import path standardization
 
-**Rationale**:
+### Processing Flow
 
-- Ensures type safety
-- Reduces duplication
-- Simplifies interface contracts
-- Enables better tooling support
+1. Input Validation
 
-### 3. Error Handling
+   ```typescript
+   async validateInput(input: string): Promise<boolean>
+   ```
 
-**Decision**: Standardized error handling through result objects
+2. Processing Steps
 
-**Rationale**:
+   ```typescript
+   async processStep(stepId: string): Promise<void>
+   ```
 
-- Consistent error reporting
-- Type-safe error handling
-- Clear error contexts
-- Simplified client handling
-
-### 4. Status Management
-
-**Decision**: Asynchronous status tracking
-
-**Rationale**:
-
-- Supports long-running processes
-- Enables progress monitoring
-- Facilitates error recovery
-- Improves user experience
-
-## Performance Considerations
-
-1. Processing Efficiency
-
-   - Validate before processing
-   - Early error detection
-   - Optimized type checking
-   - Minimal data transformation
-
-2. Memory Management
-
-   - Stream processing where possible
-   - Cleanup of temporary data
-   - Efficient error objects
-   - Type-only imports
-
-3. Error Handling
-   - Fast validation checks
-   - Minimal try-catch blocks
-   - Efficient error creation
-   - Clear error paths
+3. Result Combination
+   ```typescript
+   async combine(results: string[]): Promise<string>
+   ```
 
 ## Dependencies
 
 ### Internal Dependencies
 
-- `@/app/core/processing/types`: Core type definitions
-- `@/app/core/processing/service`: Service implementation
-- `@/app/core/processing/adapters`: Format adapters
+- Base Types Module
+- Processing Service
+- Format Adapters
+- Validation System
 
 ### External Dependencies
 
-- TypeScript: Type system
-- Jest: Testing framework
+- TypeScript Compiler
+- Testing Framework
+- Logging System
 
 ## Configuration Requirements
 
-1. Service Configuration
+1. Type System
+
+   - Strict null checks
+   - No implicit any
+   - Strict function types
+
+2. Processing Options
+   - Format selection
+   - Quality settings
+   - Timeout configuration
+
+## Performance Considerations
+
+1. Type System Impact
+
+   - Minimal runtime overhead
+   - Compile-time safety
+   - Clear error messages
+
+2. Processing Pipeline
+   - Efficient data flow
+   - Memory management
+   - Error recovery
+
+## Current Implementation Status
+
+### Completed
+
+- ✓ Base type system
+- ✓ Core processing service
+- ✓ Format adapters
+- ✓ Basic validation
+
+### In Progress
+
+- Type system consolidation
+- Import path fixes
+- Interface alignment
+- Documentation updates
+
+### Planned
+
+1. Type System
+
+   - Fix export structure
+   - Resolve interface conflicts
+   - Add missing declarations
+
+2. Architecture
+   - Standardize imports
+   - Update documentation
+   - Improve error handling
+
+## Error Handling
+
+1. Type-Level Errors
 
    ```typescript
-   interface ServiceConfig {
-     defaultFormat: ProcessingFormat;
-     timeoutMs: number;
-     maxRetries: number;
+   type ProcessingError = {
+     code: string;
+     message: string;
+     details?: unknown;
+   };
+   ```
+
+2. Runtime Errors
+   ```typescript
+   class ProcessingException extends Error {
+     constructor(
+       message: string,
+       public code: string,
+       public details?: unknown
+     ) {
+       super(message);
+     }
    }
    ```
 
-2. Adapter Configuration
-   ```typescript
-   interface AdapterConfig {
-     validateInput: boolean;
-     throwOnError: boolean;
-     defaultQuality: ProcessingQuality;
-   }
-   ```
+## Monitoring and Logging
 
-## Security Considerations
+1. Type Safety Monitoring
 
-1. Input Validation
+   - Compile-time checks
+   - Runtime type guards
+   - Error tracking
 
-   - All input is validated
-   - Type checking enforced
-   - Size limits applied
-   - Format verification
+2. Processing Monitoring
+   - Step progress
+   - Error rates
+   - Performance metrics
 
-2. Error Handling
+## Future Considerations
 
-   - No sensitive data in errors
-   - Sanitized error messages
-   - Controlled error propagation
-   - Safe error logging
+1. Type System
 
-3. Resource Protection
-   - Timeout enforcement
-   - Memory limits
-   - Processing quotas
-   - Rate limiting
+   - Enhanced type inference
+   - Better error messages
+   - Simplified imports
+
+2. Architecture
+   - More format support
+   - Improved validation
+   - Better error recovery

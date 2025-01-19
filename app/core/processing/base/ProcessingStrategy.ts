@@ -1,4 +1,4 @@
-import { ProcessingState, ProcessingStep } from "../types";
+import { ProcessingState, ProcessingStep } from "../types/base";
 
 // Polyfill for crypto.randomUUID in test environment
 const generateId = (): string => {
@@ -11,29 +11,32 @@ const generateId = (): string => {
   );
 };
 
-export abstract class ProcessingStrategy<TInput, TOutput> {
+export abstract class ProcessingStrategy {
   protected state: ProcessingState;
 
   constructor() {
     this.state = {
-      id: generateId(),
-      steps: this.defineSteps(),
-      currentStep: 0,
+      status: "pending",
       overallProgress: 0,
-      status: "idle",
+      steps: [],
+      chunks: [],
+      networkLogs: [],
+      currentTranscript: "",
     };
   }
 
-  protected abstract defineSteps(): ProcessingStep[];
+  protected abstract initializeSteps(): void;
 
-  public abstract process(chunk: TInput): Promise<TOutput>;
+  protected abstract validateInput(input: string): Promise<boolean>;
 
-  public abstract validate(input: TInput): boolean;
+  protected abstract processStep(stepId: string): Promise<void>;
 
-  public abstract combine?(results: TOutput[]): Promise<TOutput>;
+  protected getStepById(stepId: string): ProcessingStep | undefined {
+    return this.state.steps.find((step) => step.id === stepId);
+  }
 
-  protected updateProgress(stepId: string, progress: number): void {
-    const step = this.state.steps.find((s) => s.id === stepId);
+  protected updateStepProgress(stepId: string, progress: number): void {
+    const step = this.getStepById(stepId);
     if (step) {
       step.progress = progress;
       this.updateOverallProgress();
@@ -42,11 +45,41 @@ export abstract class ProcessingStrategy<TInput, TOutput> {
 
   protected updateOverallProgress(): void {
     const totalProgress = this.state.steps.reduce(
-      (sum, step) => sum + step.progress,
+      (sum: number, step: ProcessingStep) => sum + step.progress,
       0
     );
     this.state.overallProgress = totalProgress / this.state.steps.length;
   }
+
+  protected updateStepStatus(
+    stepId: string,
+    status: ProcessingStep["status"]
+  ): void {
+    const step = this.getStepById(stepId);
+    if (step) {
+      step.status = status;
+    }
+  }
+
+  protected setStepError(stepId: string, error: Error): void {
+    const step = this.getStepById(stepId);
+    if (step) {
+      step.error = error;
+      step.status = "failed";
+    }
+  }
+
+  protected abstract validateDependencies(stepId: string): boolean;
+
+  protected abstract handleStepError(stepId: string, error: Error): void;
+
+  protected abstract cleanup(): void;
+
+  public abstract process(chunk: string): Promise<void>;
+
+  public abstract validate(input: string): boolean;
+
+  public abstract combine?(results: string[]): Promise<string>;
 
   public getState(): ProcessingState {
     return { ...this.state };

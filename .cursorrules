@@ -1252,6 +1252,65 @@ Explanation of how it works and important considerations.
 Real-world examples of how to use this feature.
 ```
 
+### Documentation Update Rules
+
+1. Surgical Updates Only:
+
+   - Make minimal necessary changes
+   - Preserve existing structure
+   - Keep existing content unless explicitly outdated
+   - Add new sections instead of rewriting
+   - Reference other docs instead of duplicating
+
+2. When to Update:
+
+   - New feature additions
+   - Bug fixes affecting behavior
+   - API changes
+   - Critical fixes
+   - Security updates
+   - Type system changes
+
+3. Update Requirements:
+
+   - Must include timestamp
+   - Must reference task/issue number
+   - Must preserve existing content
+   - Must not duplicate information
+   - Must follow existing format
+
+4. Documentation Review:
+
+   - Review changes before commit
+   - Verify only necessary changes
+   - Check for content preservation
+   - Validate cross-references
+   - Ensure timestamp accuracy
+
+5. Change Scope:
+   - Complete rewrites require approval
+   - Structure changes require discussion
+   - Format changes need consensus
+   - Content removal needs justification
+   - New sections need rationale
+
+Example Update:
+
+```markdown
+### YYYY-MM-DD HH:mm - Brief Title
+
+Update Type: [Feature|Fix|Security|Type|API]
+Task: [task-id]
+
+Changes:
+
+- Added X
+- Updated Y
+- Fixed Z
+
+Note: See [related-doc] for details.
+```
+
 ## Date and Time Management
 
 1. Always fetch current date and time using terminal command:

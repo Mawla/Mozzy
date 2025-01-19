@@ -1,10 +1,15 @@
 import type {
   ProcessingStatus,
-  ProcessingAnalysis as BaseProcessingAnalysis,
+  ProcessingAnalysis,
   BaseProcessingResult,
   BaseTextChunk,
   TimelineEvent,
   ProcessingMetadata,
+  ProcessingState as BaseProcessingState,
+  ProcessingStep as BaseProcessingStep,
+  NetworkLog,
+  ChunkResult,
+  ProcessingOptions,
 } from "@/app/core/processing/types/base";
 
 import type {
@@ -16,16 +21,12 @@ import type {
   EntityRelationship,
 } from "@/app/schemas/podcast/entities";
 
-import type {
-  PodcastAnalysis as BasePodcastAnalysis,
-  PodcastEntities as BasePodcastEntities,
-  Section,
-  ProcessingStep,
-} from "./models";
+import type { PodcastAnalysis as BasePodcastAnalysis, Section } from "./models";
 
 // Re-export the base types with sections
-export interface PodcastAnalysis extends Omit<BasePodcastAnalysis, "sections"> {
+export interface PodcastAnalysis extends ProcessingAnalysis {
   sections?: Section[];
+  themes?: string[];
 }
 
 // Re-export types
@@ -38,28 +39,21 @@ export type {
   EntityRelationship,
   Section,
   ProcessingStatus,
-  ProcessingStep,
   TimelineEvent,
+  NetworkLog,
+  ChunkResult,
+  ProcessingOptions,
 };
 
 // Processing State Types
-export interface ProcessingState {
-  status: ProcessingStatus;
-  error?: Error;
-  overallProgress: number;
-  steps: Array<{
-    id: string;
-    name: string;
-    description: string;
-    status: ProcessingStatus;
-    progress: number;
-    error?: Error;
-    chunks?: ProcessingChunk[];
-    networkLogs?: NetworkLog[];
-  }>;
+export interface ProcessingState extends BaseProcessingState {
+  steps: Array<ProcessingStep>;
   chunks: ProcessingChunk[];
-  networkLogs: NetworkLog[];
-  currentTranscript: string;
+}
+
+export interface ProcessingStep extends BaseProcessingStep {
+  description?: string;
+  chunks?: ProcessingChunk[];
 }
 
 export interface TextChunk extends BaseTextChunk {
@@ -67,7 +61,7 @@ export interface TextChunk extends BaseTextChunk {
 }
 
 export interface ProcessingChunk extends TextChunk {
-  status: "pending" | "processing" | "completed" | "error";
+  status: ProcessingStatus;
   response?: string;
   error?: string;
   analysis?: PodcastAnalysis;
@@ -80,37 +74,26 @@ export interface ProcessingChunk extends TextChunk {
   timeline?: TimelineEvent[];
 }
 
-export interface ProcessingChunkResult {
+export interface ProcessingChunkResult extends Omit<ChunkResult, "timeline"> {
+  id: string;
+  text: string;
+  refinedText: string;
+  analysis?: ProcessingAnalysis;
   entities: {
     people: PersonEntity[];
     organizations: OrganizationEntity[];
     locations: LocationEntity[];
     events: EventEntity[];
-  };
-  analysis: {
-    summary: string;
-    topics: string[];
-    sentiment: string;
-    keywords: string[];
-    keyPoints?: Array<{
-      title: string;
-      description: string;
-      relevance: string;
-    }>;
-    themes?: Array<{
-      name: string;
-      description: string;
-      relatedConcepts: string[];
-    }>;
+    topics?: string[];
+    concepts?: string[];
   };
   timeline?: TimelineEvent[];
-  refinedText?: string;
+  status: ProcessingStatus;
+  progress: number;
+  error?: Error;
 }
 
-export interface ProcessingResult
-  extends Omit<BaseProcessingResult, "analysis"> {
-  success: boolean;
-  transcript: string;
+export interface ProcessingResult extends BaseProcessingResult {
   refinedTranscript: string;
   analysis: PodcastAnalysis;
   entities: {
@@ -122,14 +105,6 @@ export interface ProcessingResult
   timeline: TimelineEvent[];
 }
 
-export interface NetworkLog {
-  timestamp: string;
-  type: "request" | "response" | "error";
-  message: string;
-  data?: any;
-}
-
-// Analysis Types
 export interface QuickFact {
   duration: string;
   participants: string[];
@@ -142,12 +117,6 @@ export interface KeyPoint {
   title: string;
   description: string;
   relevance: string;
-}
-
-export interface Theme {
-  name: string;
-  description: string;
-  relatedConcepts: string[];
 }
 
 export interface ChunkOptions {
@@ -165,9 +134,9 @@ export interface TranscriptStepData {
 export interface AnalysisStepData {
   title?: string;
   summary?: string;
-  quickFacts?: QuickFact;
-  keyPoints?: KeyPoint[];
-  themes?: Theme[];
+  quickFacts?: ProcessingAnalysis["quickFacts"];
+  keyPoints?: ProcessingAnalysis["keyPoints"];
+  themes?: string[];
 }
 
 export interface EntityStepData {
@@ -183,9 +152,9 @@ export type StepData = {
   networkLogs?: NetworkLog[];
   title?: string;
   summary?: string;
-  quickFacts?: QuickFact;
-  keyPoints?: KeyPoint[];
-  themes?: Theme[];
+  quickFacts?: ProcessingAnalysis["quickFacts"];
+  keyPoints?: ProcessingAnalysis["keyPoints"];
+  themes?: string[];
   people?: string[];
   organizations?: string[];
   locations?: string[];
