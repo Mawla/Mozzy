@@ -2,8 +2,8 @@ import { PodcastProcessingAdapter } from "@/app/core/processing/adapters/podcast
 import {
   ProcessingOptions,
   ProcessingStatus,
-  ProcessingResult,
-} from "@/app/core/processing/types";
+  BaseProcessingResult,
+} from "@/app/core/processing/types/base";
 
 describe("PodcastProcessingAdapter", () => {
   let adapter: PodcastProcessingAdapter;

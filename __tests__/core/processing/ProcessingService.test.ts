@@ -1,7 +1,7 @@
 import { ProcessingService } from "@/app/core/processing/service/ProcessingService";
 import { PodcastProcessingAdapter } from "@/app/core/processing/adapters/podcast";
 import { PostProcessingAdapter } from "@/app/core/processing/adapters/post";
-import { ProcessingResult } from "@/app/core/processing/types";
+import { BaseProcessingResult } from "@/app/core/processing/types/base";
 
 describe("ProcessingService", () => {
   let service: ProcessingService;
@@ -181,7 +181,7 @@ describe("ProcessingService", () => {
       const results = await Promise.all(tasks);
       expect(results).toHaveLength(5);
       expect(
-        results.every((r: ProcessingResult) => r.status === "completed")
+        results.every((r: BaseProcessingResult) => r.status === "completed")
       ).toBe(true);
     });
   });

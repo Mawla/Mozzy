@@ -2,8 +2,8 @@ import { PostProcessingAdapter } from "@/app/core/processing/adapters/post";
 import {
   ProcessingOptions,
   ProcessingStatus,
-  ProcessingResult,
-} from "@/app/core/processing/types";
+  BaseProcessingResult,
+} from "@/app/core/processing/types/base";
 
 describe("PostProcessingAdapter", () => {
   let adapter: PostProcessingAdapter;
