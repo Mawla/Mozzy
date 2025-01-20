@@ -2,12 +2,34 @@ import * as React from "react";
 import { ContainerBlock } from "./container-block";
 import { MetricBlock } from "./metric-block";
 import type { ProcessingAnalysis } from "@/app/core/processing/types/base";
-import type { BaseEntity } from "@/app/types/entities";
+import type {
+  PersonEntity,
+  OrganizationEntity,
+  TopicEntity,
+  LocationEntity,
+  EventEntity,
+  ConceptEntity,
+} from "@/app/types/entities/podcast";
+
+type PodcastEntity =
+  | PersonEntity
+  | OrganizationEntity
+  | LocationEntity
+  | EventEntity
+  | TopicEntity
+  | ConceptEntity;
 
 interface OverviewBlockProps {
   analysis: ProcessingAnalysis;
-  entities: BaseEntity[];
+  entities: PodcastEntity[];
 }
+
+const countEntitiesByType = <T extends PodcastEntity>(
+  entities: PodcastEntity[],
+  type: T["type"]
+): number => {
+  return entities.filter((entity): entity is T => entity.type === type).length;
+};
 
 export function OverviewBlock({ analysis, entities }: OverviewBlockProps) {
   return (
@@ -24,21 +46,22 @@ export function OverviewBlock({ analysis, entities }: OverviewBlockProps) {
         />
         <MetricBlock
           title="People Mentioned"
-          value={entities.filter((e: BaseEntity) => e.type === "PERSON").length}
+          value={countEntitiesByType<PersonEntity>(entities, "PERSON")}
           className="col-span-1"
           icon="👥"
         />
         <MetricBlock
           title="Organizations"
-          value={
-            entities.filter((e: BaseEntity) => e.type === "ORGANIZATION").length
-          }
+          value={countEntitiesByType<OrganizationEntity>(
+            entities,
+            "ORGANIZATION"
+          )}
           className="col-span-1"
           icon="🏢"
         />
         <MetricBlock
           title="Topics"
-          value={analysis.topics?.length ?? 0}
+          value={countEntitiesByType<TopicEntity>(entities, "TOPIC")}
           className="col-span-1"
           icon="📚"
         />

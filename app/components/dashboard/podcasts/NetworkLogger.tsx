@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { NetworkLog } from "@/app/types/podcast/processing";
+import type { NetworkLog } from "@/app/core/processing/types/base";
 import { cn } from "@/lib/utils";
 
 interface NetworkLoggerProps {
@@ -12,7 +12,7 @@ interface NetworkLoggerProps {
 }
 
 export const NetworkLogger = ({ logs, className = "" }: NetworkLoggerProps) => {
-  const getLogStyle = (type: string) => {
+  const getLogStyle = (type: NetworkLog["type"]) => {
     return cn("flex items-center gap-2 p-2 rounded-md", {
       "bg-blue-50 text-blue-700": type === "request",
       "bg-green-50 text-green-700": type === "response",
@@ -21,7 +21,7 @@ export const NetworkLogger = ({ logs, className = "" }: NetworkLoggerProps) => {
   };
 
   const getBadgeVariant = (
-    type: string
+    type: NetworkLog["type"]
   ): "default" | "secondary" | "destructive" => {
     switch (type) {
       case "request":

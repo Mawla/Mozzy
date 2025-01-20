@@ -32,110 +32,31 @@ import {
   ValidatedBaseEntity,
 } from "@/app/types/entities/base";
 import { TextChunk } from "@/app/utils/textChunking";
-import { Theme, ContentAnalysis } from "@/app/schemas/podcast/analysis";
+import { ContentAnalysis } from "@/app/schemas/podcast/analysis";
 import { processingLogger } from "@/app/lib/logger";
 import {
   createValidatedEntity,
   mergePodcastEntities,
   ProcessingStateUpdate,
   contentToProcessingAnalysis,
-  themeToTopicAnalysis,
 } from "@/app/utils/type-conversion/entity";
-
-interface MockTopic {
-  title: string;
-  metadata?: {
-    relatedTopics?: string[];
-  };
-}
-
-interface MockEvent {
-  date: string;
-  title: string;
-}
-
-const convertMockToProcessingResult = (mock: any): ProcessingResult => {
-  const now = new Date().toISOString();
-  const validatedEntities: ValidatedPodcastEntities = {
-    people: mock.people.map((name: string) =>
-      createValidatedEntity<PersonEntity>(name, "PERSON")
-    ),
-    organizations: mock.organizations.map((name: string) =>
-      createValidatedEntity<OrganizationEntity>(name, "ORGANIZATION")
-    ),
-    locations: mock.locations.map((name: string) =>
-      createValidatedEntity<LocationEntity>(name, "LOCATION")
-    ),
-    events: mock.events.map((name: string) =>
-      createValidatedEntity<EventEntity>(name, "EVENT")
-    ),
-    topics: mock.topics.map((topic: MockTopic) =>
-      createValidatedEntity<TopicEntity>(topic.title, "TOPIC")
-    ),
-    concepts:
-      mock.concepts?.map((concept: string) =>
-        createValidatedEntity<ConceptEntity>(concept, "CONCEPT")
-      ) || [],
-  };
-
-  return {
-    id: mock.id,
-    status: "completed" as ProcessingStatus,
-    success: true,
-    format: "podcast",
-    transcript: "",
-    output: "",
-    metadata: {
-      format: "podcast",
-      platform: "web",
-      processedAt: now,
-    },
-    analysis: {
-      title: mock.title,
-      summary: mock.summary,
-      quickFacts: mock.quickFacts,
-      keyPoints: mock.keyPoints.map((point: string) => ({
-        title: point,
-        description: point,
-        relevance: "high",
-      })),
-      topics: mock.topics.map((topic: MockTopic) => ({
-        name: topic.title,
-        confidence: 1,
-        keywords: topic.metadata?.relatedTopics || [],
-      })) as TopicAnalysis[],
-      sentiment: {
-        overall: 0,
-        segments: [],
-      } as SentimentAnalysis,
-      timeline: [],
-    },
-    entities: validatedEntities,
-    timeline: mock.timeline.map((event: MockEvent) => ({
-      timestamp: event.date,
-      event: event.title,
-      speakers: [],
-      topics: [],
-    })),
-  };
-};
 
 export const podcastService = {
   // Mock data methods for development
   async getPodcastById(id: string): Promise<ProcessingResult | null> {
     // For now, always return mock data
-    return convertMockToProcessingResult(mockPodcastResults);
+    return mockPodcastResults;
   },
 
   async getPodcasts(): Promise<ProcessingResult[]> {
     // For now, return array with mock data
-    return [convertMockToProcessingResult(mockPodcastResults)];
+    return [mockPodcastResults];
   },
 
   // Timeline events detection
   async detectEvents(text: string): Promise<TimelineEvent[]> {
     // For now, return mock timeline events
-    return convertMockToProcessingResult(mockPodcastResults).timeline;
+    return mockPodcastResults.timeline;
   },
 
   // Main processing methods
@@ -180,27 +101,47 @@ export const podcastService = {
           const entities: ValidatedPodcastEntities = {
             people:
               rawEntities.people?.map((name: string) =>
-                createValidatedEntity<PersonEntity>(name, "PERSON")
+                createValidatedEntity<PersonEntity>(name, "PERSON", {
+                  role: "speaker",
+                  context: "",
+                  mentions: [],
+                })
               ) || [],
             organizations:
               rawEntities.organizations?.map((name: string) =>
-                createValidatedEntity<OrganizationEntity>(name, "ORGANIZATION")
+                createValidatedEntity<OrganizationEntity>(
+                  name,
+                  "ORGANIZATION",
+                  { context: "", mentions: [] }
+                )
               ) || [],
             locations:
               rawEntities.locations?.map((name: string) =>
-                createValidatedEntity<LocationEntity>(name, "LOCATION")
+                createValidatedEntity<LocationEntity>(name, "LOCATION", {
+                  context: "",
+                  mentions: [],
+                })
               ) || [],
             events:
               rawEntities.events?.map((name: string) =>
-                createValidatedEntity<EventEntity>(name, "EVENT")
+                createValidatedEntity<EventEntity>(name, "EVENT", {
+                  context: "",
+                  mentions: [],
+                })
               ) || [],
             topics:
               rawEntities.topics?.map((topic: string) =>
-                createValidatedEntity<TopicEntity>(topic, "TOPIC")
+                createValidatedEntity<TopicEntity>(topic, "TOPIC", {
+                  context: "",
+                  mentions: [],
+                })
               ) || [],
             concepts:
               rawEntities.concepts?.map((concept: string) =>
-                createValidatedEntity<ConceptEntity>(concept, "CONCEPT")
+                createValidatedEntity<ConceptEntity>(concept, "CONCEPT", {
+                  context: "",
+                  mentions: [],
+                })
               ) || [],
           };
 
@@ -224,7 +165,11 @@ export const podcastService = {
 
       // 4. Merge results
       const mergedAnalysis = this.mergeAnalyses(
-        chunkResults.map((result) => result.analysis)
+        chunkResults
+          .map((result) => result.analysis)
+          .filter(
+            (analysis): analysis is ProcessingAnalysis => analysis !== undefined
+          )
       );
       const mergedEntities = mergePodcastEntities(
         chunkResults.map((result) => result.entities)
@@ -255,7 +200,10 @@ export const podcastService = {
 
       return result;
     } catch (error) {
-      processingLogger.error("Error processing transcript", error);
+      processingLogger.error(
+        "Error processing transcript",
+        error instanceof Error ? error : new Error(String(error))
+      );
       onStateUpdate?.({
         type: "PROCESSING_ERROR",
         error: error instanceof Error ? error : new Error(String(error)),
@@ -297,134 +245,154 @@ export const podcastService = {
     return {
       people:
         rawEntities.people?.map((name: string) =>
-          createValidatedEntity<PersonEntity>(name, "PERSON")
+          createValidatedEntity<PersonEntity>(name, "PERSON", {
+            role: "speaker",
+            context: "",
+            mentions: [],
+          })
         ) || [],
       organizations:
         rawEntities.organizations?.map((name: string) =>
-          createValidatedEntity<OrganizationEntity>(name, "ORGANIZATION")
+          createValidatedEntity<OrganizationEntity>(name, "ORGANIZATION", {
+            context: "",
+            mentions: [],
+          })
         ) || [],
       locations:
         rawEntities.locations?.map((name: string) =>
-          createValidatedEntity<LocationEntity>(name, "LOCATION")
+          createValidatedEntity<LocationEntity>(name, "LOCATION", {
+            context: "",
+            mentions: [],
+          })
         ) || [],
       events:
         rawEntities.events?.map((name: string) =>
-          createValidatedEntity<EventEntity>(name, "EVENT")
+          createValidatedEntity<EventEntity>(name, "EVENT", {
+            context: "",
+            mentions: [],
+          })
         ) || [],
       topics:
         rawEntities.topics?.map((topic: string) =>
-          createValidatedEntity<TopicEntity>(topic, "TOPIC")
+          createValidatedEntity<TopicEntity>(topic, "TOPIC", {
+            context: "",
+            mentions: [],
+          })
         ) || [],
       concepts:
         rawEntities.concepts?.map((concept: string) =>
-          createValidatedEntity<ConceptEntity>(concept, "CONCEPT")
+          createValidatedEntity<ConceptEntity>(concept, "CONCEPT", {
+            context: "",
+            mentions: [],
+          })
         ) || [],
     };
   },
 
-  // Merge utilities for result combination
-  mergeAnalyses(
-    analyses: (ProcessingAnalysis | undefined)[]
-  ): ProcessingAnalysis {
-    if (!analyses.length)
+  // Helper method to merge analyses from multiple chunks
+  mergeAnalyses(analyses: ProcessingAnalysis[]): ProcessingAnalysis {
+    // Filter out any undefined values
+    const validAnalyses = analyses.filter(
+      (a): a is ProcessingAnalysis => a !== undefined
+    );
+
+    if (!validAnalyses.length) {
       return {
         title: "",
         summary: "",
+        topics: [],
+        sentiment: { overall: 0, segments: [] },
+        timeline: [],
+        keyPoints: [],
         quickFacts: {
           duration: "",
           participants: [],
           mainTopic: "",
           expertise: "",
         },
-        keyPoints: [],
-        topics: [],
-        sentiment: {
-          overall: 0,
-          segments: [],
-        },
-        timeline: [],
       };
+    }
 
-    const firstAnalysis = analyses[0];
-    if (!firstAnalysis)
-      return {
-        title: "",
-        summary: "",
-        quickFacts: {
-          duration: "",
-          participants: [],
-          mainTopic: "",
-          expertise: "",
-        },
-        keyPoints: [],
-        topics: [],
-        sentiment: {
-          overall: 0,
-          segments: [],
-        },
-        timeline: [],
-      };
+    // Use first analysis as base
+    const base = validAnalyses[0];
 
-    return {
-      title: firstAnalysis.title || "",
-      summary: firstAnalysis.summary || "",
-      quickFacts: firstAnalysis.quickFacts || {
-        duration: "",
-        participants: [],
-        mainTopic: "",
-        expertise: "",
-      },
-      keyPoints: analyses.flatMap((a) => a?.keyPoints || []),
-      topics: analyses.flatMap((a) => a?.topics || []) as TopicAnalysis[],
-      sentiment: firstAnalysis.sentiment || {
-        overall: 0,
-        segments: [],
-      },
-      timeline: analyses.flatMap((a) => a?.timeline || []),
-    };
-  },
-
-  mergeEntities(
-    entities: ValidatedPodcastEntities[]
-  ): ValidatedPodcastEntities {
-    const mergeEntityArray = <T extends ValidatedBaseEntity>(
-      entityArrays: T[][]
-    ) => {
-      const entityMap = new Map<string, T>();
-
-      entityArrays.flat().forEach((entity) => {
-        if (!entityMap.has(entity.name)) {
-          entityMap.set(entity.name, {
-            ...entity,
-            mentions: [...entity.mentions],
-            relationships: entity.relationships
-              ? [...entity.relationships]
-              : [],
-          } as T);
-        } else {
-          const existing = entityMap.get(entity.name)!;
-          existing.mentions = [...existing.mentions, ...entity.mentions];
-          if (entity.relationships) {
-            existing.relationships = existing.relationships || [];
-            existing.relationships.push(...entity.relationships);
+    // Merge topics
+    const topicsMap = new Map<string, TopicAnalysis>();
+    validAnalyses.forEach((analysis) => {
+      if (analysis.topics) {
+        analysis.topics.forEach((topic) => {
+          const existing = topicsMap.get(topic.name);
+          if (existing) {
+            // Average confidence if topic already exists
+            existing.confidence = (existing.confidence + topic.confidence) / 2;
+            // Merge keywords without duplicates
+            existing.keywords = Array.from(
+              new Set([...existing.keywords, ...topic.keywords])
+            );
+          } else {
+            topicsMap.set(topic.name, { ...topic });
           }
+        });
+      }
+    });
+
+    // Merge timelines
+    const timelineMap = new Map<string, TimelineEvent>();
+    validAnalyses.forEach((analysis) => {
+      if (analysis.timeline) {
+        analysis.timeline.forEach((event) => {
+          if (!timelineMap.has(event.timestamp)) {
+            timelineMap.set(event.timestamp, event);
+          }
+        });
+      }
+    });
+
+    // Merge key points
+    const keyPointsSet = new Set<string>();
+    const mergedKeyPoints = validAnalyses.flatMap((analysis) => {
+      return (
+        analysis.keyPoints?.filter((point) => {
+          const key = point.title;
+          if (keyPointsSet.has(key)) return false;
+          keyPointsSet.add(key);
+          return true;
+        }) || []
+      );
+    });
+
+    // Merge quick facts
+    const allParticipants = new Set<string>();
+    const allExpertise = new Set<string>();
+    validAnalyses.forEach((analysis) => {
+      if (analysis.quickFacts) {
+        analysis.quickFacts.participants?.forEach((p) =>
+          allParticipants.add(p)
+        );
+        if (typeof analysis.quickFacts.expertise === "string") {
+          allExpertise.add(analysis.quickFacts.expertise);
         }
-      });
+      }
+    });
 
-      return Array.from(entityMap.values());
+    // Create merged analysis with proper type handling
+    const mergedAnalysis: ProcessingAnalysis = {
+      title: base.title || "",
+      summary: base.summary || "",
+      topics: Array.from(topicsMap.values()),
+      sentiment: base.sentiment || { overall: 0, segments: [] },
+      timeline: Array.from(timelineMap.values()).sort((a, b) =>
+        a.timestamp.localeCompare(b.timestamp)
+      ),
+      keyPoints: mergedKeyPoints,
+      quickFacts: {
+        duration: base.quickFacts?.duration || "",
+        participants: Array.from(allParticipants),
+        mainTopic: base.quickFacts?.mainTopic || "",
+        expertise: Array.from(allExpertise).join(", ") || "",
+      },
     };
 
-    return {
-      people: mergeEntityArray(entities.map((e) => e.people)),
-      organizations: mergeEntityArray(entities.map((e) => e.organizations)),
-      locations: mergeEntityArray(entities.map((e) => e.locations)),
-      events: mergeEntityArray(entities.map((e) => e.events)),
-      topics: entities.some((e) => e.topics)
-        ? mergeEntityArray(entities.map((e) => e.topics || []))
-        : undefined,
-      concepts: entities.some((e) => e.concepts)
-        ? mergeEntityArray(entities.map((e) => e.concepts || []))
-        : undefined,
-    };
+    return mergedAnalysis;
   },
 };

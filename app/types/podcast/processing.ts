@@ -13,15 +13,51 @@ import type {
 } from "@/app/core/processing/types/base";
 
 import type {
-  PersonEntity,
-  OrganizationEntity,
-  LocationEntity,
-  EventEntity,
+  BaseEntity,
+  EntityType,
   EntityMention,
   EntityRelationship,
-} from "@/app/schemas/podcast/entities";
+} from "@/app/types/entities/base";
 
 import type { PodcastAnalysis as BasePodcastAnalysis, Section } from "./models";
+
+// Entity interfaces extending BaseEntity
+export interface PersonEntity extends BaseEntity {
+  type: Extract<EntityType, "PERSON">;
+  expertise: string[];
+  role: string;
+}
+
+export interface OrganizationEntity extends BaseEntity {
+  type: Extract<EntityType, "ORGANIZATION">;
+  industry: string;
+  size: string;
+}
+
+export interface LocationEntity extends BaseEntity {
+  type: Extract<EntityType, "LOCATION">;
+  locationType: string;
+  coordinates?: { lat: number; lng: number };
+}
+
+export interface EventEntity extends BaseEntity {
+  type: Extract<EntityType, "EVENT">;
+  date: string;
+  duration: string;
+  participants: string[];
+}
+
+export interface TopicEntity extends BaseEntity {
+  type: Extract<EntityType, "TOPIC">;
+  subtopics: string[];
+  examples: string[];
+}
+
+export interface ConceptEntity extends BaseEntity {
+  type: Extract<EntityType, "CONCEPT">;
+  definition: string;
+  examples: string[];
+}
 
 // Re-export the base types with sections
 export interface PodcastAnalysis extends ProcessingAnalysis {
@@ -31,10 +67,7 @@ export interface PodcastAnalysis extends ProcessingAnalysis {
 
 // Re-export types
 export type {
-  PersonEntity,
-  OrganizationEntity,
-  LocationEntity,
-  EventEntity,
+  EntityType,
   EntityMention,
   EntityRelationship,
   Section,
@@ -84,8 +117,8 @@ export interface ProcessingChunkResult extends Omit<ChunkResult, "timeline"> {
     organizations: OrganizationEntity[];
     locations: LocationEntity[];
     events: EventEntity[];
-    topics?: string[];
-    concepts?: string[];
+    topics: TopicEntity[];
+    concepts: ConceptEntity[];
   };
   timeline?: TimelineEvent[];
   status: ProcessingStatus;

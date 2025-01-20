@@ -143,3 +143,73 @@ export type ValidatedEvent = z.infer<typeof eventSchema>;
 export type ValidatedTopic = z.infer<typeof topicSchema>;
 export type ValidatedConcept = z.infer<typeof conceptSchema>;
 export type ValidatedPodcastEntities = z.infer<typeof podcastEntitiesSchema>;
+
+// Person Entity Schema
+export const personEntitySchema = baseEntitySchema.extend({
+  type: z.literal("PERSON"),
+  expertise: z.array(z.string()).min(1),
+  role: z.string().min(1),
+});
+
+// Organization Entity Schema
+export const organizationEntitySchema = baseEntitySchema.extend({
+  type: z.literal("ORGANIZATION"),
+  industry: z.string().min(1),
+  size: z.string().min(1),
+});
+
+// Location Entity Schema
+export const locationEntitySchema = baseEntitySchema.extend({
+  type: z.literal("LOCATION"),
+  locationType: z.string().min(1),
+  coordinates: z
+    .object({
+      lat: z.number().min(-90).max(90),
+      lng: z.number().min(-180).max(180),
+    })
+    .optional(),
+});
+
+// Event Entity Schema
+export const eventEntitySchema = baseEntitySchema.extend({
+  type: z.literal("EVENT"),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), // YYYY-MM-DD format
+  duration: z.string().min(1),
+  participants: z.array(z.string()).min(1),
+});
+
+// Topic Entity Schema
+export const topicEntitySchema = baseEntitySchema.extend({
+  type: z.literal("TOPIC"),
+  subtopics: z.array(z.string()).min(1),
+  examples: z.array(z.string()).min(1),
+});
+
+// Concept Entity Schema
+export const conceptEntitySchema = baseEntitySchema.extend({
+  type: z.literal("CONCEPT"),
+  definition: z.string().min(1),
+  examples: z.array(z.string()).min(1),
+});
+
+// Export type helpers
+export type ValidatedPersonEntity = z.infer<typeof personEntitySchema>;
+export type ValidatedOrganizationEntity = z.infer<
+  typeof organizationEntitySchema
+>;
+export type ValidatedLocationEntity = z.infer<typeof locationEntitySchema>;
+export type ValidatedEventEntity = z.infer<typeof eventEntitySchema>;
+export type ValidatedTopicEntity = z.infer<typeof topicEntitySchema>;
+export type ValidatedConceptEntity = z.infer<typeof conceptEntitySchema>;
+
+// Combined entity schema for validation
+export const podcastEntitySchema = z.discriminatedUnion("type", [
+  personEntitySchema,
+  organizationEntitySchema,
+  locationEntitySchema,
+  eventEntitySchema,
+  topicEntitySchema,
+  conceptEntitySchema,
+]);
+
+export type ValidatedPodcastEntity = z.infer<typeof podcastEntitySchema>;

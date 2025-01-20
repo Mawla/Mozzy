@@ -1,14 +1,29 @@
 import { create } from "zustand";
 import { PodcastProcessingService } from "@/app/services/podcastProcessingService";
-import {
+import type {
   ProcessingStep,
   ProcessingChunk,
   NetworkLog,
-  PodcastAnalysis,
-  PodcastEntities,
-  TimelineEvent,
-} from "@/app/types/podcast/processing";
+  ProcessingAnalysis,
+  ProcessingResult,
+  PersonEntity,
+  OrganizationEntity,
+  LocationEntity,
+  EventEntity,
+  TopicEntity,
+  ConceptEntity,
+  BaseTextChunk,
+} from "@/app/core/processing/types/base";
 import { PROCESSING_STEPS, INITIAL_STEPS } from "@/app/constants/processing";
+
+interface ProcessingEntities {
+  people: PersonEntity[];
+  organizations: OrganizationEntity[];
+  locations: LocationEntity[];
+  events: EventEntity[];
+  topics?: TopicEntity[];
+  concepts?: ConceptEntity[];
+}
 
 interface PodcastProcessingState {
   isProcessing: boolean;
@@ -32,6 +47,13 @@ interface PodcastProcessingState {
   updateNetworkLogs: (logs: NetworkLog[]) => void;
 }
 
+// Utility function to convert BaseTextChunk to ProcessingChunk
+const convertToProcessingChunk = (chunk: BaseTextChunk): ProcessingChunk => ({
+  ...chunk,
+  status: "pending",
+  progress: 0,
+});
+
 export const usePodcastProcessingStore = create<PodcastProcessingState>(
   (set, get) => {
     const service = new PodcastProcessingService();
@@ -41,7 +63,7 @@ export const usePodcastProcessingStore = create<PodcastProcessingState>(
       const { updateStepStatus, updateChunks, updateNetworkLogs } = get();
 
       // Update UI state
-      updateChunks(state.chunks);
+      updateChunks(state.chunks.map(convertToProcessingChunk));
       updateNetworkLogs(state.networkLogs);
 
       // Update processing status
@@ -50,67 +72,70 @@ export const usePodcastProcessingStore = create<PodcastProcessingState>(
 
         // Update transcript step status
         updateStepStatus(PROCESSING_STEPS.TRANSCRIPT, "processing", {
-          chunks: state.chunks,
+          chunks: state.chunks.map(convertToProcessingChunk),
         });
 
         // Check if all chunks are completed
-        const allChunksCompleted = state.chunks.every(
-          (chunk) => chunk.status === "completed"
-        );
+        const allChunksCompleted = state.chunks.every((chunk) => {
+          const processingChunk = chunk as ProcessingChunk;
+          return processingChunk.status === "completed";
+        });
 
         if (allChunksCompleted) {
           // Complete transcript step
           updateStepStatus(PROCESSING_STEPS.TRANSCRIPT, "completed", {
-            chunks: state.chunks,
+            chunks: state.chunks.map(convertToProcessingChunk),
             refinedContent: state.currentTranscript,
           });
 
           // Combine entities from all chunks
           const combinedEntities = state.chunks.reduce((acc, chunk) => {
-            if (!chunk.entities) return acc;
+            const result = (chunk as ProcessingChunk).result;
+            if (!result?.entities) return acc;
 
             // Helper function to merge arrays with deduplication
-            const mergeEntities = (
-              accArray: any[] = [],
-              newArray: any[] = []
+            const mergeEntities = <T extends { name: string }>(
+              accArray: T[] = [],
+              newArray: T[] = []
             ) => {
-              const map = new Map();
+              const map = new Map<string, T>();
               [...accArray, ...newArray].forEach((e) => map.set(e.name, e));
               return Array.from(map.values());
             };
 
             return {
-              people: mergeEntities(acc.people, chunk.entities.people),
+              people: mergeEntities(acc.people, result.entities.people),
               organizations: mergeEntities(
                 acc.organizations,
-                chunk.entities.organizations
+                result.entities.organizations
               ),
-              locations: mergeEntities(acc.locations, chunk.entities.locations),
-              events: mergeEntities(acc.events, chunk.entities.events),
-              topics: mergeEntities(acc.topics, chunk.entities.topics),
-              concepts: mergeEntities(acc.concepts, chunk.entities.concepts),
+              locations: mergeEntities(
+                acc.locations,
+                result.entities.locations
+              ),
+              events: mergeEntities(acc.events, result.entities.events),
+              topics: mergeEntities(acc.topics, result.entities.topics),
+              concepts: mergeEntities(acc.concepts, result.entities.concepts),
             };
-          }, {} as PodcastEntities);
+          }, {} as ProcessingEntities);
 
           // Combine analysis from all chunks
           const combinedAnalysis = state.chunks.reduce((acc, chunk) => {
-            if (!chunk.analysis) return acc;
+            const result = (chunk as ProcessingChunk).result;
+            if (!result?.analysis) return acc;
 
             // Helper function to merge arrays
-            const mergeArrays = (
-              accArray: any[] = [],
-              newArray: any[] = []
-            ) => {
+            const mergeArrays = <T>(accArray: T[] = [], newArray: T[] = []) => {
               const set = new Set([...accArray, ...newArray]);
               return Array.from(set);
             };
 
             return {
-              summary: acc.summary || chunk.analysis.summary,
-              keyPoints: mergeArrays(acc.keyPoints, chunk.analysis.keyPoints),
-              themes: mergeArrays(acc.themes, chunk.analysis.themes),
+              summary: acc.summary || result.analysis.summary,
+              keyPoints: mergeArrays(acc.keyPoints, result.analysis.keyPoints),
+              themes: mergeArrays(acc.themes, result.analysis.themes),
             };
-          }, {} as { summary?: string; keyPoints?: any[]; themes?: any[] });
+          }, {} as ProcessingAnalysis);
 
           // Update steps with combined data
           if (Object.keys(combinedEntities).length > 0) {
@@ -175,8 +200,8 @@ export const usePodcastProcessingStore = create<PodcastProcessingState>(
         });
 
         try {
-          const result = await service.refineTranscript(content);
-          set({ processedTranscript: result.refinedTranscript });
+          const result = await service.processTranscript(content);
+          set({ processedTranscript: result.output });
         } catch (error) {
           console.error("Store: Error in handlePodcastSubmit:", error);
           const currentStep = get().processingSteps.find(
@@ -211,8 +236,8 @@ export const usePodcastProcessingStore = create<PodcastProcessingState>(
         updateStepStatus(stepName, "processing");
 
         try {
-          const result = await service.refineTranscript(refinedContent);
-          set({ processedTranscript: result.refinedTranscript });
+          const result = await service.processTranscript(refinedContent);
+          set({ processedTranscript: result.output });
         } catch (error) {
           console.error(`Error retrying step ${stepName}:`, error);
           updateStepStatus(stepName, "error");

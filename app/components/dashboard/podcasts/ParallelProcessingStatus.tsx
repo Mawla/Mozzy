@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { ProcessingStep } from "@/app/types/podcast/processing";
+import type { ProcessingStep } from "@/app/core/processing/types/base";
 import { cn } from "@/lib/utils";
 
 interface ParallelProcessingStatusProps {

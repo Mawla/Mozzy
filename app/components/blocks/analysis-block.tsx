@@ -2,10 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Section } from "@/components/ui/section";
 import { EntityList } from "../dashboard/podcasts/StepDetails/EntityList";
 import { Badge } from "@/components/ui/badge";
-import type { PodcastAnalysis } from "@/app/types/podcast/models";
+import type { ProcessingAnalysis } from "@/app/core/processing/types/base";
 
 interface AnalysisBlockProps {
-  analysis: PodcastAnalysis;
+  analysis: ProcessingAnalysis;
 }
 
 export function AnalysisBlock({ analysis }: AnalysisBlockProps) {
@@ -16,16 +16,16 @@ export function AnalysisBlock({ analysis }: AnalysisBlockProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {analysis.themes && analysis.themes.length > 0 && (
+          {analysis.topics && analysis.topics.length > 0 && (
             <Section
-              id="themes-section"
-              title="Themes"
-              content="Key themes identified in the content:"
+              id="topics-section"
+              title="Topics"
+              content="Key topics identified in the content:"
             >
               <div className="flex flex-wrap gap-2">
-                {analysis.themes.map((theme, index) => (
+                {analysis.topics.map((topic, index) => (
                   <Badge key={index} variant="secondary">
-                    {theme.name}
+                    {topic.name}
                   </Badge>
                 ))}
               </div>
