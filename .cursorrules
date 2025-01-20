@@ -642,25 +642,36 @@ Remember:
 
    - Always copy from template for new tasks
    - Keep all sections, mark as N/A if not applicable
-   - Current Status at top (snapshot of NOW)
-   - Progress History at bottom (chronological record)
+   - Progress History and Current Status at bottom
    - Use checkboxes for implementation steps
    - Include paths in backticks
    - Document all major decisions
    - Update affected components section as work progresses
 
-4. Required Sections:
+4. Required Sections (In Order):
 
-   - Current Status: Snapshot of current state
    - Problem Analysis: Clear issue definition
    - Solution Design: Approaches considered
    - Implementation Steps: Detailed breakdown
    - Affected Components: Files/systems impacted
-   - Progress History: Chronological record
+   - Dependencies: Task relationships
+   - Current Status: Snapshot of current state (at bottom)
+   - Progress History: Chronological record (at bottom)
 
-5. Current Status Format:
+5. Implementation Steps Format:
 
    ```markdown
+   - [ ] High-level step
+     - [ ] Detailed sub-task
+     - Success criteria
+     - Dependencies
+   ```
+
+6. Current Status Format (At Bottom):
+
+   ```markdown
+   ## Current Status
+
    ### YYYY-MM-DD HH:mm
 
    **Status**: {In Progress/Blocked/Completed}
@@ -679,18 +690,11 @@ Remember:
 
    Note: Include documentation updates section only when changes affect documentation.
 
-6. Implementation Steps Format:
+7. Progress History Format (At Bottom):
 
    ```markdown
-   - [ ] High-level step
-     - [ ] Detailed sub-task
-     - Success criteria
-     - Dependencies
-   ```
+   ## Progress History
 
-7. Progress History Format:
-
-   ```markdown
    ### YYYY-MM-DD HH:mm - {Brief Title}
 
    - ✓ Completed: Specific work completed
@@ -705,7 +709,7 @@ Remember:
 8. Task Completion:
 
    - All implementation steps checked
-   - Final status update added
+   - Final status update added at bottom
    - Move to completed:
      ```bash
      mv docs/working-memory/open/{task-id} docs/working-memory/done/
@@ -713,9 +717,9 @@ Remember:
 
 9. Best Practices:
 
-   - Update status before starting work
+   - Update status at bottom before starting work
    - Document decisions as they're made
-   - Keep progress log updated
+   - Keep progress log updated at bottom
    - Link to relevant issues/PRs
    - Include rollback steps for risky changes
    - Reference affected components

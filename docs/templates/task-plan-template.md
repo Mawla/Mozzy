@@ -1,88 +1,88 @@
-# Task Plan ({task-id})
-
-## Current Status
-
-### YYYY-MM-DD HH:mm
-
-**Status**: {Not Started/In Progress/Review/Completed}
-
-- What's working: {current state}
-- What's not: {current issues}
-- Blocking issues: {if any}
-- Next actions: {immediate next steps}
+# {Task Name}
 
 ## Problem Analysis
 
 - Issue description
-- Root causes
-- Impact assessment
-- Stakeholders affected
+- Potential causes
+- Affected systems
+- Performance implications
 
 ## Solution Design
 
 ### Approach
 
-- Description of solution
-- Technical approach
-- Implementation strategy
-
-### Considerations
-
+- Description of chosen solution
 - Pros and cons
-- Technical implications
-- Security considerations
-- Performance impact
+- Performance considerations
+- Maintainability impact
+- Scalability assessment
+
+### Alternatives Considered
+
+- Alternative approaches
+- Why they were rejected
+- Trade-offs made
 
 ## Implementation Steps
 
-- [ ] High-level step
-  - [ ] Sub-task
+- [ ] Step 1
+
+  - [ ] Sub-task 1.1
+  - [ ] Sub-task 1.2
   - Success criteria
   - Dependencies
 
-## Feature Documentation Impact
-
-### Affected Features
-
-- Feature: {feature-name}
-  - Files to update:
-    - [ ] README.md
-    - [ ] architecture.md
-    - [ ] components.md
-    - [ ] api.md
-    - [ ] testing.md
-  - Changes needed:
-    - Description of changes
-    - Impact assessment
-    - Cross-reference updates
-
-### Documentation Review
-
-- [ ] Feature documentation is current
-- [ ] All affected components documented
-- [ ] API changes reflected
-- [ ] Test cases updated
-- [ ] Cross-references maintained
+- [ ] Step 2
+  - [ ] Sub-task 2.1
+  - [ ] Sub-task 2.2
+  - Success criteria
+  - Dependencies
 
 ## Affected Components
 
-- Component path
-  - Changes needed
-  - Impact level
-  - Test requirements
+### Files to Update
 
-## Testing Plan
+- List of files that will be modified
+- New files to be created
+- Files to be deleted
 
-- Unit tests
-- Integration tests
-- Manual testing steps
-- Performance testing
+### Documentation Updates
+
+- [ ] Feature documentation changes
+- [ ] API documentation updates
+- [ ] Component documentation revisions
+- [ ] Test documentation updates
+- [ ] Architecture documentation changes
+
+## Dependencies
+
+- Blocks: [task-id-1], [task-id-2]
+- Blocked by: [task-id-3]
+- Related: [task-id-4]
+
+## Current Status
+
+### YYYY-MM-DD HH:mm
+
+**Status**: {In Progress/Blocked/Completed}
+
+- What's working: {current state}
+- What's not: {current issues}
+- Blocking issues: {if any}
+- Next actions: {immediate next steps}
+- Documentation updates needed:
+  - [ ] Feature documentation changes
+  - [ ] API documentation updates
+  - [ ] Component documentation revisions
+  - [ ] Test documentation updates
+  - [ ] Architecture documentation changes
 
 ## Progress History
 
-### YYYY-MM-DD HH:mm - {Brief Title}
+### YYYY-MM-DD HH:mm - Task Creation
 
-- ✓ Completed: {work completed}
-- 🤔 Decisions: {decisions made}
-- ❌ Issues: {problems encountered}
-- ⏭️ Led to: {next steps}
+- ✓ Completed: Created task plan
+- 🤔 Decisions: Initial approach decisions
+- ❌ Issues: None
+- 📚 Documentation: Initial documentation plan
+- ⏭️ Next: Begin implementation
