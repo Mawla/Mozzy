@@ -1,105 +1,70 @@
-# {Feature Name}
+# Feature Documentation Task Plan ({feature-name}-docs-{YYYYMMDD})
 
-## Overview
+## Documentation Scope
 
-- Purpose and goals
-- User stories
-- Key functionalities
-- Dependencies
+### Feature Overview
 
-## Architecture
+- [ ] Purpose and goals defined
+- [ ] User stories documented
+- [ ] Key functionalities listed
+- [ ] Dependencies mapped
 
-### System Design
+### Technical Documentation
 
-- High-level overview
-- Component relationships
-- Data flow diagrams
+- [ ] Architecture design documented
+- [ ] Component relationships mapped
+- [ ] API endpoints specified
+- [ ] Data flow diagrams created
 
-### Technical Decisions
+### Implementation Details
 
-- Technology choices
-- Design patterns
-- Performance considerations
+- [ ] Component documentation
+  - [ ] Props interfaces
+  - [ ] Usage examples
+  - [ ] State management
+  - [ ] Event handling
+- [ ] API documentation
+  - [ ] Endpoint specifications
+  - [ ] Request/response examples
+  - [ ] Error handling
+- [ ] Test documentation
+  - [ ] Test scenarios
+  - [ ] Edge cases
+  - [ ] Performance considerations
 
-### Dependencies
+## Affected Documentation
 
-- External services
-- Internal dependencies
-- Configuration requirements
+- `/docs/features/{feature-name}/`
+  - List of files to be created/updated
+  - Impact assessment
+  - Cross-references needed
 
-## Components
+## Documentation Review
 
-### Component Tree
-
-- Parent/child relationships
-- Component hierarchy
-- State management
-
-### Individual Components
-
-#### {ComponentName}
-
-- Purpose
-- Props interface
-- Usage examples
-- State management
-- Event handlers
-
-## API Documentation
-
-### Endpoints
-
-- List of endpoints
-- Request/response formats
-- Authentication requirements
-- Rate limiting
-
-### Error Handling
-
-- Error codes
-- Error responses
-- Recovery procedures
-- Retry strategies
-
-## Testing
-
-### Test Cases
-
-- Unit tests
-- Integration tests
-- End-to-end tests
-- Performance tests
-
-### Test Data
-
-- Test fixtures
-- Mock data
-- Test environment setup
-- Test coverage requirements
+- [ ] README.md is complete and current
+- [ ] Architecture decisions documented
+- [ ] Component documentation updated
+- [ ] API endpoints documented
+- [ ] Test scenarios added
+- [ ] Cross-references verified
+- [ ] Examples are up to date
 
 ## Current Status
 
 ### YYYY-MM-DD HH:mm
 
-**Status**: {In Development/Beta/Production}
+**Status**: {Not Started/In Progress/Review/Completed}
 
-- What's working: {current state}
-- What's not: {known limitations}
+- What's working: {current documentation state}
+- What's not: {documentation gaps}
 - Blocking issues: {if any}
-- Next milestones: {upcoming changes}
-- Documentation updates needed:
-  - [ ] README updates
-  - [ ] API documentation
-  - [ ] Component documentation
-  - [ ] Test documentation
-  - [ ] Architecture updates
+- Next actions: {immediate documentation tasks}
 
 ## Progress History
 
-### YYYY-MM-DD HH:mm - Feature Creation
+### YYYY-MM-DD HH:mm - {Brief Title}
 
-- ✓ Completed: Initial feature documentation
-- 🤔 Decisions: Initial architecture decisions
-- ❌ Issues: None
-- 📚 Documentation: Created base documentation structure
-- ⏭️ Next: Begin implementation
+- ✓ Completed: {documentation completed}
+- 🤔 Decisions: {documentation decisions made}
+- ❌ Issues: {documentation challenges}
+- ⏭️ Led to: {documentation improvements}
