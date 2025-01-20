@@ -669,7 +669,15 @@ Remember:
    - What's not: {current issues}
    - Blocking issues: {if any}
    - Next actions: {immediate next steps}
+   - Documentation updates needed:
+     - [ ] Feature documentation changes
+     - [ ] API documentation updates
+     - [ ] Component documentation revisions
+     - [ ] Test documentation updates
+     - [ ] Architecture documentation changes
    ```
+
+   Note: Include documentation updates section only when changes affect documentation.
 
 6. Implementation Steps Format:
 
@@ -688,8 +696,11 @@ Remember:
    - ✓ Completed: Specific work completed
    - 🤔 Decisions: Why we chose X over Y
    - ❌ Issues: Problems hit and how we solved them
+   - 📚 Documentation: Documentation changes made or needed
    - ⏭️ Led to: What this enabled/unblocked
    ```
+
+   Note: The Documentation entry (📚) should be included whenever changes affect or require documentation updates.
 
 8. Task Completion:
 

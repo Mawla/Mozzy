@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { usePodcastProcessingStore } from "../store/podcastProcessingStore";
 import type {
-  ProcessingTab,
   ProcessingStep,
-} from "../types/podcast/processing";
+  ProcessingChunk,
+  NetworkLog,
+} from "@/app/core/processing/types/base";
+
+export type ProcessingTab = "progress" | "chunks" | "logs";
 
 export function usePodcastProcessing() {
   // UI-specific state

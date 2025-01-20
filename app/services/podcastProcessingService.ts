@@ -1,13 +1,18 @@
-import {
+import type {
   ProcessingResult,
   ProcessingState,
   ProcessingChunk,
   ChunkResult,
   TextChunk,
-} from "@/app/types/podcast/processing";
+  ProcessingStatus as BaseProcessingStatus,
+  NetworkLog,
+} from "@/app/core/processing/types/base";
 import { podcastService } from "@/app/services/podcastService";
 
-type ChunkStatus = "pending" | "processing" | "completed" | "error";
+type ChunkStatus = Extract<
+  BaseProcessingStatus,
+  "pending" | "processing" | "completed" | "error"
+>;
 
 type ProcessingStatus =
   | { type: "PROCESSOR_CREATED" }
@@ -22,12 +27,13 @@ type ProcessingStatus =
 
 export class PodcastProcessingService {
   private state: ProcessingState = {
+    status: "idle",
+    error: undefined,
+    overallProgress: 0,
+    steps: [],
     chunks: [],
     networkLogs: [],
     currentTranscript: "",
-    status: "idle",
-    steps: [],
-    overallProgress: 0,
   };
   private listeners: Set<(state: ProcessingState) => void> = new Set();
   private stateUpdateTimeout: NodeJS.Timeout | null = null;
@@ -41,9 +47,9 @@ export class PodcastProcessingService {
     switch (status.type) {
       case "CHUNKS_CREATED":
         this.state.chunks = status.chunks.map((chunk) => ({
-          id: chunk.id,
-          text: chunk.text,
-          status: "pending",
+          ...chunk,
+          status: "pending" as const,
+          progress: 0,
         }));
         break;
       case "CHUNK_STARTED":
@@ -67,23 +73,18 @@ export class PodcastProcessingService {
     result?: ChunkResult
   ) {
     const chunk = this.state.chunks.find(
-      (c) => c.id === chunkId
+      (c) => c.id === chunkId.toString()
     ) as ProcessingChunk;
     if (chunk) {
       chunk.status = status;
+      chunk.progress = status === "completed" ? 100 : 0;
       if (result && status === "completed") {
-        chunk.response = result.refinedText;
-        chunk.analysis = result.analysis;
-        chunk.entities = result.entities;
-        chunk.timeline = result.timeline;
+        chunk.result = result;
       }
     }
   }
 
-  private addNetworkLog(
-    type: "request" | "response" | "error",
-    message: string
-  ) {
+  private addNetworkLog(type: NetworkLog["type"], message: string) {
     const timestamp = new Date().toISOString();
     this.state.networkLogs.push({ timestamp, type, message });
   }
@@ -99,7 +100,7 @@ export class PodcastProcessingService {
     }, 100);
   }
 
-  private findChunkById(chunkId: string): BaseTextChunk | undefined {
+  private findChunkById(chunkId: string): ProcessingChunk | undefined {
     return this.state.chunks.find(
       (c) => c.id.toString() === chunkId.toString()
     );
@@ -107,12 +108,13 @@ export class PodcastProcessingService {
 
   async processTranscript(transcript: string): Promise<ProcessingResult> {
     this.state = {
+      status: "idle",
+      error: undefined,
+      overallProgress: 0,
+      steps: [],
       chunks: [],
       networkLogs: [],
       currentTranscript: transcript,
-      status: "idle",
-      steps: [],
-      overallProgress: 0,
     };
 
     const result = await podcastService.processTranscript(transcript);

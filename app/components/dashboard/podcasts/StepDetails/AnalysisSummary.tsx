@@ -1,14 +1,15 @@
-import { KeyPoint, Theme } from "@/app/types/podcast/processing";
+import type {
+  ProcessingAnalysis,
+  TopicAnalysis,
+} from "@/app/core/processing/types/base";
 
 interface AnalysisSummaryProps {
-  data: {
-    summary?: string;
-    keyPoints?: KeyPoint[];
-    themes?: Theme[];
-  };
+  data?: ProcessingAnalysis;
 }
 
 export const AnalysisSummary = ({ data }: AnalysisSummaryProps) => {
+  if (!data) return null;
+
   return (
     <div className="mt-4 space-y-4">
       {data.summary && (
@@ -17,7 +18,7 @@ export const AnalysisSummary = ({ data }: AnalysisSummaryProps) => {
           <p className="text-sm text-gray-600">{data.summary}</p>
         </div>
       )}
-      {data.keyPoints && (
+      {data.keyPoints && data.keyPoints.length > 0 && (
         <div>
           <h4 className="font-medium mb-2">Key Points</h4>
           <ul className="list-disc list-inside space-y-2">
@@ -30,14 +31,19 @@ export const AnalysisSummary = ({ data }: AnalysisSummaryProps) => {
           </ul>
         </div>
       )}
-      {data.themes && (
+      {data.topics && data.topics.length > 0 && (
         <div>
-          <h4 className="font-medium mb-2">Themes</h4>
+          <h4 className="font-medium mb-2">Topics</h4>
           <div className="space-y-2">
-            {data.themes.map((theme, index) => (
+            {data.topics.map((topic: TopicAnalysis, index) => (
               <div key={index} className="bg-gray-50 p-3 rounded">
-                <h5 className="font-medium">{theme.name}</h5>
-                <p className="text-sm text-gray-600">{theme.description}</p>
+                <h5 className="font-medium">{topic.name}</h5>
+                <p className="text-sm text-gray-600">
+                  Keywords: {topic.keywords.join(", ")}
+                </p>
+                <p className="text-xs text-gray-500">
+                  Confidence: {(topic.confidence * 100).toFixed(1)}%
+                </p>
               </div>
             ))}
           </div>

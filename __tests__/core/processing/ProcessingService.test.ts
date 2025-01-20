@@ -1,7 +1,17 @@
 import { ProcessingService } from "@/app/core/processing/service/ProcessingService";
 import { PodcastProcessingAdapter } from "@/app/core/processing/adapters/podcast";
 import { PostProcessingAdapter } from "@/app/core/processing/adapters/post";
-import { BaseProcessingResult } from "@/app/core/processing/types/base";
+import type {
+  BaseProcessingResult,
+  ProcessingAnalysis,
+  ProcessingOptions,
+  ProcessingResult,
+} from "@/app/core/processing/types/base";
+import type {
+  PersonEntity,
+  OrganizationEntity,
+  LocationEntity,
+} from "@/app/types/entities/podcast";
 
 describe("ProcessingService", () => {
   let service: ProcessingService;
@@ -29,20 +39,23 @@ describe("ProcessingService", () => {
 
   describe("Core Processing", () => {
     it("should process content identically regardless of format", async () => {
-      // Process as podcast
-      const podcastResult = await service.process("podcast", sampleText, {
+      const options: ProcessingOptions = {
         format: "podcast",
         quality: "draft",
         analyzeSentiment: true,
         extractEntities: true,
+      };
+
+      // Process as podcast
+      const podcastResult = await service.process("podcast", sampleText, {
+        ...options,
+        format: "podcast",
       });
 
       // Process as post
       const postResult = await service.process("post", sampleText, {
+        ...options,
         format: "post",
-        quality: "draft",
-        analyzeSentiment: true,
-        extractEntities: true,
       });
 
       // Core processing results should be identical
@@ -80,10 +93,13 @@ describe("ProcessingService", () => {
         extractEntities: true,
       });
 
-      expect(result.analysis?.entities?.people).toContain("John Doe");
-      expect(result.analysis?.entities?.people).toContain("Jane Smith");
-      expect(result.analysis?.entities?.organizations).toContain("Acme Corp");
-      expect(result.analysis?.entities?.locations).toContain("New York");
+      const entities = result.analysis?.entities;
+      expect(entities?.people.some((p) => p.name === "John Doe")).toBe(true);
+      expect(entities?.people.some((p) => p.name === "Jane Smith")).toBe(true);
+      expect(entities?.organizations.some((o) => o.name === "Acme Corp")).toBe(
+        true
+      );
+      expect(entities?.locations.some((l) => l.name === "New York")).toBe(true);
     });
   });
 
@@ -99,8 +115,8 @@ describe("ProcessingService", () => {
         quality: "draft",
       });
 
-      expect(podcastResult.analysis?.timeline).toBeDefined();
-      expect(postResult.analysis?.timeline).toBeUndefined();
+      expect(podcastResult.timeline).toBeDefined();
+      expect(postResult.timeline).toBeUndefined();
     });
 
     it("should handle speaker detection for podcasts", async () => {
@@ -121,18 +137,22 @@ describe("ProcessingService", () => {
   describe("Error Handling", () => {
     it("should handle invalid input consistently", async () => {
       const emptyInput = "";
+      const options: ProcessingOptions = {
+        format: "podcast",
+        quality: "draft",
+      };
 
       await expect(
         service.process("podcast", emptyInput, {
+          ...options,
           format: "podcast",
-          quality: "draft",
         })
       ).rejects.toThrow("Invalid input");
 
       await expect(
         service.process("post", emptyInput, {
+          ...options,
           format: "post",
-          quality: "draft",
         })
       ).rejects.toThrow("Invalid input");
     });

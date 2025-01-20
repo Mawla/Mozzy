@@ -167,52 +167,90 @@ export const mergePodcastEntities = (
 };
 
 /**
- * Creates entity-specific fields based on type
+ * Creates entity-specific fields based on type with proper typing
  * @param type Entity type
- * @returns Entity-specific fields
+ * @returns Entity-specific fields with correct types
  */
-const createEntitySpecificFields = (type: EntityType): Record<string, any> => {
+const createEntitySpecificFields = (
+  type: EntityType
+): Partial<
+  | PersonEntity
+  | OrganizationEntity
+  | LocationEntity
+  | EventEntity
+  | TopicEntity
+  | ConceptEntity
+> => {
   switch (type) {
     case "PERSON":
-      return { role: "speaker" }; // Default role for podcast context
+      return {
+        role: "speaker",
+        context: "",
+        mentions: [],
+      } as Partial<PersonEntity>;
     case "ORGANIZATION":
-      return { industry: "unknown" }; // Default industry
+      return {
+        industry: "unknown",
+        context: "",
+        mentions: [],
+      } as Partial<OrganizationEntity>;
     case "LOCATION":
-      return { locationType: "unknown" }; // Default location type
+      return {
+        locationType: "unknown",
+        context: "",
+        mentions: [],
+      } as Partial<LocationEntity>;
     case "EVENT":
-      return { date: new Date().toISOString() }; // Current date as default
+      return {
+        date: new Date().toISOString(),
+        context: "",
+        mentions: [],
+      } as Partial<EventEntity>;
     case "TOPIC":
-      return { relevance: 1 }; // Maximum relevance as default
+      return {
+        relevance: 1,
+        context: "",
+        mentions: [],
+      } as Partial<TopicEntity>;
     case "CONCEPT":
-      return { definition: "" }; // Empty definition as default
+      return {
+        definition: "",
+        context: "",
+        mentions: [],
+      } as Partial<ConceptEntity>;
     default:
       return {};
   }
 };
 
 /**
- * Creates a validated entity of specific type with all required fields
+ * Creates a validated entity with proper type and metadata
  * @param name Entity name
  * @param type Entity type
- * @param context Optional context string
+ * @param metadata Additional metadata for the entity
  * @returns Validated entity with all required fields
  */
 export const createValidatedEntity = <T extends ValidatedBaseEntity>(
   name: string,
   type: EntityType,
-  context: string = ""
+  metadata: Partial<T> = {}
 ): T => {
   const now = new Date().toISOString();
-  const baseEntity: ValidatedBaseEntity = {
+  const baseFields: ValidatedBaseEntity = {
     id: crypto.randomUUID(),
-    type,
     name,
-    context,
-    mentions: [],
+    type,
     createdAt: now,
     updatedAt: now,
+    context: "",
+    mentions: [],
   };
 
   const specificFields = createEntitySpecificFields(type);
-  return { ...baseEntity, ...specificFields } as unknown as T;
+
+  return {
+    ...baseFields,
+    ...specificFields,
+    ...metadata,
+  } as T;
 };

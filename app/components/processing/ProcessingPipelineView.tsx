@@ -1,10 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ProcessingStatus } from "@/app/core/processing/types/base";
+import type {
+  ProcessingStatus,
+  ProcessingState,
+  ProcessingStep,
+  NetworkLog,
+  BaseTextChunk,
+  ProcessingChunk,
+} from "@/app/core/processing/types/base";
 import { NetworkLogger } from "@/app/components/dashboard/podcasts/NetworkLogger";
 import { ChunkVisualizer } from "@/app/components/dashboard/podcasts/ChunkVisualizer";
-import { ProcessingState } from "@/app/types/podcast/processing";
+import { ProcessingStatus as ProcessingStatusComponent } from "./ProcessingStatus";
 
 interface ProcessingPipelineViewProps {
   state: ProcessingState;
@@ -23,21 +30,6 @@ export function ProcessingPipelineView({
         ? prev.filter((id) => id !== stepId)
         : [...prev, stepId]
     );
-  };
-
-  const getStepColor = (status: ProcessingStatus) => {
-    switch (status) {
-      case "completed":
-        return "text-green-500";
-      case "failed":
-        return "text-red-500";
-      case "processing":
-        return "text-blue-500";
-      case "pending":
-        return "text-yellow-500";
-      default:
-        return "text-gray-400";
-    }
   };
 
   return (
@@ -60,7 +52,7 @@ export function ProcessingPipelineView({
 
       {/* Steps List */}
       <div className="space-y-4">
-        {state.steps.map((step) => (
+        {state.steps.map((step: ProcessingStep) => (
           <div
             key={step.id}
             className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
@@ -70,18 +62,15 @@ export function ProcessingPipelineView({
               className="w-full flex justify-between items-center"
             >
               <div className="flex items-center space-x-3">
-                <span className={`${getStepColor(step.status)} text-lg`}>
-                  {step.status === "completed"
-                    ? "✓"
-                    : step.status === "failed"
-                    ? "✗"
-                    : step.status === "processing"
-                    ? "⟳"
-                    : "○"}
-                </span>
+                <ProcessingStatusComponent
+                  status={step.status}
+                  className="text-lg"
+                />
                 <span className="font-medium">{step.name}</span>
               </div>
-              <span className="text-sm text-gray-500">{step.progress}%</span>
+              <span className="text-sm text-gray-500">
+                {step.progress !== undefined ? `${step.progress}%` : ""}
+              </span>
             </button>
 
             {/* Expanded Content */}
@@ -101,7 +90,15 @@ export function ProcessingPipelineView({
                     )}
                   </div>
                 )}
-                {step.chunks && <ChunkVisualizer chunks={step.chunks} />}
+                {step.chunks && (
+                  <ChunkVisualizer
+                    chunks={step.chunks.map((chunk) => ({
+                      ...chunk,
+                      status: "completed" as ProcessingStatus,
+                      progress: 100,
+                    }))}
+                  />
+                )}
                 {step.networkLogs && <NetworkLogger logs={step.networkLogs} />}
               </div>
             )}
@@ -122,7 +119,7 @@ export function ProcessingPipelineView({
         }`}
       >
         <p className="font-medium">
-          Status: {state.status.charAt(0).toUpperCase() + state.status.slice(1)}
+          <ProcessingStatusComponent status={state.status} />
         </p>
         {state.error && (
           <p className="text-sm mt-2">Error: {state.error.message}</p>

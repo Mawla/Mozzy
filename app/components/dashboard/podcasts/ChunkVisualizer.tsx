@@ -5,12 +5,22 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
-import {
+import type {
   ProcessingChunk,
-  PodcastAnalysis,
-  PodcastEntities,
+  ProcessingAnalysis,
+  ProcessingState,
   TimelineEvent,
-} from "@/app/types/podcast/processing";
+  ProcessingStatus,
+  ChunkResult,
+} from "@/app/core/processing/types/base";
+import type {
+  PersonEntity,
+  OrganizationEntity,
+  LocationEntity,
+  EventEntity,
+  TopicEntity,
+  ConceptEntity,
+} from "@/app/types/entities/podcast";
 import { diff_match_patch, Diff } from "diff-match-patch";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -24,6 +34,14 @@ import {
 } from "@/components/ui/collapsible";
 import { ChevronRight } from "lucide-react";
 import { useState } from "react";
+
+type PodcastEntity =
+  | PersonEntity
+  | OrganizationEntity
+  | LocationEntity
+  | EventEntity
+  | TopicEntity
+  | ConceptEntity;
 
 interface ChunkVisualizerProps {
   chunks: ProcessingChunk[];
@@ -42,8 +60,13 @@ const StepProgress = ({
   data,
 }: {
   label: string;
-  status: "pending" | "processing" | "completed" | "error";
-  data?: PodcastAnalysis | PodcastEntities | TimelineEvent[] | string | null;
+  status: ProcessingStatus;
+  data?:
+    | ProcessingAnalysis
+    | ChunkResult["entities"]
+    | TimelineEvent[]
+    | string
+    | null;
 }) => (
   <div className="flex items-center justify-between gap-2">
     <div className="flex items-center gap-2">
@@ -116,7 +139,7 @@ export const ChunkVisualizer = ({ chunks }: ChunkVisualizerProps) => {
     {}
   );
 
-  const toggleStep = (chunkId: number, step: string) => {
+  const toggleStep = (chunkId: string, step: string) => {
     setExpandedSteps((prev) => ({
       ...prev,
       [`${chunkId}-${step}`]: !prev[`${chunkId}-${step}`],
@@ -137,7 +160,7 @@ export const ChunkVisualizer = ({ chunks }: ChunkVisualizerProps) => {
           <CardHeader className="pb-2">
             <div className="flex justify-between items-center">
               <CardTitle className="text-sm font-medium">
-                Chunk {chunk.id + 1}
+                Chunk {chunk.id}
               </CardTitle>
               <Badge
                 variant={
@@ -159,41 +182,23 @@ export const ChunkVisualizer = ({ chunks }: ChunkVisualizerProps) => {
               <div className="space-y-2 bg-gray-50 rounded-md p-2">
                 <StepProgress
                   label="Transcript Refinement"
-                  status={chunk.response ? "completed" : chunk.status}
-                  data={chunk.response}
+                  status={chunk.status}
+                  data={chunk.result?.text}
                 />
                 <StepProgress
                   label="Content Analysis"
-                  status={
-                    chunk.analysis
-                      ? "completed"
-                      : chunk.status === "completed"
-                      ? "processing"
-                      : "pending"
-                  }
-                  data={chunk.analysis}
+                  status={chunk.status}
+                  data={chunk.result?.analysis}
                 />
                 <StepProgress
                   label="Entity Extraction"
-                  status={
-                    chunk.entities
-                      ? "completed"
-                      : chunk.status === "completed"
-                      ? "processing"
-                      : "pending"
-                  }
-                  data={chunk.entities}
+                  status={chunk.status}
+                  data={chunk.result?.entities}
                 />
                 <StepProgress
                   label="Timeline Creation"
-                  status={
-                    chunk.timeline
-                      ? "completed"
-                      : chunk.status === "completed"
-                      ? "processing"
-                      : "pending"
-                  }
-                  data={chunk.timeline}
+                  status={chunk.status}
+                  data={chunk.result?.timeline}
                 />
               </div>
 
@@ -221,14 +226,14 @@ export const ChunkVisualizer = ({ chunks }: ChunkVisualizerProps) => {
                         <div className="flex items-center justify-center py-2">
                           <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
                         </div>
-                      ) : chunk.status === "completed" && chunk.response ? (
+                      ) : chunk.status === "completed" && chunk.result?.text ? (
                         <DiffView
                           original={chunk.text}
-                          modified={chunk.response}
+                          modified={chunk.result.text}
                         />
-                      ) : chunk.status === "error" && chunk.error ? (
+                      ) : chunk.status === "error" ? (
                         <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
-                          Error: {chunk.error}
+                          Error processing chunk
                         </div>
                       ) : (
                         <div className="text-sm text-gray-400 italic">
@@ -254,23 +259,19 @@ export const ChunkVisualizer = ({ chunks }: ChunkVisualizerProps) => {
                     />
                   </CollapsibleTrigger>
                   <CollapsibleContent className="pt-2">
-                    {chunk.analysis ? (
-                      <AnalysisSummary data={chunk.analysis} />
-                    ) : (
-                      <div className="text-sm text-gray-400 italic p-2">
-                        No analysis data available
-                      </div>
+                    {chunk.result?.analysis && (
+                      <AnalysisSummary data={chunk.result.analysis} />
                     )}
                   </CollapsibleContent>
                 </Collapsible>
 
-                {/* Entity Result */}
+                {/* Entities Result */}
                 <Collapsible
                   open={expandedSteps[`${chunk.id}-entities`]}
                   onOpenChange={() => toggleStep(chunk.id, "entities")}
                 >
                   <CollapsibleTrigger className="flex items-center justify-between w-full">
-                    <h4 className="text-sm font-medium">Entities Found</h4>
+                    <h4 className="text-sm font-medium">Entities Result</h4>
                     <ChevronRight
                       className={cn(
                         "h-4 w-4 transition-transform",
@@ -279,12 +280,17 @@ export const ChunkVisualizer = ({ chunks }: ChunkVisualizerProps) => {
                     />
                   </CollapsibleTrigger>
                   <CollapsibleContent className="pt-2">
-                    {chunk.entities ? (
-                      <EntityList data={chunk.entities} />
-                    ) : (
-                      <div className="text-sm text-gray-400 italic p-2">
-                        No entities found
-                      </div>
+                    {chunk.result?.entities && (
+                      <EntityList
+                        entities={[
+                          ...chunk.result.entities.people,
+                          ...chunk.result.entities.organizations,
+                          ...chunk.result.entities.locations,
+                          ...chunk.result.entities.events,
+                          ...(chunk.result.entities.topics || []),
+                          ...(chunk.result.entities.concepts || []),
+                        ]}
+                      />
                     )}
                   </CollapsibleContent>
                 </Collapsible>
@@ -295,7 +301,7 @@ export const ChunkVisualizer = ({ chunks }: ChunkVisualizerProps) => {
                   onOpenChange={() => toggleStep(chunk.id, "timeline")}
                 >
                   <CollapsibleTrigger className="flex items-center justify-between w-full">
-                    <h4 className="text-sm font-medium">Timeline Events</h4>
+                    <h4 className="text-sm font-medium">Timeline Result</h4>
                     <ChevronRight
                       className={cn(
                         "h-4 w-4 transition-transform",
@@ -304,13 +310,10 @@ export const ChunkVisualizer = ({ chunks }: ChunkVisualizerProps) => {
                     />
                   </CollapsibleTrigger>
                   <CollapsibleContent className="pt-2">
-                    {chunk.timeline && chunk.timeline.length > 0 ? (
-                      <TimelineList timeline={chunk.timeline} />
-                    ) : (
-                      <div className="text-sm text-gray-400 italic p-2">
-                        No timeline events found
-                      </div>
-                    )}
+                    {chunk.result?.timeline &&
+                      chunk.result.timeline.length > 0 && (
+                        <TimelineList timeline={chunk.result.timeline} />
+                      )}
                   </CollapsibleContent>
                 </Collapsible>
               </div>

@@ -1,9 +1,18 @@
 import { PostProcessingAdapter } from "@/app/core/processing/adapters/post";
-import {
+import type {
   ProcessingOptions,
   ProcessingStatus,
   BaseProcessingResult,
+  ProcessingMetadata,
+  ProcessingAnalysis,
+  SentimentAnalysis,
 } from "@/app/core/processing/types/base";
+import type {
+  PersonEntity,
+  OrganizationEntity,
+  LocationEntity,
+  ConceptEntity,
+} from "@/app/types/entities/podcast";
 
 describe("PostProcessingAdapter", () => {
   let adapter: PostProcessingAdapter;
@@ -46,30 +55,35 @@ describe("PostProcessingAdapter", () => {
     it("should process content with all analysis options", async () => {
       const result = await adapter.process(validInput, options);
 
+      const expectedMetadata: ProcessingMetadata = {
+        format: "post",
+        platform: "default",
+        processedAt: expect.any(String),
+        title: expect.any(String),
+        topics: expect.any(Array),
+      };
+
+      const expectedAnalysis: ProcessingAnalysis = {
+        entities: {
+          people: expect.any(Array),
+          organizations: expect.any(Array),
+          locations: expect.any(Array),
+          events: expect.any(Array),
+        },
+        sentiment: {
+          overall: expect.any(Number),
+          segments: expect.any(Array),
+        } as SentimentAnalysis,
+      };
+
       expect(result).toEqual({
         id: expect.any(String),
         status: "completed" as ProcessingStatus,
+        success: true,
         output: expect.any(String),
-        metadata: {
-          format: "post",
-          platform: "default",
-          processedAt: expect.any(String),
-          title: expect.any(String),
-          topics: expect.any(Array),
-        },
-        analysis: {
-          entities: {
-            people: expect.any(Array),
-            organizations: expect.any(Array),
-            locations: expect.any(Array),
-            concepts: expect.any(Array),
-          },
-          sentiment: {
-            overall: expect.any(Number),
-            segments: expect.any(Array),
-          },
-        },
-      });
+        metadata: expectedMetadata,
+        analysis: expectedAnalysis,
+      } as BaseProcessingResult);
     });
 
     it("should process content without analysis options", async () => {
@@ -80,18 +94,21 @@ describe("PostProcessingAdapter", () => {
 
       const result = await adapter.process(validInput, basicOptions);
 
+      const expectedMetadata: ProcessingMetadata = {
+        format: "post",
+        platform: "default",
+        processedAt: expect.any(String),
+        title: expect.any(String),
+        topics: expect.any(Array),
+      };
+
       expect(result).toEqual({
         id: expect.any(String),
         status: "completed" as ProcessingStatus,
+        success: true,
         output: expect.any(String),
-        metadata: {
-          format: "post",
-          platform: "default",
-          processedAt: expect.any(String),
-          title: expect.any(String),
-          topics: expect.any(Array),
-        },
-      });
+        metadata: expectedMetadata,
+      } as BaseProcessingResult);
 
       expect(result.analysis).toBeUndefined();
     });
@@ -99,17 +116,20 @@ describe("PostProcessingAdapter", () => {
     it("should handle processing errors", async () => {
       const result = await adapter.process("", options);
 
+      const expectedMetadata: ProcessingMetadata = {
+        format: "post",
+        platform: "default",
+        processedAt: expect.any(String),
+      };
+
       expect(result).toEqual({
         id: expect.any(String),
         status: "failed" as ProcessingStatus,
+        success: false,
         output: "",
         error: expect.any(String),
-        metadata: {
-          format: "post",
-          platform: "default",
-          processedAt: expect.any(String),
-        },
-      });
+        metadata: expectedMetadata,
+      } as BaseProcessingResult);
     });
   });
 
@@ -117,16 +137,19 @@ describe("PostProcessingAdapter", () => {
     it("should return processing status", async () => {
       const result = await adapter.getStatus("test-id");
 
+      const expectedMetadata: ProcessingMetadata = {
+        format: "post",
+        platform: "default",
+        processedAt: expect.any(String),
+      };
+
       expect(result).toEqual({
         id: "test-id",
         status: "completed" as ProcessingStatus,
+        success: true,
         output: "",
-        metadata: {
-          format: "post",
-          platform: "default",
-          processedAt: expect.any(String),
-        },
-      });
+        metadata: expectedMetadata,
+      } as BaseProcessingResult);
     });
   });
 });

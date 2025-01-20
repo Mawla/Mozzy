@@ -20,11 +20,23 @@ import { StepDetails } from "./StepDetails/StepDetails";
 import { usePodcastProcessing } from "@/app/hooks/use-podcast-processing";
 import { cn } from "@/lib/utils";
 import { ParallelProcessingStatus } from "./ParallelProcessingStatus";
-import {
+import type {
   ProcessingStep,
   ProcessingStatus,
-} from "@/app/types/podcast/processing";
-import { ValidatedPodcastEntities } from "@/app/types/entities";
+  ProcessingAnalysis,
+  ProcessingChunk,
+  PersonEntity,
+  OrganizationEntity,
+  LocationEntity,
+  EventEntity,
+} from "@/app/core/processing/types/base";
+
+interface ValidatedEntities {
+  people: PersonEntity[];
+  organizations: OrganizationEntity[];
+  locations: LocationEntity[];
+  events: EventEntity[];
+}
 
 interface ProcessingPipelineProps {
   steps: ProcessingStep[];
@@ -34,17 +46,13 @@ interface ProcessingPipelineProps {
   onToggle: () => void;
 }
 
-interface ExtendedProcessingStep
-  extends Omit<ProcessingStep, "data" | "error"> {
+interface ExtendedProcessingStep extends ProcessingStep {
   type?: "transcription" | "entity-extraction" | "summarization";
-  error?: Error;
-  data?: StepData | null;
-}
-
-interface StepData {
-  entities?: ValidatedPodcastEntities;
-  result?: any;
-  [key: string]: any;
+  data?: {
+    entities?: ValidatedEntities;
+    analysis?: ProcessingAnalysis;
+    [key: string]: any;
+  };
 }
 
 export const ProcessingPipeline = ({
@@ -82,13 +90,13 @@ export const ProcessingPipeline = ({
     }
 
     if (step.type === "entity-extraction" && step.status === "completed") {
-      const stepData = getStepData(step.id) as StepData;
+      const stepData = getStepData(step.id);
       if (stepData?.entities) {
-        const stepWithData: ExtendedProcessingStep = {
-          ...step,
-          data: { entities: stepData.entities },
-        };
-        return <StepDetails step={stepWithData} />;
+        return (
+          <StepDetails
+            step={{ ...step, data: { entities: stepData.entities } }}
+          />
+        );
       }
     }
 
@@ -131,28 +139,25 @@ export const ProcessingPipeline = ({
 
   return (
     <Card>
-      <Accordion type="single" collapsible defaultValue="pipeline">
-        <AccordionItem value="pipeline" className="border-none">
-          <CardHeader className="border-b">
-            <AccordionTrigger className="hover:no-underline">
-              <div className="flex items-center justify-between w-full">
-                <CardTitle>Processing Pipeline</CardTitle>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    variant={getBadgeVariant(steps[0].status)}
-                    className={cn(
-                      (steps[0].status === "processing" ||
-                        steps[0].status === "pending") &&
-                        "animate-pulse"
-                    )}
-                  >
-                    {getBadgeContent(steps[0].status)}
-                  </Badge>
-                </div>
-              </div>
-            </AccordionTrigger>
-          </CardHeader>
-
+      <Accordion type="single" collapsible>
+        <AccordionItem value="processing">
+          <AccordionTrigger className="px-6 py-4">
+            <div className="flex items-center justify-between w-full">
+              <CardTitle className="text-xl font-bold">
+                Processing Pipeline
+              </CardTitle>
+              <Badge
+                variant={getBadgeVariant(steps[0]?.status || "idle")}
+                className={cn(
+                  (steps[0]?.status === "processing" ||
+                    steps[0]?.status === "pending") &&
+                    "animate-pulse"
+                )}
+              >
+                {getBadgeContent(steps[0]?.status || "idle")}
+              </Badge>
+            </div>
+          </AccordionTrigger>
           <AccordionContent>
             <CardContent>
               <Tabs
@@ -191,6 +196,19 @@ export const ProcessingPipeline = ({
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-2">
+                                  {step.status === "error" && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onRetryStep(step.id);
+                                      }}
+                                    >
+                                      <RefreshCw className="h-4 w-4 mr-1" />
+                                      Retry
+                                    </Button>
+                                  )}
                                   <Badge
                                     variant={getBadgeVariant(step.status)}
                                     className={cn(
@@ -201,18 +219,6 @@ export const ProcessingPipeline = ({
                                   >
                                     {getBadgeContent(step.status)}
                                   </Badge>
-                                  {step.status === "error" && (
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        onRetryStep(step.id);
-                                      }}
-                                    >
-                                      <RefreshCw className="h-4 w-4" />
-                                    </Button>
-                                  )}
                                 </div>
                               </div>
                             </AccordionTrigger>

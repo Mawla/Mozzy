@@ -2,9 +2,8 @@
 
 import { ProcessingPipeline } from "./ProcessingPipeline";
 import { usePodcastProcessing } from "@/app/hooks/use-podcast-processing";
-import { useEffect } from "react";
-import {
-  ValidatedPodcastEntities,
+import { useEffect, useState } from "react";
+import type {
   PersonEntity,
   OrganizationEntity,
   LocationEntity,
@@ -12,17 +11,36 @@ import {
   TopicEntity,
   ConceptEntity,
 } from "@/app/types/entities";
-import {
-  KeyPoint,
+import type {
   ProcessingChunk,
-  PodcastAnalysis,
-} from "@/app/types/podcast/processing";
+  ProcessingAnalysis,
+  TopicAnalysis,
+  ChunkResult,
+} from "@/app/core/processing/types/base";
 import { usePodcastProcessingStore } from "@/app/store/podcastProcessingStore";
 import { PROCESSING_STEPS } from "@/app/constants/processing";
+
+type PodcastEntity =
+  | PersonEntity
+  | OrganizationEntity
+  | LocationEntity
+  | EventEntity
+  | TopicEntity
+  | ConceptEntity;
+
+interface ValidatedPodcastEntities {
+  people: PersonEntity[];
+  organizations: OrganizationEntity[];
+  locations: LocationEntity[];
+  events: EventEntity[];
+  topics: TopicEntity[];
+  concepts: ConceptEntity[];
+}
 
 export const PodcastProcessor = () => {
   const { isProcessing, processingSteps, handleRetryStep, chunks } =
     usePodcastProcessing();
+  const [isOpen, setIsOpen] = useState(true);
 
   const updateStepStatus = usePodcastProcessingStore(
     (state) => state.updateStepStatus
@@ -32,17 +50,17 @@ export const PodcastProcessor = () => {
     if (!chunks.length) return;
 
     const allChunksCompleted = chunks.every(
-      (chunk) => chunk.status === "completed"
+      (chunk: ProcessingChunk) => chunk.status === "completed"
     );
 
     if (allChunksCompleted) {
-      // Combine entities from all chunks
+      // Combine entities from all chunks with type safety
       const combinedEntities = chunks.reduce<ValidatedPodcastEntities>(
         (acc, chunk) => {
-          if (!chunk.entities) return acc;
+          if (!chunk.result?.entities) return acc;
 
-          // Helper function to merge arrays with deduplication
-          function mergeEntities<T extends { name: string }>(
+          // Helper function to merge arrays with deduplication and type safety
+          function mergeEntities<T extends PodcastEntity>(
             accArray: T[] = [],
             newArray: T[] = []
           ): T[] {
@@ -54,44 +72,74 @@ export const PodcastProcessor = () => {
           return {
             people: mergeEntities<PersonEntity>(
               acc.people || [],
-              chunk.entities.people || []
+              chunk.result.entities.people || []
             ),
             organizations: mergeEntities<OrganizationEntity>(
               acc.organizations || [],
-              chunk.entities.organizations || []
+              chunk.result.entities.organizations || []
             ),
             locations: mergeEntities<LocationEntity>(
               acc.locations || [],
-              chunk.entities.locations || []
+              chunk.result.entities.locations || []
             ),
             events: mergeEntities<EventEntity>(
               acc.events || [],
-              chunk.entities.events || []
+              chunk.result.entities.events || []
+            ),
+            topics: mergeEntities<TopicEntity>(
+              acc.topics || [],
+              chunk.result.entities.topics || []
+            ),
+            concepts: mergeEntities<ConceptEntity>(
+              acc.concepts || [],
+              chunk.result.entities.concepts || []
             ),
           };
         },
-        {} as ValidatedPodcastEntities
+        {
+          people: [],
+          organizations: [],
+          locations: [],
+          events: [],
+          topics: [],
+          concepts: [],
+        }
       );
 
-      // Combine analysis from all chunks
-      const combinedAnalysis = chunks.reduce<PodcastAnalysis>((acc, chunk) => {
-        if (!chunk.analysis) return acc;
+      // Combine analysis from all chunks with proper type safety
+      const combinedAnalysis = chunks.reduce<ProcessingAnalysis>(
+        (acc, chunk) => {
+          if (!chunk.result?.analysis) return acc;
 
-        // Helper function to merge arrays
-        function mergeArrays<T>(accArray: T[] = [], newArray: T[] = []): T[] {
-          const set = new Set([...accArray, ...newArray]);
-          return Array.from(set);
+          // Helper function to merge arrays with type safety
+          function mergeArrays<T>(accArray: T[] = [], newArray: T[] = []): T[] {
+            const set = new Set([...accArray, ...newArray]);
+            return Array.from(set);
+          }
+
+          return {
+            summary: acc.summary || chunk.result.analysis.summary || "",
+            keyPoints: mergeArrays(
+              acc.keyPoints || [],
+              chunk.result.analysis.keyPoints || []
+            ),
+            topics: mergeArrays<TopicAnalysis>(
+              acc.topics || [],
+              chunk.result.analysis.topics || []
+            ),
+            themes: mergeArrays(
+              acc.themes || [],
+              chunk.result.analysis.themes || []
+            ),
+          };
+        },
+        {
+          summary: "",
+          keyPoints: [],
+          topics: [],
+          themes: [],
         }
-
-        return {
-          summary: acc.summary || chunk.analysis.summary,
-          keyPoints: mergeArrays(
-            acc.keyPoints || [],
-            (chunk.analysis.keyPoints as KeyPoint[]) || []
-          ),
-          themes: mergeArrays(acc.themes || [], chunk.analysis.themes || []),
-        };
-      }, {} as PodcastAnalysis);
+      );
 
       // Update steps with combined data
       if (Object.keys(combinedEntities).length > 0) {
@@ -117,8 +165,8 @@ export const PodcastProcessor = () => {
       steps={processingSteps || []}
       onRetryStep={handleRetryStep}
       isProcessing={isProcessing}
-      isOpen={true}
-      onToggle={() => {}}
+      isOpen={isOpen}
+      onToggle={() => setIsOpen(!isOpen)}
     />
   );
 };
