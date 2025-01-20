@@ -1,35 +1,42 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-.idea/* 
-.idea
-
-# dependencies
-/node_modules
-/.pnp
+# Dependencies
+node_modules/
+.pnp/
 .pnp.js
-.yarn/install-state.gz
 
-# testing
-/coverage
+# Testing
+coverage/
 
-# next.js
-/.next/
-/out/
+# Production
+build/
+dist/
+out/
+.next/
 
-# production
-/build
-
-# misc
+# Misc
 .DS_Store
 *.pem
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# debug
+# Debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
-.env*.local
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
 
 # vercel
 .vercel

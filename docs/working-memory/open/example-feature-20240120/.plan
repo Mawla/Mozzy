@@ -1,0 +1,76 @@
+## Example Feature Implementation
+
+### Problem Analysis
+
+- Need to implement new user dashboard feature
+- Must handle real-time updates
+- Requires efficient data fetching
+- Consider mobile responsiveness
+
+### Solution Design
+
+1. Server Components Approach:
+
+   - Use Next.js Server Components
+   - Implement streaming for real-time
+   - Pros: Better performance, SEO
+   - Cons: More complex implementation
+
+2. Client-only Approach:
+   - Traditional React components
+   - WebSocket for real-time
+   - Pros: Simpler implementation
+   - Cons: Higher client load, worse SEO
+
+### Implementation Steps
+
+- [ ] Core Implementation
+
+  - [ ] Create base component structure
+  - [ ] Implement data fetching
+  - [ ] Add real-time updates
+  - Success criteria: Dashboard displays and updates
+  - Dependencies: API endpoints ready
+
+- [ ] UI Enhancement
+  - [ ] Add responsive design
+  - [ ] Implement loading states
+  - [ ] Add error handling
+  - Success criteria: Works on all devices
+  - Dependencies: Core implementation
+
+### Affected Components
+
+- `/components/dashboard/`
+- `/hooks/use-dashboard.ts`
+- `/services/dashboardService.ts`
+
+### Dependencies
+
+- API endpoints must be ready
+- Authentication system in place
+- Real-time service available
+
+## Current Status
+
+### 2025-01-20 11:11
+
+**Status**: In Progress
+
+- What's working: Initial planning complete
+- What's not: Implementation not started
+- Blocking issues: None
+- Next actions: Begin component structure
+- Documentation updates needed:
+  - [ ] Feature documentation
+  - [ ] Component documentation
+  - [ ] API documentation
+
+## Progress History
+
+### 2025-01-20 11:11 - Initial Planning
+
+- ✓ Completed: Task plan creation
+- 🤔 Decisions: Chose server components for better performance
+- 📚 Documentation: Will need new feature documentation
+- ⏭️ Next: Begin implementation

@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Cursor Rules - AI Pair Programming Workflow
+
+A comprehensive workflow system for effective AI pair programming using Cursor IDE. This repository contains our battle-tested process for managing AI-assisted development, including task management, documentation standards, and working memory patterns.
+
+## Overview
+
+This workflow is designed to maximize the effectiveness of AI pair programming by:
+
+- Maintaining clear task context and history
+- Standardizing documentation and communication
+- Managing working memory effectively
+- Ensuring consistent development patterns
+
+## Key Components
+
+1. `.cursorrules` - Core workflow rules and standards
+2. Working Memory System - Active task management and context
+3. Templates - Standardized formats for tasks and documentation
 
 ## Getting Started
 
-First, run the development server:
+1. Clone this repository
+2. Copy the `.cursorrules` file to your project
+3. Set up the working memory structure:
+   ```bash
+   mkdir -p docs/working-memory/{open,done}
+   mkdir -p docs/templates
+   ```
+4. Copy the template files to your project
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Directory Structure
+
+```
+docs/
+├── .cursorrules                 # Core workflow rules
+├── working-memory/             # Active context
+│   ├── open/                  # Active tasks
+│   └── done/                  # Completed tasks
+└── templates/                 # Project templates
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Usage
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Task Management:
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+   - Create new tasks in `docs/working-memory/open/`
+   - Use task templates from `docs/templates/`
+   - Move completed tasks to `docs/working-memory/done/`
 
-## Learn More
+2. Documentation:
 
-To learn more about Next.js, take a look at the following resources:
+   - Follow standards in `.cursorrules`
+   - Use templates for consistency
+   - Maintain clear task history
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. Working Memory:
+   - Keep active context in working memory
+   - Update task status regularly
+   - Track decisions and progress
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Best Practices
 
-## Deploy on Vercel
+1. Always reference `.cursorrules` in AI conversations
+2. Maintain clear task plans and history
+3. Use standardized formats and templates
+4. Keep documentation current and relevant
+5. Follow the working memory lifecycle
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Contributing
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+We welcome contributions! Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Submit a pull request
+
+## License
+
+MIT License - See LICENSE file for details
