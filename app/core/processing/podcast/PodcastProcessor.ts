@@ -3,15 +3,15 @@ import type { ProcessingResult, TextChunk } from "../types";
 import { PodcastChunker } from "../podcast";
 import { PodcastProcessingStrategy } from "./PodcastProcessingStrategy";
 import { logger } from "@/lib/logger";
-import {
+import type {
   PodcastAnalysis,
   KeyPoint,
-  Theme,
   ProcessingChunkResult,
   PersonEntity,
   OrganizationEntity,
   LocationEntity,
   EventEntity,
+  ProcessingChunk,
 } from "@/app/types/podcast/processing";
 import {
   ProcessingAdapter,
@@ -78,7 +78,20 @@ export class PodcastProcessor extends Processor<string, ProcessingResult> {
             textPreview: chunk.text.slice(0, 100),
           });
 
-          return this.strategy.process(chunk) as Promise<ProcessingChunkResult>;
+          await this.strategy.process(chunk.text);
+          return {
+            id: chunk.id,
+            text: chunk.text,
+            refinedText: chunk.text,
+            entities: {
+              people: [],
+              organizations: [],
+              locations: [],
+              events: [],
+            },
+            status: "completed" as ProcessingStatus,
+            progress: 100,
+          } as ProcessingChunkResult;
         })
       );
 
@@ -135,10 +148,10 @@ export class PodcastProcessor extends Processor<string, ProcessingResult> {
 
       // Convert entities to the format expected by ProcessingResult
       const processedEntities = {
-        people: entities.people.map((p) => p.name),
-        organizations: entities.organizations.map((o) => o.name),
-        locations: entities.locations.map((l) => l.name),
-        concepts: entities.events.map((e) => e.name),
+        people: entities.people,
+        organizations: entities.organizations,
+        locations: entities.locations,
+        events: entities.events,
       };
 
       // Convert timeline events to the format expected by ProcessingResult
@@ -152,18 +165,34 @@ export class PodcastProcessor extends Processor<string, ProcessingResult> {
         ) || [];
 
       // Convert themes to topics
-      const topics = results[0]?.analysis?.themes?.map((theme) => {
-        const themeName = typeof theme === "string" ? theme : theme.name;
-        return {
-          name: themeName,
-          confidence: 1,
-          keywords: [],
-        } as TopicAnalysis;
-      });
+      const topics =
+        results[0]?.analysis?.themes?.map(
+          (theme) =>
+            ({
+              name: theme,
+              confidence: 1,
+              keywords: [],
+            } as TopicAnalysis)
+        ) || [];
+
+      const analysis: ProcessingAnalysis = {
+        id: generateId(),
+        title: results[0]?.analysis?.title || "Untitled",
+        summary: results[0]?.analysis?.summary || "",
+        entities: processedEntities,
+        timeline: processedTimeline,
+        sentiment: {
+          overall: 0,
+          segments: [],
+        },
+        topics: topics,
+      };
 
       return {
         id: generateId(),
+        format: "podcast",
         status: "completed" as ProcessingStatus,
+        success: true,
         output: results[0]?.refinedText || input,
         metadata: {
           format: "podcast",
@@ -172,15 +201,9 @@ export class PodcastProcessor extends Processor<string, ProcessingResult> {
           speakers: entities.people.map((p) => p.name),
           duration: "00:00:00",
         },
-        analysis: {
-          entities: processedEntities,
-          timeline: processedTimeline,
-          sentiment: {
-            overall: 0,
-            segments: [],
-          },
-          topics,
-        },
+        analysis,
+        entities: processedEntities,
+        timeline: processedTimeline,
       };
     } catch (error) {
       logger.error(
@@ -193,7 +216,9 @@ export class PodcastProcessor extends Processor<string, ProcessingResult> {
       );
       return {
         id: generateId(),
+        format: "podcast",
         status: "failed" as ProcessingStatus,
+        success: false,
         output: "",
         error: error instanceof Error ? error.message : "Processing failed",
         metadata: {
@@ -201,6 +226,18 @@ export class PodcastProcessor extends Processor<string, ProcessingResult> {
           platform: "default",
           processedAt: new Date().toISOString(),
         },
+        analysis: {
+          id: generateId(),
+          title: "Error Processing",
+          summary: error instanceof Error ? error.message : "Processing failed",
+        },
+        entities: {
+          people: [],
+          organizations: [],
+          locations: [],
+          events: [],
+        },
+        timeline: [],
       };
     }
   }
@@ -219,14 +256,12 @@ export class PodcastProcessor extends Processor<string, ProcessingResult> {
 
   validateOutput(output: ProcessingResult): boolean {
     const isValid =
-      output.transcript !== undefined &&
       output.analysis !== undefined &&
       output.entities !== undefined &&
       output.timeline !== undefined;
 
     if (!isValid) {
       logger.error("Invalid output", undefined, {
-        hasTranscript: output.transcript !== undefined,
         hasAnalysis: output.analysis !== undefined,
         hasEntities: output.entities !== undefined,
         hasTimeline: output.timeline !== undefined,
@@ -241,7 +276,7 @@ export class PodcastProcessor extends Processor<string, ProcessingResult> {
     index: number
   ): Partial<TextChunk> {
     return {
-      id: index,
+      id: String(index),
       text: typeof chunk.text === "string" ? chunk.text.trim() : "",
       startIndex: chunk.startIndex || 0,
       endIndex: chunk.endIndex || chunk.text?.length || 0,

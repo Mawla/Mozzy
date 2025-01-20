@@ -46,39 +46,41 @@ export class ProcessingLogger {
 
     // Override console methods
     console.log = (...args: any[]) => {
-      this.debug(args[0], args.slice(1));
+      this.debug(String(args[0]), args.slice(1));
       originalConsole.log.apply(console, args);
     };
 
     console.info = (...args: any[]) => {
-      this.info(args[0], args.slice(1));
+      this.info(String(args[0]), args.slice(1));
       originalConsole.info.apply(console, args);
     };
 
     console.warn = (...args: any[]) => {
-      this.warn(args[0], args.slice(1));
+      const error = args[1] instanceof Error ? args[1] : undefined;
+      this.warn(String(args[0]), error, args.slice(2));
       originalConsole.warn.apply(console, args);
     };
 
     console.error = (...args: any[]) => {
-      this.error(args[0], args.slice(1));
+      const error = args[1] instanceof Error ? args[1] : undefined;
+      this.error(String(args[0]), error, args.slice(2));
       originalConsole.error.apply(console, args);
     };
 
     console.debug = (...args: any[]) => {
-      this.debug(args[0], args.slice(1));
+      this.debug(String(args[0]), args.slice(1));
       originalConsole.debug.apply(console, args);
     };
 
     this.isBrowserLoggingSetup = true;
   }
 
-  log(level: LogLevel, message: string, error?: unknown, data?: any) {
+  log(level: LogLevel, message: string, error?: Error | undefined, data?: any) {
     const entry: LogEntry = {
       timestamp: new Date().toISOString(),
       level,
       message,
-      error: error instanceof Error ? error : new Error(String(error)),
+      error,
       data,
     };
     this.logs.push(entry);
@@ -93,11 +95,11 @@ export class ProcessingLogger {
     this.log("info", message, undefined, data);
   }
 
-  warn(message: string, error?: unknown, data?: any) {
+  warn(message: string, error?: Error | undefined, data?: any) {
     this.log("warn", message, error, data);
   }
 
-  error(message: string, error?: unknown, data?: any) {
+  error(message: string, error?: Error | undefined, data?: any) {
     this.log("error", message, error, data);
   }
 

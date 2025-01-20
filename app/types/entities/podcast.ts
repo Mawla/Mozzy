@@ -1,48 +1,87 @@
 import { z } from "zod";
 import { BaseEntity, EntityType, baseEntitySchema } from "./base";
 
-// Person entity interface
+/**
+ * Person entity interface for podcast content.
+ * Represents individuals mentioned or speaking in podcasts.
+ */
 export interface PersonEntity extends BaseEntity {
+  /** Must be PERSON type */
   type: Extract<EntityType, "PERSON">;
+  /** Role of the person in the podcast context */
   role: string;
+  /** Areas of expertise (optional) */
   expertise?: string[];
+  /** Organizational affiliations (optional) */
   affiliations?: string[];
 }
 
-// Organization entity interface
+/**
+ * Organization entity interface for podcast content.
+ * Represents companies, institutions, or groups mentioned in podcasts.
+ */
 export interface OrganizationEntity extends BaseEntity {
+  /** Must be ORGANIZATION type */
   type: Extract<EntityType, "ORGANIZATION">;
+  /** Industry classification (optional) */
   industry?: string;
+  /** Organization size category (optional) */
   size?: string;
+  /** Physical location (optional) */
   location?: string;
 }
 
-// Location entity interface
+/**
+ * Location entity interface for podcast content.
+ * Represents physical places mentioned in podcasts.
+ */
 export interface LocationEntity extends BaseEntity {
+  /** Must be LOCATION type */
   type: Extract<EntityType, "LOCATION">;
+  /** Type of location (e.g., city, country) */
   locationType?: string;
+  /** Geographic region (optional) */
   region?: string;
 }
 
-// Event entity interface
+/**
+ * Event entity interface for podcast content.
+ * Represents events discussed in podcasts.
+ */
 export interface EventEntity extends BaseEntity {
+  /** Must be EVENT type */
   type: Extract<EntityType, "EVENT">;
+  /** Event date (ISO format) */
   date?: string;
+  /** Event duration (optional) */
   duration?: string;
+  /** List of event participants (optional) */
   participants?: string[];
 }
 
-// Topic entity interface
+/**
+ * Topic entity interface for podcast content.
+ * Represents main subjects discussed in podcasts.
+ */
 export interface TopicEntity extends BaseEntity {
+  /** Must be TOPIC type */
   type: Extract<EntityType, "TOPIC">;
+  /** Topic relevance score (0-1) */
   relevance?: number;
+  /** Related subtopics (optional) */
   subtopics?: string[];
 }
 
-// Concept entity interface
+/**
+ * Concept entity interface for podcast content.
+ * Represents abstract ideas or theories discussed in podcasts.
+ */
 export interface ConceptEntity extends BaseEntity {
+  /** Must be CONCEPT type */
   type: Extract<EntityType, "CONCEPT">;
+  /** Concept definition */
   definition?: string;
+  /** Example usages of the concept */
   examples?: string[];
 }
 
