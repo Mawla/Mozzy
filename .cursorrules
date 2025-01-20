@@ -126,6 +126,37 @@ async function getData() {
 }
 ```
 
+4. Type Documentation:
+
+```typescript
+/**
+ * Clear description of the type's purpose and context.
+ * Include any important notes about usage or constraints.
+ */
+export interface ExampleType {
+  /** Description with value range if applicable (e.g., 0-1) */
+  numericField: number;
+  /** Description of what this field represents */
+  stringField: string;
+  /** Object field description */
+  objectField: {
+    /** Nested field description */
+    nestedField: string;
+  };
+}
+```
+
+Type Documentation Rules:
+
+- Every exported type must have a JSDoc comment explaining its purpose
+- Each field must have an inline JSDoc comment
+- Include value ranges for numeric fields (e.g., 0-1, 0-100)
+- Document optional fields and their implications
+- Explain relationships with other types
+- Note any validation requirements
+- Document any default values
+- Include usage examples for complex types
+
 ## Self-Improvement Rules
 
 1. Documentation Maintenance:

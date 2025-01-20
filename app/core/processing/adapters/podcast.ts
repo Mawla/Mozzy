@@ -17,7 +17,7 @@ import type {
   OrganizationEntity,
   LocationEntity,
   EventEntity,
-} from "@/app/schemas/podcast/entities";
+} from "@/app/types/entities/podcast";
 
 import { PodcastProcessor } from "../podcast/PodcastProcessor";
 import { logger } from "@/lib/logger";
@@ -49,8 +49,9 @@ export class PodcastProcessingAdapter implements ProcessingAdapter {
       }
 
       return true;
-    } catch (error) {
-      logger.error("Validation error", error);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      logger.error("Validation failed", error, { input });
       return false;
     }
   }
@@ -72,17 +73,16 @@ export class PodcastProcessingAdapter implements ProcessingAdapter {
       });
 
       const analysis: ProcessingAnalysis = {
-        id: crypto.randomUUID(),
-        title: result.title || "Untitled",
-        summary: result.summary || "",
-        themes: result.themes?.map((theme) => ({
-          name: theme.name,
-          confidence: theme.confidence,
-          keywords: theme.keywords,
-        })),
-        sentiment: result.sentiment,
-        topics: result.topics,
-        timeline: result.timeline,
+        id: generateId(),
+        title: result.metadata?.title || "Untitled",
+        summary: result.analysis?.summary || "",
+        entities: result.entities,
+        timeline: result.timeline || [],
+        sentiment: result.analysis?.sentiment,
+        topics: result.analysis?.topics || [],
+        themes: result.analysis?.themes || [],
+        keyPoints: result.analysis?.keyPoints || [],
+        quickFacts: result.analysis?.quickFacts,
       };
 
       return this.createSuccessResult(
@@ -91,15 +91,17 @@ export class PodcastProcessingAdapter implements ProcessingAdapter {
           format: "podcast",
           platform: options.targetPlatform || "default",
           processedAt: new Date().toISOString(),
-          speakers: result.metadata?.speakers,
+          title: result.metadata?.title,
           duration: result.metadata?.duration,
+          speakers: result.metadata?.speakers,
+          topics: result.metadata?.topics,
         },
         analysis
       );
-    } catch (error) {
-      return this.createErrorResult(
-        error instanceof Error ? error.message : "Processing failed"
-      );
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      logger.error("Processing failed", error, { options });
+      return this.createErrorResult(error.message);
     }
   }
 

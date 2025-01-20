@@ -6,7 +6,9 @@ import type {
   EventEntity,
   EntityMention,
   EntityRelationship,
-} from "@/app/schemas/podcast/entities";
+  TopicEntity,
+  ConceptEntity,
+} from "@/app/types/entities";
 
 // Base Types
 export type ProcessingFormat = "podcast" | "post";
@@ -114,6 +116,8 @@ export interface BaseProcessingResult {
     organizations: OrganizationEntity[];
     locations: LocationEntity[];
     events: EventEntity[];
+    topics?: TopicEntity[];
+    concepts?: ConceptEntity[];
   };
   timeline?: TimelineEvent[];
 }
@@ -137,8 +141,8 @@ export interface ChunkResult {
     organizations: OrganizationEntity[];
     locations: LocationEntity[];
     events: EventEntity[];
-    topics?: string[];
-    concepts?: string[];
+    topics?: TopicEntity[];
+    concepts?: ConceptEntity[];
   };
   timeline: TimelineEvent[];
 }
@@ -180,6 +184,8 @@ export type {
   EventEntity,
   EntityMention,
   EntityRelationship,
+  TopicEntity,
+  ConceptEntity,
 };
 
 // Add ProcessingResult interface
@@ -191,6 +197,8 @@ export interface ProcessingResult extends BaseProcessingResult {
     organizations: OrganizationEntity[];
     locations: LocationEntity[];
     events: EventEntity[];
+    topics?: TopicEntity[];
+    concepts?: ConceptEntity[];
   };
   timeline: TimelineEvent[];
 }

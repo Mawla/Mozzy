@@ -1,8 +1,9 @@
 # Core Processing Architecture
 
-### 2025-01-19 17:00 - Type System Status
+### 2025-01-20 07:28 - Type System Update
 
-Note: Type system consolidation in progress (200 errors in 59 files). See README.md for details.
+Note: Type system consolidation in progress. Error handling and logger types updated.
+See type-system-restructure-20250119/.plan for details.
 
 ## Overview
 
@@ -13,7 +14,13 @@ app/core/processing/
 ├── adapters/           # Format-specific adapters
 ├── base/              # Abstract base classes
 ├── types/             # Core type definitions
-│   └── base.ts        # Base types and interfaces
+│   ├── base.ts        # Base types and interfaces
+│   ├── podcast/       # Podcast-specific types
+│   │   ├── index.ts   # Public API
+│   │   └── internal.ts # Internal types
+│   └── post/          # Post-specific types
+│       ├── index.ts   # Public API
+│       └── internal.ts # Internal types
 ├── utils/             # Shared utilities
 └── service/           # Processing service
 ```
@@ -35,20 +42,35 @@ The type system is organized in a hierarchical structure:
    - Extend base types
    - Add format-specific fields
    - Maintain type safety
+   - Internal vs public API separation
 
 3. Type Relationships
 
    ```typescript
    // Base types
    interface BaseProcessingResult {
+     id: string;
      status: ProcessingStatus;
-     content: string;
+     success: boolean;
+     output: string;
+     error?: string;
+     metadata: ProcessingMetadata;
+     analysis?: ProcessingAnalysis;
    }
 
    // Format-specific types
    interface PodcastProcessingResult extends BaseProcessingResult {
-     transcript: string;
+     format: "podcast";
      analysis: PodcastAnalysis;
+     chunks: PodcastTextChunk[];
+     speakers: string[];
+     timeline: TimelineEvent[];
+     entities: {
+       people: PersonEntity[];
+       organizations: OrganizationEntity[];
+       locations: LocationEntity[];
+       events: EventEntity[];
+     };
    }
    ```
 
@@ -231,3 +253,34 @@ The type system is organized in a hierarchical structure:
    - More format support
    - Improved validation
    - Better error recovery
+
+### Error Handling
+
+The system uses a centralized error handling approach:
+
+1. Logger Integration
+
+   ```typescript
+   // Strongly typed error logging
+   logger.error(message: string, error?: Error, data?: any)
+
+   // Example usage
+   try {
+     // Processing logic
+   } catch (err) {
+     const error = err instanceof Error ? err : new Error(String(err));
+     logger.error("Processing failed", error, { context: data });
+   }
+   ```
+
+2. Error Types
+
+   - All errors are properly typed as Error instances
+   - Unknown errors are converted to Error objects
+   - Context data is included in logs
+
+3. Error Recovery
+
+   - Graceful degradation on failures
+   - Detailed error reporting
+   - Type-safe error handling

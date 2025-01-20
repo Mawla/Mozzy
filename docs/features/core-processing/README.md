@@ -1,17 +1,74 @@
-# Core Processing
+# Core Processing System
 
-### 2025-01-19 17:00 - Type System Status Update
+### 2025-01-20 07:28 - Type System Update
 
-Current type system issues (200 errors in 59 files):
+The core processing system is undergoing a type system restructuring to improve type safety and error handling.
+See type-system-restructure-20250119/.plan for details.
 
-- Missing Type Exports (40%): Core processing types not exported
-- Interface Mismatches (30%): ProcessingResult conflicts
-- Type Definition Issues (20%): Implicit any types
-- Import/Path Issues (10%): Path resolution problems
+## Recent Updates
+
+- Improved error handling with strongly typed logger integration
+- Consolidated type system with clear hierarchy
+- Added internal/public API separation for processing types
+- Enhanced error recovery and reporting
 
 ## Overview
 
-The core processing system provides a unified interface for processing different content formats (podcast, post) through a common pipeline. It uses an adapter pattern to handle format-specific processing while maintaining a consistent interface.
+The core processing system is responsible for transforming content between different formats while maintaining semantic meaning and structure. It supports:
+
+- Podcast processing (audio to text, transcription, analysis)
+- Post processing (text adaptation, platform optimization)
+- Entity extraction and analysis
+- Timeline generation
+- Sentiment analysis
+
+## Key Features
+
+1. Type-Safe Processing
+
+   ```typescript
+   // Format-specific processing options
+   interface PodcastProcessingOptions {
+     extractSpeakers: boolean;
+     generateTimeline: boolean;
+     speakerDiarization: boolean;
+     transcriptionQuality: "standard" | "premium";
+   }
+
+   // Strongly typed results
+   interface PodcastProcessingResult {
+     format: "podcast";
+     analysis: PodcastAnalysis;
+     chunks: PodcastTextChunk[];
+     speakers: string[];
+     timeline: TimelineEvent[];
+     entities: {
+       people: PersonEntity[];
+       organizations: OrganizationEntity[];
+       locations: LocationEntity[];
+       events: EventEntity[];
+     };
+   }
+   ```
+
+2. Error Handling
+
+   ```typescript
+   try {
+     const result = await processor.process(input, options);
+   } catch (err) {
+     const error = err instanceof Error ? err : new Error(String(err));
+     logger.error("Processing failed", error, { context: options });
+     return createErrorResult(error.message);
+   }
+   ```
+
+3. Modular Architecture
+
+   - Format-specific adapters
+   - Pluggable processing strategies
+   - Extensible type system
+   - Centralized error handling
 
 ## Purpose and Goals
 
@@ -20,14 +77,6 @@ The core processing system provides a unified interface for processing different
 - Handle validation, processing, and error states consistently
 - Enable format-specific processing features when needed
 - Maintain type safety and clear interfaces
-
-## Key Features
-
-- Unified processing interface via ProcessingService
-- Format-specific adapters (podcast, post)
-- Type-safe processing pipeline
-- Comprehensive error handling
-- Extensive test coverage
 
 ## Type System
 

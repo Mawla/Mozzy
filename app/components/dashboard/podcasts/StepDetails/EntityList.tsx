@@ -1,7 +1,7 @@
-import type { PodcastEntity } from "@/app/schemas/podcast/entities";
+import type { BaseEntity } from "@/app/types/entities";
 
 interface EntityListProps {
-  entities: PodcastEntity[];
+  entities: BaseEntity[];
 }
 
 export const EntityList = ({ entities }: EntityListProps) => {
@@ -19,7 +19,7 @@ export const EntityList = ({ entities }: EntityListProps) => {
             </span>
           </div>
           <span className="text-sm text-muted-foreground">
-            {entity.count} mentions
+            {entity.mentions.length} mentions
           </span>
         </div>
       ))}
