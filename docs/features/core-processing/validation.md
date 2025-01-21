@@ -185,7 +185,7 @@ The validation system is integrated with the processing pipeline:
 
 ```typescript
 import { validateEntity } from "@/app/utils/validation/entity";
-import type { ProcessingChunk } from "@/app/types/podcast/processing";
+import type { ProcessingChunk } from "@/app/types/processing/base";
 
 function processChunk(chunk: ProcessingChunk) {
   // Validate entities before processing

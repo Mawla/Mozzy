@@ -1,5 +1,7 @@
 # Task Plan ({task-id})
 
+Reference: [Task Updates](./updates.md)
+
 ## Problem Analysis
 
 - Issue description
@@ -67,22 +69,17 @@
 - Manual testing steps
 - Performance testing
 
-## Current Status
+## Dependencies
 
-### YYYY-MM-DD HH:mm
+- Blocks: {blocked tasks}
+- Blocked by: {blocking tasks}
+- Related: {related tasks}
 
-**Status**: {Not Started/In Progress/Review/Completed}
+### Template Usage Notes:
 
-- What's working: {current state}
-- What's not: {current issues}
-- Blocking issues: {if any}
-- Next actions: {immediate next steps}
-
-## Progress History
-
-### YYYY-MM-DD HH:mm - {Brief Title}
-
-- ✓ Completed: {work completed}
-- 🤔 Decisions: {decisions made}
-- ❌ Issues: {problems encountered}
-- ⏭️ Led to: {next steps}
+1. Focus on planning and requirements
+2. Keep implementation steps clear and actionable
+3. List all affected components and documentation
+4. Include all dependencies
+5. Reference task ID throughout
+6. Link to updates.md for progress tracking
