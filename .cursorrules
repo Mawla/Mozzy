@@ -64,6 +64,104 @@ Tech Stack:
 - Icons: Lucide Icons
 - Testing: Jest
 
+## Task Documentation Organization
+
+### Directory Structure
+
+```
+/docs/
+├── working-memory/           # Task tracking directory
+│   ├── open/                # Active tasks
+│   │   └── {task-id}/      # Task-specific directory
+│   │       ├── plan.md     # Task plan and requirements
+│   │       └── updates.md  # Progress updates and status
+│   └── done/               # Completed tasks
+├── templates/              # Project templates
+└── standards/             # Project standards
+```
+
+### Task Documentation Files
+
+1. `plan.md` - Task Planning Document:
+
+   - Problem Analysis
+   - Solution Design
+   - Implementation Steps
+   - Affected Components
+   - Testing Plan
+   - Documentation Impact
+   - Dependencies
+
+2. `updates.md` - Progress Tracking Document:
+   - Current Status (always at top)
+   - Progress History (chronological)
+   - Decisions Log
+   - Issues Encountered
+   - Next Steps
+
+### Status Updates Process
+
+1. Current Status:
+
+   - ONLY ONE status entry should exist at any time
+   - Previous status should be moved to Progress History before updating
+   - Always at top of updates.md
+   - Update timestamp using `date "+%Y-%m-%d %H:%M"`
+   - Include working/not working sections
+   - List blocking issues
+   - Document next actions
+
+2. Progress History:
+
+   - Add new entries at bottom of updates.md
+   - Move previous status to history before updating current status
+   - Include timestamp for each entry
+   - Use consistent emoji markers:
+     - ✓ Completed: Work completed
+     - 🤔 Decisions: Key decisions made
+     - ❌ Issues: Problems encountered
+     - ⏭️ Next: Upcoming work
+
+3. Status Update Flow:
+
+   ```bash
+   # 1. Get current timestamp
+   date "+%Y-%m-%d %H:%M"
+
+   # 2. Move current status to Progress History
+   # 3. Update Current Status with new timestamp
+   # 4. Add previous status content to Progress History
+   ```
+
+### Cross-Referencing:
+
+- Link between plan.md and updates.md
+- Reference task ID in all updates
+- Link to affected components
+- Reference related tasks
+
+### File Management
+
+1. Active Tasks:
+
+   - Keep in /docs/working-memory/open/
+   - Update both plan and updates files
+   - Move to /done/ when completed
+   - Archive after 30 days
+
+2. Templates:
+
+   - Use task-plan-template.md for new plans
+   - Use task-updates-template.md for updates
+   - Follow standard format
+   - Include all required sections
+
+3. Maintenance:
+   - Review active tasks weekly
+   - Archive completed tasks monthly
+   - Update templates as needed
+   - Maintain clean directory structure
+
 ## State Management
 
 Always check these files for current project state before any work:
@@ -1395,3 +1493,66 @@ Remember:
 - Use exact command output
 - Don't modify or format the timestamp
 - Include both date and time for all entries
+
+## Type System Enforcement
+
+### Type Declaration Rules
+
+1. Location:
+
+   - All types MUST be declared in `/app/types/`
+   - No type declarations allowed outside the types directory
+   - UI component prop types are the ONLY exception (they stay with their components)
+
+2. Directory Structure:
+
+   ```
+   /app/types/
+   ├── index.ts              # Main type exports
+   ├── entities/             # Entity types
+   ├── processing/           # Processing types
+   ├── shared/              # Shared types
+   ├── ui/                  # UI-specific types
+   └── logging/             # Logging types
+   ```
+
+3. Import Rules:
+
+   - Always import from main index.ts: `import type { MyType } from "@/app/types"`
+   - Never import directly from subdirectories
+   - Exception: Internal type imports within the types directory
+
+4. Type Organization:
+
+   - Entity types go in `/types/entities/`
+   - Processing types go in `/types/processing/`
+   - Shared types go in `/types/shared/`
+   - UI types go in `/types/ui/`
+   - Logging types go in `/types/logging/`
+
+5. Enforcement:
+
+   - Pre-commit hook checks for type declarations outside /app/types
+   - Pre-commit hook checks for proper type imports
+   - TypeScript type checking enforced on commit
+   - Run `.husky/type-check` manually to verify compliance
+
+6. Documentation:
+
+   - All type changes must be documented
+   - Update type system docs when adding new categories
+   - Keep type exports in index.ts organized by category
+   - Document breaking changes in type system
+
+7. Exceptions:
+   - UI component prop types stay with components
+   - Internal type imports within types directory
+   - Test-specific types in test files
+   - Generated types from external tools
+
+Remember:
+
+- Run type checks before commit: `.husky/type-check`
+- Document all type system changes
+- Keep types organized and well-documented
+- Follow the established directory structure
