@@ -7,8 +7,8 @@ import type {
   ProcessingStep,
   NetworkLog,
   BaseTextChunk,
-  ProcessingChunk,
-} from "@/app/core/processing/types/base";
+} from "@/app/types/processing/base";
+import type { ProcessingChunk } from "@/app/types/podcast/processing";
 import { NetworkLogger } from "@/app/components/dashboard/podcasts/NetworkLogger";
 import { ChunkVisualizer } from "@/app/components/dashboard/podcasts/ChunkVisualizer";
 import { ProcessingStatus as ProcessingStatusComponent } from "./ProcessingStatus";

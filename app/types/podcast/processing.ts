@@ -84,9 +84,16 @@ export interface ProcessingState extends BaseProcessingState {
   chunks: ProcessingChunk[];
 }
 
-export interface ProcessingStep extends BaseProcessingStep {
+export interface ProcessingStep {
+  id: string;
+  name: string;
+  status: ProcessingStatus;
+  progress?: number;
+  error?: Error;
   description?: string;
+  data?: any;
   chunks?: ProcessingChunk[];
+  networkLogs?: NetworkLog[];
 }
 
 export interface TextChunk extends BaseTextChunk {
@@ -96,7 +103,7 @@ export interface TextChunk extends BaseTextChunk {
 export interface ProcessingChunk extends TextChunk {
   status: ProcessingStatus;
   response?: string;
-  error?: string;
+  error?: Error;
   analysis?: PodcastAnalysis;
   entities?: {
     people: PersonEntity[];

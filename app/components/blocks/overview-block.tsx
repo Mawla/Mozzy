@@ -1,7 +1,9 @@
 import * as React from "react";
 import { ContainerBlock } from "./container-block";
 import { MetricBlock } from "./metric-block";
-import type { ProcessingAnalysis } from "@/app/core/processing/types/base";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import type { ProcessingAnalysis } from "@/app/types/processing/base";
 import type {
   PersonEntity,
   OrganizationEntity,

@@ -14,6 +14,10 @@ import type {
 import { EntityList } from "./EntityList";
 import { TimelineList } from "./TimelineList";
 import { AnalysisSummary } from "./AnalysisSummary";
+import type {
+  ProcessingChunk,
+  NetworkLog,
+} from "@/app/types/podcast/processing";
 
 interface ValidatedPodcastEntities {
   people: PersonEntity[];

@@ -1,5 +1,5 @@
 import { Loader2, CheckCircle2, AlertCircle, Clock } from "lucide-react";
-import type { ProcessingStatus } from "@/app/core/processing/types/base";
+import type { ProcessingStatus } from "@/app/types/podcast/processing";
 
 interface StepStatusIconProps {
   status: ProcessingStatus;

@@ -24,12 +24,14 @@ import type {
   ProcessingStep,
   ProcessingStatus,
   ProcessingAnalysis,
+} from "@/app/types/processing/base";
+import type {
   ProcessingChunk,
   PersonEntity,
   OrganizationEntity,
   LocationEntity,
   EventEntity,
-} from "@/app/core/processing/types/base";
+} from "@/app/types/podcast/processing";
 
 interface ValidatedEntities {
   people: PersonEntity[];

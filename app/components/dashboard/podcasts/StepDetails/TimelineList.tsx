@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import type { TimelineEvent } from "@/app/core/processing/types/base";
+import type { TimelineEvent } from "@/app/types/processing/base";
 
 interface TimelineListProps {
   timeline?: TimelineEvent[];

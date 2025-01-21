@@ -2,7 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Section } from "@/components/ui/section";
 import { EntityList } from "../dashboard/podcasts/StepDetails/EntityList";
 import { Badge } from "@/components/ui/badge";
-import type { ProcessingAnalysis } from "@/app/core/processing/types/base";
+import { cn } from "@/lib/utils";
+import type { ProcessingAnalysis } from "@/app/types/processing/base";
 
 interface AnalysisBlockProps {
   analysis: ProcessingAnalysis;
