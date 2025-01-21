@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Get current timestamp
+timestamp=$(date "+%Y-%m-%d %H:%M")
+echo "Running type system checks at $timestamp"
+
+# Check for types outside of app/types directory
+echo "Checking for type declarations outside app/types..."
+! grep -r --include="*.ts" --include="*.tsx" --exclude-dir="node_modules" --exclude-dir="app/types" --exclude-dir=".next" "^[[:space:]]*\(interface\|type\|enum\)" . && echo "✓ No type declarations found outside app/types" || (echo "❌ Found type declarations outside app/types directory" && exit 1)
+
+# Check for proper type exports in index.ts
+echo "Checking type exports..."
+! grep -r --include="*.ts" --include="*.tsx" --exclude-dir="node_modules" --exclude-dir="app/types" --exclude-dir=".next" "from \"@/app/types/[^\"]*\"" . | grep -v "from \"@/app/types\"" && echo "✓ All types imported from main index" || (echo "❌ Found direct imports from type subdirectories" && exit 1)
+
+# Run TypeScript type check
+echo "Running type check..."
+npm run type-check 
