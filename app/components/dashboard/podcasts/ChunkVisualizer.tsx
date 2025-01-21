@@ -6,13 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import type {
-  ProcessingChunk,
-  ProcessingAnalysis,
-  ProcessingState,
   TimelineEvent,
   ProcessingStatus,
-  ChunkResult,
-} from "@/app/core/processing/types/base";
+} from "@/app/types/processing/base";
+import type {
+  PodcastProcessingChunk,
+  PodcastProcessingAnalysis,
+} from "@/app/types/processing/podcast";
 import type {
   PersonEntity,
   OrganizationEntity,
@@ -20,6 +20,7 @@ import type {
   EventEntity,
   TopicEntity,
   ConceptEntity,
+  ValidatedPodcastEntities,
 } from "@/app/types/entities/podcast";
 import { diff_match_patch, Diff } from "diff-match-patch";
 import { cn } from "@/lib/utils";
@@ -44,7 +45,7 @@ type PodcastEntity =
   | ConceptEntity;
 
 interface ChunkVisualizerProps {
-  chunks: ProcessingChunk[];
+  chunks: PodcastProcessingChunk[];
 }
 
 interface EntityItem {
@@ -62,8 +63,8 @@ const StepProgress = ({
   label: string;
   status: ProcessingStatus;
   data?:
-    | ProcessingAnalysis
-    | ChunkResult["entities"]
+    | PodcastProcessingAnalysis
+    | ValidatedPodcastEntities
     | TimelineEvent[]
     | string
     | null;

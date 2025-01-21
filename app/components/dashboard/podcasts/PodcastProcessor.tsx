@@ -10,13 +10,16 @@ import type {
   EventEntity,
   TopicEntity,
   ConceptEntity,
-} from "@/app/types/entities";
+  ValidatedPodcastEntities,
+} from "@/app/types/entities/podcast";
 import type {
-  ProcessingAnalysis,
+  ProcessingStatus,
   TopicAnalysis,
-  ChunkResult,
 } from "@/app/types/processing/base";
-import type { ProcessingChunk } from "@/app/types/podcast/processing";
+import type {
+  PodcastProcessingChunk,
+  PodcastProcessingAnalysis,
+} from "@/app/types/processing/podcast";
 import { usePodcastProcessingStore } from "@/app/store/podcastProcessingStore";
 import { PROCESSING_STEPS } from "@/app/constants/processing";
 
@@ -28,14 +31,8 @@ type PodcastEntity =
   | TopicEntity
   | ConceptEntity;
 
-interface ValidatedPodcastEntities {
-  people: PersonEntity[];
-  organizations: OrganizationEntity[];
-  locations: LocationEntity[];
-  events: EventEntity[];
-  topics: TopicEntity[];
-  concepts: ConceptEntity[];
-}
+// Use the validated type from podcast.ts
+type ValidatedEntities = ValidatedPodcastEntities;
 
 export const PodcastProcessor = () => {
   const { isProcessing, processingSteps, handleRetryStep, chunks } =
@@ -50,12 +47,12 @@ export const PodcastProcessor = () => {
     if (!chunks.length) return;
 
     const allChunksCompleted = chunks.every(
-      (chunk: ProcessingChunk) => chunk.status === "completed"
+      (chunk: PodcastProcessingChunk) => chunk.status === "completed"
     );
 
     if (allChunksCompleted) {
       // Combine entities from all chunks with type safety
-      const combinedEntities = chunks.reduce<ValidatedPodcastEntities>(
+      const combinedEntities = chunks.reduce<ValidatedEntities>(
         (acc, chunk) => {
           if (!chunk.result?.entities) return acc;
 
@@ -107,7 +104,7 @@ export const PodcastProcessor = () => {
       );
 
       // Combine analysis from all chunks with proper type safety
-      const combinedAnalysis = chunks.reduce<ProcessingAnalysis>(
+      const combinedAnalysis = chunks.reduce<PodcastProcessingAnalysis>(
         (acc, chunk) => {
           if (!chunk.result?.analysis) return acc;
 
