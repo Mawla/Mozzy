@@ -31,8 +31,19 @@ const getEntityDetails = (
         label: "Industry",
         value: (entity as OrganizationEntity).industry,
       };
-    case "LOCATION":
-      return { label: "Type", value: (entity as LocationEntity).locationType };
+    case "LOCATION": {
+      const locationEntity = entity as LocationEntity;
+      const details = [`Type: ${locationEntity.locationType}`];
+      if (locationEntity.region) {
+        details.push(`Region: ${locationEntity.region}`);
+      }
+      if (locationEntity.coordinates) {
+        details.push(
+          `Coordinates: ${locationEntity.coordinates.lat}, ${locationEntity.coordinates.lng}`
+        );
+      }
+      return { label: "Details", value: details.join(" | ") };
+    }
     case "EVENT":
       return { label: "Date", value: (entity as EventEntity).date };
     case "TOPIC":
