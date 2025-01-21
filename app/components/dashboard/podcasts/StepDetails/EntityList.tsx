@@ -39,7 +39,7 @@ const getEntityDetails = (
       }
       if (locationEntity.coordinates) {
         details.push(
-          `Coordinates: ${locationEntity.coordinates.lat}, ${locationEntity.coordinates.lng}`
+          `Coordinates: ${locationEntity.coordinates.latitude}, ${locationEntity.coordinates.longitude}`
         );
       }
       return { label: "Details", value: details.join(" | ") };
