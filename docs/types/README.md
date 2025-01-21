@@ -1,6 +1,6 @@
 # Mozzy Type System Overview
 
-Last Updated: 2025-01-21 14:21
+Last Updated: 2025-01-21 14:52
 
 ## Introduction
 
@@ -11,21 +11,294 @@ The Mozzy type system is designed to provide a robust and maintainable foundatio
 ```
 app/types/
 ├── index.ts              # Main type exports
-├── entities/             # Shared entity types
+├── entities/            # Entity type definitions
 │   ├── index.ts         # Entity barrel file
 │   ├── base.ts          # Base entity interfaces
 │   ├── podcast.ts       # Podcast-specific entities
 │   └── post.ts          # Post-specific entities
-├── processing/
-│   ├── index.ts        # Processing barrel file
-│   ├── base.ts         # Core processing interfaces
-│   └── podcast/        # Podcast processing types
-│       └── processing.ts # Podcast-specific processing
-├── metadata.ts         # UI and display metadata types
-├── topic.ts           # Topic and content structure types
-└── contentMetadata.ts # Content metadata types
-
+├── processing/          # Processing type definitions
+│   ├── index.ts         # Processing barrel file
+│   ├── base.ts          # Core processing interfaces
+│   ├── podcast.ts       # Podcast processing types
+│   ├── podcast/        # Podcast processing subtypes
+│   └── post/          # Post processing subtypes
+├── shared/             # Shared type definitions
+│   ├── content.ts       # Content structure types
+│   ├── analysis.ts      # Analysis result types
+│   ├── application.ts   # Application state types
+│   ├── timeline.ts      # Timeline event types
+│   ├── analysis/       # Analysis subtypes
+│   ├── application/    # Application subtypes
+│   ├── content/        # Content subtypes
+│   └── timeline/       # Timeline subtypes
+├── podcast/            # Podcast-specific types
+├── blocks.ts          # Block component types
+├── content.ts         # Content types
+├── contentMetadata.ts # Content metadata types
+├── icp.ts            # ICP types
+├── metadata.ts       # UI metadata types
+├── navigation.ts     # Navigation types
+├── post.ts           # Post types
+├── renderer.ts       # Renderer types
+├── supabase.ts       # Supabase types
+├── template.ts       # Template types
+└── topic.ts          # Topic types
 ```
+
+## Entity Type Requirements
+
+### Base Entity Requirements
+
+All entity types must implement the BaseEntity interface with these required fields:
+
+```typescript
+interface BaseEntity {
+  id: string; // Unique identifier
+  name: string; // Display name
+  type: EntityType; // Type classification
+  context: string; // Contextual information
+  mentions: EntityMention[]; // Usage mentions
+  createdAt: string; // Creation timestamp
+  updatedAt: string; // Update timestamp
+}
+```
+
+### Required Fields by Entity Type
+
+1. LocationEntity:
+
+   - locationType: string (Required)
+   - coordinates?: { latitude: number; longitude: number }
+   - region?: string
+
+2. EventEntity:
+
+   - date: string (Required, ISO format)
+   - duration: string (Required)
+   - participants: string[] (Required)
+   - location?: string
+
+3. PersonEntity:
+
+   - role: string (Required)
+   - expertise?: string[]
+   - affiliations?: string[]
+
+4. OrganizationEntity:
+   - industry?: string
+   - size?: string
+   - location?: string
+
+## Type Validation
+
+### Zod Schema Requirements
+
+All entity types must have corresponding Zod validation schemas:
+
+```typescript
+const baseEntitySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.string(),
+  context: z.string(),
+  mentions: z.array(
+    z.object({
+      text: z.string(),
+      sentiment: z.enum(["positive", "negative", "neutral"]),
+      timestamp: z.string().optional(),
+    })
+  ),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+// Entity-specific schemas must extend baseEntitySchema
+const locationEntitySchema = baseEntitySchema.extend({
+  type: z.literal("LOCATION"),
+  locationType: z.string().min(1),
+  coordinates: z
+    .object({
+      lat: z.number().min(-90).max(90),
+      lng: z.number().min(-180).max(180),
+    })
+    .optional(),
+});
+```
+
+## Type Export Guidelines
+
+1. Always export types through the main index.ts
+2. Use descriptive aliases for domain-specific types
+3. Keep type hierarchies shallow and well-documented
+4. Provide validation schemas for all entity types
+
+## Recent Changes (2025-01-21)
+
+1. Entity Interface Updates:
+
+   - Made locationType required in LocationEntity
+   - Made date, duration, and participants required in EventEntity
+   - Updated validation schemas to match interface requirements
+
+2. Type Organization:
+
+   - Moved UI-specific types to /types/ui
+   - Consolidated shared types in /types/shared
+   - Updated processing type exports
+
+3. Theme Type System (2025-01-21 14:52):
+   - Introduced ExtendedTheme pattern for rich theme data
+   - Maintained base type compatibility with string[] themes
+   - Added proper type validation and merging utilities
+   - Updated affected components
+
+## Extended Type Patterns
+
+### ExtendedTheme Pattern
+
+The ExtendedTheme pattern allows for rich theme data while maintaining compatibility with base types:
+
+```typescript
+// Base type uses simple string array
+interface ProcessingAnalysis {
+  themes?: string[];
+}
+
+// Extended type adds rich theme data
+interface ExtendedTheme {
+  /** Theme name - matches the string in base themes array */
+  name: string;
+  /** Theme description */
+  description: string;
+  /** Related concepts */
+  relatedConcepts: string[];
+}
+
+// Usage in domain-specific types
+interface PodcastAnalysis extends BasePodcastAnalysis {
+  /** Basic theme names for compatibility */
+  themes: string[];
+  /** Rich theme data for advanced features */
+  extendedThemes: ExtendedTheme[];
+}
+```
+
+### Theme Merging Utilities
+
+When working with both basic and extended themes, use appropriate merging utilities:
+
+```typescript
+// Basic theme merging
+function mergeThemes(
+  accThemes: string[] = [],
+  newThemes: string[] = []
+): string[] {
+  const set = new Set([...accThemes, ...newThemes]);
+  return Array.from(set);
+}
+
+// Extended theme merging
+function mergeExtendedThemes(
+  accThemes: ExtendedTheme[] = [],
+  newThemes: ExtendedTheme[] = []
+): ExtendedTheme[] {
+  const map = new Map<string, ExtendedTheme>();
+  [...accThemes, ...newThemes].forEach((theme) => map.set(theme.name, theme));
+  return Array.from(map.values());
+}
+```
+
+### Type Safety Guidelines
+
+When implementing extended type patterns:
+
+1. Base Type Compatibility:
+
+   - Keep base type simple (e.g., string[])
+   - Ensure extended type can map to base type
+   - Maintain type validation at boundaries
+
+2. Extended Type Requirements:
+
+   - Include reference to base type (e.g., name field)
+   - Add rich data fields as needed
+   - Document relationship to base type
+
+3. Type Synchronization:
+
+   - Keep base and extended types in sync
+   - Use proper merging utilities
+   - Validate relationships
+
+4. Component Integration:
+   - Handle both basic and extended types
+   - Provide fallback for basic type
+   - Use type guards when needed
+
+## Type Safety Checklist
+
+- [ ] All entity types extend BaseEntity
+- [ ] Required fields are properly marked as non-optional
+- [ ] Validation schemas match type definitions
+- [ ] No circular dependencies
+- [ ] Clear type hierarchies
+- [ ] Consistent naming conventions
+- [ ] Proper documentation
+- [ ] Type exports through index.ts
+
+## Import Best Practices
+
+```typescript
+// Preferred: Import from main index
+import type { ProcessingStatus, PodcastAnalysis } from "@/app/types";
+
+// For internal type definitions only
+import type { BaseEntity } from "@/app/types/entities/base";
+
+// Avoid: Direct imports from implementation files
+// ❌ import type { PersonEntity } from "@/app/types/entities/podcast";
+```
+
+## Type Naming Conventions
+
+1. Base Types:
+
+   - Prefix: Base (e.g., BaseEntity)
+   - Suffix: none
+
+2. Domain Types:
+
+   - Prefix: Domain name (e.g., PodcastPersonEntity)
+   - Suffix: Entity for entities
+
+3. Validated Types:
+
+   - Prefix: Validated (e.g., ValidatedPodcastEntity)
+   - Include validation schema
+
+4. Processing Types:
+   - Prefix: Processing (e.g., ProcessingResult)
+   - Clear purpose indication
+
+## Maintenance Guidelines
+
+1. Documentation Updates:
+
+   - Update this document with all type system changes
+   - Include timestamp of last update
+   - Document breaking changes
+   - Keep examples current
+
+2. Type Checks:
+
+   - Run full type check before commits
+   - Fix type errors immediately
+   - Document type workarounds
+
+3. Schema Updates:
+   - Keep validation schemas in sync with types
+   - Test schema validations
+   - Document schema changes
 
 ## Export Structure
 

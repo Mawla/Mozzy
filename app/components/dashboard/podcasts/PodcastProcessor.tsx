@@ -19,6 +19,7 @@ import type {
 import type {
   PodcastProcessingChunk,
   PodcastProcessingAnalysis,
+  ExtendedTheme,
 } from "@/app/types/processing/podcast";
 import { usePodcastProcessingStore } from "@/app/store/podcastProcessingStore";
 import { PROCESSING_STEPS } from "@/app/constants/processing";
@@ -114,6 +115,18 @@ export const PodcastProcessor = () => {
             return Array.from(set);
           }
 
+          // Helper function to merge extended themes with deduplication
+          function mergeExtendedThemes(
+            accThemes: ExtendedTheme[] = [],
+            newThemes: ExtendedTheme[] = []
+          ): ExtendedTheme[] {
+            const map = new Map<string, ExtendedTheme>();
+            [...accThemes, ...newThemes].forEach((theme) =>
+              map.set(theme.name, theme)
+            );
+            return Array.from(map.values());
+          }
+
           return {
             summary: acc.summary || chunk.result.analysis.summary || "",
             keyPoints: mergeArrays(
@@ -128,6 +141,10 @@ export const PodcastProcessor = () => {
               acc.themes || [],
               chunk.result.analysis.themes || []
             ),
+            extendedThemes: mergeExtendedThemes(
+              acc.extendedThemes || [],
+              chunk.result.analysis.extendedThemes || []
+            ),
           };
         },
         {
@@ -135,6 +152,7 @@ export const PodcastProcessor = () => {
           keyPoints: [],
           topics: [],
           themes: [],
+          extendedThemes: [],
         }
       );
 

@@ -42,7 +42,7 @@ export interface LocationEntity extends BaseEntity {
   /** Must be LOCATION type */
   type: Extract<EntityType, "LOCATION">;
   /** Type of location (e.g., city, country) */
-  locationType?: string;
+  locationType: string;
   /** Geographic region (optional) */
   region?: string;
 }
@@ -55,11 +55,11 @@ export interface EventEntity extends BaseEntity {
   /** Must be EVENT type */
   type: Extract<EntityType, "EVENT">;
   /** Event date (ISO format) */
-  date?: string;
-  /** Event duration (optional) */
-  duration?: string;
-  /** List of event participants (optional) */
-  participants?: string[];
+  date: string;
+  /** Event duration */
+  duration: string;
+  /** List of event participants */
+  participants: string[];
 }
 
 /**
@@ -105,15 +105,15 @@ export const organizationSchema = baseEntitySchema.extend({
 
 export const locationSchema = baseEntitySchema.extend({
   type: z.literal("LOCATION"),
-  locationType: z.string().optional(),
+  locationType: z.string().min(1),
   region: z.string().optional(),
 });
 
 export const eventSchema = baseEntitySchema.extend({
   type: z.literal("EVENT"),
-  date: z.string().optional(),
-  duration: z.string().optional(),
-  participants: z.array(z.string()).optional(),
+  date: z.string(),
+  duration: z.string(),
+  participants: z.array(z.string()),
 });
 
 export const topicSchema = baseEntitySchema.extend({

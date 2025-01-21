@@ -26,7 +26,43 @@ import type {
 
 import { Section } from "../shared/content";
 
-export interface PodcastProcessingAnalysis {
+/**
+ * Represents a theme discussed in the podcast with extended information
+ */
+export interface ExtendedTheme {
+  /** Theme name - matches the string in base themes array */
+  name: string;
+  /** Theme description */
+  description: string;
+  /** Related concepts */
+  relatedConcepts: string[];
+}
+
+/**
+ * Base interface for podcast processing analysis
+ */
+export interface BasePodcastAnalysis {
+  /** Unique identifier for the analysis */
+  id?: string;
+  /** Title of the analyzed content */
+  title?: string;
+  /** Brief summary of the content */
+  summary?: string;
+  /** Extracted entities */
+  entities?: ValidatedPodcastEntities;
+  /** Timeline of events */
+  timeline?: TimelineEvent[];
+  /** Sentiment analysis results */
+  sentiment?: SentimentAnalysis;
+  /** Topic analysis results */
+  topics?: TopicAnalysis[];
+  /** Major themes discussed - basic theme names */
+  themes?: string[];
+  /** Extended theme information */
+  extendedThemes?: ExtendedTheme[];
+}
+
+export interface PodcastProcessingAnalysis extends BasePodcastAnalysis {
   id?: string;
   title?: string;
   summary?: string;
@@ -88,13 +124,7 @@ export interface PodcastProcessingStep extends ProcessingStep {
  * Represents the analysis of a podcast episode
  * Contains detailed breakdown of content and insights
  */
-export interface PodcastAnalysis {
-  /** Unique identifier for the analysis */
-  id: string;
-  /** Title of the analyzed podcast */
-  title: string;
-  /** Brief summary of the podcast content */
-  summary: string;
+export interface PodcastAnalysis extends BasePodcastAnalysis {
   /** Quick facts extracted from the podcast */
   quickFacts: {
     /** Duration of the episode */
@@ -117,15 +147,9 @@ export interface PodcastAnalysis {
     /** Relevance or importance */
     relevance: string;
   }>;
-  /** Major themes discussed */
-  themes: Array<{
-    /** Theme name */
-    name: string;
-    /** Theme description */
-    description: string;
-    /** Related concepts */
-    relatedConcepts: string[];
-  }>;
+  /** Major themes discussed with extended information */
+  themes: string[];
+  extendedThemes: ExtendedTheme[];
   /** Content sections */
   sections: Section[];
 }
@@ -143,7 +167,7 @@ export interface PodcastInput {
 /**
  * Result of podcast processing operation
  */
-export interface ProcessingResult {
+export interface PodcastProcessingResultBase {
   /** Whether processing was successful */
   success: boolean;
   /** ID of the processed podcast */
@@ -161,7 +185,7 @@ export interface PodcastTranscript {
 }
 
 /**
- * Represents a fully processed podcast
+ * Represents a fully processed podcast with validated entities
  */
 export interface ProcessedPodcast {
   /** Unique identifier */
@@ -175,26 +199,14 @@ export interface ProcessedPodcast {
     /** Key points extracted */
     keyPoints: string[];
     /** Main topics discussed */
-    topics: string[];
+    topics: TopicAnalysis[];
     /** Extracted entities */
-    entities: {
-      /** People mentioned */
-      people: string[];
-      /** Places referenced */
-      places: string[];
-      /** Organizations discussed */
-      organizations: string[];
-    };
+    entities: ValidatedPodcastEntities;
     /** Timeline of events */
-    timeline: Array<{
-      /** Timestamp in the podcast */
-      timestamp: string;
-      /** Content at this timestamp */
-      content: string;
-    }>;
+    timeline: TimelineEvent[];
   };
   /** Processing status */
-  status: "processing" | "completed" | "error";
+  status: ProcessingStatus;
   /** Error message if processing failed */
   error?: string;
 }
@@ -202,7 +214,7 @@ export interface ProcessedPodcast {
 /**
  * State management interface for podcast processing
  */
-export interface PodcastProcessingState {
+export interface PodcastProcessingStateManagement {
   /** Whether processing is active */
   isProcessing: boolean;
   /** Input data being processed */
@@ -210,7 +222,7 @@ export interface PodcastProcessingState {
   /** Array of processing steps */
   processingSteps: ProcessingStep[];
   /** Currently processed podcast */
-  currentPodcast: any | null;
+  currentPodcast: ProcessedPodcast | null;
   /** Set processing state */
   setProcessing: (isProcessing: boolean) => void;
   /** Set input data */
