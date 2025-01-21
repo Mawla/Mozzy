@@ -1,10 +1,10 @@
 # Entity Types Documentation
 
-Last Updated: 2025-01-21 14:11
+Last Updated: 2025-01-21 14:45
 
 ## Overview
 
-The entity type system provides a hierarchical structure for managing different types of entities across the application. It follows a base-extension pattern where domain-specific entities extend base types.
+The entity type system provides a hierarchical structure for managing different types of entities across the application. It follows a base-extension pattern where domain-specific entities extend base types with strict requirements for required fields.
 
 ## Directory Structure
 
@@ -18,216 +18,194 @@ app/types/entities/
 
 ## Base Entities
 
-All base entities are defined in `base.ts` and follow this pattern:
+All entities must implement the BaseEntity interface with these required fields:
 
 ```typescript
 interface BaseEntity {
-  id: string;
-  type: EntityType;
-  name: string;
-  description?: string;
-  metadata?: Record<string, unknown>;
+  id: string; // Required: Unique identifier
+  name: string; // Required: Display name
+  type: EntityType; // Required: Type classification
+  context: string; // Required: Contextual information
+  mentions: EntityMention[]; // Required: Usage mentions
+  createdAt: string; // Required: Creation timestamp
+  updatedAt: string; // Required: Update timestamp
+  relationships?: EntityRelationship[]; // Optional: Related entities
 }
 
-// Core entity types
+interface EntityMention {
+  text: string;
+  sentiment: "positive" | "negative" | "neutral";
+  timestamp?: string;
+}
+```
+
+## Required Fields by Entity Type
+
+### Location Entity
+
+```typescript
+interface LocationEntity extends BaseEntity {
+  type: "LOCATION";
+  locationType: string; // Required: Type of location
+  coordinates?: {
+    // Optional: Geographic coordinates
+    latitude: number;
+    longitude: number;
+  };
+  region?: string; // Optional: Geographic region
+}
+```
+
+### Event Entity
+
+```typescript
+interface EventEntity extends BaseEntity {
+  type: "EVENT";
+  date: string; // Required: ISO format date
+  duration: string; // Required: Event duration
+  participants: string[]; // Required: List of participants
+  location?: string; // Optional: Event location
+}
+```
+
+### Person Entity
+
+```typescript
 interface PersonEntity extends BaseEntity {
-  type: "person";
-  role?: string;
-  affiliations?: string[];
+  type: "PERSON";
+  role: string; // Required: Person's role
+  expertise?: string[]; // Optional: Areas of expertise
+  affiliations?: string[]; // Optional: Organizational affiliations
 }
+```
 
+### Organization Entity
+
+```typescript
 interface OrganizationEntity extends BaseEntity {
-  type: "organization";
-  industry?: string;
-}
-
-// ... other base entities
-```
-
-## Domain-Specific Extensions
-
-### Podcast Entities
-
-Podcast-specific entities extend base types with additional fields:
-
-```typescript
-interface PodcastPersonEntity extends PersonEntity {
-  expertise: string[];
-  role: string; // Required in podcast context
-}
-
-interface PodcastOrganizationEntity extends OrganizationEntity {
-  industry: string; // Required in podcast context
-  size: string;
+  type: "ORGANIZATION";
+  industry?: string; // Optional: Industry classification
+  size?: string; // Optional: Organization size
+  location?: string; // Optional: Physical location
 }
 ```
-
-### Post Entities
-
-Post-specific entities have their own extensions:
-
-```typescript
-interface PostPersonEntity extends PersonEntity {
-  authorProfile?: string;
-  publications?: string[];
-}
-```
-
-## Export Structure
-
-The `index.ts` file provides organized exports:
-
-```typescript
-// Base types with specific naming
-export type {
-  BaseEntity,
-  EntityType,
-  PersonEntity as BasePersonEntity,
-  // ...
-} from "./base";
-
-// Podcast-specific entities
-export type {
-  PersonEntity as PodcastPersonEntity,
-  // ...
-} from "./podcast";
-
-// Default exports
-export type {
-  PersonEntity,
-  OrganizationEntity,
-  // ...
-} from "./base";
-```
-
-## Usage Guidelines
-
-1. Importing Entities:
-
-   ```typescript
-   // General use
-   import type { PersonEntity } from "@/app/types";
-
-   // Specific domain
-   import type { PodcastPersonEntity } from "@/app/types";
-   ```
-
-2. Type Extensions:
-
-   ```typescript
-   // Extending base entities
-   interface CustomEntity extends BaseEntity {
-     customField: string;
-   }
-   ```
-
-3. Type Guards:
-   ```typescript
-   function isPerson(entity: BaseEntity): entity is PersonEntity {
-     return entity.type === "person";
-   }
-   ```
 
 ## Validation
 
-1. Runtime Validation:
+### Zod Schema Requirements
 
-   ```typescript
-   interface ValidationResult {
-     isValid: boolean;
-     errors: string[];
-   }
+All entity types must have corresponding Zod validation schemas that enforce required fields:
 
-   function validateEntity(entity: BaseEntity): ValidationResult {
-     // Validation logic
-   }
-   ```
+```typescript
+const baseEntitySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.string(),
+  context: z.string(),
+  mentions: z.array(
+    z.object({
+      text: z.string(),
+      sentiment: z.enum(["positive", "negative", "neutral"]),
+      timestamp: z.string().optional(),
+    })
+  ),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  relationships: z
+    .array(
+      z.object({
+        entity: z.string(),
+        relationship: z.string(),
+        context: z.string().optional(),
+      })
+    )
+    .optional(),
+});
 
-2. Type Guards:
-   ```typescript
-   function isValidPerson(entity: unknown): entity is PersonEntity {
-     // Type validation logic
-   }
-   ```
+const locationEntitySchema = baseEntitySchema.extend({
+  type: z.literal("LOCATION"),
+  locationType: z.string().min(1), // Required
+  coordinates: z
+    .object({
+      lat: z.number().min(-90).max(90),
+      lng: z.number().min(-180).max(180),
+    })
+    .optional(),
+  region: z.string().optional(),
+});
+
+const eventEntitySchema = baseEntitySchema.extend({
+  type: z.literal("EVENT"),
+  date: z.string(), // Required
+  duration: z.string(), // Required
+  participants: z.array(z.string()), // Required
+  location: z.string().optional(),
+});
+```
+
+## Recent Changes (2025-01-21)
+
+1. Required Fields Update:
+
+   - Made `locationType` required in LocationEntity
+   - Made `date`, `duration`, and `participants` required in EventEntity
+   - Updated validation schemas to enforce required fields
+   - Added strict type checking for entity fields
+
+2. Documentation Updates:
+   - Added clear required vs optional field documentation
+   - Updated validation schema examples
+   - Added type safety guidelines
+   - Improved entity relationship documentation
 
 ## Best Practices
 
 1. Entity Creation:
 
-   - Always extend from base entities
-   - Include required type field
-   - Add domain-specific validations
+   - Always extend from BaseEntity
+   - Clearly mark required fields (no optional modifier)
+   - Include proper JSDoc documentation
+   - Add validation schemas
 
 2. Type Safety:
 
    - Use type guards for runtime checks
-   - Validate entities at boundaries
+   - Validate entities at system boundaries
    - Keep type hierarchies shallow
+   - Enforce required fields
 
-3. Naming Conventions:
+3. Validation:
+   - Always use Zod schemas
+   - Match schema requirements to TypeScript types
+   - Include meaningful validation messages
+   - Test validation edge cases
 
-   - Base types: `BaseEntity`, `PersonEntity`
-   - Domain types: `PodcastPersonEntity`, `PostPersonEntity`
-   - Type guards: `isPerson`, `isOrganization`
+## Import Guidelines
 
-4. Documentation:
-   - Document all entity interfaces
-   - Include usage examples
-   - Note required vs optional fields
-   - Explain domain-specific requirements
+```typescript
+// Preferred: Import from main types index
+import type { LocationEntity, EventEntity } from "@/app/types";
+
+// For internal type definitions only
+import type { BaseEntity } from "@/app/types/entities/base";
+
+// Avoid direct imports from domain files
+// ❌ import type { PodcastLocationEntity } from "@/app/types/entities/podcast";
+```
+
+## Type Safety Checklist
+
+- [ ] All entity types extend BaseEntity
+- [ ] Required fields are non-optional
+- [ ] Validation schemas match type definitions
+- [ ] Type guards implemented for runtime checks
+- [ ] Clear documentation of required fields
+- [ ] Proper error messages in validation
+- [ ] Test coverage for validation
+- [ ] No circular dependencies
 
 ## Related Documentation
 
 - [Processing Types](../processing/README.md)
 - [Type System Overview](../README.md)
 - [Component Integration](../../components/README.md)
-
-## Entity Validation
-
-### Validation Rules
-
-```typescript
-interface ValidationRule<T> {
-  validate: (value: T) => boolean;
-  message: string;
-}
-
-interface EntityValidationRules<T extends BaseEntity> {
-  [K in keyof T]?: ValidationRule<T[K]>[];
-}
-```
-
-### Relationship Types
-
-```typescript
-interface EntityRelationship<T extends BaseEntity, R extends BaseEntity> {
-  sourceId: string;
-  targetId: string;
-  type: RelationType;
-  metadata?: Record<string, unknown>;
-}
-
-type RelationType = "PARENT" | "CHILD" | "REFERENCE" | "DERIVED";
-
-interface RelationshipMetadata {
-  createdAt: string;
-  updatedAt: string;
-  status: "ACTIVE" | "ARCHIVED";
-}
-```
-
-### Relationship Management
-
-```typescript
-class RelationshipManager {
-  async createRelationship<T extends BaseEntity, R extends BaseEntity>(
-    source: T,
-    target: R,
-    type: RelationType
-  ): Promise<EntityRelationship<T, R>>;
-
-  async getRelationships<T extends BaseEntity>(
-    entity: T
-  ): Promise<EntityRelationship<T, BaseEntity>[]>;
-}
-```
