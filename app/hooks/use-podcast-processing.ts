@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { usePodcastProcessingStore } from "../store/podcastProcessingStore";
+import type { NetworkLog } from "@/app/types/processing/base";
 import type {
-  ProcessingStep,
-  ProcessingChunk,
-  NetworkLog,
-} from "@/app/types/podcast/processing";
+  PodcastProcessingStep,
+  PodcastProcessingChunk,
+} from "@/app/types/processing/podcast";
 
 export type ProcessingTab = "progress" | "chunks" | "logs";
 
@@ -34,16 +34,12 @@ export function usePodcastProcessing() {
 
   const isStepComplete = (stepName: string) => {
     return processingSteps.some(
-      (step: ProcessingStep) =>
-        step.name === stepName && step.status === "completed"
+      (step) => step.name === stepName && step.status === "completed"
     );
   };
 
   const getStepData = (stepName: string) => {
-    return (
-      processingSteps.find((step: ProcessingStep) => step.name === stepName)
-        ?.data || null
-    );
+    return processingSteps.find((step) => step.name === stepName)?.data || null;
   };
 
   return {

@@ -1,4 +1,4 @@
-import type { BaseEntity, EntityType } from "@/app/types/entities";
+import type { BaseEntity, EntityType } from "@/app/types/entities/base";
 import type {
   PersonEntity,
   OrganizationEntity,
@@ -6,7 +6,7 @@ import type {
   EventEntity,
   TopicEntity,
   ConceptEntity,
-} from "@/app/types/entities";
+} from "@/app/types/entities/podcast";
 
 type PodcastEntity =
   | PersonEntity

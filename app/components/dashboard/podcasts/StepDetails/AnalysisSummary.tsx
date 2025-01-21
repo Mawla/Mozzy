@@ -1,10 +1,8 @@
-import type {
-  ProcessingAnalysis,
-  TopicAnalysis,
-} from "@/app/core/processing/types/base";
+import type { TopicAnalysis } from "@/app/types/processing/base";
+import type { PodcastProcessingAnalysis } from "@/app/types/processing/podcast";
 
 interface AnalysisSummaryProps {
-  data?: ProcessingAnalysis;
+  data?: PodcastProcessingAnalysis;
 }
 
 export const AnalysisSummary = ({ data }: AnalysisSummaryProps) => {

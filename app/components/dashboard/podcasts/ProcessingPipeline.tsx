@@ -20,42 +20,64 @@ import { StepDetails } from "./StepDetails/StepDetails";
 import { usePodcastProcessing } from "@/app/hooks/use-podcast-processing";
 import { cn } from "@/lib/utils";
 import { ParallelProcessingStatus } from "./ParallelProcessingStatus";
+import type { ProcessingStatus } from "@/app/types/processing/base";
 import type {
-  ProcessingStep,
-  ProcessingStatus,
-  ProcessingAnalysis,
-} from "@/app/types/processing/base";
+  PodcastProcessingStep,
+  PodcastProcessingChunk,
+  PodcastProcessingAnalysis,
+} from "@/app/types/processing/podcast";
 import type {
-  ProcessingChunk,
   PersonEntity,
   OrganizationEntity,
   LocationEntity,
   EventEntity,
-} from "@/app/types/podcast/processing";
-
-interface ValidatedEntities {
-  people: PersonEntity[];
-  organizations: OrganizationEntity[];
-  locations: LocationEntity[];
-  events: EventEntity[];
-}
+  ValidatedPodcastEntities,
+} from "@/app/types/entities/podcast";
 
 interface ProcessingPipelineProps {
-  steps: ProcessingStep[];
+  steps: PodcastProcessingStep[];
   onRetryStep: (stepId: string) => void;
   isProcessing: boolean;
   isOpen: boolean;
   onToggle: () => void;
 }
 
-interface ExtendedProcessingStep extends ProcessingStep {
+interface ExtendedProcessingStep extends PodcastProcessingStep {
   type?: "transcription" | "entity-extraction" | "summarization";
   data?: {
-    entities?: ValidatedEntities;
-    analysis?: ProcessingAnalysis;
+    entities?: ValidatedPodcastEntities;
+    analysis?: PodcastProcessingAnalysis;
     [key: string]: any;
   };
 }
+
+// Type guards
+const isTranscriptionStep = (step: ExtendedProcessingStep): boolean => {
+  return step.type === "transcription";
+};
+
+const isEntityExtractionStep = (step: ExtendedProcessingStep): boolean => {
+  return step.type === "entity-extraction" && step.data?.entities !== undefined;
+};
+
+const isSummarizationStep = (step: ExtendedProcessingStep): boolean => {
+  return step.type === "summarization" && step.data?.analysis !== undefined;
+};
+
+const hasValidData = (step: ExtendedProcessingStep): boolean => {
+  if (!step.data) return false;
+
+  switch (step.type) {
+    case "transcription":
+      return true; // Transcription steps don't require specific data
+    case "entity-extraction":
+      return !!step.data.entities;
+    case "summarization":
+      return !!step.data.analysis;
+    default:
+      return true; // Default to true for unknown step types
+  }
+};
 
 export const ProcessingPipeline = ({
   steps,
@@ -64,6 +86,98 @@ export const ProcessingPipeline = ({
   isOpen,
   onToggle,
 }: ProcessingPipelineProps) => {
+  const podcastProcessing = usePodcastProcessing();
+
+  if (!steps || steps.length === 0) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-gray-500">
+            No processing steps available
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const handleRetry = (stepId: string) => {
+    if (typeof onRetryStep === "function") {
+      onRetryStep(stepId);
+    }
+  };
+
+  const getBadgeVariant = (
+    status: ProcessingStatus
+  ): "default" | "secondary" | "destructive" | "outline" => {
+    switch (status) {
+      case "completed":
+        return "default";
+      case "processing":
+        return "secondary";
+      case "error":
+      case "failed":
+        return "destructive";
+      case "pending":
+        return "secondary";
+      default:
+        return "outline";
+    }
+  };
+
+  const getBadgeContent = (status: ProcessingStatus): string => {
+    switch (status) {
+      case "completed":
+        return "Completed";
+      case "processing":
+        return "Processing";
+      case "error":
+      case "failed":
+        return "Error";
+      case "pending":
+        return "Pending";
+      default:
+        return "Unknown";
+    }
+  };
+
+  const renderStepContent = (step: ExtendedProcessingStep) => {
+    if (!hasValidData(step)) {
+      return (
+        <div className="text-sm text-gray-500">
+          No data available for this step
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Badge variant={getBadgeVariant(step.status)}>
+            {getBadgeContent(step.status)}
+          </Badge>
+          {(step.status === "error" || step.status === "failed") && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => handleRetry(step.id)}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Retry
+            </Button>
+          )}
+        </div>
+        <StepDetails step={step} />
+        {step.chunks && step.chunks.length > 0 && (
+          <ChunkVisualizer chunks={step.chunks} />
+        )}
+        {step.networkLogs && step.networkLogs.length > 0 && (
+          <NetworkLogger logs={step.networkLogs} />
+        )}
+      </div>
+    );
+  };
+
   const {
     chunks,
     networkLogs,
@@ -72,70 +186,11 @@ export const ProcessingPipeline = ({
     toggleStep,
     setActiveTab,
     getStepData,
-  } = usePodcastProcessing();
+  } = podcastProcessing;
 
   const handleTabChange = (value: string) => {
     if (value === "progress" || value === "chunks" || value === "logs") {
       setActiveTab(value);
-    }
-  };
-
-  const renderStepContent = (step: ExtendedProcessingStep) => {
-    if (step.status === "error" || step.status === "failed") {
-      return (
-        <div className="text-red-500 text-sm">
-          {step.error instanceof Error
-            ? step.error.message
-            : "An error occurred during processing"}
-        </div>
-      );
-    }
-
-    if (step.type === "entity-extraction" && step.status === "completed") {
-      const stepData = getStepData(step.id);
-      if (stepData?.entities) {
-        return (
-          <StepDetails
-            step={{ ...step, data: { entities: stepData.entities } }}
-          />
-        );
-      }
-    }
-
-    return <StepDetails step={step} />;
-  };
-
-  const getBadgeVariant = (status: ProcessingStatus) => {
-    switch (status) {
-      case "completed":
-        return "default";
-      case "error":
-      case "failed":
-        return "destructive";
-      case "processing":
-      case "pending":
-        return "secondary";
-      case "idle":
-        return "outline";
-      default:
-        return "secondary";
-    }
-  };
-
-  const getBadgeContent = (status: ProcessingStatus) => {
-    switch (status) {
-      case "processing":
-      case "pending":
-        return "Processing...";
-      case "completed":
-        return "Completed";
-      case "error":
-      case "failed":
-        return "Error";
-      case "idle":
-        return "Ready";
-      default:
-        return status;
     }
   };
 
