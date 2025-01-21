@@ -1,5 +1,11 @@
 import { chunkText } from "../utils/textChunking";
-import type { ChunkOptions, TextChunk } from "../types/podcast/processing";
+import type { BaseTextChunk as TextChunk } from "../types/processing/base";
+
+interface ChunkOptions {
+  maxChunkSize?: number;
+  overlap?: number;
+  strategy?: "sentence" | "word" | "character";
+}
 
 self.onmessage = (e: MessageEvent) => {
   const { text, options } = e.data;

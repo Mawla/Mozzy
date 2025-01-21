@@ -73,6 +73,12 @@ export interface BaseTextChunk {
   endIndex?: number;
 }
 
+export type ProcessingChunk = BaseTextChunk & {
+  status: ProcessingStatus;
+  result?: ChunkResult;
+  error?: Error | string;
+};
+
 export interface ProcessingAnalysis {
   id?: string;
   title?: string;
