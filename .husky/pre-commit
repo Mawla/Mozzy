@@ -1,0 +1,48 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run type system checks
+.husky/type-check
+
+# Run task documentation validation
+.husky/validate-task-docs
+
+# Run other checks
+npm run lint-staged
+
+# Validate task documentation structure
+validate_task_docs() {
+  for file in $(git diff --cached --name-only | grep 'docs/working-memory/open/.*/updates.md'); do
+    echo "Validating $file structure..."
+    
+    # Check if Current Status is first section
+    if ! head -n 5 "$file" | grep -q "^## Current Status"; then
+      echo "❌ Error: Current Status must be the first section in $file"
+      exit 1
+    fi
+    
+    # Check for multiple Current Status sections
+    if [ $(grep -c "^## Current Status" "$file") -gt 1 ]; then
+      echo "❌ Error: Multiple Current Status sections found in $file"
+      exit 1
+    fi
+    
+    # Check for required sections
+    for section in "What's working:" "What's not:" "Blocking issues:" "Next actions:"; do
+      if ! grep -q "$section" "$file"; then
+        echo "❌ Error: Missing required section '$section' in $file"
+        exit 1
+      fi
+    done
+    
+    # Check for Progress History section
+    if ! grep -q "^## Progress History" "$file"; then
+      echo "❌ Error: Missing Progress History section in $file"
+      exit 1
+    fi
+    
+    echo "✅ $file structure validated"
+  done
+}
+
+validate_task_docs 
