@@ -1,5 +1,8 @@
 import { z } from "zod";
 import { BaseEntity, EntityType, baseEntitySchema } from "./base";
+import { ContentMetadata } from "@/app/types/contentMetadata";
+import { ProcessingStatus } from "../processing/base";
+import { PodcastAnalysis } from "../processing/podcast";
 
 /**
  * Person entity interface for podcast content.
@@ -213,3 +216,49 @@ export const podcastEntitySchema = z.discriminatedUnion("type", [
 ]);
 
 export type ValidatedPodcastEntity = z.infer<typeof podcastEntitySchema>;
+
+/**
+ * Core Podcast entity interface
+ * Represents a podcast with its metadata, analysis, and processing status
+ */
+export interface Podcast {
+  /** Unique identifier for the podcast */
+  id: string;
+  /** Title of the podcast episode */
+  title: string;
+  /** Brief summary of the podcast content */
+  summary: string;
+  /** Original unprocessed transcript */
+  originalTranscript: string;
+  /** Cleaned and processed transcript */
+  cleanTranscript: string;
+  /** Duration of the podcast episode */
+  duration?: string;
+  /** Date when the podcast was recorded */
+  recordingDate?: string;
+  /** Creation timestamp */
+  createdAt: string;
+  /** Last update timestamp */
+  updatedAt: string;
+  /** Additional metadata about the content */
+  metadata: ContentMetadata;
+  /** Detailed analysis of the podcast content */
+  analysis: PodcastAnalysis;
+  /** Current processing status */
+  status: ProcessingStatus;
+}
+
+/**
+ * Represents entities extracted from podcast content
+ * Used for organizing and categorizing mentioned entities
+ */
+export interface PodcastEntities {
+  /** Array of people mentioned in the podcast */
+  people: string[];
+  /** Array of organizations mentioned */
+  organizations: string[];
+  /** Array of locations referenced */
+  locations: string[];
+  /** Array of events discussed */
+  events: string[];
+}
