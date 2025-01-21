@@ -3,8 +3,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import type { NetworkLog } from "@/app/core/processing/types/base";
 import { cn } from "@/lib/utils";
+import type { NetworkLog } from "@/app/types/podcast/processing";
 
 interface NetworkLoggerProps {
   logs: NetworkLog[];

@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import type { ProcessingChunk } from "@/app/core/processing/types/base";
+import type { ProcessingChunk } from "@/app/types/podcast/processing";
 
 interface ChunkingViewProps {
   chunks: ProcessingChunk[];

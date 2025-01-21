@@ -12,11 +12,11 @@ import type {
   ConceptEntity,
 } from "@/app/types/entities";
 import type {
-  ProcessingChunk,
   ProcessingAnalysis,
   TopicAnalysis,
   ChunkResult,
-} from "@/app/core/processing/types/base";
+} from "@/app/types/processing/base";
+import type { ProcessingChunk } from "@/app/types/podcast/processing";
 import { usePodcastProcessingStore } from "@/app/store/podcastProcessingStore";
 import { PROCESSING_STEPS } from "@/app/constants/processing";
 

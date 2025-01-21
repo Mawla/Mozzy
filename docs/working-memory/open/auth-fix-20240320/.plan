@@ -1,93 +1,125 @@
-# Auth UI and Session Management Fix
+# Task Plan (auth-fix-20240320)
 
-## Current Status
+## Status Update (2024-03-20 17:15)
+- Refined login page UI with subtle border
+- Removed debug elements and unnecessary containers
+- Kept minimal visual structure for better UX
+- Next: Continue with session persistence fix
 
-### 2024-03-20 14:00
+## Status Update (2024-03-20 17:00)
+- Removed temporary debug borders from auth form
+- Login form UI cleaned up
+- Session and redirection issues still pending
+- Next: Continue with session persistence fix
 
-**Status**: In Progress
+## Status Update (2024-03-20 16:30)
+- Login form now rendering correctly
+- Auth UI working but redirection after login failing
+- Session cookie being set but not persisting
+- Next: Fix redirection flow and session persistence
 
-- What's working: Basic auth flow, cookie handling
-- What's not: Login form rendering, token refresh
-- Blocking issues: Auth UI component initialization
-- Next actions: Debug Auth UI component, implement error boundaries
+## Previous Status (2024-03-20 16:00)
+- Skipping logger initialization fix for now
+- Focusing on core auth form rendering issue
+- Will comment out logger code to prevent initialization errors
+- Next: Debug AuthForm component mounting
 
 ## Problem Analysis
 
-- Auth UI not rendering properly
-- Token refresh errors occurring
-- Cookie operations need optimization
-- Missing error boundaries and loading states
+- Login form not rendering on /login page
+- Multiple refresh token errors in logs
+- Excessive cookie operations detected
+- Auth UI component may not be properly initialized
+
+## Affected Components
+- app/components/auth/auth-form.tsx
+- app/login/page.tsx
+- app/actions/auth.ts
+- app/lib/supabase.ts
+
+## Impact Assessment
+- Users cannot log in
+- Session management is broken
+- Multiple unnecessary cookie operations impacting performance
 
 ## Solution Design
 
-### Approach 1: Auth UI Fix
+1. Redirection Flow Fix:
+   - Implement proper callback handling
+   - Add session validation before redirect
+   - Ensure cookie persistence across redirects
+   - Handle error cases with fallback routes
 
-- Debug component initialization
-- Add error boundaries
-- Implement loading states
-- Pros: Improves user experience
-- Cons: May require significant component refactoring
-
-### Approach 2: Session Management
-
-- Implement token refresh flow
-- Optimize cookie operations
-- Add session recovery
-- Pros: Better session stability
-- Cons: Complex state management
+2. Session Management:
+   - Verify cookie settings (httpOnly, secure, path)
+   - Implement proper session persistence
+   - Add session recovery mechanism
+   - Handle token refresh flow
 
 ## Implementation Steps
 
-- [ ] Auth UI Component
+- [ ] Fix Redirection Flow
+  - [ ] Update callback route to handle session properly
+  - [ ] Add session validation before redirect
+  - [ ] Implement proper error redirection
+  - [ ] Test all auth flows (login, logout, social)
 
-  - [ ] Debug initialization
-  - [ ] Add error boundaries
-  - [ ] Implement loading states
-  - Success: UI renders consistently
-  - Dependencies: None
+- [ ] Improve Session Management
+  - [ ] Fix cookie persistence
+  - [ ] Add session recovery
+  - [ ] Implement token refresh
+  - [ ] Add session validation
 
-- [ ] Session Management
-  - [ ] Fix token refresh
-  - [ ] Optimize cookies
-  - [ ] Add recovery
-  - Success: Stable session handling
-  - Dependencies: Auth UI fix
+- [ ] Fix Logger Initialization
+  - [ ] Check logger provider implementation
+  - [ ] Verify setupBrowserLogging export
+  - [ ] Add error handling for logger init
+  - [ ] Test logger in isolation
 
-## Affected Components
+- [ ] Debug Auth UI Component
+  - [ ] Add console logs for component lifecycle
+  - [ ] Test component in isolation
+  - [ ] Verify client-side hydration
+  - [ ] Check for CSS conflicts
 
-- Component: {ui/auth-form}
-- Tests: {tests/auth-form.test.tsx}
-- Types: {types/auth.ts}
+- [ ] Fix Session Management
+  - [ ] Clear invalid tokens
+  - [ ] Implement token refresh flow
+  - [ ] Add token validation
+  - [ ] Optimize cookie operations
 
-## Feature Documentation Impact
+- [ ] Add Error Handling
+  - [ ] Create AuthErrorBoundary
+  - [ ] Add fallback UI
+  - [ ] Implement retry mechanism
+  - [ ] Add user feedback
 
-### Affected Features
+## Progress Log
+2024-03-20 16:30:
+- Login form now rendering and functional
+- Identified redirection issues after successful login
+- Session cookie not persisting properly
+- Next: Implement proper redirection flow and session persistence
 
-- Feature: auth
-  - Files to update:
-    - [ ] README.md
-    - [ ] architecture.md
-    - [ ] components.md
-    - [ ] api.md
-    - [ ] testing.md
-  - Changes needed:
-    - Document Auth UI component changes
-    - Update session management flow
-    - Add error handling documentation
+2024-03-20 16:00:
+- Decided to skip logger fixes temporarily
+- Prioritizing auth form rendering
+- Next: Debug AuthForm component with console logs
 
-### Documentation Review
+2024-03-20 15:30:
+- Identified issue with login form not rendering
+- Found excessive cookie operations in logs
+- Refresh token errors indicating potential session management issues
+- Next: Will check login page component and auth form initialization
 
-- [ ] Feature documentation is current
-- [ ] All affected components documented
-- [ ] API changes reflected
-- [ ] Test cases updated
-- [ ] Cross-references maintained
+## Success Criteria
+- Login form renders correctly
+- No refresh token errors in logs
+- Reduced cookie operations
+- Proper error handling and recovery
 
-## Progress History
-
-### 2024-03-20 14:00 - Initial Setup
-
-- ✓ Created task plan
-- 🤔 Decided to prioritize Auth UI fix
-- ❌ Identified component initialization issues
-- ⏭️ Will implement error boundaries next
+## Monitoring
+- Watch for auth-related errors in logs
+- Monitor cookie operations frequency
+- Track component rendering issues
+- Verify session persistence 

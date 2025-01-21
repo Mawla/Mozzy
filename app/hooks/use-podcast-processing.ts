@@ -4,7 +4,7 @@ import type {
   ProcessingStep,
   ProcessingChunk,
   NetworkLog,
-} from "@/app/core/processing/types/base";
+} from "@/app/types/podcast/processing";
 
 export type ProcessingTab = "progress" | "chunks" | "logs";
 
