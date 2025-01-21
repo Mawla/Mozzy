@@ -4,11 +4,11 @@ import type {
   OrganizationEntity,
   LocationEntity,
   EventEntity,
-  EntityMention,
-  EntityRelationship,
   TopicEntity,
   ConceptEntity,
-} from "@/app/types/entities";
+  EntityMention,
+  EntityRelationship,
+} from "@/app/types/entities/base";
 
 // Base Types
 export type ProcessingFormat = "podcast" | "post";
@@ -182,8 +182,6 @@ export type {
   OrganizationEntity,
   LocationEntity,
   EventEntity,
-  EntityMention,
-  EntityRelationship,
   TopicEntity,
   ConceptEntity,
 };

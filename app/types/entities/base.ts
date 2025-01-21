@@ -89,3 +89,92 @@ export const baseEntitySchema = z.object({
 
 // Export type helpers
 export type ValidatedBaseEntity = z.infer<typeof baseEntitySchema>;
+
+/**
+ * Represents a person entity with specific person-related properties.
+ * Used for tracking individuals mentioned in content.
+ */
+export interface PersonEntity extends BaseEntity {
+  type: "PERSON";
+  /** Professional title or role */
+  title?: string;
+  /** Organization affiliations */
+  affiliations?: string[];
+  /** Areas of expertise or topics associated with person */
+  expertise?: string[];
+}
+
+/**
+ * Represents an organization entity with specific organization-related properties.
+ * Used for tracking companies, institutions, and other organizations.
+ */
+export interface OrganizationEntity extends BaseEntity {
+  type: "ORGANIZATION";
+  /** Industry or sector */
+  industry?: string;
+  /** Organization description */
+  description?: string;
+  /** Location of headquarters or main office */
+  location?: string;
+}
+
+/**
+ * Represents a location entity with specific location-related properties.
+ * Used for tracking places mentioned in content.
+ */
+export interface LocationEntity extends BaseEntity {
+  type: "LOCATION";
+  /** Type of location (city, country, etc.) */
+  locationType: string;
+  /** Geographic coordinates */
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+  /** Parent location (e.g., country for a city) */
+  parent?: string;
+}
+
+/**
+ * Represents an event entity with specific event-related properties.
+ * Used for tracking events mentioned in content.
+ */
+export interface EventEntity extends BaseEntity {
+  type: "EVENT";
+  /** Start date of the event */
+  startDate?: string;
+  /** End date of the event */
+  endDate?: string;
+  /** Location of the event */
+  location?: string;
+  /** Type of event */
+  eventType?: string;
+}
+
+/**
+ * Represents a topic entity with specific topic-related properties.
+ * Used for tracking subjects and themes in content.
+ */
+export interface TopicEntity extends BaseEntity {
+  type: "TOPIC";
+  /** Parent topics */
+  parentTopics?: string[];
+  /** Related keywords */
+  keywords?: string[];
+  /** Topic category */
+  category?: string;
+}
+
+/**
+ * Represents a concept entity with specific concept-related properties.
+ * Used for tracking abstract ideas and concepts in content.
+ */
+export interface ConceptEntity extends BaseEntity {
+  type: "CONCEPT";
+  /** Definition or explanation */
+  definition?: string;
+  /** Related concepts */
+  relatedConcepts?: string[];
+  /** Domain or field */
+  domain?: string;
+}

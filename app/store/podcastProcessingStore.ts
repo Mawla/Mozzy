@@ -1,35 +1,30 @@
 import { create } from "zustand";
 import { PodcastProcessingService } from "@/app/services/podcastProcessingService";
+import type { NetworkLog, BaseTextChunk } from "@/app/types/processing/base";
 import type {
-  ProcessingStep,
-  ProcessingChunk,
-  NetworkLog,
-  ProcessingAnalysis,
-  ProcessingResult,
+  PodcastProcessingStep,
+  PodcastProcessingChunk,
+  PodcastProcessingAnalysis,
+  PodcastProcessingResult,
+} from "@/app/types/processing/podcast";
+import type {
   PersonEntity,
   OrganizationEntity,
   LocationEntity,
   EventEntity,
   TopicEntity,
   ConceptEntity,
-  BaseTextChunk,
-} from "@/app/core/processing/types/base";
+  ValidatedPodcastEntities,
+} from "@/app/types/entities/podcast";
 import { PROCESSING_STEPS, INITIAL_STEPS } from "@/app/constants/processing";
 
-interface ProcessingEntities {
-  people: PersonEntity[];
-  organizations: OrganizationEntity[];
-  locations: LocationEntity[];
-  events: EventEntity[];
-  topics?: TopicEntity[];
-  concepts?: ConceptEntity[];
-}
+type ProcessingEntities = ValidatedPodcastEntities;
 
 interface PodcastProcessingState {
   isProcessing: boolean;
-  processingSteps: ProcessingStep[];
+  processingSteps: PodcastProcessingStep[];
   processedTranscript: string | null;
-  chunks: ProcessingChunk[];
+  chunks: PodcastProcessingChunk[];
   networkLogs: NetworkLog[];
   service: PodcastProcessingService;
 
@@ -40,18 +35,19 @@ interface PodcastProcessingState {
   handleRetryStep: (stepName: string) => Promise<void>;
   updateStepStatus: (
     stepName: string,
-    status: ProcessingStep["status"],
+    status: PodcastProcessingStep["status"],
     data?: any
   ) => void;
-  updateChunks: (chunks: ProcessingChunk[]) => void;
+  updateChunks: (chunks: PodcastProcessingChunk[]) => void;
   updateNetworkLogs: (logs: NetworkLog[]) => void;
 }
 
-// Utility function to convert BaseTextChunk to ProcessingChunk
-const convertToProcessingChunk = (chunk: BaseTextChunk): ProcessingChunk => ({
+// Utility function to convert BaseTextChunk to PodcastProcessingChunk
+const convertToProcessingChunk = (
+  chunk: BaseTextChunk
+): PodcastProcessingChunk => ({
   ...chunk,
   status: "pending",
-  progress: 0,
 });
 
 export const usePodcastProcessingStore = create<PodcastProcessingState>(
@@ -77,7 +73,7 @@ export const usePodcastProcessingStore = create<PodcastProcessingState>(
 
         // Check if all chunks are completed
         const allChunksCompleted = state.chunks.every((chunk) => {
-          const processingChunk = chunk as ProcessingChunk;
+          const processingChunk = chunk as PodcastProcessingChunk;
           return processingChunk.status === "completed";
         });
 
@@ -90,7 +86,7 @@ export const usePodcastProcessingStore = create<PodcastProcessingState>(
 
           // Combine entities from all chunks
           const combinedEntities = state.chunks.reduce((acc, chunk) => {
-            const result = (chunk as ProcessingChunk).result;
+            const result = (chunk as PodcastProcessingChunk).result;
             if (!result?.entities) return acc;
 
             // Helper function to merge arrays with deduplication
@@ -121,7 +117,7 @@ export const usePodcastProcessingStore = create<PodcastProcessingState>(
 
           // Combine analysis from all chunks
           const combinedAnalysis = state.chunks.reduce((acc, chunk) => {
-            const result = (chunk as ProcessingChunk).result;
+            const result = (chunk as PodcastProcessingChunk).result;
             if (!result?.analysis) return acc;
 
             // Helper function to merge arrays
@@ -135,7 +131,7 @@ export const usePodcastProcessingStore = create<PodcastProcessingState>(
               keyPoints: mergeArrays(acc.keyPoints, result.analysis.keyPoints),
               themes: mergeArrays(acc.themes, result.analysis.themes),
             };
-          }, {} as ProcessingAnalysis);
+          }, {} as PodcastProcessingAnalysis);
 
           // Update steps with combined data
           if (Object.keys(combinedEntities).length > 0) {
@@ -195,7 +191,7 @@ export const usePodcastProcessingStore = create<PodcastProcessingState>(
           processingSteps: get().processingSteps.map((step) => ({
             ...step,
             status: "idle",
-            data: null,
+            data: {},
           })),
         });
 
@@ -225,7 +221,9 @@ export const usePodcastProcessingStore = create<PodcastProcessingState>(
       handleRetryStep: async (stepName) => {
         const { updateStepStatus, service } = get();
         const transcriptStep = get().processingSteps[0];
-        const refinedContent = transcriptStep?.data?.refinedContent;
+        const refinedContent = transcriptStep?.data?.refinedContent as
+          | string
+          | undefined;
 
         if (!refinedContent) {
           console.error("No transcript available for retry");

@@ -10,52 +10,81 @@ import type {
   NetworkLog,
   ChunkResult,
   ProcessingOptions,
-} from "@/app/core/processing/types/base";
+} from "@/app/types/processing/base";
 
 import type {
   BaseEntity,
   EntityType,
   EntityMention,
   EntityRelationship,
+  PersonEntity as BasePersonEntity,
+  OrganizationEntity as BaseOrganizationEntity,
+  LocationEntity as BaseLocationEntity,
+  EventEntity as BaseEventEntity,
+  TopicEntity as BaseTopicEntity,
+  ConceptEntity as BaseConceptEntity,
 } from "@/app/types/entities/base";
 
-import type { PodcastAnalysis as BasePodcastAnalysis, Section } from "./models";
+import type {
+  PodcastAnalysis as BasePodcastAnalysis,
+  Section,
+  ContentSection,
+  Concept,
+  Argument,
+  Controversy,
+  Quote,
+  Application,
+  PodcastInput,
+  PodcastTranscript,
+  ProcessedPodcast,
+  PodcastEntities,
+} from "./models";
 
-// Entity interfaces extending BaseEntity
-export interface PersonEntity extends BaseEntity {
-  type: Extract<EntityType, "PERSON">;
+// Re-export types from models
+export type {
+  Section,
+  ContentSection,
+  Concept,
+  Argument,
+  Controversy,
+  Quote,
+  Application,
+  PodcastInput,
+  PodcastTranscript,
+  ProcessedPodcast,
+  PodcastEntities,
+};
+
+// Podcast-specific entity types
+export interface PersonEntity extends BasePersonEntity {
   expertise: string[];
   role: string;
 }
 
-export interface OrganizationEntity extends BaseEntity {
-  type: Extract<EntityType, "ORGANIZATION">;
+export interface OrganizationEntity extends BaseOrganizationEntity {
   industry: string;
   size: string;
 }
 
-export interface LocationEntity extends BaseEntity {
-  type: Extract<EntityType, "LOCATION">;
-  locationType: string;
-  coordinates?: { lat: number; lng: number };
+export interface LocationEntity extends BaseLocationEntity {
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
 }
 
-export interface EventEntity extends BaseEntity {
-  type: Extract<EntityType, "EVENT">;
+export interface EventEntity extends BaseEventEntity {
   date: string;
   duration: string;
   participants: string[];
 }
 
-export interface TopicEntity extends BaseEntity {
-  type: Extract<EntityType, "TOPIC">;
+export interface TopicEntity extends BaseTopicEntity {
   subtopics: string[];
   examples: string[];
 }
 
-export interface ConceptEntity extends BaseEntity {
-  type: Extract<EntityType, "CONCEPT">;
-  definition: string;
+export interface ConceptEntity extends BaseConceptEntity {
   examples: string[];
 }
 
@@ -70,7 +99,6 @@ export type {
   EntityType,
   EntityMention,
   EntityRelationship,
-  Section,
   ProcessingStatus,
   TimelineEvent,
   NetworkLog,
@@ -104,6 +132,7 @@ export interface ProcessingChunk extends TextChunk {
   status: ProcessingStatus;
   response?: string;
   error?: Error;
+  result?: ProcessingChunkResult;
   analysis?: PodcastAnalysis;
   entities?: {
     people: PersonEntity[];

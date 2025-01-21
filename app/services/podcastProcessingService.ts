@@ -1,12 +1,20 @@
 import type {
-  ProcessingResult,
-  ProcessingState,
-  ProcessingChunk,
-  ChunkResult,
-  TextChunk,
+  ProcessingState as BaseProcessingState,
+  ProcessingStep as BaseProcessingStep,
   ProcessingStatus as BaseProcessingStatus,
   NetworkLog,
-} from "@/app/core/processing/types/base";
+  BaseTextChunk,
+  ChunkResult,
+} from "@/app/types/processing/base";
+
+import type {
+  ProcessingChunk,
+  ProcessingResult,
+  ProcessingOptions,
+  PodcastAnalysis,
+  TextChunk,
+} from "@/app/types/podcast/processing";
+
 import { podcastService } from "@/app/services/podcastService";
 
 type ChunkStatus = Extract<
@@ -14,7 +22,7 @@ type ChunkStatus = Extract<
   "pending" | "processing" | "completed" | "error"
 >;
 
-type ProcessingStatus =
+type ProcessingStateUpdate =
   | { type: "PROCESSOR_CREATED" }
   | { type: "CHUNKS_CREATED"; chunks: TextChunk[] }
   | { type: "CHUNK_STARTED"; chunkId: number }
@@ -24,6 +32,16 @@ type ProcessingStatus =
   | { type: "CHUNK_COMPLETED"; chunkId: number; result: ChunkResult }
   | { type: "PROCESSING_COMPLETED"; result: ProcessingResult }
   | { type: "PROCESSING_ERROR"; error: Error };
+
+interface ProcessingState extends BaseProcessingState {
+  status: BaseProcessingStatus;
+  error?: Error;
+  overallProgress: number;
+  steps: BaseProcessingStep[];
+  chunks: ProcessingChunk[];
+  networkLogs: NetworkLog[];
+  currentTranscript: string;
+}
 
 export class PodcastProcessingService {
   private state: ProcessingState = {
@@ -43,13 +61,12 @@ export class PodcastProcessingService {
     return () => this.listeners.delete(callback);
   }
 
-  private updateState(status: ProcessingStatus) {
+  private updateState(status: ProcessingStateUpdate) {
     switch (status.type) {
       case "CHUNKS_CREATED":
         this.state.chunks = status.chunks.map((chunk) => ({
           ...chunk,
           status: "pending" as const,
-          progress: 0,
         }));
         break;
       case "CHUNK_STARTED":
@@ -72,12 +89,9 @@ export class PodcastProcessingService {
     status: ChunkStatus,
     result?: ChunkResult
   ) {
-    const chunk = this.state.chunks.find(
-      (c) => c.id === chunkId.toString()
-    ) as ProcessingChunk;
+    const chunk = this.state.chunks.find((c) => c.id === chunkId.toString());
     if (chunk) {
       chunk.status = status;
-      chunk.progress = status === "completed" ? 100 : 0;
       if (result && status === "completed") {
         chunk.result = result;
       }
@@ -129,7 +143,7 @@ export class PodcastProcessingService {
         platform: "default",
         processedAt: new Date().toISOString(),
       },
-      analysis: result.analysis,
+      analysis: result.analysis as PodcastAnalysis,
       entities: result.entities || {
         people: [],
         organizations: [],
@@ -137,6 +151,7 @@ export class PodcastProcessingService {
         events: [],
       },
       timeline: result.timeline || [],
+      refinedTranscript: result.output || "",
     };
   }
 
