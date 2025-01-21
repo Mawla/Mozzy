@@ -12,6 +12,7 @@ import type {
   ProcessingStep,
   NetworkLog,
   BaseProcessingResult,
+  ProcessingAnalysis,
 } from "./base";
 
 import type {
@@ -99,11 +100,60 @@ export type PodcastProcessingChunk = BaseTextChunk & {
   result?: PodcastChunkResult;
 };
 
+/**
+ * Complete result of podcast processing operation.
+ * Extends base processing result with podcast-specific outputs
+ * including transcription, speaker analysis, and entity extraction.
+ */
 export interface PodcastProcessingResult extends BaseProcessingResult {
-  format: Extract<ProcessingFormat, "podcast">;
-  analysis: PodcastProcessingAnalysis;
-  entities: ValidatedPodcastEntities;
+  /** Content format identifier */
+  format: "podcast";
+  /** Original transcript text */
+  transcript: string;
+  /** Refined and cleaned transcript */
+  refinedTranscript: string;
+  /** Detailed podcast analysis results */
+  analysis: PodcastAnalysis;
+  /** Processed transcription chunks */
+  chunks: PodcastTextChunk[];
+  /** List of identified speakers */
+  speakers: string[];
+  /** Chronological event timeline */
   timeline: TimelineEvent[];
+  /** Extracted entities from transcription */
+  entities: {
+    /** People mentioned in the podcast */
+    people: PersonEntity[];
+    /** Organizations discussed */
+    organizations: OrganizationEntity[];
+    /** Locations referenced */
+    locations: LocationEntity[];
+    /** Events mentioned */
+    events: EventEntity[];
+  };
+  /** Current processing status */
+  status: ProcessingStatus;
+}
+
+/**
+ * Represents a chunk of processed podcast audio transcription.
+ * Includes speaker and confidence information.
+ */
+export interface PodcastTextChunk {
+  /** Unique chunk identifier */
+  id: string;
+  /** Transcribed text content */
+  text: string;
+  /** Identified speaker for this chunk */
+  speaker?: string;
+  /** Transcription confidence score (0-1) */
+  confidence?: number;
+  /** Start time in seconds */
+  startTime?: number;
+  /** End time in seconds */
+  endTime?: number;
+  /** Processing status of the chunk */
+  status: ProcessingStatus;
 }
 
 export interface PodcastProcessingState extends ProcessingState {

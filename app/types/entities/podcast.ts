@@ -47,8 +47,8 @@ export interface LocationEntity extends BaseEntity {
   region?: string;
   /** Geographic coordinates (optional) */
   coordinates?: {
-    lat: number;
-    lng: number;
+    latitude: number;
+    longitude: number;
   };
 }
 
@@ -133,8 +133,8 @@ export const locationEntitySchema = baseEntitySchema.extend({
   locationType: z.string().min(1),
   coordinates: z
     .object({
-      lat: z.number().min(-90).max(90),
-      lng: z.number().min(-180).max(180),
+      latitude: z.number().min(-90).max(90),
+      longitude: z.number().min(-180).max(180),
     })
     .optional(),
   region: z.string().optional(),
