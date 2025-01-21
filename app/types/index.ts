@@ -6,17 +6,17 @@ export type {
   ProcessingMetadata,
   BaseTextChunk,
   ProcessingAnalysis,
-  ProcessingResult,
+  ProcessingResult as BaseProcessingResult,
   ProcessingAdapter,
-  TimelineEvent,
+  TimelineEvent as ProcessingTimelineEvent,
   SentimentAnalysis,
   TopicAnalysis,
-  ProcessingState,
-  ProcessingStep,
+  ProcessingState as BaseProcessingState,
+  ProcessingStep as BaseProcessingStep,
   NetworkLog,
   ChunkResult,
-  BaseProcessingResult,
-  ProcessingChunk,
+  BaseProcessingResult as CoreProcessingResult,
+  ProcessingChunk as BaseProcessingChunk,
 } from "./processing/base";
 
 // Entity Types
@@ -26,74 +26,46 @@ export type {
   EntityMention,
   EntityRelationship,
   ValidatedBaseEntity,
-  PersonEntity,
-  OrganizationEntity,
-  LocationEntity,
-  EventEntity,
-  TopicEntity,
-  ConceptEntity,
+  PersonEntity as BasePersonEntity,
+  OrganizationEntity as BaseOrganizationEntity,
+  LocationEntity as BaseLocationEntity,
+  EventEntity as BaseEventEntity,
+  TopicEntity as BaseTopicEntity,
+  ConceptEntity as BaseConceptEntity,
 } from "./entities/base";
 
-// Podcast-specific Types
+// Shared Types
+export type { ContentSection, Section } from "./shared/content";
+
+export type { Concept, Argument, Controversy, Quote } from "./shared/analysis";
+
+export type { Application } from "./shared/application";
+
+export type {
+  TimelineEvent,
+  TimelineSegment,
+  Timeline,
+} from "./shared/timeline";
+
+// Podcast Types
 export type {
   PodcastAnalysis,
-  ProcessingState as PodcastProcessingState,
-  ProcessingStep as PodcastProcessingStep,
-  TextChunk as PodcastTextChunk,
-  ProcessingChunk as PodcastProcessingChunk,
-  ProcessingChunkResult as PodcastChunkResult,
-  ProcessingResult as PodcastProcessingResult,
-  QuickFact,
-  KeyPoint,
-  ChunkOptions,
-  TranscriptStepData,
-  AnalysisStepData,
-  EntityStepData,
-  StepData,
-  Section,
-  ContentSection,
-  Concept,
-  Argument,
-  Controversy,
-  Quote,
-  Application,
   PodcastInput,
+  ProcessingResult as PodcastProcessingResult,
   PodcastTranscript,
   ProcessedPodcast,
-  PodcastEntities,
-} from "./podcast/processing";
+  PodcastProcessingState,
+} from "./processing/podcast";
 
-// Podcast Entity Types
-export type {
-  PersonEntity as PodcastPersonEntity,
-  OrganizationEntity as PodcastOrganizationEntity,
-  LocationEntity as PodcastLocationEntity,
-  EventEntity as PodcastEventEntity,
-  TopicEntity as PodcastTopicEntity,
-  ConceptEntity as PodcastConceptEntity,
-  ValidatedPodcastEntities,
-  ValidatedPersonEntity,
-  ValidatedOrganizationEntity,
-  ValidatedLocationEntity,
-  ValidatedEventEntity,
-  ValidatedTopicEntity,
-  ValidatedConceptEntity,
-  ValidatedPodcastEntity,
-} from "./entities/podcast";
+export type { Podcast, PodcastEntities } from "./entities/podcast";
 
-// Post Entity Types
-export type {
-  PostPersonEntity,
-  PostOrganizationEntity,
-  PostLocationEntity,
-  PostEventEntity,
-  PostTopicEntity,
-  PostConceptEntity,
-} from "./entities/post";
-
-// Shared Types
+// Content Types
 export type { ContentMetadata } from "./contentMetadata";
+
+// Topic Types
 export type { Topic, TopicItem, TopicBlockProps } from "./topic";
+
+// Metadata Types
 export type {
   LayoutType,
   IconPosition,

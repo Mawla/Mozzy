@@ -183,38 +183,37 @@ Risks:
 
 ### Phase 4: Models.ts Consolidation
 
-- [ ] Create/Update Target Files
+- [x] Create/Update Target Files
 
-  - [ ] /app/types/entities/podcast.ts
-    - [ ] Add Podcast interface
-    - [ ] Add PodcastEntities interface
-  - [ ] /app/types/processing/podcast.ts
-    - [ ] Add PodcastAnalysis
-    - [ ] Add PodcastInput
-    - [ ] Add ProcessingResult
-    - [ ] Add PodcastTranscript
-    - [ ] Add ProcessedPodcast
-    - [ ] Add PodcastProcessingState
-  - [ ] /app/types/shared/content.ts
-    - [ ] Add ContentSection interface
-    - [ ] Add Section interface
-  - [ ] /app/types/shared/analysis.ts
-    - [ ] Add Concept interface
-    - [ ] Add Argument interface
-    - [ ] Add Controversy interface
-    - [ ] Add Quote interface
-  - [ ] /app/types/shared/application.ts
-    - [ ] Add Application interface
-  - [ ] /app/types/processing/base.ts
-    - [ ] Add ProcessingStatus
-    - [ ] Add ProcessingStep
-  - [ ] /app/types/shared/timeline.ts
-    - [ ] Add TimelineEvent interface
+  - [x] /app/types/entities/podcast.ts
+    - [x] Add Podcast interface
+    - [x] Add PodcastEntities interface
+  - [x] /app/types/processing/podcast.ts
+    - [x] Add PodcastAnalysis
+    - [x] Add PodcastInput
+    - [x] Add ProcessingResult
+    - [x] Add PodcastTranscript
+    - [x] Add ProcessedPodcast
+    - [x] Add PodcastProcessingState
+  - [x] /app/types/shared/content.ts
+    - [x] Add ContentSection interface
+    - [x] Add Section interface
+  - [x] /app/types/shared/analysis.ts
+    - [x] Add Concept interface
+    - [x] Add Argument interface
+    - [x] Add Controversy interface
+    - [x] Add Quote interface
+  - [x] /app/types/shared/application.ts
+    - [x] Add Application interface
+  - [x] /app/types/shared/timeline.ts
+    - [x] Add TimelineEvent interface
+    - [x] Add TimelineSegment interface
+    - [x] Add Timeline interface
 
-- [ ] Update Import References
+- [x] Update Import References
 
-  - [ ] Update imports in processing files
-  - [ ] Update imports in entity files
+  - [x] Update imports in processing files
+  - [x] Update imports in entity files
   - [ ] Update imports in components
   - [ ] Update imports in tests
 
@@ -225,10 +224,32 @@ Risks:
   - [ ] Verify no duplicate types
   - [ ] Check for circular dependencies
 
-- [ ] Clean Up
-  - [ ] Delete models.ts
-  - [ ] Update index.ts exports
+- [x] Clean Up
+  - [x] Delete models.ts
+  - [x] Update index.ts exports
   - [ ] Update documentation
+
+### Phase 4.1: Type Compatibility Fixes
+
+- [ ] Fix Entity Type Issues
+
+  - [ ] Review LocationEntity type definition
+  - [ ] Update PodcastProcessingResult interface
+  - [ ] Fix ValidatedPodcastEntities type usage
+  - [ ] Update entity validation schemas
+
+- [ ] Update Component Imports
+
+  - [ ] Search for all models.ts imports
+  - [ ] Update to new type locations
+  - [ ] Verify type compatibility
+  - [ ] Test component functionality
+
+- [ ] Documentation Updates
+  - [ ] Update type system docs
+  - [ ] Document new type organization
+  - [ ] Add migration guide
+  - [ ] Update import examples
 
 ### Phase 5: Interface Migration
 
