@@ -1,22 +1,28 @@
 import { ProcessingService } from "@/app/core/processing/service/ProcessingService";
 import { PodcastProcessingAdapter } from "@/app/core/processing/adapters/podcast";
 import { PostProcessingAdapter } from "@/app/core/processing/adapters/post";
+import { PodcastProcessor } from "@/app/core/processing/podcast/PodcastProcessor";
 import type {
-  BaseProcessingResult,
-  ProcessingAnalysis,
-  ProcessingOptions,
+  ProcessingStatus,
   ProcessingResult,
-} from "@/app/core/processing/types/base";
+  ProcessingAnalysis,
+  TimelineEvent,
+  ProcessingOptions,
+  BaseProcessingResult,
+  ProcessingFormat,
+} from "@/app/types/processing/base";
 import type {
   PersonEntity,
   OrganizationEntity,
   LocationEntity,
-} from "@/app/types/entities/podcast";
+  ValidatedBaseEntity,
+} from "@/app/types/entities/base";
 
 describe("ProcessingService", () => {
   let service: ProcessingService;
   let podcastAdapter: PodcastProcessingAdapter;
   let postAdapter: PostProcessingAdapter;
+  let podcastProcessor: PodcastProcessor;
 
   const sampleText = `
     This is a sample text that could be either a podcast transcript
@@ -30,11 +36,12 @@ describe("ProcessingService", () => {
 
   beforeEach(() => {
     service = new ProcessingService();
-    podcastAdapter = new PodcastProcessingAdapter();
+    podcastProcessor = new PodcastProcessor();
+    podcastAdapter = new PodcastProcessingAdapter(podcastProcessor);
     postAdapter = new PostProcessingAdapter();
 
-    service.registerAdapter("podcast", podcastAdapter);
-    service.registerAdapter("post", postAdapter);
+    service.registerAdapter("podcast" as ProcessingFormat, podcastAdapter);
+    service.registerAdapter("post" as ProcessingFormat, postAdapter);
   });
 
   describe("Core Processing", () => {
@@ -94,12 +101,20 @@ describe("ProcessingService", () => {
       });
 
       const entities = result.analysis?.entities;
-      expect(entities?.people.some((p) => p.name === "John Doe")).toBe(true);
-      expect(entities?.people.some((p) => p.name === "Jane Smith")).toBe(true);
-      expect(entities?.organizations.some((o) => o.name === "Acme Corp")).toBe(
-        true
-      );
-      expect(entities?.locations.some((l) => l.name === "New York")).toBe(true);
+      expect(
+        entities?.people.some((p: PersonEntity) => p.name === "John Doe")
+      ).toBe(true);
+      expect(
+        entities?.people.some((p: PersonEntity) => p.name === "Jane Smith")
+      ).toBe(true);
+      expect(
+        entities?.organizations.some(
+          (o: OrganizationEntity) => o.name === "Acme Corp"
+        )
+      ).toBe(true);
+      expect(
+        entities?.locations.some((l: LocationEntity) => l.name === "New York")
+      ).toBe(true);
     });
   });
 

@@ -1,155 +1,80 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { logger } from "@/lib/logger";
-import type { LogEntry, LogLevel, LogFile } from "@/lib/logger";
+import type { LogEntry, LogLevel } from "@/app/types/logging";
 
 interface LogsViewerProps {
   level?: LogLevel;
   limit?: number;
-  autoRefresh?: boolean;
-  refreshInterval?: number;
-  showFileSelector?: boolean;
 }
 
-export function LogsViewer({
-  level,
-  limit = 100,
-  autoRefresh = true,
-  refreshInterval = 5000,
-  showFileSelector = false,
-}: LogsViewerProps) {
-  const [logs, setLogs] = useState<LogEntry[]>(logger.getLogs(level, limit));
-  const [logFiles, setLogFiles] = useState<LogFile[]>([]);
-  const [selectedFile, setSelectedFile] = useState<string>("");
-  const [fileContent, setFileContent] = useState<string>("");
+export function LogsViewer({ level = "info", limit = 100 }: LogsViewerProps) {
+  const [logs, setLogs] = useState<LogEntry[]>([]);
 
   useEffect(() => {
-    if (showFileSelector) {
-      fetchLogFiles();
-    }
-  }, [showFileSelector]);
+    // Initial load
+    const allLogs = logger.getLogs();
+    const filteredLogs = level
+      ? allLogs.filter((log) => log.level === level)
+      : allLogs;
+    setLogs(filteredLogs.slice(0, limit));
 
-  useEffect(() => {
-    if (!autoRefresh) return;
-
+    // Set up interval to refresh logs
     const interval = setInterval(() => {
-      if (selectedFile) {
-        fetchFileContent(selectedFile);
-      } else {
-        setLogs(logger.getLogs(level, limit));
-      }
-    }, refreshInterval);
+      const allLogs = logger.getLogs();
+      const filteredLogs = level
+        ? allLogs.filter((log) => log.level === level)
+        : allLogs;
+      setLogs(filteredLogs.slice(0, limit));
+    }, 1000);
 
     return () => clearInterval(interval);
-  }, [autoRefresh, refreshInterval, level, limit, selectedFile]);
-
-  const fetchLogFiles = async () => {
-    try {
-      const response = await fetch("/api/debug/logs/files");
-      const data = await response.json();
-      if (data.files) {
-        setLogFiles(data.files);
-      }
-    } catch (error) {
-      console.error("Failed to fetch log files:", error);
-    }
-  };
-
-  const fetchFileContent = async (filePath: string) => {
-    try {
-      const response = await fetch(
-        `/api/debug/logs/files?path=${encodeURIComponent(filePath)}`
-      );
-      const data = await response.json();
-      if (data.content) {
-        setFileContent(data.content);
-      }
-    } catch (error) {
-      console.error("Failed to fetch file content:", error);
-    }
-  };
-
-  const handleFileSelect = async (filePath: string) => {
-    setSelectedFile(filePath);
-    if (filePath) {
-      await fetchFileContent(filePath);
-    } else {
-      setFileContent("");
-    }
-  };
-
-  const getLevelColor = (level: LogLevel) => {
-    switch (level) {
-      case "debug":
-        return "text-gray-500";
-      case "info":
-        return "text-blue-500";
-      case "warn":
-        return "text-yellow-500";
-      case "error":
-        return "text-red-500";
-      default:
-        return "text-gray-700";
-    }
-  };
-
-  const formatBytes = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
-  };
+  }, [level, limit]);
 
   return (
-    <div className="space-y-4">
-      {showFileSelector && (
-        <div className="flex items-center gap-4">
-          <select
-            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-            value={selectedFile}
-            onChange={(e) => handleFileSelect(e.target.value)}
-          >
-            <option value="">Live Logs</option>
-            {logFiles.map((file) => (
-              <option key={file.path} value={file.path}>
-                {file.name} ({formatBytes(file.size)})
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      <div className="bg-background rounded-lg border p-4">
-        <div className="space-y-2">
-          {selectedFile ? (
-            <pre className="font-mono text-sm whitespace-pre-wrap">
-              {fileContent}
+    <div className="space-y-2">
+      {logs.map((log, index) => (
+        <div
+          key={index}
+          className={`p-2 rounded ${
+            log.level === "error"
+              ? "bg-red-100"
+              : log.level === "warn"
+              ? "bg-yellow-100"
+              : "bg-gray-100"
+          }`}
+        >
+          <div className="flex justify-between text-sm">
+            <span className="font-mono">{log.timestamp}</span>
+            <span
+              className={`uppercase font-bold ${
+                log.level === "error"
+                  ? "text-red-700"
+                  : log.level === "warn"
+                  ? "text-yellow-700"
+                  : "text-gray-700"
+              }`}
+            >
+              {log.level}
+            </span>
+          </div>
+          <p className="mt-1">{log.message}</p>
+          {log.error && (
+            <pre className="mt-1 text-sm text-red-600 overflow-x-auto">
+              {log.error.message}
+              {log.error.stack && (
+                <code className="block mt-1 text-xs">{log.error.stack}</code>
+              )}
             </pre>
-          ) : (
-            logs.map((log: LogEntry, index: number) => (
-              <div key={index} className="font-mono text-sm">
-                <span className="text-gray-400">{log.timestamp}</span>{" "}
-                <span className={getLevelColor(log.level)}>
-                  [{log.level.toUpperCase()}]
-                </span>{" "}
-                <span className="text-foreground">{log.message}</span>
-                {log.data && (
-                  <pre className="mt-1 text-xs text-muted-foreground">
-                    {JSON.stringify(log.data, null, 2)}
-                  </pre>
-                )}
-                {log.error && (
-                  <pre className="mt-1 text-xs text-red-500">
-                    {log.error.stack || log.error.message}
-                  </pre>
-                )}
-              </div>
-            ))
+          )}
+          {log.data && (
+            <pre className="mt-1 text-xs text-gray-600 overflow-x-auto">
+              {JSON.stringify(log.data, null, 2)}
+            </pre>
           )}
         </div>
-      </div>
+      ))}
     </div>
   );
 }

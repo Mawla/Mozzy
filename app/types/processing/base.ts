@@ -4,11 +4,14 @@ import type {
   OrganizationEntity,
   LocationEntity,
   EventEntity,
-  EntityMention,
-  EntityRelationship,
   TopicEntity,
   ConceptEntity,
-} from "@/app/types/entities";
+  EntityMention,
+  EntityRelationship,
+} from "@/app/types/entities/base";
+
+import { ContentMetadata } from "../contentMetadata";
+import { BaseEntities } from "../shared/entities";
 
 // Base Types
 export type ProcessingFormat = "podcast" | "post";
@@ -73,12 +76,6 @@ export interface BaseTextChunk {
   endIndex?: number;
 }
 
-export type ProcessingChunk = BaseTextChunk & {
-  status: ProcessingStatus;
-  result?: ChunkResult;
-  error?: Error | string;
-};
-
 export interface ProcessingAnalysis {
   id?: string;
   title?: string;
@@ -140,9 +137,8 @@ export interface ProcessingAdapter {
 export interface ChunkResult {
   id: string;
   text: string;
-  refinedText: string;
-  analysis?: ProcessingAnalysis;
-  entities: {
+  refinedText?: string;
+  entities?: {
     people: PersonEntity[];
     organizations: OrganizationEntity[];
     locations: LocationEntity[];
@@ -150,12 +146,55 @@ export interface ChunkResult {
     topics?: TopicEntity[];
     concepts?: ConceptEntity[];
   };
-  timeline: TimelineEvent[];
+  analysis?: ProcessingAnalysis;
+}
+
+export interface NetworkLogData {
+  request?: {
+    url?: string;
+    method?: string;
+    headers?: Record<string, string>;
+    body?: unknown;
+  };
+  response?: {
+    status?: number;
+    headers?: Record<string, string>;
+    body?: unknown;
+  };
+  error?: {
+    code?: string;
+    details?: unknown;
+  };
+  metadata?: Record<string, unknown>;
+}
+
+export interface NetworkLog {
+  timestamp: string;
+  type: "request" | "response" | "error";
+  message: string;
+  data?: NetworkLogData;
+  error?: {
+    message: string;
+    stack?: string;
+  };
+}
+
+export interface ProcessingStep {
+  id: string;
+  name: string;
+  status: ProcessingStatus;
+  progress: number;
+  error?: Error | string;
+  dependencies?: string[];
+  result?: unknown;
+  description?: string;
+  networkLogs?: NetworkLog[];
+  chunks?: ProcessingChunk[];
 }
 
 export interface ProcessingState {
   status: ProcessingStatus;
-  error?: Error;
+  error?: string;
   overallProgress: number;
   steps: ProcessingStep[];
   chunks: BaseTextChunk[];
@@ -163,26 +202,6 @@ export interface ProcessingState {
   currentTranscript: string;
 }
 
-export interface ProcessingStep {
-  id: string;
-  name: string;
-  status: ProcessingStatus;
-  progress?: number;
-  error?: Error;
-  description?: string;
-  data?: any;
-  chunks?: BaseTextChunk[];
-  networkLogs?: NetworkLog[];
-}
-
-export interface NetworkLog {
-  timestamp: string;
-  type: "request" | "response" | "error";
-  message: string;
-  data?: any;
-}
-
-// Add ProcessingResult interface
 export interface ProcessingResult extends BaseProcessingResult {
   format: ProcessingFormat;
   analysis: ProcessingAnalysis;
@@ -195,4 +214,25 @@ export interface ProcessingResult extends BaseProcessingResult {
     concepts?: ConceptEntity[];
   };
   timeline: TimelineEvent[];
+}
+
+export interface ProcessingChunk extends BaseTextChunk {
+  status: ProcessingStatus;
+  progress: number;
+  error?: Error;
+  result?: ChunkResult;
+}
+
+export type TextChunk = BaseTextChunk;
+
+/**
+ * Response containing metadata and analysis results
+ */
+export interface MetadataResponse {
+  /** Content metadata */
+  metadata: ContentMetadata;
+  /** Analysis results */
+  analysis?: ProcessingAnalysis;
+  /** Extracted entities */
+  entities?: BaseEntities;
 }

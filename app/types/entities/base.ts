@@ -123,14 +123,19 @@ export interface OrganizationEntity extends BaseEntity {
  * Used for tracking places mentioned in content.
  */
 export interface LocationEntity extends BaseEntity {
-  type: "LOCATION";
+  /** Must be LOCATION type */
+  type: Extract<EntityType, "LOCATION">;
   /** Type of location (city, country, etc.) */
   locationType: string;
   /** Geographic coordinates */
   coordinates?: {
+    /** Latitude (-90 to 90) */
     latitude: number;
+    /** Longitude (-180 to 180) */
     longitude: number;
   };
+  /** Geographic region */
+  region?: string;
   /** Parent location (e.g., country for a city) */
   parent?: string;
 }

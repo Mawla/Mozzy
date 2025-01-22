@@ -1,60 +1,60 @@
-import type { BaseEntity, EntityType } from "@/app/types/entities/base";
+import type { EntityType } from "@/app/types/entities/base";
 import type {
-  PersonEntity,
-  OrganizationEntity,
-  LocationEntity,
-  EventEntity,
-  TopicEntity,
-  ConceptEntity,
-} from "@/app/types/entities/podcast";
+  ValidatedPersonEntity,
+  ValidatedOrganizationEntity,
+  ValidatedLocationEntity,
+  ValidatedEventEntity,
+  ValidatedTopicEntity,
+  ValidatedConceptEntity,
+  ValidatedPodcastEntities,
+} from "@/app/types/entities";
 
-type PodcastEntity =
-  | PersonEntity
-  | OrganizationEntity
-  | LocationEntity
-  | EventEntity
-  | TopicEntity
-  | ConceptEntity;
+type ValidatedEntity =
+  | ValidatedPersonEntity
+  | ValidatedOrganizationEntity
+  | ValidatedLocationEntity
+  | ValidatedEventEntity
+  | ValidatedTopicEntity
+  | ValidatedConceptEntity;
 
 interface EntityListProps {
-  entities: PodcastEntity[];
+  entities: ValidatedEntity[];
 }
 
 const getEntityDetails = (
-  entity: PodcastEntity
+  entity: ValidatedEntity
 ): { label: string; value?: string } => {
   switch (entity.type) {
     case "PERSON":
-      return { label: "Role", value: (entity as PersonEntity).role };
+      return { label: "Role", value: entity.role };
     case "ORGANIZATION":
       return {
         label: "Industry",
-        value: (entity as OrganizationEntity).industry,
+        value: entity.industry,
       };
     case "LOCATION": {
-      const locationEntity = entity as LocationEntity;
-      const details = [`Type: ${locationEntity.locationType}`];
-      if (locationEntity.region) {
-        details.push(`Region: ${locationEntity.region}`);
+      const details = [`Type: ${entity.locationType}`];
+      if (entity.region) {
+        details.push(`Region: ${entity.region}`);
       }
-      if (locationEntity.coordinates) {
+      if (entity.coordinates) {
         details.push(
-          `Coordinates: ${locationEntity.coordinates.latitude}, ${locationEntity.coordinates.longitude}`
+          `Coordinates: ${entity.coordinates.latitude}, ${entity.coordinates.longitude}`
         );
       }
       return { label: "Details", value: details.join(" | ") };
     }
     case "EVENT":
-      return { label: "Date", value: (entity as EventEntity).date };
+      return { label: "Date", value: entity.date };
     case "TOPIC":
       return {
         label: "Subtopics",
-        value: (entity as TopicEntity).subtopics?.join(", "),
+        value: entity.subtopics?.join(", "),
       };
     case "CONCEPT":
       return {
         label: "Definition",
-        value: (entity as ConceptEntity).definition,
+        value: entity.definition,
       };
     default: {
       const _exhaustiveCheck: never = entity;

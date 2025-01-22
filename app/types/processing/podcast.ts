@@ -8,11 +8,12 @@ import type {
   ProcessingOptions,
   ProcessingMetadata,
   BaseTextChunk,
-  ProcessingState,
-  ProcessingStep,
+  ProcessingState as BaseProcessingState,
+  ProcessingStep as BaseProcessingStep,
   NetworkLog,
   BaseProcessingResult,
   ProcessingAnalysis,
+  ChunkResult,
 } from "./base";
 
 import type {
@@ -26,6 +27,41 @@ import type {
 } from "@/app/types/entities/podcast";
 
 import { Section } from "../shared/content";
+
+import type {
+  ContentSection,
+  Concept,
+  Argument,
+  Controversy,
+  Quote,
+  Application,
+  PodcastInput,
+  PodcastTranscript,
+  ProcessedPodcast,
+} from "../podcast/shared";
+
+// Re-export shared types
+export type {
+  ContentSection,
+  Concept,
+  Argument,
+  Controversy,
+  Quote,
+  Application,
+  PodcastInput,
+  PodcastTranscript,
+  ProcessedPodcast,
+};
+
+// Re-export entity types
+export type {
+  PersonEntity,
+  OrganizationEntity,
+  LocationEntity,
+  EventEntity,
+  TopicEntity,
+  ConceptEntity,
+} from "../entities/podcast";
 
 /**
  * Represents a theme discussed in the podcast with extended information
@@ -156,11 +192,11 @@ export interface PodcastTextChunk {
   status: ProcessingStatus;
 }
 
-export interface PodcastProcessingState extends ProcessingState {
+export interface PodcastProcessingState extends BaseProcessingState {
   chunks: PodcastProcessingChunk[];
 }
 
-export interface PodcastProcessingStep extends ProcessingStep {
+export interface PodcastProcessingStep extends BaseProcessingStep {
   chunks?: PodcastProcessingChunk[];
   data?: {
     entities?: ValidatedPodcastEntities;
@@ -174,34 +210,10 @@ export interface PodcastProcessingStep extends ProcessingStep {
  * Represents the analysis of a podcast episode
  * Contains detailed breakdown of content and insights
  */
-export interface PodcastAnalysis extends BasePodcastAnalysis {
-  /** Quick facts extracted from the podcast */
-  quickFacts: {
-    /** Duration of the episode */
-    duration: string;
-    /** List of participants in the podcast */
-    participants: string[];
-    /** When the podcast was recorded */
-    recordingDate?: string;
-    /** Main topic discussed */
-    mainTopic: string;
-    /** Level of expertise required to understand */
-    expertise: string;
-  };
-  /** Key points from the podcast */
-  keyPoints: Array<{
-    /** Title of the key point */
-    title: string;
-    /** Detailed description */
-    description: string;
-    /** Relevance or importance */
-    relevance: string;
-  }>;
-  /** Major themes discussed with extended information */
-  themes: string[];
-  extendedThemes: ExtendedTheme[];
-  /** Content sections */
+export interface PodcastAnalysis
+  extends Omit<ProcessingAnalysis, "sections" | "themes"> {
   sections: Section[];
+  themes: string[];
 }
 
 /**
@@ -292,3 +304,128 @@ export interface PodcastProcessingStateManagement {
   /** Reset processing state */
   reset: () => void;
 }
+
+// Processing State Types
+export interface ProcessingStep extends BaseProcessingStep {
+  id: string;
+  name: string;
+  status: ProcessingStatus;
+  progress: number;
+  error?: Error;
+  description?: string;
+  data?: any;
+  chunks?: ProcessingChunk[];
+  networkLogs?: NetworkLog[];
+}
+
+export interface ProcessingState extends BaseProcessingState {
+  steps: ProcessingStep[];
+  chunks: ProcessingChunk[];
+}
+
+export interface TextChunk extends BaseTextChunk {
+  // Add any podcast-specific fields here
+}
+
+export interface ProcessingChunk extends TextChunk {
+  status: ProcessingStatus;
+  response?: string;
+  error?: Error;
+  result?: ProcessingChunkResult;
+  analysis?: PodcastAnalysis;
+  entities?: {
+    people: PersonEntity[];
+    organizations: OrganizationEntity[];
+    locations: LocationEntity[];
+    events: EventEntity[];
+  };
+  timeline?: TimelineEvent[];
+}
+
+export interface ProcessingChunkResult extends Omit<ChunkResult, "timeline"> {
+  id: string;
+  text: string;
+  refinedText: string;
+  analysis?: ProcessingAnalysis;
+  entities: {
+    people: PersonEntity[];
+    organizations: OrganizationEntity[];
+    locations: LocationEntity[];
+    events: EventEntity[];
+    topics: TopicEntity[];
+    concepts: ConceptEntity[];
+  };
+  timeline?: TimelineEvent[];
+  status: ProcessingStatus;
+  progress: number;
+  error?: Error;
+}
+
+export interface ProcessingResult extends BaseProcessingResult {
+  refinedTranscript: string;
+  analysis: PodcastAnalysis;
+  entities: {
+    people: PersonEntity[];
+    organizations: OrganizationEntity[];
+    locations: LocationEntity[];
+    events: EventEntity[];
+  };
+  timeline: TimelineEvent[];
+}
+
+export interface QuickFact {
+  duration: string;
+  participants: string[];
+  recordingDate?: string;
+  mainTopic: string;
+  expertise: string;
+}
+
+export interface KeyPoint {
+  title: string;
+  description: string;
+  relevance: string;
+}
+
+export interface ChunkOptions {
+  maxChunkSize?: number;
+  overlap?: number;
+  separator?: string;
+}
+
+export interface TranscriptStepData {
+  refinedContent: string;
+  chunks?: ProcessingChunk[];
+  networkLogs?: NetworkLog[];
+}
+
+export interface AnalysisStepData {
+  title?: string;
+  summary?: string;
+  quickFacts?: ProcessingAnalysis["quickFacts"];
+  keyPoints?: ProcessingAnalysis["keyPoints"];
+  themes?: string[];
+}
+
+export interface EntityStepData {
+  people?: string[];
+  organizations?: string[];
+  locations?: string[];
+  events?: string[];
+}
+
+export type StepData = {
+  refinedContent?: string;
+  chunks?: ProcessingChunk[];
+  networkLogs?: NetworkLog[];
+  title?: string;
+  summary?: string;
+  quickFacts?: ProcessingAnalysis["quickFacts"];
+  keyPoints?: ProcessingAnalysis["keyPoints"];
+  themes?: string[];
+  people?: string[];
+  organizations?: string[];
+  locations?: string[];
+  events?: string[];
+  timeline?: TimelineEvent[];
+};

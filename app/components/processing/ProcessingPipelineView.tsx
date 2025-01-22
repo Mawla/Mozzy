@@ -1,17 +1,19 @@
 "use client";
+/** @jsxImportSource react */
 
 import { useEffect, useState } from "react";
-import type {
-  ProcessingStatus,
+import {
+  ProcessingChunk,
   ProcessingState,
   ProcessingStep,
-  NetworkLog,
-  BaseTextChunk,
-  ProcessingChunk,
-} from "@/app/types/processing/base";
+  ProcessingStatus,
+} from "@/app/types/processing";
+import type { TimelineEvent } from "@/app/types/shared/timeline";
 import { NetworkLogger } from "@/app/components/dashboard/podcasts/NetworkLogger";
 import { ChunkVisualizer } from "@/app/components/dashboard/podcasts/ChunkVisualizer";
 import { ProcessingStatus as ProcessingStatusComponent } from "./ProcessingStatus";
+import { createValidatedPodcastEntity } from "@/app/utils/type-conversion/entity";
+import type { ValidatedPodcastEntities } from "@/app/types/entities/podcast";
 
 interface ProcessingPipelineViewProps {
   state: ProcessingState;
@@ -79,7 +81,13 @@ export function ProcessingPipelineView({
                 <p className="text-sm text-gray-600 mb-2">{step.description}</p>
                 {step.error && (
                   <div className="bg-red-50 border border-red-200 rounded p-3 mb-2">
-                    <p className="text-sm text-red-700">{step.error.message}</p>
+                    <p className="text-sm text-red-700">
+                      {typeof step.error === "string"
+                        ? step.error
+                        : step.error instanceof Error
+                        ? step.error.message
+                        : "Unknown error"}
+                    </p>
                     {onRetry && (
                       <button
                         onClick={() => onRetry(step.id)}
@@ -92,11 +100,180 @@ export function ProcessingPipelineView({
                 )}
                 {step.chunks && (
                   <ChunkVisualizer
-                    chunks={step.chunks.map((chunk) => ({
-                      ...chunk,
-                      status: "completed" as ProcessingStatus,
-                      progress: 100,
-                    }))}
+                    chunks={step.chunks.map((chunk: ProcessingChunk) => {
+                      const result = chunk.result
+                        ? {
+                            id: chunk.result.id,
+                            text: chunk.result.text,
+                            refinedText:
+                              chunk.result.refinedText || chunk.result.text,
+                            analysis: chunk.result.analysis
+                              ? {
+                                  ...chunk.result.analysis,
+                                  entities: chunk.result.analysis.entities
+                                    ? {
+                                        people:
+                                          chunk.result.analysis.entities.people.map(
+                                            (p) => ({
+                                              ...p,
+                                              type: "PERSON" as const,
+                                              role: "speaker",
+                                              expertise: p.expertise || [
+                                                "unknown",
+                                              ],
+                                              context: p.context || "",
+                                              mentions: p.mentions || [],
+                                              createdAt:
+                                                p.createdAt ||
+                                                new Date().toISOString(),
+                                              updatedAt:
+                                                p.updatedAt ||
+                                                new Date().toISOString(),
+                                            })
+                                          ),
+                                        organizations:
+                                          chunk.result.analysis.entities.organizations.map(
+                                            (o) => ({
+                                              ...o,
+                                              type: "ORGANIZATION" as const,
+                                              industry: o.industry || "unknown",
+                                              size: "unknown",
+                                              context: o.context || "",
+                                              mentions: o.mentions || [],
+                                              createdAt:
+                                                o.createdAt ||
+                                                new Date().toISOString(),
+                                              updatedAt:
+                                                o.updatedAt ||
+                                                new Date().toISOString(),
+                                            })
+                                          ),
+                                        locations:
+                                          chunk.result.analysis.entities.locations.map(
+                                            (l) => ({
+                                              ...l,
+                                              type: "LOCATION" as const,
+                                              locationType: "unknown",
+                                              context: l.context || "",
+                                              mentions: l.mentions || [],
+                                              createdAt:
+                                                l.createdAt ||
+                                                new Date().toISOString(),
+                                              updatedAt:
+                                                l.updatedAt ||
+                                                new Date().toISOString(),
+                                            })
+                                          ),
+                                        events:
+                                          chunk.result.analysis.entities.events.map(
+                                            (e) => ({
+                                              ...e,
+                                              type: "EVENT" as const,
+                                              date: new Date().toISOString(),
+                                              duration: "unknown",
+                                              participants: ["unknown"],
+                                              context: e.context || "",
+                                              mentions: e.mentions || [],
+                                              createdAt:
+                                                e.createdAt ||
+                                                new Date().toISOString(),
+                                              updatedAt:
+                                                e.updatedAt ||
+                                                new Date().toISOString(),
+                                            })
+                                          ),
+                                      }
+                                    : undefined,
+                                }
+                              : undefined,
+                            entities: chunk.result.entities
+                              ? ({
+                                  people: chunk.result.entities.people.map(
+                                    (p) => ({
+                                      ...p,
+                                      type: "PERSON" as const,
+                                      role: "speaker",
+                                      expertise: p.expertise || ["unknown"],
+                                      context: p.context || "",
+                                      mentions: p.mentions || [],
+                                      createdAt:
+                                        p.createdAt || new Date().toISOString(),
+                                      updatedAt:
+                                        p.updatedAt || new Date().toISOString(),
+                                    })
+                                  ),
+                                  organizations:
+                                    chunk.result.entities.organizations.map(
+                                      (o) => ({
+                                        ...o,
+                                        type: "ORGANIZATION" as const,
+                                        industry: o.industry || "unknown",
+                                        size: "unknown",
+                                        context: o.context || "",
+                                        mentions: o.mentions || [],
+                                        createdAt:
+                                          o.createdAt ||
+                                          new Date().toISOString(),
+                                        updatedAt:
+                                          o.updatedAt ||
+                                          new Date().toISOString(),
+                                      })
+                                    ),
+                                  locations:
+                                    chunk.result.entities.locations.map(
+                                      (l) => ({
+                                        ...l,
+                                        type: "LOCATION" as const,
+                                        locationType: "unknown",
+                                        context: l.context || "",
+                                        mentions: l.mentions || [],
+                                        createdAt:
+                                          l.createdAt ||
+                                          new Date().toISOString(),
+                                        updatedAt:
+                                          l.updatedAt ||
+                                          new Date().toISOString(),
+                                      })
+                                    ),
+                                  events: chunk.result.entities.events.map(
+                                    (e) => ({
+                                      ...e,
+                                      type: "EVENT" as const,
+                                      date: new Date().toISOString(),
+                                      duration: "unknown",
+                                      participants: ["unknown"],
+                                      context: e.context || "",
+                                      mentions: e.mentions || [],
+                                      createdAt:
+                                        e.createdAt || new Date().toISOString(),
+                                      updatedAt:
+                                        e.updatedAt || new Date().toISOString(),
+                                    })
+                                  ),
+                                } as ValidatedPodcastEntities)
+                              : {
+                                  people: [],
+                                  organizations: [],
+                                  locations: [],
+                                  events: [],
+                                },
+                            timeline:
+                              (chunk.result as any).timeline ||
+                              ([] as TimelineEvent[]),
+                          }
+                        : undefined;
+
+                      return {
+                        id: chunk.id,
+                        text: chunk.text,
+                        start: chunk.start,
+                        end: chunk.end,
+                        startIndex: chunk.startIndex,
+                        endIndex: chunk.endIndex,
+                        status: chunk.status,
+                        result,
+                      };
+                    })}
                   />
                 )}
                 {step.networkLogs && <NetworkLogger logs={step.networkLogs} />}
@@ -121,9 +298,7 @@ export function ProcessingPipelineView({
         <p className="font-medium">
           <ProcessingStatusComponent status={state.status} />
         </p>
-        {state.error && (
-          <p className="text-sm mt-2">Error: {state.error.message}</p>
-        )}
+        {state.error && <p className="text-sm mt-2">Error: {state.error}</p>}
       </div>
     </div>
   );

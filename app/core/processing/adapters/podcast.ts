@@ -1,23 +1,11 @@
-import type {
+import {
   ProcessingAdapter,
   ProcessingOptions,
-  ProcessingResult,
+  BaseProcessingResult,
   ProcessingStatus,
   ProcessingAnalysis,
-  SentimentAnalysis,
-  TimelineEvent,
-  TopicAnalysis,
-  ChunkResult,
   ProcessingMetadata,
-  BaseTextChunk,
-} from "../types";
-
-import type {
-  PersonEntity,
-  OrganizationEntity,
-  LocationEntity,
-  EventEntity,
-} from "@/app/types/entities/podcast";
+} from "@/app/types/processing/base";
 
 import { PodcastProcessor } from "../podcast/PodcastProcessor";
 import { logger } from "@/lib/logger";
@@ -28,30 +16,13 @@ import crypto from "crypto";
 const generateId = () => uuidv4();
 
 export class PodcastProcessingAdapter implements ProcessingAdapter {
-  private processor: PodcastProcessor;
-
-  constructor() {
-    this.processor = new PodcastProcessor();
-  }
+  constructor(private processor: PodcastProcessor) {}
 
   async validate(input: string): Promise<boolean> {
     try {
-      // Basic validation
-      if (!input || typeof input !== "string") {
-        return false;
-      }
-
-      // Content validation
-      const minLength = 50;
-      const maxLength = 1000000;
-      if (input.length < minLength || input.length > maxLength) {
-        return false;
-      }
-
-      return true;
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err));
-      logger.error("Validation failed", error, { input });
+      // Basic validation - check if input is not empty
+      return input.trim().length > 0;
+    } catch (error) {
       return false;
     }
   }
@@ -59,53 +30,23 @@ export class PodcastProcessingAdapter implements ProcessingAdapter {
   async process(
     input: string,
     options: ProcessingOptions
-  ): Promise<ProcessingResult> {
+  ): Promise<BaseProcessingResult> {
     try {
       const isValid = await this.validate(input);
       if (!isValid) {
         return this.createErrorResult("Invalid input");
       }
 
-      const result = await this.processor.process(input, {
-        analyzeSentiment: options.analyzeSentiment,
-        extractEntities: options.extractEntities,
-        includeTimestamps: options.includeTimestamps,
-      });
-
-      const analysis: ProcessingAnalysis = {
-        id: generateId(),
-        title: result.metadata?.title || "Untitled",
-        summary: result.analysis?.summary || "",
-        entities: result.entities,
-        timeline: result.timeline || [],
-        sentiment: result.analysis?.sentiment,
-        topics: result.analysis?.topics || [],
-        themes: result.analysis?.themes || [],
-        keyPoints: result.analysis?.keyPoints || [],
-        quickFacts: result.analysis?.quickFacts,
-      };
-
-      return this.createSuccessResult(
-        result.output,
-        {
-          format: "podcast",
-          platform: options.targetPlatform || "default",
-          processedAt: new Date().toISOString(),
-          title: result.metadata?.title,
-          duration: result.metadata?.duration,
-          speakers: result.metadata?.speakers,
-          topics: result.metadata?.topics,
-        },
-        analysis
+      const result = await this.processor.process(input);
+      return this.createSuccessResult(result.metadata, result.analysis);
+    } catch (error) {
+      return this.createErrorResult(
+        error instanceof Error ? error.message : "Unknown error"
       );
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err));
-      logger.error("Processing failed", error, { options });
-      return this.createErrorResult(error.message);
     }
   }
 
-  async getStatus(id: string): Promise<ProcessingResult> {
+  async getStatus(id: string): Promise<BaseProcessingResult> {
     // In a real implementation, this would check a database or queue
     return this.createPendingResult();
   }
@@ -121,81 +62,46 @@ export class PodcastProcessingAdapter implements ProcessingAdapter {
     );
   }
 
-  private createErrorResult(error: string): ProcessingResult {
+  private createErrorResult(error: string): BaseProcessingResult {
     return {
       id: crypto.randomUUID(),
-      format: "podcast",
       status: "error" as ProcessingStatus,
       success: false,
-      output: "",
       error,
+      output: "",
       metadata: {
         format: "podcast",
-        platform: "default",
+        platform: "unknown",
         processedAt: new Date().toISOString(),
       },
-      analysis: {
-        id: crypto.randomUUID(),
-        title: "Error Processing",
-        summary: error,
-      },
-      entities: {
-        people: [],
-        organizations: [],
-        locations: [],
-        events: [],
-      },
-      timeline: [],
     };
   }
 
   private createSuccessResult(
-    output: string,
     metadata: ProcessingMetadata,
     analysis: ProcessingAnalysis
-  ): ProcessingResult {
+  ): BaseProcessingResult {
     return {
       id: crypto.randomUUID(),
-      format: "podcast",
       status: "completed" as ProcessingStatus,
       success: true,
-      output,
+      output: "",
       metadata,
       analysis,
-      entities: {
-        people: [],
-        organizations: [],
-        locations: [],
-        events: [],
-      },
-      timeline: [],
     };
   }
 
-  private createPendingResult(): ProcessingResult {
+  private createPendingResult(): BaseProcessingResult {
     return {
       id: crypto.randomUUID(),
-      format: "podcast",
       status: "pending" as ProcessingStatus,
       success: false,
       output: "",
       metadata: {
         format: "podcast",
-        platform: "default",
+        platform: "unknown",
         processedAt: new Date().toISOString(),
       },
-      analysis: {
-        id: crypto.randomUUID(),
-        title: "Processing",
-        summary: "Processing podcast content...",
-      },
-      entities: {
-        people: [],
-        organizations: [],
-        locations: [],
-        events: [],
-      },
-      timeline: [],
     };
   }
 }

@@ -21,8 +21,11 @@ export interface PostOrganizationEntity extends BaseEntity {
 
 export interface PostLocationEntity extends BaseEntity {
   type: Extract<EntityType, "LOCATION">;
-  locationType?: string;
+  /** Type of location (e.g. city, country, landmark) */
+  locationType: string;
+  /** Geographic region */
   region?: string;
+  /** Geographic coordinates */
   coordinates?: {
     latitude: number;
     longitude: number;

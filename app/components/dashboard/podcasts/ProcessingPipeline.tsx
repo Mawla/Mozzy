@@ -26,13 +26,7 @@ import type {
   PodcastProcessingChunk,
   PodcastProcessingAnalysis,
 } from "@/app/types/processing/podcast";
-import type {
-  PersonEntity,
-  OrganizationEntity,
-  LocationEntity,
-  EventEntity,
-  ValidatedPodcastEntities,
-} from "@/app/types/entities/podcast";
+import type { ValidatedPodcastEntities } from "@/app/types/entities";
 
 interface ProcessingPipelineProps {
   steps: PodcastProcessingStep[];
@@ -49,6 +43,16 @@ interface ExtendedProcessingStep extends PodcastProcessingStep {
     analysis?: PodcastProcessingAnalysis;
     [key: string]: any;
   };
+  networkLogs?: Array<{
+    timestamp: string;
+    type: "request" | "response" | "error";
+    message: string;
+    data?: unknown;
+    error?: {
+      message: string;
+      stack?: string;
+    };
+  }>;
 }
 
 // Type guards
@@ -252,34 +256,19 @@ export const ProcessingPipeline = ({
                                     {step.name}
                                   </span>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  {step.status === "error" && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        onRetryStep(step.id);
-                                      }}
-                                    >
-                                      <RefreshCw className="h-4 w-4 mr-1" />
-                                      Retry
-                                    </Button>
+                                <Badge
+                                  variant={getBadgeVariant(step.status)}
+                                  className={cn(
+                                    (step.status === "processing" ||
+                                      step.status === "pending") &&
+                                      "animate-pulse"
                                   )}
-                                  <Badge
-                                    variant={getBadgeVariant(step.status)}
-                                    className={cn(
-                                      (step.status === "processing" ||
-                                        step.status === "pending") &&
-                                        "animate-pulse"
-                                    )}
-                                  >
-                                    {getBadgeContent(step.status)}
-                                  </Badge>
-                                </div>
+                                >
+                                  {getBadgeContent(step.status)}
+                                </Badge>
                               </div>
                             </AccordionTrigger>
-                            <AccordionContent className="px-4 pb-3">
+                            <AccordionContent className="px-4 py-2">
                               {renderStepContent(
                                 step as ExtendedProcessingStep
                               )}
@@ -291,15 +280,15 @@ export const ProcessingPipeline = ({
                   </div>
                 </TabsContent>
 
-                <TabsContent value="chunks">
-                  <ScrollArea className="h-[500px] rounded-md border p-4">
-                    <ChunkVisualizer chunks={chunks || []} />
+                <TabsContent value="chunks" className="mt-4">
+                  <ScrollArea className="h-[400px]">
+                    <ChunkVisualizer chunks={chunks} />
                   </ScrollArea>
                 </TabsContent>
 
-                <TabsContent value="logs">
-                  <ScrollArea className="h-[500px] rounded-md border">
-                    <NetworkLogger logs={networkLogs || []} />
+                <TabsContent value="logs" className="mt-4">
+                  <ScrollArea className="h-[400px]">
+                    <NetworkLogger logs={networkLogs} />
                   </ScrollArea>
                 </TabsContent>
               </Tabs>

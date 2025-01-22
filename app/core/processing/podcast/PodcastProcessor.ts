@@ -1,19 +1,6 @@
 import { Processor } from "../base/Processor";
-import type { ProcessingResult, TextChunk } from "../types";
-import { PodcastChunker } from "../podcast";
-import { PodcastProcessingStrategy } from "./PodcastProcessingStrategy";
-import { logger } from "@/lib/logger";
-import type {
-  PodcastAnalysis,
-  KeyPoint,
-  ProcessingChunkResult,
-  PersonEntity,
-  OrganizationEntity,
-  LocationEntity,
-  EventEntity,
-  ProcessingChunk,
-} from "@/app/types/podcast/processing";
 import {
+  ProcessingStep,
   ProcessingAdapter,
   ProcessingOptions,
   ProcessingStatus,
@@ -21,24 +8,54 @@ import {
   SentimentAnalysis,
   TopicAnalysis,
   TimelineEvent,
-} from "../types";
+  BaseTextChunk,
+  ProcessingResult,
+  ProcessingFormat,
+} from "@/app/types/processing/base";
+
+import type {
+  ValidatedPodcastEntities,
+  PersonEntity,
+  OrganizationEntity,
+  LocationEntity,
+  EventEntity,
+  TopicEntity,
+  ConceptEntity,
+  ValidatedPersonEntity,
+  ValidatedOrganizationEntity,
+  ValidatedLocationEntity,
+  ValidatedEventEntity,
+  ValidatedTopicEntity,
+  ValidatedConceptEntity,
+} from "@/app/types/entities/podcast";
+
+import { PodcastChunker } from "./PodcastChunker";
+import { PodcastProcessingStrategy } from "./PodcastProcessingStrategy";
+import { logger } from "@/lib/logger";
 import { v4 as uuidv4 } from "uuid";
+import { createValidatedEntity } from "@/app/utils/type-conversion/entity";
 
-// Local type alias for entities structure
-type PodcastEntities = {
-  people: PersonEntity[];
-  organizations: OrganizationEntity[];
-  locations: LocationEntity[];
-  events: EventEntity[];
-};
-
-const generateId = () => uuidv4();
+interface PodcastChunkResult {
+  id: string;
+  text: string;
+  refinedText: string;
+  status: ProcessingStatus;
+  progress: number;
+  entities?: {
+    people: PersonEntity[];
+    organizations: OrganizationEntity[];
+    locations: LocationEntity[];
+    events: EventEntity[];
+    topics: TopicEntity[];
+    concepts: ConceptEntity[];
+  };
+}
 
 export class PodcastProcessor extends Processor<string, ProcessingResult> {
   private chunker: PodcastChunker;
   private strategy: PodcastProcessingStrategy;
-  private readonly MAX_CHUNK_SIZE = 4000; // Match chunker size
-  private readonly MIN_CHUNK_SIZE = 100; // Minimum meaningful chunk size
+  private readonly MAX_CHUNK_SIZE = 4000;
+  private readonly MIN_CHUNK_SIZE = 100;
 
   constructor() {
     super();
@@ -46,18 +63,16 @@ export class PodcastProcessor extends Processor<string, ProcessingResult> {
     this.strategy = new PodcastProcessingStrategy();
   }
 
-  public async createChunks(text: string): Promise<TextChunk[]> {
+  public async createChunks(text: string): Promise<BaseTextChunk[]> {
     return this.chunker.chunk(text);
   }
 
   async process(input: string): Promise<ProcessingResult> {
     try {
-      // Validate input before processing
       if (!this.validateInput(input)) {
         throw new Error("Invalid input: Empty or non-string input");
       }
 
-      // Split input into manageable chunks
       const chunks = await this.chunker.chunk(input);
 
       logger.debug("Created chunks", {
@@ -69,7 +84,6 @@ export class PodcastProcessor extends Processor<string, ProcessingResult> {
         throw new Error("No valid chunks created from input");
       }
 
-      // Process each chunk
       const results = await Promise.all(
         chunks.map(async (chunk) => {
           logger.debug("Processing chunk", {
@@ -79,247 +93,172 @@ export class PodcastProcessor extends Processor<string, ProcessingResult> {
           });
 
           await this.strategy.process(chunk.text);
-          return {
+          const chunkResult: PodcastChunkResult = {
             id: chunk.id,
             text: chunk.text,
             refinedText: chunk.text,
+            status: "completed" as ProcessingStatus,
+            progress: 100,
             entities: {
               people: [],
               organizations: [],
               locations: [],
               events: [],
+              topics: [],
+              concepts: [],
             },
-            status: "completed" as ProcessingStatus,
-            progress: 100,
-          } as ProcessingChunkResult;
+          };
+          return chunkResult;
         })
       );
 
-      // Initialize empty entities object with default arrays
-      const combinedEntities: PodcastEntities = {
-        people: [],
-        organizations: [],
-        locations: [],
-        events: [],
-      };
-
       // Combine entities from all chunks
-      const entities = results.reduce<PodcastEntities>((acc, result) => {
-        if (!result.entities) return acc;
+      const combinedEntities = results.reduce(
+        (acc, result) => {
+          if (!result.entities) return acc;
 
-        // Helper function to merge arrays with deduplication
-        const mergeEntities = <T extends { name: string }>(
-          accArray: T[] = [],
-          newArray: T[] = []
-        ) => {
-          const map = new Map<string, T>();
-
-          // Add existing entities
-          accArray.forEach((e) => {
-            if (e.name) {
-              map.set(e.name, e);
-            }
-          });
-
-          // Add or update with new entities
-          newArray.forEach((e) => {
-            if (e.name) {
-              map.set(e.name, e);
-            }
-          });
-
-          return Array.from(map.values());
-        };
-
-        // Ensure each array is properly typed
-        return {
-          people: mergeEntities(acc.people || [], result.entities.people || []),
-          organizations: mergeEntities(
-            acc.organizations || [],
-            result.entities.organizations || []
-          ),
-          locations: mergeEntities(
-            acc.locations || [],
-            result.entities.locations || []
-          ),
-          events: mergeEntities(acc.events || [], result.entities.events || []),
-        } as PodcastEntities;
-      }, combinedEntities);
-
-      // Convert entities to the format expected by ProcessingResult
-      const processedEntities = {
-        people: entities.people,
-        organizations: entities.organizations,
-        locations: entities.locations,
-        events: entities.events,
-      };
-
-      // Convert timeline events to the format expected by ProcessingResult
-      const processedTimeline =
-        results[0]?.timeline?.map(
-          (event) =>
-            ({
-              timestamp: event.time || new Date().toISOString(),
-              event: event.event,
-            } as TimelineEvent)
-        ) || [];
-
-      // Convert themes to topics
-      const topics =
-        results[0]?.analysis?.themes?.map(
-          (theme) =>
-            ({
-              name: theme,
-              confidence: 1,
-              keywords: [],
-            } as TopicAnalysis)
-        ) || [];
-
-      const analysis: ProcessingAnalysis = {
-        id: generateId(),
-        title: results[0]?.analysis?.title || "Untitled",
-        summary: results[0]?.analysis?.summary || "",
-        entities: processedEntities,
-        timeline: processedTimeline,
-        sentiment: {
-          overall: 0,
-          segments: [],
+          return {
+            people: [...acc.people, ...result.entities.people],
+            organizations: [
+              ...acc.organizations,
+              ...result.entities.organizations,
+            ],
+            locations: [...acc.locations, ...result.entities.locations],
+            events: [...acc.events, ...result.entities.events],
+            topics: [...acc.topics, ...result.entities.topics],
+            concepts: [...acc.concepts, ...result.entities.concepts],
+          };
         },
-        topics: topics,
-      };
-
-      return {
-        id: generateId(),
-        format: "podcast",
-        status: "completed" as ProcessingStatus,
-        success: true,
-        output: results[0]?.refinedText || input,
-        metadata: {
-          format: "podcast",
-          platform: "default",
-          processedAt: new Date().toISOString(),
-          speakers: entities.people.map((p) => p.name),
-          duration: "00:00:00",
-        },
-        analysis,
-        entities: processedEntities,
-        timeline: processedTimeline,
-      };
-    } catch (error) {
-      logger.error(
-        "Failed to process podcast",
-        error instanceof Error ? error : new Error(String(error)),
         {
-          inputLength: input.length,
-          inputPreview: input.slice(0, 100),
+          people: [] as PersonEntity[],
+          organizations: [] as OrganizationEntity[],
+          locations: [] as LocationEntity[],
+          events: [] as EventEntity[],
+          topics: [] as TopicEntity[],
+          concepts: [] as ConceptEntity[],
         }
       );
-      return {
-        id: generateId(),
-        format: "podcast",
-        status: "failed" as ProcessingStatus,
-        success: false,
-        output: "",
-        error: error instanceof Error ? error.message : "Processing failed",
+
+      // Create validated entities
+      const validatedEntities: ValidatedPodcastEntities = {
+        people: combinedEntities.people.map((e) =>
+          createValidatedEntity<ValidatedPersonEntity>(e.name, "PERSON", {
+            role: e.role || "speaker",
+            expertise: e.expertise || ["unknown"],
+            context: e.context || "",
+            mentions: e.mentions || [],
+          })
+        ),
+        organizations: combinedEntities.organizations.map((e) =>
+          createValidatedEntity<ValidatedOrganizationEntity>(
+            e.name,
+            "ORGANIZATION",
+            {
+              industry: e.industry || "unknown",
+              size: e.size || "unknown",
+              context: e.context || "",
+              mentions: e.mentions || [],
+            }
+          )
+        ),
+        locations: combinedEntities.locations.map((e) =>
+          createValidatedEntity<ValidatedLocationEntity>(e.name, "LOCATION", {
+            locationType: e.locationType || "unknown",
+            region: e.region,
+            coordinates: e.coordinates,
+            context: e.context || "",
+            mentions: e.mentions || [],
+          })
+        ),
+        events: combinedEntities.events.map((e) =>
+          createValidatedEntity<ValidatedEventEntity>(e.name, "EVENT", {
+            date: e.date || new Date().toISOString(),
+            duration: e.duration || "unknown",
+            participants: e.participants || ["unknown"],
+            context: e.context || "",
+            mentions: e.mentions || [],
+          })
+        ),
+        topics: combinedEntities.topics.map((e) =>
+          createValidatedEntity<ValidatedTopicEntity>(e.name, "TOPIC", {
+            relevance: e.relevance,
+            subtopics: e.subtopics,
+            context: e.context || "",
+            mentions: e.mentions || [],
+          })
+        ),
+        concepts: combinedEntities.concepts.map((e) =>
+          createValidatedEntity<ValidatedConceptEntity>(e.name, "CONCEPT", {
+            definition: e.definition || "unknown",
+            examples: e.examples || ["unknown"],
+            context: e.context || "",
+            mentions: e.mentions || [],
+          })
+        ),
+      };
+
+      const result: ProcessingResult = {
+        id: uuidv4(),
+        format: "podcast" as ProcessingFormat,
+        status: "completed",
+        success: true,
+        output: results[0]?.refinedText || "",
         metadata: {
           format: "podcast",
           platform: "default",
           processedAt: new Date().toISOString(),
         },
         analysis: {
-          id: generateId(),
-          title: "Error Processing",
-          summary: error instanceof Error ? error.message : "Processing failed",
+          id: uuidv4(),
+          title: "Podcast Analysis",
+          summary: "Processed podcast content",
+          entities: validatedEntities,
+          timeline: [],
         },
-        entities: {
-          people: [],
-          organizations: [],
-          locations: [],
-          events: [],
-        },
+        entities: validatedEntities,
         timeline: [],
+        transcript: results.map((r) => r.refinedText).join(" "),
+        chunks: results.map((r) => ({
+          id: r.id,
+          text: r.text,
+          refinedText: r.refinedText,
+        })),
       };
+
+      if (!this.validateOutput(result)) {
+        throw new Error("Invalid processing result");
+      }
+
+      return result;
+    } catch (error) {
+      logger.error(
+        "Error in podcast processing",
+        error instanceof Error ? error : new Error(String(error))
+      );
+      throw error;
     }
   }
 
-  validateInput(input: string): boolean {
-    const isValid = typeof input === "string" && input.trim().length > 0;
-    if (!isValid) {
-      logger.error("Invalid input", undefined, {
-        type: typeof input,
-        length: input?.length,
-        trimmedLength: input?.trim().length,
-      });
-    }
-    return isValid;
+  public validateInput(input: string): boolean {
+    return typeof input === "string" && input.length > 0;
   }
 
-  validateOutput(output: ProcessingResult): boolean {
-    const isValid =
+  public validateOutput(output: ProcessingResult): boolean {
+    return (
+      output.id !== undefined &&
+      output.format === "podcast" &&
+      output.status !== undefined &&
+      output.success !== undefined &&
+      output.output !== undefined &&
+      output.metadata !== undefined &&
+      output.metadata.format === "podcast" &&
+      output.metadata.platform !== undefined &&
+      output.metadata.processedAt !== undefined &&
       output.analysis !== undefined &&
       output.entities !== undefined &&
-      output.timeline !== undefined;
-
-    if (!isValid) {
-      logger.error("Invalid output", undefined, {
-        hasAnalysis: output.analysis !== undefined,
-        hasEntities: output.entities !== undefined,
-        hasTimeline: output.timeline !== undefined,
-      });
-    }
-
-    return isValid;
-  }
-
-  private normalizeChunk(
-    chunk: Partial<TextChunk>,
-    index: number
-  ): Partial<TextChunk> {
-    return {
-      id: String(index),
-      text: typeof chunk.text === "string" ? chunk.text.trim() : "",
-      startIndex: chunk.startIndex || 0,
-      endIndex: chunk.endIndex || chunk.text?.length || 0,
-    };
-  }
-
-  private validateChunk(chunk: Partial<TextChunk>): boolean {
-    // First check if text exists and is a string
-    if (!chunk?.text || typeof chunk.text !== "string") {
-      logger.debug("Chunk validation failed: invalid text", {
-        chunk,
-        textType: typeof chunk?.text,
-      });
-      return false;
-    }
-
-    // Now we know text is a string, we can safely check its length
-    const textLength = chunk.text.length;
-
-    const isValid =
-      chunk !== null &&
-      typeof chunk === "object" &&
-      textLength >= this.MIN_CHUNK_SIZE &&
-      textLength <= this.MAX_CHUNK_SIZE &&
-      typeof chunk.id === "number" &&
-      Number.isInteger(chunk.id) &&
-      chunk.id >= 0;
-
-    if (!isValid) {
-      logger.debug("Chunk validation failed", {
-        chunk,
-        validations: {
-          isObject: chunk !== null && typeof chunk === "object",
-          hasValidText: textLength >= this.MIN_CHUNK_SIZE,
-          withinSizeLimit: textLength <= this.MAX_CHUNK_SIZE,
-          hasValidId:
-            typeof chunk.id === "number" &&
-            Number.isInteger(chunk.id) &&
-            chunk.id >= 0,
-        },
-      });
-    }
-
-    return isValid;
+      output.timeline !== undefined &&
+      output.transcript !== undefined &&
+      output.chunks !== undefined
+    );
   }
 }

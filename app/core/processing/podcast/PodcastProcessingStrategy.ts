@@ -5,22 +5,22 @@ import {
   TimelineEvent,
   BaseProcessingResult,
   ChunkResult,
+  ProcessingStatus,
+} from "@/app/types/processing/base";
+
+import {
   PersonEntity,
   OrganizationEntity,
   LocationEntity,
   EventEntity,
-} from "../types/base";
+  TopicEntity,
+  ConceptEntity,
+} from "@/app/types/entities/base";
 
-import { ProcessingStrategy } from "../base/ProcessingStrategy";
-import { logger } from "../utils/logger";
+import { BaseProcessingStrategy } from "../base/ProcessingStrategy";
+import { logger } from "@/lib/logger";
 import { ProcessingError } from "../errors/ProcessingError";
 import { podcastService } from "@/app/services/podcastService";
-import {
-  ProcessingStep as BaseProcessingStep,
-  ProcessingAnalysis as BaseProcessingAnalysis,
-  TimelineEvent as BaseTimelineEvent,
-  BaseTextChunk,
-} from "../types/base";
 
 interface StepResult {
   refinedText?: string;
@@ -34,7 +34,10 @@ interface StepResult {
   timeline?: TimelineEvent[];
 }
 
-export class PodcastProcessingStrategy extends ProcessingStrategy {
+export class PodcastProcessingStrategy extends BaseProcessingStrategy<
+  string,
+  BaseProcessingResult
+> {
   private stepResults: Map<string, StepResult> = new Map();
 
   protected initializeSteps(): void {
@@ -44,47 +47,35 @@ export class PodcastProcessingStrategy extends ProcessingStrategy {
         name: "Transcript Processing",
         status: "pending",
         progress: 0,
-        description: "Cleaning and formatting the transcript text",
       },
       {
         id: "analysis",
         name: "Content Analysis",
         status: "pending",
         progress: 0,
-        description: "Generating summary and extracting key information",
       },
       {
         id: "metadata",
         name: "Metadata Generation",
         status: "pending",
         progress: 0,
-        description: "Creating tags and content metadata",
       },
       {
         id: "timeline",
         name: "Timeline Analysis",
         status: "pending",
         progress: 0,
-        description: "Detecting and organizing timeline events",
       },
       {
         id: "finalize",
         name: "Finalization",
         status: "pending",
         progress: 0,
-        description: "Combining analysis, metadata, and events",
       },
     ];
   }
 
-  protected async validateInput(input: string): Promise<boolean> {
-    if (!input || input.trim().length === 0) {
-      throw new Error("Input transcript cannot be empty");
-    }
-    return true;
-  }
-
-  protected async processStep(stepId: string): Promise<void> {
+  public async processStep(stepId: string): Promise<void> {
     const step = this.getStepById(stepId);
     if (!step) {
       throw new Error(`Step ${stepId} not found`);
@@ -122,6 +113,91 @@ export class PodcastProcessingStrategy extends ProcessingStrategy {
     }
   }
 
+  public async process(input: string): Promise<BaseProcessingResult> {
+    try {
+      await this.validateInput(input);
+      this.state.currentTranscript = input;
+      this.initializeSteps();
+
+      for (const step of this.state.steps) {
+        await this.processStep(step.id);
+      }
+
+      const result = await this.createProcessingResult();
+      return result;
+    } catch (error) {
+      logger.error("Processing failed:", error as Error);
+      throw error;
+    }
+  }
+
+  public updateStepStatus(
+    stepId: string,
+    status: ProcessingStatus,
+    data?: unknown
+  ): void {
+    const step = this.getStepById(stepId);
+    if (step) {
+      step.status = status;
+      if (data) {
+        step.result = data;
+      }
+      this.updateOverallProgress();
+    }
+  }
+
+  public async combine(
+    results: BaseProcessingResult[]
+  ): Promise<BaseProcessingResult> {
+    if (results.length === 0) {
+      throw new Error("No results to combine");
+    }
+
+    if (results.length === 1) {
+      return results[0];
+    }
+
+    // Combine the results into a single result
+    const combinedResult: BaseProcessingResult = {
+      id: crypto.randomUUID(),
+      status: "completed",
+      success: true,
+      output: results.map((r) => r.output).join("\n"),
+      metadata: results[0].metadata,
+      analysis: this.combineAnalysis(
+        results
+          .map((r) => r.analysis)
+          .filter((a): a is ProcessingAnalysis => !!a)
+      ),
+      transcript: results
+        .map((r) => r.transcript)
+        .filter(Boolean)
+        .join("\n"),
+      chunks: results.flatMap((r) => r.chunks || []),
+      entities: this.combineEntities(
+        results
+          .map((r) => r.entities)
+          .filter(
+            (e): e is NonNullable<BaseProcessingResult["entities"]> => !!e
+          )
+      ),
+      timeline: results.flatMap((r) => r.timeline || []),
+    };
+
+    return combinedResult;
+  }
+
+  public validate(input: string): boolean {
+    return Boolean(input && input.trim().length > 0);
+  }
+
+  private async validateInput(input: string): Promise<boolean> {
+    if (!input || input.trim().length === 0) {
+      throw new Error("Input transcript cannot be empty");
+    }
+    return true;
+  }
+
   protected validateDependencies(stepId: string): boolean {
     const step = this.getStepById(stepId);
     if (!step) return false;
@@ -150,6 +226,16 @@ export class PodcastProcessingStrategy extends ProcessingStrategy {
     this.setStepError(stepId, error);
   }
 
+  protected setStepError(stepId: string, error: Error): void {
+    const step = this.getStepById(stepId);
+    if (step) {
+      step.status = "error";
+      step.error = error.message;
+      this.state.error = error.message;
+      this.state.status = "error";
+    }
+  }
+
   protected cleanup(): void {
     this.stepResults.clear();
   }
@@ -174,63 +260,70 @@ export class PodcastProcessingStrategy extends ProcessingStrategy {
     // Implementation
   }
 
-  public async process(input: string): Promise<void> {
-    try {
-      await this.validateInput(input);
-      this.state.currentTranscript = input;
-      this.initializeSteps();
-
-      for (const step of this.state.steps) {
-        await this.processStep(step.id);
-      }
-    } catch (error) {
-      logger.error("Processing failed:", error as Error);
-      throw error;
-    }
-  }
-
-  public validate(input: string): boolean {
-    return Boolean(input && input.trim().length > 0);
-  }
-
-  public async combine(results: string[]): Promise<string> {
-    const parsedResults = results
-      .map((result) => {
-        try {
-          return JSON.parse(result) as ChunkResult;
-        } catch (error) {
-          logger.error(
-            "Failed to parse chunk result:",
-            error instanceof Error ? error : new Error(String(error))
-          );
-          return null;
-        }
-      })
-      .filter((result): result is ChunkResult => result !== null);
-
-    const refinedText = parsedResults.map((r) => r.text).join(" ");
-
-    const analysis: ProcessingAnalysis = {
-      id: Date.now().toString(),
-      title: "Combined Analysis",
-      summary: "Combined summary of all chunks",
-      entities: {
-        people: Array.from(
-          new Set(parsedResults.flatMap((r) => r.entities?.people || []))
-        ),
-        organizations: Array.from(
-          new Set(parsedResults.flatMap((r) => r.entities?.organizations || []))
-        ),
-        locations: Array.from(
-          new Set(parsedResults.flatMap((r) => r.entities?.locations || []))
-        ),
-        events: Array.from(
-          new Set(parsedResults.flatMap((r) => r.entities?.events || []))
-        ),
+  private async createProcessingResult(): Promise<BaseProcessingResult> {
+    return {
+      id: crypto.randomUUID(),
+      status: this.state.status,
+      success: this.state.status === "completed",
+      output: this.state.currentTranscript,
+      error: this.state.error,
+      metadata: {
+        format: "podcast",
+        platform: "default",
+        processedAt: new Date().toISOString(),
       },
-      timeline: parsedResults.flatMap((r) => r.timeline || []),
+      analysis: undefined,
+      transcript: this.state.currentTranscript,
+      chunks: this.state.chunks,
     };
+  }
 
-    return JSON.stringify({ refinedText, analysis });
+  private combineAnalysis(
+    analyses: ProcessingAnalysis[]
+  ): ProcessingAnalysis | undefined {
+    if (analyses.length === 0) return undefined;
+
+    return {
+      id: crypto.randomUUID(),
+      title: "Combined Analysis",
+      summary: analyses
+        .map((a) => a.summary)
+        .filter(Boolean)
+        .join("\n"),
+      entities: this.combineEntities(
+        analyses
+          .map((a) => a.entities)
+          .filter(
+            (e): e is NonNullable<BaseProcessingResult["entities"]> => !!e
+          )
+      ),
+      timeline: analyses.flatMap((a) => a.timeline || []),
+      sentiment: analyses[0]?.sentiment,
+      topics: analyses.flatMap((a) => a.topics || []),
+      themes: Array.from(new Set(analyses.flatMap((a) => a.themes || []))),
+      keyPoints: analyses.flatMap((a) => a.keyPoints || []),
+      quickFacts: analyses[0]?.quickFacts,
+    };
+  }
+
+  private combineEntities(
+    entitiesList: Array<NonNullable<BaseProcessingResult["entities"]>>
+  ) {
+    if (entitiesList.length === 0) return undefined;
+
+    return {
+      people: Array.from(new Set(entitiesList.flatMap((e) => e.people || []))),
+      organizations: Array.from(
+        new Set(entitiesList.flatMap((e) => e.organizations || []))
+      ),
+      locations: Array.from(
+        new Set(entitiesList.flatMap((e) => e.locations || []))
+      ),
+      events: Array.from(new Set(entitiesList.flatMap((e) => e.events || []))),
+      topics: Array.from(new Set(entitiesList.flatMap((e) => e.topics || []))),
+      concepts: Array.from(
+        new Set(entitiesList.flatMap((e) => e.concepts || []))
+      ),
+    };
   }
 }

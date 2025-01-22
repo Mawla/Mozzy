@@ -1,5 +1,5 @@
 import type { ProcessingStatus, NetworkLog } from "../base";
-import type { PostTextChunk, PostAnalysis } from "./index";
+import type { PostTextChunk, PostAnalysis } from "./public";
 
 /**
  * Internal state tracking for post processing operations.

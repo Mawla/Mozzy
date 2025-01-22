@@ -1,24 +1,125 @@
 import { ProcessingService } from "@/app/core/processing/service/ProcessingService";
 import { PodcastProcessingAdapter } from "@/app/core/processing/adapters/podcast";
 import { PostProcessingAdapter } from "@/app/core/processing/adapters/post";
-import {
+import { PodcastProcessor } from "@/app/core/processing/podcast/PodcastProcessor";
+import { ProcessingPipeline } from "@/app/core/processing/base/ProcessingPipeline";
+import { ProcessingStrategy } from "@/app/core/processing/base/ProcessingStrategy";
+import type {
   BaseProcessingResult,
   ProcessingStatus,
   ProcessingOptions,
   ProcessingAnalysis,
   ProcessingMetadata,
   SentimentAnalysis,
-} from "@/app/core/processing/types/base";
-import {
+  ProcessingResult,
+  ProcessingFormat,
+  BaseTextChunk,
+  ProcessingState,
+  ProcessingStep,
+} from "@/app/types/processing/base";
+import type {
   PersonEntity,
   OrganizationEntity,
   LocationEntity,
-} from "@/app/types/entities/podcast";
+} from "@/app/types/entities/base";
+
+// Test strategy implementation
+class TestProcessingStrategy
+  implements ProcessingStrategy<BaseTextChunk, ProcessingResult>
+{
+  private state: ProcessingState = {
+    status: "idle",
+    overallProgress: 0,
+    steps: [],
+    chunks: [],
+    networkLogs: [],
+    currentTranscript: "",
+    error: undefined,
+  };
+
+  getState(): ProcessingState {
+    return this.state;
+  }
+
+  async processStep(stepId: string): Promise<void> {
+    const step = this.getStepById(stepId);
+    if (step) {
+      step.status = "completed";
+      step.progress = 100;
+    }
+  }
+
+  getStepById(stepId: string): ProcessingStep | undefined {
+    return this.state.steps.find((step) => step.id === stepId);
+  }
+
+  updateStepStatus(
+    stepId: string,
+    status: ProcessingStatus,
+    data?: unknown
+  ): void {
+    const step = this.getStepById(stepId);
+    if (step) {
+      step.status = status;
+      if (data !== undefined) {
+        step.result = data;
+      }
+    }
+  }
+
+  async process(chunk: BaseTextChunk): Promise<ProcessingResult> {
+    return {
+      id: "test-id",
+      format: "podcast" as ProcessingFormat,
+      status: "completed",
+      success: true,
+      output: chunk.text,
+      metadata: {
+        format: "podcast",
+        platform: "test",
+        processedAt: new Date().toISOString(),
+      },
+      analysis: {
+        id: "test-analysis",
+        title: "Test Analysis",
+        summary: "Test summary",
+        entities: {
+          people: [],
+          organizations: [],
+          locations: [],
+          events: [],
+        },
+        timeline: [],
+      },
+      entities: {
+        people: [],
+        organizations: [],
+        locations: [],
+        events: [],
+      },
+      timeline: [],
+      transcript: chunk.text,
+      chunks: [{ id: chunk.id, text: chunk.text }],
+    };
+  }
+
+  async combine(results: ProcessingResult[]): Promise<ProcessingResult> {
+    return {
+      ...results[0],
+      output: results.map((r) => r.output).join("\n"),
+      transcript: results.map((r) => r.transcript).join("\n"),
+      chunks: results.flatMap((r) => r.chunks || []),
+    };
+  }
+}
 
 describe("Processing Pipeline", () => {
   let service: ProcessingService;
   let podcastAdapter: PodcastProcessingAdapter;
   let postAdapter: PostProcessingAdapter;
+  let podcastProcessor: PodcastProcessor;
+  let pipeline: ProcessingPipeline<string, BaseTextChunk, ProcessingResult>;
+  let strategy: TestProcessingStrategy;
 
   const sampleText = `
     This is a sample text that could be either a podcast transcript
@@ -39,11 +140,16 @@ describe("Processing Pipeline", () => {
 
   beforeEach(() => {
     service = new ProcessingService();
-    podcastAdapter = new PodcastProcessingAdapter();
+    podcastProcessor = new PodcastProcessor();
+    podcastAdapter = new PodcastProcessingAdapter(podcastProcessor);
     postAdapter = new PostProcessingAdapter();
+    strategy = new TestProcessingStrategy();
+    pipeline = new ProcessingPipeline<string, BaseTextChunk, ProcessingResult>(
+      strategy
+    );
 
-    service.registerAdapter("podcast", podcastAdapter);
-    service.registerAdapter("post", postAdapter);
+    service.registerAdapter("podcast" as ProcessingFormat, podcastAdapter);
+    service.registerAdapter("post" as ProcessingFormat, postAdapter);
   });
 
   describe("Core Processing", () => {
@@ -226,4 +332,30 @@ describe("Processing Pipeline", () => {
       ).toBe(true);
     });
   });
+});
+
+// Create mock result
+const createMockResult = (overrides = {}): ProcessingResult => ({
+  id: "test-id",
+  status: "completed" as ProcessingStatus,
+  success: true,
+  output: "test output",
+  metadata: {
+    format: "post" as ProcessingFormat,
+    platform: "test",
+    processedAt: new Date().toISOString(),
+  },
+  format: "post" as ProcessingFormat,
+  analysis: {
+    title: "Test",
+    summary: "Test summary",
+  },
+  entities: {
+    people: [],
+    organizations: [],
+    locations: [],
+    events: [],
+  },
+  timeline: [],
+  ...overrides,
 });

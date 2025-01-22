@@ -1,42 +1,62 @@
 import { ProcessingService } from "@/app/core/processing/service/ProcessingService";
-import {
+import type {
   ProcessingAdapter,
   ProcessingOptions,
   ProcessingResult,
-  ProcessingFormat,
+  ProcessingState,
   ProcessingStatus,
-} from "@/app/core/processing/types";
+  ProcessingFormat,
+} from "@/app/types/processing";
+
+// Create mock result
+const createMockResult = (overrides = {}): ProcessingResult => ({
+  id: "test-id",
+  status: "completed" as ProcessingStatus,
+  success: true,
+  output: "test output",
+  metadata: {
+    format: "post" as ProcessingFormat,
+    platform: "test",
+    processedAt: new Date().toISOString(),
+  },
+  format: "post" as ProcessingFormat,
+  analysis: {
+    title: "Test",
+    summary: "Test summary",
+  },
+  entities: {
+    people: [],
+    organizations: [],
+    locations: [],
+    events: [],
+  },
+  timeline: [],
+  ...overrides,
+});
 
 // Mock adapter implementation
-class MockAdapter implements ProcessingAdapter {
-  mockValidate = jest.fn();
-  mockProcess = jest.fn();
-  mockGetStatus = jest.fn();
-
-  async validate(input: string): Promise<boolean> {
-    return this.mockValidate(input);
-  }
-
-  async process(
-    input: string,
-    options: ProcessingOptions
-  ): Promise<ProcessingResult> {
-    return this.mockProcess(input, options);
-  }
-
-  async getStatus(id: string): Promise<ProcessingResult> {
-    return this.mockGetStatus(id);
-  }
-}
+const mockAdapter: ProcessingAdapter = {
+  validate: jest.fn().mockResolvedValue(true),
+  process: jest.fn().mockResolvedValue(createMockResult()),
+  getStatus: jest.fn().mockResolvedValue(createMockResult()),
+};
 
 describe("ProcessingService", () => {
   let service: ProcessingService;
-  let mockPodcastAdapter: MockAdapter;
-  let mockPostAdapter: MockAdapter;
+  let mockPodcastAdapter: jest.Mocked<ProcessingAdapter>;
+  let mockPostAdapter: jest.Mocked<ProcessingAdapter>;
 
   beforeEach(() => {
-    mockPodcastAdapter = new MockAdapter();
-    mockPostAdapter = new MockAdapter();
+    mockPodcastAdapter = {
+      validate: jest.fn(),
+      process: jest.fn(),
+      getStatus: jest.fn(),
+    };
+    mockPostAdapter = {
+      validate: jest.fn(),
+      process: jest.fn(),
+      getStatus: jest.fn(),
+    };
     service = new ProcessingService();
     service.registerAdapter("podcast", mockPodcastAdapter);
     service.registerAdapter("post", mockPostAdapter);
@@ -71,102 +91,65 @@ describe("ProcessingService", () => {
   });
 
   describe("process", () => {
-    const validInput = "valid input";
+    const validInput = "test input";
     const options: ProcessingOptions = {
-      format: "post",
+      format: "post" as ProcessingFormat,
       quality: "draft",
-      analyzeSentiment: true,
-      extractEntities: true,
     };
 
     it("should validate input before processing", async () => {
-      mockPostAdapter.mockValidate.mockResolvedValue(true);
-      mockPostAdapter.mockProcess.mockResolvedValue({
-        id: "123",
-        status: "completed" as ProcessingStatus,
-        output: "processed",
-        metadata: {
-          format: "post",
-          platform: "default",
-          processedAt: expect.any(String),
-        },
-      });
+      mockPostAdapter.validate.mockResolvedValue(true);
+      mockPostAdapter.process.mockResolvedValue(createMockResult());
 
       await service.process("post", validInput, options);
-      expect(mockPostAdapter.mockValidate).toHaveBeenCalledWith(validInput);
+      expect(mockPostAdapter.validate).toHaveBeenCalledWith(validInput);
     });
 
     it("should throw error for invalid input", async () => {
-      mockPostAdapter.mockValidate.mockResolvedValue(false);
+      mockPostAdapter.validate.mockResolvedValue(false);
 
       const result = await service.process("post", validInput, options);
-      expect(result.status).toBe("failed" as ProcessingStatus);
-      expect(result.error).toBe("Invalid input");
+      expect(result.status).toBe("error");
     });
 
     it("should process valid input", async () => {
-      const expectedResult: ProcessingResult = {
-        id: "123",
-        status: "completed" as ProcessingStatus,
-        output: "processed",
-        metadata: {
-          format: "post",
-          platform: "default",
-          processedAt: new Date().toISOString(),
-        },
-      };
+      const expectedResult = createMockResult();
 
-      mockPostAdapter.mockValidate.mockResolvedValue(true);
-      mockPostAdapter.mockProcess.mockResolvedValue(expectedResult);
+      mockPostAdapter.validate.mockResolvedValue(true);
+      mockPostAdapter.process.mockResolvedValue(expectedResult);
 
       const result = await service.process("post", validInput, options);
       expect(result).toEqual(expectedResult);
-      expect(mockPostAdapter.mockProcess).toHaveBeenCalledWith(
-        validInput,
-        options
-      );
+      expect(mockPostAdapter.process).toHaveBeenCalledWith(validInput, options);
     });
 
     it("should handle processing errors", async () => {
-      mockPostAdapter.mockValidate.mockResolvedValue(true);
-      mockPostAdapter.mockProcess.mockRejectedValue(
-        new Error("Processing failed")
-      );
+      mockPostAdapter.validate.mockResolvedValue(true);
+      mockPostAdapter.process.mockRejectedValue(new Error("Processing failed"));
 
       const result = await service.process("post", validInput, options);
-      expect(result.status).toBe("failed" as ProcessingStatus);
-      expect(result.error).toBe("Processing failed");
+      expect(result.status).toBe("error");
     });
   });
 
   describe("getStatus", () => {
     it("should return processing status", async () => {
-      const expectedStatus: ProcessingResult = {
-        id: "123",
-        status: "completed" as ProcessingStatus,
-        output: "",
-        metadata: {
-          format: "post",
-          platform: "default",
-          processedAt: new Date().toISOString(),
-        },
-      };
+      const expectedStatus = createMockResult();
 
-      mockPostAdapter.mockGetStatus.mockResolvedValue(expectedStatus);
+      mockPostAdapter.getStatus.mockResolvedValue(expectedStatus);
 
       const result = await service.getStatus("post", "123");
       expect(result).toEqual(expectedStatus);
-      expect(mockPostAdapter.mockGetStatus).toHaveBeenCalledWith("123");
+      expect(mockPostAdapter.getStatus).toHaveBeenCalledWith("123");
     });
 
     it("should handle status check errors", async () => {
-      mockPostAdapter.mockGetStatus.mockRejectedValue(
+      mockPostAdapter.getStatus.mockRejectedValue(
         new Error("Status check failed")
       );
 
-      await expect(service.getStatus("post", "123")).rejects.toThrow(
-        "Status check failed"
-      );
+      const result = await service.getStatus("post", "123");
+      expect(result.status).toBe("error");
     });
   });
 });

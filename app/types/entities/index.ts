@@ -1,9 +1,9 @@
-// Re-export base types
+// Export base entity types
 export type {
-  BaseEntity,
-  EntityType,
   EntityMention,
   EntityRelationship,
+  BaseEntity,
+  EntityType,
   ValidatedBaseEntity,
   PersonEntity as BasePersonEntity,
   OrganizationEntity as BaseOrganizationEntity,
@@ -13,7 +13,10 @@ export type {
   ConceptEntity as BaseConceptEntity,
 } from "./base";
 
-// Re-export podcast entity types with specific names
+// Export base validation schemas
+export { baseEntitySchema } from "./base";
+
+// Export podcast entity types
 export type {
   PersonEntity as PodcastPersonEntity,
   OrganizationEntity as PodcastOrganizationEntity,
@@ -22,6 +25,26 @@ export type {
   TopicEntity as PodcastTopicEntity,
   ConceptEntity as PodcastConceptEntity,
   ValidatedPodcastEntities,
+  ValidatedPersonEntity,
+  ValidatedOrganizationEntity,
+  ValidatedLocationEntity,
+  ValidatedEventEntity,
+  ValidatedTopicEntity,
+  ValidatedConceptEntity,
+  Podcast,
+  PodcastEntities,
+} from "./podcast";
+
+// Export podcast validation schemas
+export {
+  personEntitySchema as podcastPersonEntitySchema,
+  organizationEntitySchema as podcastOrganizationEntitySchema,
+  locationEntitySchema as podcastLocationEntitySchema,
+  eventEntitySchema as podcastEventEntitySchema,
+  topicEntitySchema as podcastTopicEntitySchema,
+  conceptEntitySchema as podcastConceptEntitySchema,
+  podcastEntitiesSchema,
+  podcastEntitySchema,
 } from "./podcast";
 
 // Re-export post entity types

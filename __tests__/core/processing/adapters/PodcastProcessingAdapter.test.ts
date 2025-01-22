@@ -1,24 +1,29 @@
 import { PodcastProcessingAdapter } from "@/app/core/processing/adapters/podcast";
 import type {
   ProcessingOptions,
+  ProcessingResult,
   ProcessingStatus,
+  ProcessingFormat,
   BaseProcessingResult,
   ProcessingMetadata,
   ProcessingAnalysis,
   SentimentAnalysis,
-} from "@/app/core/processing/types/base";
+} from "@/app/types/processing";
 import type {
   PersonEntity,
   OrganizationEntity,
   LocationEntity,
   ConceptEntity,
-} from "@/app/types/entities/podcast";
+} from "@/app/types/entities/base";
+import { PodcastProcessor } from "@/app/core/processing/podcast/PodcastProcessor";
 
 describe("PodcastProcessingAdapter", () => {
   let adapter: PodcastProcessingAdapter;
+  let processor: PodcastProcessor;
 
   beforeEach(() => {
-    adapter = new PodcastProcessingAdapter();
+    processor = new PodcastProcessor();
+    adapter = new PodcastProcessingAdapter(processor);
   });
 
   describe("validate", () => {
@@ -158,4 +163,30 @@ describe("PodcastProcessingAdapter", () => {
       } as BaseProcessingResult);
     });
   });
+});
+
+// Create mock result
+const createMockResult = (overrides = {}): ProcessingResult => ({
+  id: "test-id",
+  status: "completed" as ProcessingStatus,
+  success: true,
+  output: "test output",
+  metadata: {
+    format: "podcast" as ProcessingFormat,
+    platform: "test",
+    processedAt: new Date().toISOString(),
+  },
+  format: "podcast" as ProcessingFormat,
+  analysis: {
+    title: "Test",
+    summary: "Test summary",
+  },
+  entities: {
+    people: [],
+    organizations: [],
+    locations: [],
+    events: [],
+  },
+  timeline: [],
+  ...overrides,
 });

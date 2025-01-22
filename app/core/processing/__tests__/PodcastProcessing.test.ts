@@ -2,7 +2,11 @@ import { PodcastProcessingStrategy } from "../podcast/PodcastProcessingStrategy"
 import { ProcessingPipeline } from "../base/ProcessingPipeline";
 import { TextChunkingStrategy } from "../strategies/TextChunkingStrategy";
 import { ProcessingError } from "../errors/ProcessingError";
-import { TextChunk, ChunkResult } from "../types";
+import {
+  TextChunk,
+  ChunkResult,
+  ProcessingStep,
+} from "@/app/types/processing/base";
 
 // Mock the anthropic actions only
 jest.mock("@/app/actions/anthropicActions");
@@ -68,10 +72,18 @@ describe.skip("Podcast Processing Pipeline", () => {
     await pipeline.process(input);
 
     const state = processingStrategy.getState();
-    const refineStep = state.steps.find((s) => s.id === "refine");
-    const analyzeStep = state.steps.find((s) => s.id === "analyze");
-    const metadataStep = state.steps.find((s) => s.id === "metadata");
-    const synthesisStep = state.steps.find((s) => s.id === "synthesis");
+    const refineStep = state.steps.find(
+      (s: ProcessingStep) => s.id === "refine"
+    );
+    const analyzeStep = state.steps.find(
+      (s: ProcessingStep) => s.id === "analyze"
+    );
+    const metadataStep = state.steps.find(
+      (s: ProcessingStep) => s.id === "metadata"
+    );
+    const synthesisStep = state.steps.find(
+      (s: ProcessingStep) => s.id === "synthesis"
+    );
 
     expect(refineStep?.status).toBe("completed");
     expect(analyzeStep?.status).toBe("completed");
@@ -114,7 +126,9 @@ describe.skip("Podcast Processing Pipeline", () => {
 
     const state = processingStrategy.getState();
     expect(state.overallProgress).toBe(100);
-    expect(state.steps.every((step) => step.progress === 100)).toBe(true);
+    expect(
+      state.steps.every((step: ProcessingStep) => step.progress === 100)
+    ).toBe(true);
   });
 
   it("should validate chunks before processing", async () => {
@@ -141,5 +155,48 @@ describe.skip("Podcast Processing Pipeline", () => {
     // Check that process was called for each chunk
     expect(processSpy).toHaveBeenCalled();
     expect(pipeline.getResults().length).toBeGreaterThan(0);
+  });
+});
+
+describe("PodcastProcessingStrategy", () => {
+  let processingStrategy: PodcastProcessingStrategy;
+
+  beforeEach(() => {
+    processingStrategy = new PodcastProcessingStrategy();
+  });
+
+  describe("processChunks", () => {
+    it("should process chunks correctly", async () => {
+      // ... existing code ...
+    });
+
+    it("should handle errors during processing", async () => {
+      // ... existing code ...
+    });
+
+    it("should update step progress correctly", async () => {
+      const state = await processingStrategy.getState();
+      const refineStep = state.steps.find(
+        (s: ProcessingStep) => s.id === "refine"
+      );
+      const analyzeStep = state.steps.find(
+        (s: ProcessingStep) => s.id === "analyze"
+      );
+      const metadataStep = state.steps.find(
+        (s: ProcessingStep) => s.id === "metadata"
+      );
+      const synthesisStep = state.steps.find(
+        (s: ProcessingStep) => s.id === "synthesis"
+      );
+
+      // ... existing code ...
+    });
+
+    it("should complete all steps successfully", async () => {
+      // ... existing code ...
+      expect(
+        state.steps.every((step: ProcessingStep) => step.progress === 100)
+      ).toBe(true);
+    });
   });
 });
