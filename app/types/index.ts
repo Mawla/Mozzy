@@ -1,31 +1,30 @@
-// Core Processing Types
+// Base processing types
 export type {
-  ProcessingFormat,
-  ProcessingStatus,
-  ProcessingOptions,
-  ProcessingMetadata,
-  BaseTextChunk,
-  ProcessingAnalysis,
-  ProcessingResult as BaseProcessingResult,
   ProcessingAdapter,
-  TimelineEvent as ProcessingTimelineEvent,
+  ProcessingOptions,
+  ProcessingStatus,
+  ProcessingFormat,
+  ProcessingMetadata,
+  ProcessingQuality,
+  NetworkLog,
+  BaseTextChunk,
+  ChunkResult,
+  TimelineEvent,
   SentimentAnalysis,
   TopicAnalysis,
+  BaseProcessingResult,
+  MetadataResponse,
+  ProcessingAnalysis,
   ProcessingState as BaseProcessingState,
   ProcessingStep as BaseProcessingStep,
-  NetworkLog,
-  ChunkResult,
-  BaseProcessingResult as CoreProcessingResult,
-  ProcessingChunk as BaseProcessingChunk,
 } from "./processing/base";
 
-// Entity Types
+// Base entity types
 export type {
   BaseEntity,
   EntityType,
   EntityMention,
   EntityRelationship,
-  ValidatedBaseEntity,
   PersonEntity as BasePersonEntity,
   OrganizationEntity as BaseOrganizationEntity,
   LocationEntity as BaseLocationEntity,
@@ -34,45 +33,46 @@ export type {
   ConceptEntity as BaseConceptEntity,
 } from "./entities/base";
 
-// Shared Types
-export type { ContentSection, Section } from "./shared/content";
-
-export type { Concept, Argument, Controversy, Quote } from "./shared/analysis";
-
-export type { Application } from "./shared/application";
-
+// Shared types
 export type {
-  TimelineEvent,
-  TimelineSegment,
-  Timeline,
-} from "./shared/timeline";
+  Section,
+  ContentSection,
+  Concept,
+  Argument,
+  Controversy,
+  Quote,
+} from "./shared/podcast";
 
-// Podcast Types
+// Podcast-specific types
 export type {
-  PodcastAnalysis,
-  PodcastInput,
+  PersonEntity,
+  OrganizationEntity,
+  LocationEntity,
+  EventEntity,
+  TopicEntity,
+  ConceptEntity,
+  ProcessingState as PodcastProcessingState,
+  ProcessingStep as PodcastProcessingStep,
   ProcessingResult as PodcastProcessingResult,
-  PodcastTranscript,
+  PodcastAnalysis,
   ProcessedPodcast,
-  PodcastProcessingState,
+  PodcastInput,
+  PodcastTranscript,
+  QuickFact,
+  KeyPoint,
+  ChunkOptions,
+  TranscriptStepData,
+  AnalysisStepData,
+  EntityStepData,
+  StepData,
+  TextChunk,
+  ProcessingChunk,
 } from "./processing/podcast";
 
-export type { Podcast, PodcastEntities } from "./entities/podcast";
-
-// Content Types
-export type { ContentMetadata } from "./contentMetadata";
-
-// Topic Types
-export type { Topic, TopicItem, TopicBlockProps } from "./topic";
-
-// Metadata Types
+// Logging types
 export type {
-  LayoutType,
-  IconPosition,
-  DisplayVariant,
-  ComparisonMetadata,
-  TimelineMetadata,
-  ViewFieldType,
-  CustomComponentProps,
-  ComponentMetadata,
-} from "./metadata";
+  LogLevel,
+  LogEntry,
+  LogSummary,
+  ProcessingLogger,
+} from "./logging";

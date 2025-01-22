@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { BaseEntity, EntityType, baseEntitySchema } from "./base";
+import {
+  BaseEntity,
+  EntityType,
+  baseEntitySchema,
+  LocationEntity as BaseLocationEntity,
+} from "./base";
 import { ContentMetadata } from "@/app/types/contentMetadata";
 import { ProcessingStatus } from "../processing/base";
 import { PodcastAnalysis } from "../processing/podcast";
@@ -36,20 +41,13 @@ export interface OrganizationEntity extends BaseEntity {
 
 /**
  * Location entity interface for podcast content.
- * Represents physical places mentioned in podcasts.
+ * Extends base LocationEntity with podcast-specific fields.
  */
-export interface LocationEntity extends BaseEntity {
-  /** Must be LOCATION type */
-  type: Extract<EntityType, "LOCATION">;
-  /** Type of location (e.g., city, country) - Required */
-  locationType: string;
-  /** Geographic region (optional) */
-  region?: string;
-  /** Geographic coordinates (optional) */
-  coordinates?: {
-    latitude: number;
-    longitude: number;
-  };
+export interface LocationEntity extends BaseLocationEntity {
+  /** Relevance score for this location in the podcast context (0-1) */
+  relevance?: number;
+  /** Timestamps where this location is mentioned */
+  mentionTimestamps?: string[];
 }
 
 /**
@@ -93,72 +91,6 @@ export interface ConceptEntity extends BaseEntity {
   examples?: string[];
 }
 
-// Validation schemas
-export const personSchema = baseEntitySchema.extend({
-  type: z.literal("PERSON"),
-  role: z.string().min(1),
-  expertise: z.array(z.string()).min(1),
-  affiliations: z.array(z.string()).optional(),
-});
-
-export const organizationSchema = baseEntitySchema.extend({
-  type: z.literal("ORGANIZATION"),
-  industry: z.string().min(1),
-  size: z.string().min(1),
-  location: z.string().optional(),
-});
-
-export const eventSchema = baseEntitySchema.extend({
-  type: z.literal("EVENT"),
-  date: z.string(),
-  duration: z.string(),
-  participants: z.array(z.string()),
-});
-
-export const topicSchema = baseEntitySchema.extend({
-  type: z.literal("TOPIC"),
-  relevance: z.number().optional(),
-  subtopics: z.array(z.string()).optional(),
-});
-
-export const conceptSchema = baseEntitySchema.extend({
-  type: z.literal("CONCEPT"),
-  definition: z.string().optional(),
-  examples: z.array(z.string()).optional(),
-});
-
-// Location Entity Schema
-export const locationEntitySchema = baseEntitySchema.extend({
-  type: z.literal("LOCATION"),
-  locationType: z.string().min(1),
-  coordinates: z
-    .object({
-      latitude: z.number().min(-90).max(90),
-      longitude: z.number().min(-180).max(180),
-    })
-    .optional(),
-  region: z.string().optional(),
-});
-
-// Combined entities schema
-export const podcastEntitiesSchema = z.object({
-  people: z.array(personSchema),
-  organizations: z.array(organizationSchema),
-  locations: z.array(locationEntitySchema),
-  events: z.array(eventSchema),
-  topics: z.array(topicSchema).optional(),
-  concepts: z.array(conceptSchema).optional(),
-});
-
-// Export validated types
-export type ValidatedPerson = z.infer<typeof personSchema>;
-export type ValidatedOrganization = z.infer<typeof organizationSchema>;
-export type ValidatedLocation = z.infer<typeof locationEntitySchema>;
-export type ValidatedEvent = z.infer<typeof eventSchema>;
-export type ValidatedTopic = z.infer<typeof topicSchema>;
-export type ValidatedConcept = z.infer<typeof conceptSchema>;
-export type ValidatedPodcastEntities = z.infer<typeof podcastEntitiesSchema>;
-
 // Person Entity Schema
 export const personEntitySchema = baseEntitySchema.extend({
   type: z.literal("PERSON"),
@@ -173,19 +105,35 @@ export const organizationEntitySchema = baseEntitySchema.extend({
   size: z.string().min(1),
 });
 
+// Location Entity Schema
+export const locationEntitySchema = baseEntitySchema.extend({
+  type: z.literal("LOCATION"),
+  locationType: z.string().min(1),
+  coordinates: z
+    .object({
+      latitude: z.number().min(-90).max(90),
+      longitude: z.number().min(-180).max(180),
+    })
+    .optional(),
+  region: z.string().optional(),
+  parent: z.string().optional(),
+  relevance: z.number().min(0).max(1).optional(),
+  mentionTimestamps: z.array(z.string()).optional(),
+});
+
 // Event Entity Schema
 export const eventEntitySchema = baseEntitySchema.extend({
   type: z.literal("EVENT"),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), // YYYY-MM-DD format
-  duration: z.string().min(1),
+  date: z.string(),
+  duration: z.string(),
   participants: z.array(z.string()).min(1),
 });
 
 // Topic Entity Schema
 export const topicEntitySchema = baseEntitySchema.extend({
   type: z.literal("TOPIC"),
-  subtopics: z.array(z.string()).min(1),
-  examples: z.array(z.string()).min(1),
+  relevance: z.number().optional(),
+  subtopics: z.array(z.string()).optional(),
 });
 
 // Concept Entity Schema
@@ -194,6 +142,19 @@ export const conceptEntitySchema = baseEntitySchema.extend({
   definition: z.string().min(1),
   examples: z.array(z.string()).min(1),
 });
+
+// Combined entities schema
+export const podcastEntitiesSchema = z.object({
+  people: z.array(personEntitySchema),
+  organizations: z.array(organizationEntitySchema),
+  locations: z.array(locationEntitySchema),
+  events: z.array(eventEntitySchema),
+  topics: z.array(topicEntitySchema).optional(),
+  concepts: z.array(conceptEntitySchema).optional(),
+});
+
+// Export validated types
+export type ValidatedPodcastEntities = z.infer<typeof podcastEntitiesSchema>;
 
 // Export type helpers
 export type ValidatedPersonEntity = z.infer<typeof personEntitySchema>;
@@ -214,8 +175,6 @@ export const podcastEntitySchema = z.discriminatedUnion("type", [
   topicEntitySchema,
   conceptEntitySchema,
 ]);
-
-export type ValidatedPodcastEntity = z.infer<typeof podcastEntitySchema>;
 
 /**
  * Core Podcast entity interface

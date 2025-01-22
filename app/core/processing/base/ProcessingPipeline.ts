@@ -1,7 +1,12 @@
+import {
+  ProcessingStep,
+  ProcessingStatus,
+  BaseProcessingResult,
+} from "@/app/types/processing/base";
+import { logger } from "@/lib/logger";
 import { ChunkingStrategy } from "./ChunkingStrategy";
 import { ProcessingStrategy } from "./ProcessingStrategy";
 import { ProcessingError } from "../errors/ProcessingError";
-import { ProcessingLogger } from "../utils/logger";
 import { PROCESSING_CONFIG } from "../config/processingConfig";
 
 const isValidResult = <T>(result: T | null): result is T => {
@@ -11,11 +16,11 @@ const isValidResult = <T>(result: T | null): result is T => {
 export class ProcessingPipeline<TInput, TChunk, TOutput> {
   private chunks: TChunk[] = [];
   private results: TOutput[] = [];
+  private processingStrategy: ProcessingStrategy<TChunk, TOutput>;
 
-  constructor(
-    private chunkingStrategy: ChunkingStrategy<TInput, TChunk>,
-    private processingStrategy: ProcessingStrategy<TChunk, TOutput>
-  ) {}
+  constructor(strategy: ProcessingStrategy<TChunk, TOutput>) {
+    this.processingStrategy = strategy;
+  }
 
   getChunks(): TChunk[] {
     return this.chunks;
@@ -64,11 +69,11 @@ export class ProcessingPipeline<TInput, TChunk, TOutput> {
     executor: () => Promise<void>
   ): Promise<void> {
     try {
-      ProcessingLogger.log("debug", `Starting step: ${stepId}`);
+      logger.debug(`Starting step: ${stepId}`);
       await executor();
-      ProcessingLogger.log("debug", `Completed step: ${stepId}`);
+      logger.debug(`Completed step: ${stepId}`);
     } catch (error) {
-      ProcessingLogger.log("error", `Failed step: ${stepId}`, { error });
+      logger.error(`Failed step: ${stepId}`, { error });
       throw new ProcessingError(
         `Step ${stepId} failed`,
         "STEP_EXECUTION_ERROR",
@@ -83,12 +88,12 @@ export class ProcessingPipeline<TInput, TChunk, TOutput> {
     executor: () => Promise<TOutput>
   ): Promise<TOutput> {
     try {
-      ProcessingLogger.log("debug", `Starting step: ${stepId}`);
+      logger.debug(`Starting step: ${stepId}`);
       const result = await executor();
-      ProcessingLogger.log("debug", `Completed step: ${stepId}`);
+      logger.debug(`Completed step: ${stepId}`);
       return result;
     } catch (error) {
-      ProcessingLogger.log("error", `Failed step: ${stepId}`, { error });
+      logger.error(`Failed step: ${stepId}`, { error });
       throw new ProcessingError(
         `Step ${stepId} failed`,
         "STEP_EXECUTION_ERROR",
@@ -109,15 +114,11 @@ export class ProcessingPipeline<TInput, TChunk, TOutput> {
       const batch = chunks.slice(i, i + batchSize);
       const batchPromises = batch.map(async (chunk, index) => {
         try {
-          ProcessingLogger.log("debug", `Processing batch item ${i + index}`);
+          logger.debug(`Processing batch item ${i + index}`);
           const result = await this.processingStrategy.process(chunk);
           return result;
         } catch (error) {
-          ProcessingLogger.log(
-            "error",
-            `Failed to process batch item ${i + index}`,
-            { error }
-          );
+          logger.error(`Failed to process batch item ${i + index}`, { error });
           errors.push(error as Error);
           return null;
         }

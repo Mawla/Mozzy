@@ -4,14 +4,14 @@ import { ProcessingPipeline } from "./ProcessingPipeline";
 import { usePodcastProcessing } from "@/app/hooks/use-podcast-processing";
 import { useEffect, useState } from "react";
 import type {
-  PersonEntity,
-  OrganizationEntity,
-  LocationEntity,
-  EventEntity,
-  TopicEntity,
-  ConceptEntity,
+  ValidatedPersonEntity,
+  ValidatedOrganizationEntity,
+  ValidatedLocationEntity,
+  ValidatedEventEntity,
+  ValidatedTopicEntity,
+  ValidatedConceptEntity,
   ValidatedPodcastEntities,
-} from "@/app/types/entities/podcast";
+} from "@/app/types/entities";
 import type {
   ProcessingStatus,
   TopicAnalysis,
@@ -24,15 +24,15 @@ import type {
 import { usePodcastProcessingStore } from "@/app/store/podcastProcessingStore";
 import { PROCESSING_STEPS } from "@/app/constants/processing";
 
-type PodcastEntity =
-  | PersonEntity
-  | OrganizationEntity
-  | LocationEntity
-  | EventEntity
-  | TopicEntity
-  | ConceptEntity;
+type ValidatedEntity =
+  | ValidatedPersonEntity
+  | ValidatedOrganizationEntity
+  | ValidatedLocationEntity
+  | ValidatedEventEntity
+  | ValidatedTopicEntity
+  | ValidatedConceptEntity;
 
-// Use the validated type from podcast.ts
+// Use the validated type from entities/index.ts
 type ValidatedEntities = ValidatedPodcastEntities;
 
 export const PodcastProcessor = () => {
@@ -58,7 +58,7 @@ export const PodcastProcessor = () => {
           if (!chunk.result?.entities) return acc;
 
           // Helper function to merge arrays with deduplication and type safety
-          function mergeEntities<T extends PodcastEntity>(
+          function mergeEntities<T extends ValidatedEntity>(
             accArray: T[] = [],
             newArray: T[] = []
           ): T[] {
@@ -68,27 +68,27 @@ export const PodcastProcessor = () => {
           }
 
           return {
-            people: mergeEntities<PersonEntity>(
+            people: mergeEntities<ValidatedPersonEntity>(
               acc.people || [],
               chunk.result.entities.people || []
             ),
-            organizations: mergeEntities<OrganizationEntity>(
+            organizations: mergeEntities<ValidatedOrganizationEntity>(
               acc.organizations || [],
               chunk.result.entities.organizations || []
             ),
-            locations: mergeEntities<LocationEntity>(
+            locations: mergeEntities<ValidatedLocationEntity>(
               acc.locations || [],
               chunk.result.entities.locations || []
             ),
-            events: mergeEntities<EventEntity>(
+            events: mergeEntities<ValidatedEventEntity>(
               acc.events || [],
               chunk.result.entities.events || []
             ),
-            topics: mergeEntities<TopicEntity>(
+            topics: mergeEntities<ValidatedTopicEntity>(
               acc.topics || [],
               chunk.result.entities.topics || []
             ),
-            concepts: mergeEntities<ConceptEntity>(
+            concepts: mergeEntities<ValidatedConceptEntity>(
               acc.concepts || [],
               chunk.result.entities.concepts || []
             ),
@@ -160,7 +160,7 @@ export const PodcastProcessor = () => {
       if (Object.keys(combinedEntities).length > 0) {
         updateStepStatus(
           PROCESSING_STEPS.ENTITIES,
-          "completed",
+          "completed" as ProcessingStatus,
           combinedEntities
         );
       }
@@ -168,7 +168,7 @@ export const PodcastProcessor = () => {
       if (Object.keys(combinedAnalysis).length > 0) {
         updateStepStatus(
           PROCESSING_STEPS.ANALYSIS,
-          "completed",
+          "completed" as ProcessingStatus,
           combinedAnalysis
         );
       }

@@ -1,12 +1,12 @@
-import {
-  ProcessingResult,
+import type {
   ProcessingStatus,
+  ProcessingResult,
+  ProcessingAnalysis,
   TimelineEvent,
   TopicAnalysis,
   SentimentAnalysis,
   ProcessingMetadata,
-  ProcessingAnalysis,
-} from "@/app/core/processing/types/base";
+} from "@/app/types/processing/base";
 import {
   PersonEntity,
   OrganizationEntity,

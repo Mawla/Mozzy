@@ -1,24 +1,35 @@
-import {
-  BaseTextChunk,
+import type {
+  ProcessingAdapter,
+  ProcessingOptions,
   ProcessingResult,
+  ProcessingState,
+  ProcessingStatus,
+  BaseTextChunk,
   ProcessingChunk,
   ProcessingAnalysis,
   TimelineEvent,
   ProcessingMetadata,
-  ProcessingStatus,
   ChunkResult,
   TopicAnalysis,
   SentimentAnalysis,
-} from "@/app/core/processing/types/base";
-import {
-  PersonEntity,
-  OrganizationEntity,
-  LocationEntity,
-  EventEntity,
-  TopicEntity,
-  ConceptEntity,
+} from "@/app/types/processing";
+
+import type {
+  BaseEntity,
+  EntityType,
+  ValidatedBaseEntity,
+} from "@/app/types/entities/base";
+
+import type {
+  ValidatedPersonEntity,
+  ValidatedOrganizationEntity,
+  ValidatedLocationEntity,
+  ValidatedEventEntity,
+  ValidatedTopicEntity,
+  ValidatedConceptEntity,
   ValidatedPodcastEntities,
 } from "@/app/types/entities/podcast";
+
 import { PodcastProcessor } from "@/app/core/processing/podcast/PodcastProcessor";
 import {
   processTranscript,
@@ -26,16 +37,11 @@ import {
   extractEntities,
 } from "@/app/actions/podcastActions";
 import { mockPodcastResults } from "@/app/lib/mock/podcast-results";
-import {
-  BaseEntity,
-  EntityType,
-  ValidatedBaseEntity,
-} from "@/app/types/entities/base";
 import { TextChunk } from "@/app/utils/textChunking";
 import { ContentAnalysis } from "@/app/schemas/podcast/analysis";
 import { processingLogger } from "@/app/lib/logger";
 import {
-  createValidatedEntity,
+  createValidatedPodcastEntity,
   mergePodcastEntities,
   ProcessingStateUpdate,
   contentToProcessingAnalysis,
@@ -101,54 +107,96 @@ export const podcastService = {
           const entities: ValidatedPodcastEntities = {
             people:
               rawEntities.people?.map((name: string) =>
-                createValidatedEntity<PersonEntity>(name, "PERSON", {
-                  role: "speaker",
-                  context: "",
-                  mentions: [],
-                })
+                createValidatedPodcastEntity<ValidatedPersonEntity>(
+                  name,
+                  "PERSON",
+                  {
+                    role: "speaker",
+                    expertise: ["unknown"],
+                    context: "",
+                    mentions: [],
+                  }
+                )
               ) || [],
             organizations:
               rawEntities.organizations?.map((name: string) =>
-                createValidatedEntity<OrganizationEntity>(
+                createValidatedPodcastEntity<ValidatedOrganizationEntity>(
                   name,
                   "ORGANIZATION",
-                  { context: "", mentions: [] }
+                  {
+                    industry: "unknown",
+                    size: "unknown",
+                    context: "",
+                    mentions: [],
+                  }
                 )
               ) || [],
             locations:
               rawEntities.locations?.map((name: string) =>
-                createValidatedEntity<LocationEntity>(name, "LOCATION", {
-                  context: "",
-                  mentions: [],
-                })
+                createValidatedPodcastEntity<ValidatedLocationEntity>(
+                  name,
+                  "LOCATION",
+                  {
+                    locationType: "unknown",
+                    context: "",
+                    mentions: [],
+                  }
+                )
               ) || [],
             events:
               rawEntities.events?.map((name: string) =>
-                createValidatedEntity<EventEntity>(name, "EVENT", {
-                  context: "",
-                  mentions: [],
-                })
+                createValidatedPodcastEntity<ValidatedEventEntity>(
+                  name,
+                  "EVENT",
+                  {
+                    date: new Date().toISOString(),
+                    duration: "unknown",
+                    participants: ["unknown"],
+                    context: "",
+                    mentions: [],
+                  }
+                )
               ) || [],
             topics:
               rawEntities.topics?.map((topic: string) =>
-                createValidatedEntity<TopicEntity>(topic, "TOPIC", {
-                  context: "",
-                  mentions: [],
-                })
+                createValidatedPodcastEntity<ValidatedTopicEntity>(
+                  topic,
+                  "TOPIC",
+                  {
+                    relevance: 1,
+                    subtopics: [],
+                    context: "",
+                    mentions: [],
+                  }
+                )
               ) || [],
             concepts:
               rawEntities.concepts?.map((concept: string) =>
-                createValidatedEntity<ConceptEntity>(concept, "CONCEPT", {
-                  context: "",
-                  mentions: [],
-                })
+                createValidatedPodcastEntity<ValidatedConceptEntity>(
+                  concept,
+                  "CONCEPT",
+                  {
+                    definition: "unknown",
+                    examples: ["unknown"],
+                    context: "",
+                    mentions: [],
+                  }
+                )
               ) || [],
           };
 
           const result: ChunkResult = {
             id: chunkId,
-            text: chunk.text,
+            status: "completed",
+            success: true,
+            output: chunk.text,
             refinedText,
+            format: "podcast",
+            metadata: {
+              format: "podcast",
+              platform: "web",
+              processedAt: new Date().toISOString(),
+            },
             analysis: contentToProcessingAnalysis(analysis),
             entities,
             timeline: [],
@@ -245,7 +293,7 @@ export const podcastService = {
     return {
       people:
         rawEntities.people?.map((name: string) =>
-          createValidatedEntity<PersonEntity>(name, "PERSON", {
+          createValidatedPodcastEntity<ValidatedPersonEntity>(name, "PERSON", {
             role: "speaker",
             context: "",
             mentions: [],
@@ -253,38 +301,50 @@ export const podcastService = {
         ) || [],
       organizations:
         rawEntities.organizations?.map((name: string) =>
-          createValidatedEntity<OrganizationEntity>(name, "ORGANIZATION", {
-            context: "",
-            mentions: [],
-          })
+          createValidatedPodcastEntity<ValidatedOrganizationEntity>(
+            name,
+            "ORGANIZATION",
+            {
+              context: "",
+              mentions: [],
+            }
+          )
         ) || [],
       locations:
         rawEntities.locations?.map((name: string) =>
-          createValidatedEntity<LocationEntity>(name, "LOCATION", {
-            context: "",
-            mentions: [],
-          })
+          createValidatedPodcastEntity<ValidatedLocationEntity>(
+            name,
+            "LOCATION",
+            {
+              context: "",
+              mentions: [],
+            }
+          )
         ) || [],
       events:
         rawEntities.events?.map((name: string) =>
-          createValidatedEntity<EventEntity>(name, "EVENT", {
+          createValidatedPodcastEntity<ValidatedEventEntity>(name, "EVENT", {
             context: "",
             mentions: [],
           })
         ) || [],
       topics:
         rawEntities.topics?.map((topic: string) =>
-          createValidatedEntity<TopicEntity>(topic, "TOPIC", {
+          createValidatedPodcastEntity<ValidatedTopicEntity>(topic, "TOPIC", {
             context: "",
             mentions: [],
           })
         ) || [],
       concepts:
         rawEntities.concepts?.map((concept: string) =>
-          createValidatedEntity<ConceptEntity>(concept, "CONCEPT", {
-            context: "",
-            mentions: [],
-          })
+          createValidatedPodcastEntity<ValidatedConceptEntity>(
+            concept,
+            "CONCEPT",
+            {
+              context: "",
+              mentions: [],
+            }
+          )
         ) || [],
     };
   },

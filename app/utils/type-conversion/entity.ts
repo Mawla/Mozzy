@@ -1,32 +1,34 @@
-import {
+import type {
   BaseEntity,
   EntityType,
   ValidatedBaseEntity,
 } from "@/app/types/entities/base";
+
+import type {
+  ProcessingAnalysis,
+  ProcessingResult,
+  TopicAnalysis,
+  ProcessingStatus,
+  BaseTextChunk,
+  TimelineEvent,
+  ProcessingState,
+} from "@/app/types/processing";
+
 import {
-  PersonEntity,
-  OrganizationEntity,
-  LocationEntity,
-  EventEntity,
-  TopicEntity,
-  ConceptEntity,
   ValidatedPodcastEntities,
+  ValidatedPersonEntity,
+  ValidatedOrganizationEntity,
+  ValidatedLocationEntity,
+  ValidatedEventEntity,
+  ValidatedTopicEntity,
+  ValidatedConceptEntity,
 } from "@/app/types/entities/podcast";
+
 import {
   Theme,
   ContentAnalysis,
   Section,
 } from "@/app/schemas/podcast/analysis";
-import {
-  ProcessingAnalysis,
-  TopicAnalysis,
-  ProcessingState,
-  ChunkResult,
-  ProcessingStatus,
-  ProcessingResult,
-  BaseTextChunk,
-  TimelineEvent,
-} from "@/app/core/processing/types/base";
 
 /**
  * Type guard to validate base entity fields
@@ -62,7 +64,7 @@ export interface ProcessingStateUpdate {
     | "PROCESSING_ERROR";
   chunkId?: string;
   chunks?: BaseTextChunk[];
-  result?: ChunkResult | ProcessingResult;
+  result?: ProcessingResult;
   status?: ProcessingStatus;
   error?: Error;
 }
@@ -127,46 +129,6 @@ export const contentToProcessingAnalysis = (
 };
 
 /**
- * Merges arrays of validated entities, removing duplicates by name
- * @param arrays Arrays of validated entities to merge
- * @returns Merged array with duplicates removed
- */
-export const mergeValidatedEntities = <T extends ValidatedBaseEntity>(
-  arrays: T[][]
-): T[] => {
-  const merged = arrays.flat();
-  const uniqueMap = new Map<string, T>();
-
-  merged.forEach((entity) => {
-    if (isValidBaseEntity(entity)) {
-      uniqueMap.set(entity.name, entity);
-    }
-  });
-
-  return Array.from(uniqueMap.values());
-};
-
-/**
- * Type-safe entity merger for podcast entities
- * @param entities Array of podcast entity objects to merge
- * @returns Merged ValidatedPodcastEntities object
- */
-export const mergePodcastEntities = (
-  entities: ValidatedPodcastEntities[]
-): ValidatedPodcastEntities => {
-  return {
-    people: mergeValidatedEntities(entities.map((e) => e.people || [])),
-    organizations: mergeValidatedEntities(
-      entities.map((e) => e.organizations || [])
-    ),
-    locations: mergeValidatedEntities(entities.map((e) => e.locations || [])),
-    events: mergeValidatedEntities(entities.map((e) => e.events || [])),
-    topics: mergeValidatedEntities(entities.map((e) => e.topics || [])),
-    concepts: mergeValidatedEntities(entities.map((e) => e.concepts || [])),
-  };
-};
-
-/**
  * Creates entity-specific fields based on type with proper typing
  * @param type Entity type
  * @returns Entity-specific fields with correct types
@@ -174,52 +136,57 @@ export const mergePodcastEntities = (
 const createEntitySpecificFields = (
   type: EntityType
 ): Partial<
-  | PersonEntity
-  | OrganizationEntity
-  | LocationEntity
-  | EventEntity
-  | TopicEntity
-  | ConceptEntity
+  | ValidatedPersonEntity
+  | ValidatedOrganizationEntity
+  | ValidatedLocationEntity
+  | ValidatedEventEntity
+  | ValidatedTopicEntity
+  | ValidatedConceptEntity
 > => {
+  const baseFields = {
+    context: "",
+    mentions: [],
+  };
+
   switch (type) {
     case "PERSON":
       return {
+        ...baseFields,
         role: "speaker",
-        context: "",
-        mentions: [],
-      } as Partial<PersonEntity>;
+        expertise: ["unknown"],
+      } as Partial<ValidatedPersonEntity>;
     case "ORGANIZATION":
       return {
+        ...baseFields,
         industry: "unknown",
-        context: "",
-        mentions: [],
-      } as Partial<OrganizationEntity>;
+        size: "unknown",
+      } as Partial<ValidatedOrganizationEntity>;
     case "LOCATION":
       return {
+        ...baseFields,
         locationType: "unknown",
-        context: "",
-        mentions: [],
-      } as Partial<LocationEntity>;
+      } as Partial<ValidatedLocationEntity>;
     case "EVENT":
       return {
+        ...baseFields,
         date: new Date().toISOString(),
-        context: "",
-        mentions: [],
-      } as Partial<EventEntity>;
+        duration: "unknown",
+        participants: ["unknown"],
+      } as Partial<ValidatedEventEntity>;
     case "TOPIC":
       return {
+        ...baseFields,
         relevance: 1,
-        context: "",
-        mentions: [],
-      } as Partial<TopicEntity>;
+        subtopics: [],
+      } as Partial<ValidatedTopicEntity>;
     case "CONCEPT":
       return {
-        definition: "",
-        context: "",
-        mentions: [],
-      } as Partial<ConceptEntity>;
+        ...baseFields,
+        definition: "unknown",
+        examples: ["unknown"],
+      } as Partial<ValidatedConceptEntity>;
     default:
-      return {};
+      return baseFields;
   }
 };
 
@@ -253,4 +220,81 @@ export const createValidatedEntity = <T extends ValidatedBaseEntity>(
     ...specificFields,
     ...metadata,
   } as T;
+};
+
+/**
+ * Creates a validated podcast entity with proper type and metadata
+ * @param name Entity name
+ * @param type Entity type
+ * @param specificFields Entity-specific fields
+ * @returns Validated podcast entity with all required fields
+ */
+export const createValidatedPodcastEntity = <T extends ValidatedBaseEntity>(
+  name: string,
+  type: EntityType,
+  specificFields: Partial<T>
+): T => {
+  const baseFields = {
+    id: `${type.toLowerCase()}-${Date.now()}`,
+    type,
+    name,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  return {
+    ...baseFields,
+    ...createEntitySpecificFields(type),
+    ...specificFields,
+  } as T;
+};
+
+/**
+ * Merges arrays of validated entities, removing duplicates by name
+ * @param arrays Arrays of validated entities to merge
+ * @returns Merged array with duplicates removed
+ */
+export const mergeValidatedEntities = <T extends ValidatedBaseEntity>(
+  arrays: T[][]
+): T[] => {
+  const merged = arrays.flat();
+  const uniqueMap = new Map<string, T>();
+
+  merged.forEach((entity) => {
+    if (isValidBaseEntity(entity)) {
+      uniqueMap.set(entity.name, entity);
+    }
+  });
+
+  return Array.from(uniqueMap.values());
+};
+
+/**
+ * Type-safe entity merger for podcast entities
+ * @param entities Array of podcast entity objects to merge
+ * @returns Merged ValidatedPodcastEntities object
+ */
+export const mergePodcastEntities = (
+  entities: ValidatedPodcastEntities[]
+): ValidatedPodcastEntities => {
+  return {
+    people: mergeValidatedEntities<ValidatedPersonEntity>(
+      entities.map((e) => e.people || [])
+    ),
+    organizations: mergeValidatedEntities<ValidatedOrganizationEntity>(
+      entities.map((e) => e.organizations || [])
+    ),
+    locations: mergeValidatedEntities<ValidatedLocationEntity>(
+      entities.map((e) => e.locations || [])
+    ),
+    events: mergeValidatedEntities<ValidatedEventEntity>(
+      entities.map((e) => e.events || [])
+    ),
+    topics: mergeValidatedEntities<ValidatedTopicEntity>(
+      entities.map((e) => e.topics || [])
+    ),
+    concepts: mergeValidatedEntities<ValidatedConceptEntity>(
+      entities.map((e) => e.concepts || [])
+    ),
+  };
 };

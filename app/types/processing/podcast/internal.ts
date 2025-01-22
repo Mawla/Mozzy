@@ -1,5 +1,5 @@
 import type { ProcessingStatus, NetworkLog } from "../base";
-import type { PodcastTextChunk, PodcastAnalysis } from "./index";
+import type { PodcastTextChunk, PodcastAnalysis } from "./public";
 
 /**
  * Internal state tracking for podcast processing operations.

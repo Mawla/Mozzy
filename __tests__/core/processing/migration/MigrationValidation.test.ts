@@ -1,16 +1,20 @@
 import { ProcessingService } from "@/app/core/processing/service/ProcessingService";
 import { PodcastProcessingAdapter } from "@/app/core/processing/adapters/podcast";
 import { PostProcessingAdapter } from "@/app/core/processing/adapters/post";
-import {
-  BaseProcessingResult,
+import type {
   ProcessingStatus,
+  ProcessingResult,
+  ProcessingAnalysis,
+  TimelineEvent,
   ProcessingOptions,
-} from "@/app/core/processing/types/base";
+} from "@/app/types/processing/base";
+import { PodcastProcessor } from "@/app/core/processing/podcast/PodcastProcessor";
 
 describe("Migration Validation", () => {
   let service: ProcessingService;
   let podcastAdapter: PodcastProcessingAdapter;
   let postAdapter: PostProcessingAdapter;
+  let podcastProcessor: PodcastProcessor;
 
   // Sample legacy data
   const legacyPodcastData = {
@@ -48,7 +52,8 @@ describe("Migration Validation", () => {
 
   beforeEach(() => {
     service = new ProcessingService();
-    podcastAdapter = new PodcastProcessingAdapter();
+    podcastProcessor = new PodcastProcessor();
+    podcastAdapter = new PodcastProcessingAdapter(podcastProcessor);
     postAdapter = new PostProcessingAdapter();
 
     service.registerAdapter("podcast", podcastAdapter);

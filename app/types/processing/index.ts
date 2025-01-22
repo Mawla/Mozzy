@@ -1,33 +1,35 @@
-// Re-export base processing types
+// Export base processing types
 export type {
-  ProcessingFormat,
-  ProcessingQuality,
   ProcessingStatus,
   ProcessingOptions,
-  ProcessingMetadata,
-  BaseTextChunk,
   ProcessingAnalysis,
-  BaseProcessingResult,
   ProcessingResult,
   ProcessingAdapter,
-  TimelineEvent,
-  SentimentAnalysis,
-  TopicAnalysis,
+  ProcessingFormat,
+  ProcessingMetadata,
+  BaseTextChunk,
+  NetworkLog,
   ProcessingState,
   ProcessingStep,
-  NetworkLog,
+  TextChunk,
+  ProcessingChunk,
   ChunkResult,
 } from "./base";
 
-// Re-export podcast processing types
+// Export podcast processing types
 export type {
   PodcastAnalysis,
-  ProcessingState as PodcastProcessingState,
-  ProcessingStep as PodcastProcessingStep,
-  TextChunk as PodcastTextChunk,
-  ProcessingChunk as PodcastProcessingChunk,
-  ProcessingChunkResult as PodcastChunkResult,
-  ProcessingResult as PodcastProcessingResult,
+  PodcastProcessingState,
+  PodcastProcessingStep,
+  PodcastTextChunk,
+  PodcastProcessingChunk,
+  PodcastChunkResult,
+  PodcastProcessingResult,
+  PodcastProcessingResultBase,
+  PodcastProcessingAnalysis,
+  PodcastProcessingStateManagement,
+  BasePodcastAnalysis,
+  ExtendedTheme,
   QuickFact,
   KeyPoint,
   ChunkOptions,
@@ -35,4 +37,27 @@ export type {
   AnalysisStepData,
   EntityStepData,
   StepData,
-} from "../podcast/processing";
+  ContentSection,
+  Concept,
+  Argument,
+  Controversy,
+  Quote,
+  Application,
+  PodcastInput,
+  PodcastTranscript,
+  ProcessedPodcast,
+} from "./podcast";
+
+// Export post processing types
+export type {
+  PostProcessingState,
+  PostProcessingStep,
+  PostTextChunk,
+  PostProcessingResult,
+  PostAnalysis,
+  PostProcessingOptions,
+  PostContentAnalysisResult,
+  PostOptimizationResult,
+  PostChunkMetadata,
+  PostEntities,
+} from "./post";

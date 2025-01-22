@@ -1,12 +1,14 @@
 import { PostProcessingAdapter } from "@/app/core/processing/adapters/post";
 import type {
   ProcessingOptions,
+  ProcessingResult,
   ProcessingStatus,
+  ProcessingFormat,
   BaseProcessingResult,
   ProcessingMetadata,
   ProcessingAnalysis,
   SentimentAnalysis,
-} from "@/app/core/processing/types/base";
+} from "@/app/types/processing";
 import type {
   PersonEntity,
   OrganizationEntity,
@@ -152,4 +154,30 @@ describe("PostProcessingAdapter", () => {
       } as BaseProcessingResult);
     });
   });
+});
+
+// Create mock result
+const createMockResult = (overrides = {}): ProcessingResult => ({
+  id: "test-id",
+  status: "completed" as ProcessingStatus,
+  success: true,
+  output: "test output",
+  metadata: {
+    format: "post" as ProcessingFormat,
+    platform: "test",
+    processedAt: new Date().toISOString(),
+  },
+  format: "post" as ProcessingFormat,
+  analysis: {
+    title: "Test",
+    summary: "Test summary",
+  },
+  entities: {
+    people: [],
+    organizations: [],
+    locations: [],
+    events: [],
+  },
+  timeline: [],
+  ...overrides,
 });

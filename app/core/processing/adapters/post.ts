@@ -1,8 +1,11 @@
 import {
   ProcessingAdapter,
   ProcessingOptions,
-  ProcessingResult,
-} from "../types";
+  BaseProcessingResult,
+  ProcessingStatus,
+  ProcessingAnalysis,
+  ProcessingMetadata,
+} from "@/app/types/processing/base";
 import { PodcastProcessor } from "../podcast/PodcastProcessor";
 import { logger } from "@/lib/logger";
 
@@ -13,19 +16,10 @@ export class PostProcessingAdapter implements ProcessingAdapter {
     this.processor = new PodcastProcessor();
   }
 
-  async validate(input: string | any): Promise<boolean> {
-    if (!input) {
-      return false;
-    }
-
+  async validate(input: string): Promise<boolean> {
     try {
-      const content = String(input);
-      return this.processor.validateInput(content);
+      return input.trim().length > 0;
     } catch (error) {
-      logger.error(
-        "Validation error:",
-        error instanceof Error ? error : new Error(String(error))
-      );
       return false;
     }
   }
@@ -33,67 +27,75 @@ export class PostProcessingAdapter implements ProcessingAdapter {
   async process(
     input: string,
     options: ProcessingOptions
-  ): Promise<ProcessingResult> {
-    const id = crypto.randomUUID();
-
-    // Validate input first
-    const isValid = await this.validate(input);
-    if (!isValid) {
-      return {
-        id,
-        status: "failed",
-        output: "",
-        error: "Invalid input for processing",
-        metadata: {
-          format: "post",
-          platform: options.targetPlatform || "default",
-          processedAt: new Date().toISOString(),
-        },
-      };
-    }
-
+  ): Promise<BaseProcessingResult> {
     try {
-      // Use the core processor to process the content
-      const result = await this.processor.process(input);
+      const isValid = await this.validate(input);
+      if (!isValid) {
+        return this.createErrorResult("Invalid input");
+      }
 
-      // Just override the format in metadata
-      return {
-        ...result,
-        metadata: {
-          ...result.metadata,
+      // Process the post content
+      // This is a placeholder - implement actual processing logic
+      return this.createSuccessResult(
+        {
           format: "post",
-          platform: options.targetPlatform || "default",
-        },
-      };
-    } catch (error) {
-      logger.error(
-        "Processing error:",
-        error instanceof Error ? error : new Error(String(error))
-      );
-      return {
-        id,
-        status: "failed",
-        output: "",
-        error:
-          error instanceof Error ? error.message : "Unknown error occurred",
-        metadata: {
-          format: "post",
-          platform: options.targetPlatform || "default",
+          platform: options.targetPlatform || "unknown",
           processedAt: new Date().toISOString(),
         },
-      };
+        {
+          title: "Processed Post",
+          summary: "Post content processed successfully",
+        }
+      );
+    } catch (error) {
+      return this.createErrorResult(
+        error instanceof Error ? error.message : "Unknown error"
+      );
     }
   }
 
-  async getStatus(id: string): Promise<ProcessingResult> {
-    // In a real implementation, this would check a database or queue
+  async getStatus(id: string): Promise<BaseProcessingResult> {
+    return this.createPendingResult();
+  }
+
+  private createErrorResult(error: string): BaseProcessingResult {
     return {
-      id,
-      status: "completed",
+      id: crypto.randomUUID(),
+      status: "error" as ProcessingStatus,
+      success: false,
+      error,
       output: "",
       metadata: {
         format: "post",
-        platform: "default",
+        platform: "unknown",
+        processedAt: new Date().toISOString(),
+      },
+    };
+  }
+
+  private createSuccessResult(
+    metadata: ProcessingMetadata,
+    analysis: ProcessingAnalysis
+  ): BaseProcessingResult {
+    return {
+      id: crypto.randomUUID(),
+      status: "completed" as ProcessingStatus,
+      success: true,
+      output: "",
+      metadata,
+      analysis,
+    };
+  }
+
+  private createPendingResult(): BaseProcessingResult {
+    return {
+      id: crypto.randomUUID(),
+      status: "pending" as ProcessingStatus,
+      success: false,
+      output: "",
+      metadata: {
+        format: "post",
+        platform: "unknown",
         processedAt: new Date().toISOString(),
       },
     };

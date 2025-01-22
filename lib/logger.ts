@@ -1,14 +1,11 @@
-type LogLevel = "debug" | "info" | "warn" | "error";
+import type {
+  LogLevel,
+  LogEntry,
+  LogSummary,
+  ProcessingLogger,
+} from "@/app/types/logging";
 
-interface LogEntry {
-  timestamp: string;
-  level: LogLevel;
-  message: string;
-  data?: any;
-  error?: Error;
-}
-
-class Logger {
+class Logger implements ProcessingLogger {
   private static instance: Logger;
   private logs: LogEntry[] = [];
   private readonly maxLogs = 1000;
@@ -67,19 +64,35 @@ class Logger {
     return [...this.logs];
   }
 
-  public getLogSummary() {
-    const errorCount = this.logs.filter((log) => log.level === "error").length;
-    const warningCount = this.logs.filter((log) => log.level === "warn").length;
-    const lastError = this.logs.find((log) => log.level === "error");
-    const lastWarning = this.logs.find((log) => log.level === "warn");
-
-    return {
+  public getLogSummary(): LogSummary {
+    const summary: LogSummary = {
       totalLogs: this.logs.length,
-      errorCount,
-      warningCount,
-      lastError,
-      lastWarning,
+      errorCount: 0,
+      warnCount: 0,
+      infoCount: 0,
+      debugCount: 0,
     };
+
+    for (const log of this.logs) {
+      switch (log.level) {
+        case "error":
+          summary.errorCount++;
+          if (!summary.lastError) summary.lastError = log;
+          break;
+        case "warn":
+          summary.warnCount++;
+          if (!summary.lastWarning) summary.lastWarning = log;
+          break;
+        case "info":
+          summary.infoCount++;
+          break;
+        case "debug":
+          summary.debugCount++;
+          break;
+      }
+    }
+
+    return summary;
   }
 
   public clearLogs() {
