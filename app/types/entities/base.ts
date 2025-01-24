@@ -100,9 +100,9 @@ export interface PersonEntity extends BaseEntity {
   title?: string;
   /** Organization affiliations */
   affiliations?: string[];
-  /** Areas of expertise or topics associated with person */
+  /** Required areas of expertise or topics associated with person */
   expertise: string[];
-  /** Role of the person */
+  /** Required role of the person in the context */
   role: string;
 }
 
@@ -112,13 +112,13 @@ export interface PersonEntity extends BaseEntity {
  */
 export interface OrganizationEntity extends BaseEntity {
   type: "ORGANIZATION";
-  /** Industry or sector */
+  /** Required industry or sector classification */
   industry: string;
-  /** Organization description */
+  /** Optional detailed description */
   description?: string;
-  /** Location of headquarters or main office */
+  /** Optional location of headquarters or main office */
   location?: string;
-  /** Size of the organization */
+  /** Required size classification of the organization */
   size: string;
 }
 
@@ -129,20 +129,20 @@ export interface OrganizationEntity extends BaseEntity {
 export interface LocationEntity extends BaseEntity {
   /** Must be LOCATION type */
   type: Extract<EntityType, "LOCATION">;
-  /** Type of location (city, country, etc.) */
+  /** Required type of location (city, country, etc.) */
   locationType: string;
-  /** Geographic coordinates */
+  /** Optional geographic coordinates */
   coordinates?: {
     /** Latitude (-90 to 90) */
     latitude: number;
     /** Longitude (-180 to 180) */
     longitude: number;
   };
-  /** Geographic region */
+  /** Optional geographic region */
   region?: string;
-  /** Parent location (e.g., country for a city) */
+  /** Optional parent location (e.g., country for a city) */
   parent?: string;
-  /** Country of the location */
+  /** Optional country of the location */
   country?: string;
 }
 
@@ -152,19 +152,19 @@ export interface LocationEntity extends BaseEntity {
  */
 export interface EventEntity extends BaseEntity {
   type: "EVENT";
-  /** Start date of the event */
+  /** Optional start date of the event */
   startDate?: string;
-  /** End date of the event */
+  /** Optional end date of the event */
   endDate?: string;
-  /** Location of the event */
+  /** Optional location of the event */
   location?: string;
-  /** Type of event */
+  /** Optional type of event */
   eventType?: string;
-  /** Date of the event */
+  /** Required date of the event (ISO format) */
   date: string;
-  /** Duration of the event */
+  /** Required duration of the event */
   duration: string;
-  /** Participants in the event */
+  /** Required list of event participants */
   participants: string[];
 }
 

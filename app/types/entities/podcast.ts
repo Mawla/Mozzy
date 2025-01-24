@@ -16,12 +16,14 @@ import { PodcastAnalysis } from "../processing/podcast";
 export interface PersonEntity extends BaseEntity {
   /** Must be PERSON type */
   type: Extract<EntityType, "PERSON">;
-  /** Role of the person in the podcast context */
+  /** Required role of the person in the podcast context */
   role: string;
-  /** Areas of expertise */
+  /** Required areas of expertise */
   expertise: string[];
-  /** Organizational affiliations (optional) */
+  /** Optional organizational affiliations */
   affiliations?: string[];
+  /** Optional professional title */
+  title?: string;
 }
 
 /**
@@ -31,12 +33,14 @@ export interface PersonEntity extends BaseEntity {
 export interface OrganizationEntity extends BaseEntity {
   /** Must be ORGANIZATION type */
   type: Extract<EntityType, "ORGANIZATION">;
-  /** Industry classification */
+  /** Required industry classification */
   industry: string;
-  /** Organization size category */
+  /** Required organization size category */
   size: string;
-  /** Physical location (optional) */
+  /** Optional physical location */
   location?: string;
+  /** Optional detailed description */
+  description?: string;
 }
 
 /**
@@ -44,9 +48,11 @@ export interface OrganizationEntity extends BaseEntity {
  * Extends base LocationEntity with podcast-specific fields.
  */
 export interface LocationEntity extends BaseLocationEntity {
-  /** Relevance score for this location in the podcast context (0-1) */
+  /** Required type of location (city, country, etc.) */
+  locationType: string;
+  /** Optional relevance score for this location in the podcast context (0-1) */
   relevance?: number;
-  /** Timestamps where this location is mentioned */
+  /** Optional timestamps where this location is mentioned */
   mentionTimestamps?: string[];
 }
 
@@ -57,12 +63,20 @@ export interface LocationEntity extends BaseLocationEntity {
 export interface EventEntity extends BaseEntity {
   /** Must be EVENT type */
   type: Extract<EntityType, "EVENT">;
-  /** Event date (ISO format) */
+  /** Required event date (ISO format) */
   date: string;
-  /** Event duration */
+  /** Required event duration */
   duration: string;
-  /** List of event participants */
+  /** Required list of event participants */
   participants: string[];
+  /** Optional start date of the event */
+  startDate?: string;
+  /** Optional end date of the event */
+  endDate?: string;
+  /** Optional location of the event */
+  location?: string;
+  /** Optional type of event */
+  eventType?: string;
 }
 
 /**
@@ -72,12 +86,16 @@ export interface EventEntity extends BaseEntity {
 export interface TopicEntity extends BaseEntity {
   /** Must be TOPIC type */
   type: Extract<EntityType, "TOPIC">;
-  /** Topic relevance score (0-1) */
+  /** Required topic relevance score (0-1) */
   relevance: number;
-  /** Related subtopics */
+  /** Required related subtopics */
   subtopics: string[];
-  /** Topic category */
+  /** Required topic category */
   category: string;
+  /** Optional parent topics */
+  parentTopics?: string[];
+  /** Optional related keywords */
+  keywords?: string[];
 }
 
 /**
@@ -87,20 +105,23 @@ export interface TopicEntity extends BaseEntity {
 export interface ConceptEntity extends BaseEntity {
   /** Must be CONCEPT type */
   type: Extract<EntityType, "CONCEPT">;
-  /** Concept definition */
+  /** Required concept definition */
   definition: string;
-  /** Example usages of the concept */
+  /** Required example usages of the concept */
   examples: string[];
-  /** Domain or field */
+  /** Required domain or field */
   domain: string;
+  /** Optional related concepts */
+  relatedConcepts?: string[];
 }
 
 // Person Entity Schema
 export const personEntitySchema = baseEntitySchema.extend({
   type: z.literal("PERSON"),
-  expertise: z.array(z.string()).min(1),
   role: z.string().min(1),
+  expertise: z.array(z.string()).min(1),
   affiliations: z.array(z.string()).optional(),
+  title: z.string().optional(),
 });
 
 // Organization Entity Schema
@@ -109,6 +130,7 @@ export const organizationEntitySchema = baseEntitySchema.extend({
   industry: z.string().min(1),
   size: z.string().min(1),
   location: z.string().optional(),
+  description: z.string().optional(),
 });
 
 // Location Entity Schema
@@ -133,6 +155,10 @@ export const eventEntitySchema = baseEntitySchema.extend({
   date: z.string(),
   duration: z.string(),
   participants: z.array(z.string()).min(1),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  location: z.string().optional(),
+  eventType: z.string().optional(),
 });
 
 // Topic Entity Schema
@@ -141,6 +167,8 @@ export const topicEntitySchema = baseEntitySchema.extend({
   relevance: z.number().min(0).max(1),
   subtopics: z.array(z.string()).min(1),
   category: z.string().min(1),
+  parentTopics: z.array(z.string()).optional(),
+  keywords: z.array(z.string()).optional(),
 });
 
 // Concept Entity Schema
@@ -149,6 +177,7 @@ export const conceptEntitySchema = baseEntitySchema.extend({
   definition: z.string().min(1),
   examples: z.array(z.string()).min(1),
   domain: z.string().min(1),
+  relatedConcepts: z.array(z.string()).optional(),
 });
 
 // Combined entities schema
