@@ -20,64 +20,85 @@ Reference: [Task Plan](./plan.md)
 
 ## Current Status
 
-### 2025-01-24 14:37
+### 2025-01-24 14:40
 
 **Status**: In Progress
 
 - What's working:
 
-  - Template migration documentation completed
-  - Prompts migration documentation created
-  - Consolidated prompt structure designed
-  - Database schema for prompts defined
-  - Implementation plan outlined
+  - Core features identified for migration:
+    1. Core Processing (@core-processing)
+    2. Podcast Visualizer (@podcast)
+    3. Social Posts (@posts → social-posts)
+  - Documentation reviewed for all features
+  - Initial migration strategy outlined
 
 - What's not:
 
-  - Actual prompt migration not started
-  - Rails services not implemented yet
-  - Tests not written
+  - Core processing pipeline not yet migrated
+  - Podcast visualizer not yet ported
+  - Social posts feature not yet transferred
+  - Integration tests not written
 
 - Next actions:
 
-  1. Set up Rails prompt services structure
-  2. Convert TypeScript prompts to YAML format
-  3. Implement base prompt service
-  4. Write tests for prompt services
+  1. Core Processing Migration:
+
+     - Port type system to Ruby classes
+     - Implement processing strategies as services
+     - Set up error handling and logging
+     - Migrate adapters and factories
+
+  2. Podcast Feature Migration:
+
+     - Create podcast models and migrations
+     - Port processing pipeline
+     - Implement visualizer components
+     - Set up audio processing services
+
+  3. Social Posts Migration:
+     - Rename to "social-posts"
+     - Create post models and migrations
+     - Port template system
+     - Implement content transformation services
 
 - Documentation updates needed:
   - [x] Prompts migration guide created
-  - [ ] API documentation for prompt endpoints
-  - [ ] Service documentation for prompt services
-  - [ ] Testing documentation for prompt services
+  - [ ] Core processing migration guide
+  - [ ] Podcast feature migration guide
+  - [ ] Social posts migration guide
+  - [ ] Integration testing guide
 
 ## Progress History
 
-### 2025-01-24 14:37 - Prompts Migration Planning
+### 2025-01-24 14:40 - Core Features Migration Planning
 
 ✓ Completed:
 
-- Created comprehensive prompts migration guide
-- Designed consolidated prompt structure for Rails
-- Defined database schema for prompts
-- Created implementation plan with monitoring
+- Identified core features for migration
+- Reviewed feature documentation
+- Created initial migration strategy
+- Documented dependencies and relationships
 
 🤔 Decisions:
 
-- Store prompts in YAML configuration
-- Use service objects for prompt management
-- Implement monitoring for prompt usage
-- Add database storage for dynamic prompts
+- Migrate core processing first as it's a dependency
+- Keep type system structure but implement in Ruby
+- Rename posts feature to social-posts
+- Use service objects for processing strategies
 
 ❌ Issues:
 
-- None at this stage
+- Complex type system needs careful translation to Ruby
+- Tight coupling between features requires coordinated migration
+- Audio processing dependencies need evaluation
 
 ⏭️ Next:
 
-- Begin implementation of prompt services
-- Convert TypeScript prompts to YAML
-- Set up testing infrastructure
+- Create core processing migration guide
+- Begin type system migration
+- Set up base service structure
+- Plan integration testing strategy
 
 ### Required Emoji Markers:
 
