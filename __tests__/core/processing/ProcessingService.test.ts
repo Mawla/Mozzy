@@ -3,18 +3,20 @@ import { PodcastProcessingAdapter } from "@/app/core/processing/adapters/podcast
 import { PostProcessingAdapter } from "@/app/core/processing/adapters/post";
 import { PodcastProcessor } from "@/app/core/processing/podcast/PodcastProcessor";
 import type {
-  ProcessingStatus,
   ProcessingResult,
-  ProcessingAnalysis,
-  TimelineEvent,
   ProcessingOptions,
-  BaseProcessingResult,
+  ProcessingMetadata,
+  TimelineEvent,
+} from "@/app/types/processing/types";
+import {
+  ProcessingStatus,
   ProcessingFormat,
 } from "@/app/types/processing/base";
 import type {
   PersonEntity,
   OrganizationEntity,
   LocationEntity,
+  EventEntity,
   ValidatedBaseEntity,
 } from "@/app/types/entities/base";
 
@@ -37,7 +39,7 @@ describe("ProcessingService", () => {
   beforeEach(() => {
     service = new ProcessingService();
     podcastProcessor = new PodcastProcessor();
-    podcastAdapter = new PodcastProcessingAdapter(podcastProcessor);
+    podcastAdapter = new PodcastProcessingAdapter();
     postAdapter = new PostProcessingAdapter();
 
     service.registerAdapter("podcast" as ProcessingFormat, podcastAdapter);
@@ -216,7 +218,7 @@ describe("ProcessingService", () => {
       const results = await Promise.all(tasks);
       expect(results).toHaveLength(5);
       expect(
-        results.every((r: BaseProcessingResult) => r.status === "completed")
+        results.every((r: ProcessingResult) => r.status === "completed")
       ).toBe(true);
     });
   });

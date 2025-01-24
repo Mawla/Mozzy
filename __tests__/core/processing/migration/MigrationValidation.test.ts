@@ -53,7 +53,7 @@ describe("Migration Validation", () => {
   beforeEach(() => {
     service = new ProcessingService();
     podcastProcessor = new PodcastProcessor();
-    podcastAdapter = new PodcastProcessingAdapter(podcastProcessor);
+    podcastAdapter = new PodcastProcessingAdapter();
     postAdapter = new PostProcessingAdapter();
 
     service.registerAdapter("podcast", podcastAdapter);
