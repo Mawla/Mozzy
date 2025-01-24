@@ -10,6 +10,7 @@ import type {
   NetworkLog,
   ChunkResult,
   ProcessingOptions,
+  ProcessingChunk as BaseChunk,
 } from "../base";
 
 import type {
@@ -34,25 +35,19 @@ import type {
   ProcessedPodcast,
 } from "../../shared/podcast";
 
-import type { ProcessingChunk as BaseChunk } from "@/app/types/processing/base";
-import type { PodcastProcessingChunk } from "./types";
-
 // Processing State Types
 export interface ProcessingStep extends BaseProcessingStep {
-  id: string;
-  name: string;
-  status: ProcessingStatus;
-  progress: number;
-  error?: Error;
-  description?: string;
+  /** Additional data for the step */
   data?: any;
-  chunks?: ProcessingChunk[];
-  networkLogs?: NetworkLog[];
+  /** Processing chunks */
+  chunks?: PodcastProcessingChunk[];
 }
 
 export interface ProcessingState extends BaseProcessingState {
+  /** Processing steps */
   steps: ProcessingStep[];
-  chunks: ProcessingChunk[];
+  /** Processing chunks */
+  chunks: PodcastProcessingChunk[];
 }
 
 export interface TextChunk extends BaseTextChunk {
@@ -74,11 +69,17 @@ export interface ProcessingChunk extends TextChunk {
   timeline?: TimelineEvent[];
 }
 
-export interface ProcessingChunkResult extends Omit<ChunkResult, "timeline"> {
+export interface ProcessingChunkResult
+  extends Omit<ChunkResult, "timeline" | "entities"> {
+  /** Unique identifier */
   id: string;
+  /** Original text content */
   text: string;
+  /** Refined/processed text */
   refinedText: string;
+  /** Analysis results */
   analysis?: ProcessingAnalysis;
+  /** Extracted entities */
   entities: {
     people: PersonEntity[];
     organizations: OrganizationEntity[];
@@ -87,21 +88,31 @@ export interface ProcessingChunkResult extends Omit<ChunkResult, "timeline"> {
     topics: TopicEntity[];
     concepts: ConceptEntity[];
   };
+  /** Timeline events */
   timeline?: TimelineEvent[];
+  /** Processing status */
   status: ProcessingStatus;
+  /** Progress percentage (0-100) */
   progress: number;
+  /** Error if any occurred */
   error?: Error;
 }
 
 export interface ProcessingResult extends BaseProcessingResult {
+  /** Refined/processed transcript */
   refinedTranscript: string;
+  /** Analysis results */
   analysis: PodcastAnalysis;
+  /** Extracted entities */
   entities: {
     people: PersonEntity[];
     organizations: OrganizationEntity[];
     locations: LocationEntity[];
     events: EventEntity[];
+    topics?: TopicEntity[];
+    concepts?: ConceptEntity[];
   };
+  /** Timeline events */
   timeline: TimelineEvent[];
 }
 
@@ -170,13 +181,40 @@ export type StepData = {
 };
 
 export interface PodcastProcessingStep extends BaseProcessingStep {
+  /** Processing chunks */
   chunks?: PodcastProcessingChunk[];
-  // Additional fields unique to the podcast step
-  // e.g.:
-  // transcriptId?: string;
+  /** Transcript ID if available */
+  transcriptId?: string;
+  /** Additional podcast-specific step data */
+  podcastData?: {
+    duration?: string;
+    speakers?: string[];
+    topics?: string[];
+  };
 }
 
-export interface PodcastProcessingChunk extends ProcessingChunk {
+export interface PodcastProcessingChunk extends BaseChunk {
+  /** Processing status of the chunk */
+  status: ProcessingStatus;
+  /** Response from processing */
+  response?: string;
+  /** Any error that occurred */
+  error?: Error;
+  /** Processing result */
+  result?: ProcessingChunkResult;
+  /** Analysis data */
+  analysis?: PodcastAnalysis;
+  /** Extracted entities */
+  entities?: {
+    people: PersonEntity[];
+    organizations: OrganizationEntity[];
+    locations: LocationEntity[];
+    events: EventEntity[];
+  };
+  /** Timeline events */
+  timeline?: TimelineEvent[];
+  /** Speaker identification */
   speaker?: string;
-  progress?: number;
+  /** Progress percentage (0-100) */
+  progress: number;
 }

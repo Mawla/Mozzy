@@ -1,19 +1,16 @@
 import type {
-  ProcessingFormat,
-  ProcessingQuality,
   ProcessingStatus,
-  TimelineEvent,
-  SentimentAnalysis,
-  TopicAnalysis,
-  ProcessingOptions,
-  ProcessingMetadata,
+  ProcessingAnalysis,
+  BaseProcessingResult,
   BaseTextChunk,
+  TimelineEvent,
+  ProcessingMetadata,
   ProcessingState as BaseProcessingState,
   ProcessingStep as BaseProcessingStep,
   NetworkLog,
-  BaseProcessingResult,
-  ProcessingAnalysis,
   ChunkResult,
+  ProcessingOptions as BaseProcessingOptions,
+  ProcessingChunk as BaseChunk,
 } from "./base";
 
 import type {
@@ -23,8 +20,7 @@ import type {
   EventEntity,
   TopicEntity,
   ConceptEntity,
-  ValidatedPodcastEntities,
-} from "@/app/types/entities/podcast";
+} from "../entities/base";
 
 import { Section } from "../shared/content";
 
@@ -62,6 +58,15 @@ export type {
   TopicEntity,
   ConceptEntity,
 } from "../entities/podcast";
+
+// Re-export base types
+export type {
+  ProcessingStatus,
+  TimelineEvent,
+  NetworkLog,
+  ChunkResult,
+  BaseProcessingOptions as ProcessingOptions,
+};
 
 /**
  * Represents a theme discussed in the podcast with extended information
@@ -217,60 +222,39 @@ export interface PodcastAnalysis
 }
 
 /**
- * Input data for podcast processing
+ * Podcast-specific types
  */
 export interface PodcastInput {
-  /** Type of input source */
-  type: "url" | "search" | "transcript";
-  /** The actual content to process */
-  content: string;
+  audioUrl: string;
+  metadata?: ProcessingMetadata;
 }
 
-/**
- * Result of podcast processing operation
- */
-export interface PodcastProcessingResultBase {
-  /** Whether processing was successful */
-  success: boolean;
-  /** ID of the processed podcast */
-  podcastId?: string;
-  /** Error message if processing failed */
-  error?: string;
-}
-
-/**
- * Represents a processed podcast transcript
- */
 export interface PodcastTranscript {
-  /** Refined and cleaned transcript content */
-  refinedContent: string;
+  text: string;
+  speakers?: string[];
+  timestamps?: Array<{
+    start: number;
+    end: number;
+    text: string;
+    speaker?: string;
+  }>;
 }
 
-/**
- * Represents a fully processed podcast with validated entities
- */
 export interface ProcessedPodcast {
-  /** Unique identifier */
   id: string;
-  /** Processed transcript */
-  transcript: PodcastTranscript;
-  /** Analysis results */
-  analysis: {
-    /** Brief summary */
-    summary: string;
-    /** Key points extracted */
-    keyPoints: string[];
-    /** Main topics discussed */
-    topics: TopicAnalysis[];
-    /** Extracted entities */
-    entities: ValidatedPodcastEntities;
-    /** Timeline of events */
-    timeline: TimelineEvent[];
+  title: string;
+  summary: string;
+  transcript: string;
+  analysis: PodcastAnalysis;
+  entities: {
+    people: PersonEntity[];
+    organizations: OrganizationEntity[];
+    locations: LocationEntity[];
+    events: EventEntity[];
+    topics?: TopicEntity[];
+    concepts?: ConceptEntity[];
   };
-  /** Processing status */
-  status: ProcessingStatus;
-  /** Error message if processing failed */
-  error?: string;
+  timeline: TimelineEvent[];
 }
 
 /**
