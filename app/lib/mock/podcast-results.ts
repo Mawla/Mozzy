@@ -16,6 +16,7 @@ import {
   ConceptEntity,
 } from "@/app/types/entities/podcast";
 import { KeyPoint, QuickFact } from "@/app/types/podcast/processing";
+import type { PodcastProcessingChunk } from "@/app/types/processing/podcast/types";
 
 const now = new Date().toISOString();
 
@@ -100,7 +101,8 @@ export const mockPodcastResults: ProcessingResult = {
         type: "PERSON",
         name: "Luis von Ahn",
         role: "CEO",
-        expertise: ["Computer Science", "Language Learning"] as string[],
+        expertise: ["Computer Science", "Language Learning"],
+        affiliations: ["Duolingo", "Carnegie Mellon University"],
         createdAt: now,
         updatedAt: now,
         context: "Speaker",
@@ -111,7 +113,8 @@ export const mockPodcastResults: ProcessingResult = {
         type: "PERSON",
         name: "Jane Smith",
         role: "Host",
-        expertise: ["EdTech"] as string[],
+        expertise: ["EdTech", "Podcasting"],
+        affiliations: ["Tech Talk Radio"],
         createdAt: now,
         updatedAt: now,
         context: "Host",
@@ -124,6 +127,8 @@ export const mockPodcastResults: ProcessingResult = {
         type: "ORGANIZATION",
         name: "Duolingo",
         industry: "EdTech",
+        size: "Large",
+        location: "Pittsburgh, PA",
         createdAt: now,
         updatedAt: now,
         context: "Company",
@@ -131,14 +136,28 @@ export const mockPodcastResults: ProcessingResult = {
       } as OrganizationEntity,
     ],
     locations: [],
-    events: [],
+    events: [
+      {
+        id: "7",
+        type: "EVENT",
+        name: "Duolingo Podcast Interview",
+        date: now,
+        duration: "45:00",
+        participants: ["Luis von Ahn", "Jane Smith"],
+        createdAt: now,
+        updatedAt: now,
+        context: "Interview",
+        mentions: [],
+      } as EventEntity,
+    ],
     topics: [
       {
         id: "4",
         type: "TOPIC",
         name: "Language Learning",
         relevance: 0.98,
-        subtopics: ["Vocabulary", "Grammar", "Pronunciation"] as string[],
+        subtopics: ["Vocabulary", "Grammar", "Pronunciation"],
+        category: "Education",
         createdAt: now,
         updatedAt: now,
         context: "Main Topic",
@@ -149,7 +168,8 @@ export const mockPodcastResults: ProcessingResult = {
         type: "TOPIC",
         name: "Gamification",
         relevance: 0.95,
-        subtopics: ["Rewards", "Streaks", "Points"] as string[],
+        subtopics: ["Rewards", "Streaks", "Points"],
+        category: "Product Features",
         createdAt: now,
         updatedAt: now,
         context: "Feature",
@@ -163,10 +183,8 @@ export const mockPodcastResults: ProcessingResult = {
         name: "Spaced Repetition",
         definition:
           "A learning technique that incorporates increasing intervals of time between subsequent review of previously learned material",
-        examples: [
-          "Duolingo's review system",
-          "Vocabulary practice intervals",
-        ] as string[],
+        examples: ["Duolingo's review system", "Vocabulary practice intervals"],
+        domain: "Learning Science",
         createdAt: now,
         updatedAt: now,
         context: "Learning Method",
@@ -195,3 +213,56 @@ export const mockPodcastResults: ProcessingResult = {
     } as TimelineEvent,
   ],
 };
+
+export const mockPodcastChunks: PodcastProcessingChunk[] = [
+  {
+    id: "chunk-1",
+    text: "Welcome to the AI Ethics Podcast...",
+    status: "completed",
+    progress: 100,
+    start: 0,
+    end: 120,
+    startIndex: 0,
+    endIndex: 150,
+    result: {
+      id: "chunk-1-result",
+      text: "Welcome to the AI Ethics Podcast...",
+      refinedText: "Welcome to the AI Ethics Podcast...",
+      status: "completed",
+      progress: 100,
+      entities: {
+        people: [],
+        organizations: [],
+        locations: [],
+        events: [],
+        topics: [],
+        concepts: [],
+      },
+    },
+  },
+  {
+    id: "chunk-2",
+    text: "Today we're discussing...",
+    status: "completed",
+    progress: 100,
+    start: 121,
+    end: 240,
+    startIndex: 151,
+    endIndex: 300,
+    result: {
+      id: "chunk-2-result",
+      text: "Today we're discussing...",
+      refinedText: "Today we're discussing...",
+      status: "completed",
+      progress: 100,
+      entities: {
+        people: [],
+        organizations: [],
+        locations: [],
+        events: [],
+        topics: [],
+        concepts: [],
+      },
+    },
+  },
+];

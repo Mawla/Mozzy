@@ -1,262 +1,185 @@
+import type { ProcessingStatus } from "../base";
 import type {
-  BaseProcessingResult,
+  ProcessingResult,
+  ProcessingStep as BaseProcessingStep,
+  ProcessingState as BaseProcessingState,
+  ProcessingChunk as BaseProcessingChunk,
+  NetworkLog,
+  ChunkResult as ProcessingChunkResult,
   ProcessingOptions,
   ProcessingAnalysis,
   TimelineEvent,
-  BaseTextChunk,
-  ProcessingStatus,
-  NetworkLog,
-} from "../base";
+  ProcessingMetadata,
+  SentimentAnalysis,
+  TopicAnalysis,
+  TextChunk as BaseTextChunk,
+} from "../types";
 
 import type {
   PersonEntity,
   OrganizationEntity,
   LocationEntity,
   EventEntity,
-} from "@/app/types/entities/podcast";
+  TopicEntity,
+  ConceptEntity,
+} from "../../entities/podcast";
 
-import { BaseEntities } from "@/app/types/shared/entities";
+import type {
+  Section,
+  ContentSection,
+  Concept,
+  Argument,
+  Controversy,
+  Quote,
+  Application,
+  PodcastInput,
+  PodcastTranscript,
+  ProcessedPodcast,
+} from "../../shared/podcast";
 
-// Public Types
-/**
- * Configuration options for podcast processing operations.
- * Extends base processing options with podcast-specific settings for
- * transcription, speaker detection, and timeline generation.
- */
-export interface PodcastProcessingOptions extends ProcessingOptions {
-  /** Whether to identify and extract distinct speakers */
-  extractSpeakers: boolean;
-  /** Whether to generate a timestamped event timeline */
-  generateTimeline: boolean;
-  /** Whether to perform speaker diarization (who spoke when) */
-  speakerDiarization: boolean;
-  /** Quality level for transcription processing */
-  transcriptionQuality: "standard" | "premium";
-}
-
-/**
- * Represents a chunk of processed podcast audio transcription.
- * Extends base text chunk with speaker and confidence information.
- */
+/** Base text chunk with podcast-specific fields */
 export interface PodcastTextChunk extends BaseTextChunk {
+  /** Unique identifier */
+  id: string;
+  /** Text content */
+  text: string;
+  /** Start time in seconds */
+  start?: number;
+  /** End time in seconds */
+  end?: number;
+  /** Start index in full text */
+  startIndex?: number;
+  /** End index in full text */
+  endIndex?: number;
   /** Identified speaker for this chunk */
   speaker?: string;
-  /** Transcription confidence score (0-1) */
-  confidence?: number;
-  /** Sentiment score for the chunk (-1 to 1) */
-  sentiment?: number;
-  /** Topics discussed in this chunk */
-  topics?: string[];
 }
 
-/**
- * Analysis results for podcast processing.
- * Extends base analysis with podcast-specific insights including
- * speaker analysis and episode highlights.
- */
-export interface PodcastAnalysis extends ProcessingAnalysis {
-  /** Detailed speaker analysis */
-  speakers: Array<{
-    /** Speaker's identified name */
-    name: string;
-    /** Total speaking time in seconds */
-    speakingTime: number;
-    /** Individual speaking segments */
-    segments: Array<{
-      /** Start time in seconds */
-      start: number;
-      /** End time in seconds */
-      end: number;
-      /** Transcribed text for the segment */
-      text: string;
-    }>;
-  }>;
-  /** Key moments and highlights from the episode */
-  episodeHighlights: Array<{
-    /** Timestamp in HH:MM:SS format */
-    timestamp: string;
-    /** Highlight content */
-    text: string;
-    /** Speaker who made the highlight */
-    speaker?: string;
-    /** Topics discussed in the highlight */
-    topics?: string[];
-  }>;
+/** Processing step with podcast-specific fields */
+export interface PodcastProcessingStep extends BaseProcessingStep {
+  /** Additional data for the step */
+  data?: StepData;
+  /** Processing chunks */
+  chunks?: PodcastProcessingChunk[];
+  /** Progress percentage (0-100) */
+  progress: number;
 }
 
-/**
- * Complete result of podcast processing operation.
- * Extends base processing result with podcast-specific outputs
- * including transcription, speaker analysis, and entity extraction.
- */
-export interface PodcastProcessingResult extends BaseProcessingResult {
-  /** Content format identifier */
-  format: "podcast";
-  /** Detailed podcast analysis results */
-  analysis: PodcastAnalysis;
-  /** Processed transcription chunks */
-  chunks: PodcastTextChunk[];
-  /** List of identified speakers */
-  speakers: string[];
-  /** Chronological event timeline */
-  timeline: TimelineEvent[];
-  /** Extracted entities from transcription */
-  entities: {
-    /** People mentioned in the podcast */
+/** Processing state with podcast-specific fields */
+export interface PodcastProcessingState extends BaseProcessingState {
+  /** Processing steps */
+  steps: PodcastProcessingStep[];
+  /** Processing chunks */
+  chunks: PodcastProcessingChunk[];
+  /** Progress percentage (0-100) */
+  progress: number;
+}
+
+/** Processing chunk with podcast-specific fields */
+export interface PodcastProcessingChunk extends PodcastTextChunk {
+  /** Processing status */
+  status: ProcessingStatus;
+  /** Response from processing */
+  response?: string;
+  /** Error if any occurred */
+  error?: Error;
+  /** Processing result */
+  result?: ProcessingChunkResult;
+  /** Analysis results */
+  analysis?: PodcastAnalysis;
+  /** Extracted entities */
+  entities?: {
     people: PersonEntity[];
-    /** Organizations discussed */
     organizations: OrganizationEntity[];
-    /** Locations referenced */
     locations: LocationEntity[];
-    /** Events mentioned */
     events: EventEntity[];
   };
-  /** Current processing status */
-  status: ProcessingStatus;
-}
-
-// Internal Types
-/**
- * Internal state tracking for podcast processing operations.
- * Used to monitor progress and maintain processing context during
- * transcription, diarization, and analysis phases.
- */
-export interface PodcastProcessingState {
-  /** Current processing status */
-  status: ProcessingStatus;
-  /** Error information if processing failed */
-  error?: Error;
-  /** Overall progress percentage (0-100) */
-  overallProgress: number;
-  /** Current processing step identifier */
-  currentStep: string;
-  /** Processed text chunks */
-  chunks: PodcastTextChunk[];
-  /** Partial analysis results */
-  analysis: Partial<PodcastAnalysis>;
-  /** Network operation logs */
-  networkLogs: NetworkLog[];
-  /** Transcription step progress (0-100) */
-  transcriptionProgress: number;
-  /** Speaker diarization step progress (0-100) */
-  diarizationProgress: number;
-  /** Content analysis step progress (0-100) */
-  analysisProgress: number;
-}
-
-/**
- * Represents a single step in the podcast processing pipeline.
- * Used to track progress and state of individual processing steps
- * like transcription, diarization, and analysis.
- */
-export interface PodcastProcessingStep {
-  /** Unique step identifier */
-  id: string;
-  /** Human-readable step name */
-  name: string;
-  /** Current step status */
-  status: ProcessingStatus;
-  /** Step completion percentage (0-100) */
+  /** Timeline events */
+  timeline?: TimelineEvent[];
+  /** Progress percentage (0-100) */
   progress: number;
-  /** Error information if step failed */
-  error?: Error;
-  /** Step description for UI display */
-  description: string;
-  /** Text chunks processed in this step */
+}
+
+/** Processing result with podcast-specific fields */
+export interface PodcastProcessingResult extends ProcessingResult {
+  /** Content format identifier */
+  format: "podcast";
+  /** Processing metadata */
+  metadata: ProcessingMetadata;
+  /** Analysis results */
+  analysis?: PodcastAnalysis;
+  /** Processed transcript */
+  transcript?: string;
+  /** Processing chunks */
   chunks?: PodcastTextChunk[];
-  /** Network logs for this step */
-  networkLogs?: NetworkLog[];
+  /** Extracted entities */
+  entities?: {
+    people: PersonEntity[];
+    organizations: OrganizationEntity[];
+    locations: LocationEntity[];
+    events: EventEntity[];
+    topics?: TopicEntity[];
+    concepts?: ConceptEntity[];
+  };
+  /** Timeline events */
+  timeline?: TimelineEvent[];
 }
 
-/**
- * Results from the transcription phase.
- * Contains detailed word-level transcription with timing
- * and confidence information.
- */
-export interface PodcastTranscriptionResult {
-  /** Complete transcribed text */
-  text: string;
-  /** Overall transcription confidence (0-1) */
-  confidence: number;
-  /** Individual word-level transcription details */
-  words: Array<{
-    /** Transcribed word */
-    word: string;
-    /** Start time in seconds */
-    start: number;
-    /** End time in seconds */
-    end: number;
-    /** Word-level confidence score (0-1) */
-    confidence: number;
+/** Processing options with podcast-specific fields */
+export interface PodcastProcessingOptions extends ProcessingOptions {
+  /** Target platform for processing */
+  targetPlatform?: string;
+  /** Whether to analyze sentiment */
+  analyzeSentiment?: boolean;
+  /** Whether to extract entities */
+  extractEntities?: boolean;
+  /** Whether to include timestamps */
+  includeTimestamps?: boolean;
+}
+
+/** Analysis results with podcast-specific fields */
+export interface PodcastAnalysis extends ProcessingAnalysis {
+  /** Podcast title */
+  title?: string;
+  /** Summary of the podcast */
+  summary?: string;
+  /** Extracted entities */
+  entities?: {
+    people: PersonEntity[];
+    organizations: OrganizationEntity[];
+    locations: LocationEntity[];
+    events: EventEntity[];
+  };
+  /** Timeline events */
+  timeline?: TimelineEvent[];
+  /** Sentiment analysis */
+  sentiment?: SentimentAnalysis;
+  /** Topic analysis */
+  topics?: TopicAnalysis[];
+  /** Main themes */
+  themes?: string[];
+  /** Key points */
+  keyPoints?: Array<{
+    title: string;
+    description: string;
+    relevance: string;
   }>;
-  /** Speaker segments if diarization was enabled */
-  speakers?: Array<{
-    /** Unique speaker identifier */
-    id: string;
-    /** Speaking segments for this speaker */
-    segments: Array<{
-      /** Start time in seconds */
-      start: number;
-      /** End time in seconds */
-      end: number;
-    }>;
-  }>;
+  /** Quick facts */
+  quickFacts?: {
+    duration: string;
+    participants: string[];
+    recordingDate?: string;
+    mainTopic: string;
+    expertise: string;
+  };
 }
 
-/**
- * Results from the speaker diarization phase.
- * Maps speech segments to identified speakers with timing
- * and confidence information.
- */
-export interface PodcastDiarizationResult {
-  /** Identified speakers and their segments */
-  speakers: Array<{
-    /** Unique speaker identifier */
-    id: string;
-    /** Identified speaker name if available */
-    name?: string;
-    /** Speaking segments for this speaker */
-    segments: Array<{
-      /** Start time in seconds */
-      start: number;
-      /** End time in seconds */
-      end: number;
-      /** Transcribed text for this segment */
-      text: string;
-      /** Segment-level confidence score (0-1) */
-      confidence: number;
-    }>;
-  }>;
+/** Data for each processing step */
+export interface StepData {
+  /** Refined content after processing */
+  refinedContent?: string;
+  /** Processing metadata */
+  metadata?: ProcessingMetadata;
+  /** Analysis results */
+  analysis?: PodcastAnalysis;
 }
-
-/**
- * Extended metadata for podcast text chunks.
- * Used internally for content analysis and speaker tracking.
- */
-export interface PodcastChunkMetadata {
-  /** Identified speaker for the chunk */
-  speaker?: string;
-  /** Start time in seconds */
-  start: number;
-  /** End time in seconds */
-  end: number;
-  /** Transcription confidence score (0-1) */
-  confidence: number;
-  /** Topics discussed in the chunk */
-  topics?: string[];
-  /** Sentiment score for the chunk (-1 to 1) */
-  sentiment?: number;
-}
-
-/**
- * Podcast-specific entities structure
- * Extends base entities with podcast-specific fields
- */
-export interface PodcastEntities extends BaseEntities {
-  /** Timestamps for entity mentions */
-  timestamps?: Record<string, string[]>;
-  /** Speaker associations */
-  speakerAssociations?: Record<string, string[]>;
-}
-
-export * from "./types";

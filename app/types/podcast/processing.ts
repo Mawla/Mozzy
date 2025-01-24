@@ -1,16 +1,19 @@
+import type { ProcessingStatus } from "@/app/types/processing/base";
 import type {
-  ProcessingStatus,
-  ProcessingAnalysis,
-  BaseProcessingResult,
-  BaseTextChunk,
-  TimelineEvent,
-  ProcessingMetadata,
-  ProcessingState as BaseProcessingState,
+  ProcessingResult as BaseProcessingResult,
   ProcessingStep as BaseProcessingStep,
+  ProcessingState as BaseProcessingState,
+  ProcessingChunk as BaseProcessingChunk,
   NetworkLog,
   ChunkResult,
   ProcessingOptions,
-} from "@/app/types/processing/base";
+  ProcessingAnalysis,
+  TimelineEvent,
+  ProcessingMetadata,
+  SentimentAnalysis,
+  TopicAnalysis,
+  TextChunk as BaseTextChunk,
+} from "@/app/types/processing/types";
 
 import type {
   BaseEntity,
@@ -96,39 +99,50 @@ export type { EntityType, EntityMention, EntityRelationship };
 
 // Processing State Types
 export interface ProcessingStep extends BaseProcessingStep {
-  id: string;
-  name: string;
-  status: ProcessingStatus;
-  progress: number;
-  error?: Error;
-  description?: string;
-  data?: any;
+  /** Additional data for the step */
+  data?: StepData;
+  /** Processing chunks */
   chunks?: ProcessingChunk[];
-  networkLogs?: NetworkLog[];
+  /** Progress percentage (0-100) */
+  progress: number;
 }
 
 export interface ProcessingState extends BaseProcessingState {
+  /** Processing steps */
   steps: ProcessingStep[];
+  /** Processing chunks */
   chunks: ProcessingChunk[];
+  /** Progress percentage (0-100) */
+  progress: number;
 }
 
 export interface TextChunk extends BaseTextChunk {
-  // Add any podcast-specific fields here
+  /** Progress percentage (0-100) */
+  progress: number;
 }
 
 export interface ProcessingChunk extends TextChunk {
+  /** Processing status */
   status: ProcessingStatus;
+  /** Response from processing */
   response?: string;
+  /** Error if any occurred */
   error?: Error;
+  /** Processing result */
   result?: ProcessingChunkResult;
+  /** Analysis results */
   analysis?: PodcastAnalysis;
+  /** Extracted entities */
   entities?: {
     people: PersonEntity[];
     organizations: OrganizationEntity[];
     locations: LocationEntity[];
     events: EventEntity[];
   };
+  /** Timeline events */
   timeline?: TimelineEvent[];
+  /** Progress percentage (0-100) */
+  progress: number;
 }
 
 export interface ProcessingChunkResult extends Omit<ChunkResult, "timeline"> {

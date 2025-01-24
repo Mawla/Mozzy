@@ -1,7 +1,9 @@
-import {
+import type {
+  ProcessingChunk,
+  ProcessingState,
   ProcessingStep,
-  ProcessingStatus,
-  BaseProcessingResult,
+  ProcessingResult,
+  ProcessingAdapter,
 } from "@/app/types/processing/base";
 import { logger } from "@/lib/logger";
 import { ChunkingStrategy } from "./ChunkingStrategy";
@@ -17,9 +19,14 @@ export class ProcessingPipeline<TInput, TChunk, TOutput> {
   private chunks: TChunk[] = [];
   private results: TOutput[] = [];
   private processingStrategy: ProcessingStrategy<TChunk, TOutput>;
+  private chunkingStrategy: ChunkingStrategy<TInput, TChunk>;
 
-  constructor(strategy: ProcessingStrategy<TChunk, TOutput>) {
+  constructor(
+    strategy: ProcessingStrategy<TChunk, TOutput>,
+    chunkingStrategy: ChunkingStrategy<TInput, TChunk>
+  ) {
     this.processingStrategy = strategy;
+    this.chunkingStrategy = chunkingStrategy;
   }
 
   getChunks(): TChunk[] {
