@@ -431,3 +431,56 @@ Next Actions:
 - 🤔 Decisions: Retained existing generic approach but added explicit boundaries
 - ❌ Issues: Minor TS warnings with union types
 - ⏭️ Next: Verify code compiles cleanly
+
+### 2025-01-24 14:01 - Entity Type Required Fields Update
+
+✓ **Completed**:
+
+- Updated PersonEntity with required expertise and role fields
+- Updated OrganizationEntity with required industry and size fields
+- Updated LocationEntity with required locationType field
+- Updated EventEntity with required date, duration, and participants fields
+- Improved JSDoc comments to clearly indicate required vs optional fields
+
+🤔 **Decisions**:
+
+- Kept title and affiliations as optional for PersonEntity as they may not always be available
+- Kept description and location as optional for OrganizationEntity for flexibility
+- Kept coordinates, region, parent, and country as optional for LocationEntity as they may not be known
+- Kept startDate, endDate, location, and eventType as optional for EventEntity to support different event types
+
+❌ **Issues**:
+
+- None for this update
+
+⏭️ **Next Steps**:
+
+1. Fix type extensions in podcast/types.ts (7i)
+2. Add missing progress fields (7f)
+3. Update mock data to include required fields (7f)
+
+### 2025-01-24 14:05 - Podcast Entity Type Updates
+
+✓ **Completed**:
+
+- Updated podcast-specific entity interfaces to properly extend base types
+- Added all required fields from base types to podcast entities
+- Added podcast-specific optional fields
+- Updated validation schemas to match interface changes
+- Improved JSDoc comments to clearly indicate required vs optional fields
+
+🤔 **Decisions**:
+
+- Kept podcast-specific fields like mentionTimestamps optional
+- Added relevance scores for podcast-specific context
+- Maintained strict validation for coordinates and numeric ranges
+- Preserved existing podcast-specific validation rules
+
+❌ **Issues**:
+
+- None for this update
+
+⏭️ **Next Steps**:
+
+1. Add missing progress fields (7f)
+2. Update mock data to include required fields (7f)
