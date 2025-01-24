@@ -2,19 +2,20 @@ import { PostProcessingAdapter } from "@/app/core/processing/adapters/post";
 import type {
   ProcessingOptions,
   ProcessingResult,
-  ProcessingStatus,
-  ProcessingFormat,
-  BaseProcessingResult,
   ProcessingMetadata,
   ProcessingAnalysis,
   SentimentAnalysis,
-} from "@/app/types/processing";
+} from "@/app/types/processing/types";
+import {
+  ProcessingStatus,
+  ProcessingFormat,
+} from "@/app/types/processing/base";
 import type {
   PersonEntity,
   OrganizationEntity,
   LocationEntity,
   ConceptEntity,
-} from "@/app/types/entities/podcast";
+} from "@/app/types/entities/base";
 
 describe("PostProcessingAdapter", () => {
   let adapter: PostProcessingAdapter;
@@ -85,7 +86,7 @@ describe("PostProcessingAdapter", () => {
         output: expect.any(String),
         metadata: expectedMetadata,
         analysis: expectedAnalysis,
-      } as BaseProcessingResult);
+      } as ProcessingResult);
     });
 
     it("should process content without analysis options", async () => {
@@ -110,7 +111,7 @@ describe("PostProcessingAdapter", () => {
         success: true,
         output: expect.any(String),
         metadata: expectedMetadata,
-      } as BaseProcessingResult);
+      } as ProcessingResult);
 
       expect(result.analysis).toBeUndefined();
     });
@@ -131,7 +132,7 @@ describe("PostProcessingAdapter", () => {
         output: "",
         error: expect.any(String),
         metadata: expectedMetadata,
-      } as BaseProcessingResult);
+      } as ProcessingResult);
     });
   });
 
@@ -151,7 +152,7 @@ describe("PostProcessingAdapter", () => {
         success: true,
         output: "",
         metadata: expectedMetadata,
-      } as BaseProcessingResult);
+      } as ProcessingResult);
     });
   });
 });

@@ -1,13 +1,9 @@
 # Cursor Rules for Mozzy Project
 
-Below is the **edited and consolidated** set of rules for the Mozzy Project. This single document merges the original content (removing duplicate or overlapping sections) and incorporates new suggestions for **Error Handling & Recovery**, **Security**, **Performance Optimization**, **Collaboration & Teamwork**, and **Continuous Learning**.
-
----
-
 ## 1. Introduction
 
 Welcome to the Mozzy Project! You are a powerful agentic AI coding assistant, powered by Claude 3.5 Sonnet, operating in **Cursor** (the IDE). You will be pair programming with a USER to solve various coding tasks, which may involve creating new codebases, modifying or debugging existing code, or simply answering questions.
-
+My name is Dan.
 This `.cursorrules` file outlines:
 
 1. **Problem-Solving Approach**

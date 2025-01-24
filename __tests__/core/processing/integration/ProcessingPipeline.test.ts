@@ -4,18 +4,19 @@ import { PostProcessingAdapter } from "@/app/core/processing/adapters/post";
 import { PodcastProcessor } from "@/app/core/processing/podcast/PodcastProcessor";
 import { ProcessingPipeline } from "@/app/core/processing/base/ProcessingPipeline";
 import { ProcessingStrategy } from "@/app/core/processing/base/ProcessingStrategy";
+import { TextChunkingStrategy } from "@/app/core/processing/strategies/TextChunkingStrategy";
 import type {
-  BaseProcessingResult,
-  ProcessingStatus,
-  ProcessingOptions,
-  ProcessingAnalysis,
-  ProcessingMetadata,
-  SentimentAnalysis,
   ProcessingResult,
-  ProcessingFormat,
-  BaseTextChunk,
+  ProcessingOptions,
+  ProcessingMetadata,
+  ProcessingAnalysis,
   ProcessingState,
   ProcessingStep,
+  BaseTextChunk,
+} from "@/app/types/processing/types";
+import {
+  ProcessingStatus,
+  ProcessingFormat,
 } from "@/app/types/processing/base";
 import type {
   PersonEntity,
@@ -141,11 +142,13 @@ describe("Processing Pipeline", () => {
   beforeEach(() => {
     service = new ProcessingService();
     podcastProcessor = new PodcastProcessor();
-    podcastAdapter = new PodcastProcessingAdapter(podcastProcessor);
+    podcastAdapter = new PodcastProcessingAdapter();
     postAdapter = new PostProcessingAdapter();
     strategy = new TestProcessingStrategy();
+    const chunkingStrategy = new TextChunkingStrategy();
     pipeline = new ProcessingPipeline<string, BaseTextChunk, ProcessingResult>(
-      strategy
+      strategy,
+      chunkingStrategy
     );
 
     service.registerAdapter("podcast" as ProcessingFormat, podcastAdapter);
@@ -327,7 +330,7 @@ describe("Processing Pipeline", () => {
       expect(results).toHaveLength(5);
       expect(
         results.every(
-          (r: BaseProcessingResult) => r.status === "completed" && r.success
+          (r: ProcessingResult) => r.status === "completed" && r.success
         )
       ).toBe(true);
     });

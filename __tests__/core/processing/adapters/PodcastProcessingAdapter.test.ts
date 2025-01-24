@@ -2,13 +2,14 @@ import { PodcastProcessingAdapter } from "@/app/core/processing/adapters/podcast
 import type {
   ProcessingOptions,
   ProcessingResult,
-  ProcessingStatus,
-  ProcessingFormat,
-  BaseProcessingResult,
   ProcessingMetadata,
   ProcessingAnalysis,
   SentimentAnalysis,
-} from "@/app/types/processing";
+} from "@/app/types/processing/types";
+import {
+  ProcessingStatus,
+  ProcessingFormat,
+} from "@/app/types/processing/base";
 import type {
   PersonEntity,
   OrganizationEntity,
@@ -16,6 +17,7 @@ import type {
   ConceptEntity,
 } from "@/app/types/entities/base";
 import { PodcastProcessor } from "@/app/core/processing/podcast/PodcastProcessor";
+import type { PodcastProcessingStep } from "@/app/types/processing/podcast/types";
 
 describe("PodcastProcessingAdapter", () => {
   let adapter: PodcastProcessingAdapter;
@@ -23,7 +25,7 @@ describe("PodcastProcessingAdapter", () => {
 
   beforeEach(() => {
     processor = new PodcastProcessor();
-    adapter = new PodcastProcessingAdapter(processor);
+    adapter = new PodcastProcessingAdapter();
   });
 
   describe("validate", () => {
@@ -92,7 +94,7 @@ describe("PodcastProcessingAdapter", () => {
         output: expect.any(String),
         metadata: expectedMetadata,
         analysis: expectedAnalysis,
-      } as BaseProcessingResult);
+      } as ProcessingResult);
     });
 
     it("should process content without analysis options", async () => {
@@ -119,7 +121,7 @@ describe("PodcastProcessingAdapter", () => {
         success: true,
         output: expect.any(String),
         metadata: expectedMetadata,
-      } as BaseProcessingResult);
+      } as ProcessingResult);
 
       expect(result.analysis).toBeUndefined();
     });
@@ -140,7 +142,7 @@ describe("PodcastProcessingAdapter", () => {
         output: "",
         error: expect.any(String),
         metadata: expectedMetadata,
-      } as BaseProcessingResult);
+      } as ProcessingResult);
     });
   });
 
@@ -160,33 +162,24 @@ describe("PodcastProcessingAdapter", () => {
         success: true,
         output: "",
         metadata: expectedMetadata,
-      } as BaseProcessingResult);
+      } as ProcessingResult);
     });
   });
 });
 
 // Create mock result
-const createMockResult = (overrides = {}): ProcessingResult => ({
+const createMockResult = (
+  overrides: Partial<ProcessingResult> = {}
+): ProcessingResult => ({
   id: "test-id",
   status: "completed" as ProcessingStatus,
   success: true,
-  output: "test output",
+  output: "",
+  format: "podcast",
   metadata: {
-    format: "podcast" as ProcessingFormat,
+    format: "podcast",
     platform: "test",
     processedAt: new Date().toISOString(),
-  },
-  format: "podcast" as ProcessingFormat,
-  analysis: {
-    title: "Test",
-    summary: "Test summary",
-  },
-  entities: {
-    people: [],
-    organizations: [],
-    locations: [],
-    events: [],
-  },
-  timeline: [],
+  } as ProcessingMetadata,
   ...overrides,
 });
