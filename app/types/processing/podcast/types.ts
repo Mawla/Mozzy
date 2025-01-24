@@ -34,6 +34,9 @@ import type {
   ProcessedPodcast,
 } from "../../shared/podcast";
 
+import type { ProcessingChunk as BaseChunk } from "@/app/types/processing/base";
+import type { PodcastProcessingChunk } from "./types";
+
 // Processing State Types
 export interface ProcessingStep extends BaseProcessingStep {
   id: string;
@@ -165,3 +168,15 @@ export type StepData = {
   events?: string[];
   timeline?: TimelineEvent[];
 };
+
+export interface PodcastProcessingStep extends BaseProcessingStep {
+  chunks?: PodcastProcessingChunk[];
+  // Additional fields unique to the podcast step
+  // e.g.:
+  // transcriptId?: string;
+}
+
+export interface PodcastProcessingChunk extends ProcessingChunk {
+  speaker?: string;
+  progress?: number;
+}

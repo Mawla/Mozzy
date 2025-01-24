@@ -1,6 +1,40 @@
 ## Current Status
 
-### 2025-01-21 14:57
+### 2025-01-23 14:45
+
+**Status**: In Progress
+
+• We updated the .plan with new steps for unifying chunk/step definitions and aligning entity fields.  
+• Next actions:
+
+1. Align PodcastProcessingChunk with base ProcessingChunk.
+2. Resolve path/import issues flagged by tsc.
+3. Ensure entity fields (id, createdAt, updatedAt, etc.) match usage across app/types/entities.
+4. Replace references to "BaseProcessingResult" with "ProcessingResult," etc.
+5. Re-run type checker to confirm the error count is dropping.
+
+- What's working:
+
+  - The updated .plan has the correct relevant files listed
+  - We have a clear set of steps for the next phase
+
+- What's not:
+
+  - Several test files still reference old "BaseProcessingResult" or "SentimentAnalysis"
+  - Entity objects in anthropicActions.ts need missing fields (like id, createdAt, updatedAt)
+
+- Blocking issues:
+
+  - None at this time
+
+- Next actions:
+  - Make the small, surgical edits to unify chunk/step definitions
+  - Re-run lint & type checks
+  - Update relevant test imports
+
+## Progress History
+
+### 2025-01-22 20:15
 
 **Status**: In Progress
 
@@ -33,8 +67,6 @@ Next Actions:
 2. Fix PodcastProcessingResult interface
 3. Update ValidatedPodcastEntities usage
 4. Sync entity validation schemas
-
-## Progress History
 
 ### 2025-01-21 14:57 - Interface Consolidation
 
@@ -342,3 +374,32 @@ Next Actions:
 - Run type checker to verify fixes
 - Check component usage
 - Update documentation
+
+### 2025-01-22 16:45
+
+**Status**: In Progress
+
+- What's working:
+
+  - We have resolved multiple module resolution and import path issues.
+  - We are systematically fixing type mismatches in more files.
+
+- What's not:
+
+  - Still seeing some leftover linter errors in ProcessingStrategy.ts regarding generic constraints.
+
+- Blocking issues: None currently.
+
+- Next actions:
+  - Fix linter type constraints in ProcessingStrategy.ts.
+  - Re-run type checker with "tsc --noEmit".
+  - If needed, update relevant imports in podcast adapter.
+
+## Progress History
+
+### 2025-01-22 16:45 - Linter Fix for ProcessingStrategy
+
+- ✓ Completed: Began addressing generic constraint errors in ProcessingStrategy.ts
+- 🤔 Decisions: Retained existing generic approach but added explicit boundaries
+- ❌ Issues: Minor TS warnings with union types
+- ⏭️ Next: Verify code compiles cleanly

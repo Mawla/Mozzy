@@ -102,6 +102,8 @@ export interface PersonEntity extends BaseEntity {
   affiliations?: string[];
   /** Areas of expertise or topics associated with person */
   expertise?: string[];
+  /** Role of the person */
+  role: string;
 }
 
 /**

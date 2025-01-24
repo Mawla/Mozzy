@@ -216,11 +216,17 @@ export interface ProcessingResult extends BaseProcessingResult {
   timeline: TimelineEvent[];
 }
 
-export interface ProcessingChunk extends BaseTextChunk {
-  status: ProcessingStatus;
+export interface ProcessingChunk {
+  /** Unique chunk ID */
+  id: string;
+
+  /** The text content of this chunk */
+  text: string;
+
+  /** A number from 0 to 100 representing how "complete" the chunk is */
   progress: number;
-  error?: Error;
-  result?: ChunkResult;
+
+  // Any other base fields shared by all chunk types
 }
 
 export type TextChunk = BaseTextChunk;

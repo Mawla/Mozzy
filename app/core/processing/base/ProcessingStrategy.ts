@@ -17,6 +17,13 @@ const generateId = (): string => {
   );
 };
 
+export interface BaseInput {
+  // Minimum fields required by the generic type
+  id: string;
+  title?: string;
+  // You can add fields as needed
+}
+
 export interface ProcessingStrategy<TInput, TOutput> {
   // Core methods
   getState(): ProcessingState;
