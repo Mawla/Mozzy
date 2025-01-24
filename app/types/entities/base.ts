@@ -33,20 +33,20 @@ export interface EntityRelationship {
 export interface BaseEntity {
   /** Unique identifier for the entity */
   id: string;
-  /** Display name of the entity */
-  name: string;
   /** Type classification of the entity */
   type: string;
+  /** Display name of the entity */
+  name: string;
   /** Contextual information about the entity */
   context: string;
   /** List of mentions of this entity in content */
   mentions: EntityMention[];
-  /** Optional list of relationships to other entities */
-  relationships?: EntityRelationship[];
   /** Creation timestamp (ISO format) */
   createdAt: string;
   /** Last update timestamp (ISO format) */
   updatedAt: string;
+  /** Optional list of relationships to other entities */
+  relationships?: EntityRelationship[];
 }
 
 /**
@@ -101,7 +101,7 @@ export interface PersonEntity extends BaseEntity {
   /** Organization affiliations */
   affiliations?: string[];
   /** Areas of expertise or topics associated with person */
-  expertise?: string[];
+  expertise: string[];
   /** Role of the person */
   role: string;
 }
@@ -113,11 +113,13 @@ export interface PersonEntity extends BaseEntity {
 export interface OrganizationEntity extends BaseEntity {
   type: "ORGANIZATION";
   /** Industry or sector */
-  industry?: string;
+  industry: string;
   /** Organization description */
   description?: string;
   /** Location of headquarters or main office */
   location?: string;
+  /** Size of the organization */
+  size: string;
 }
 
 /**
@@ -140,6 +142,8 @@ export interface LocationEntity extends BaseEntity {
   region?: string;
   /** Parent location (e.g., country for a city) */
   parent?: string;
+  /** Country of the location */
+  country?: string;
 }
 
 /**
@@ -156,6 +160,12 @@ export interface EventEntity extends BaseEntity {
   location?: string;
   /** Type of event */
   eventType?: string;
+  /** Date of the event */
+  date: string;
+  /** Duration of the event */
+  duration: string;
+  /** Participants in the event */
+  participants: string[];
 }
 
 /**
@@ -169,7 +179,11 @@ export interface TopicEntity extends BaseEntity {
   /** Related keywords */
   keywords?: string[];
   /** Topic category */
-  category?: string;
+  category: string;
+  /** Relevance of the topic */
+  relevance: number;
+  /** Subtopics related to the topic */
+  subtopics: string[];
 }
 
 /**
@@ -179,9 +193,11 @@ export interface TopicEntity extends BaseEntity {
 export interface ConceptEntity extends BaseEntity {
   type: "CONCEPT";
   /** Definition or explanation */
-  definition?: string;
+  definition: string;
   /** Related concepts */
   relatedConcepts?: string[];
   /** Domain or field */
-  domain?: string;
+  domain: string;
+  /** Examples of the concept */
+  examples: string[];
 }

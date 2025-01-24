@@ -1,22 +1,27 @@
-import {
+import type {
+  ProcessingChunk,
+  ProcessingState,
+  ProcessingStep,
+  ProcessingResult,
   ProcessingAdapter,
   ProcessingOptions,
-  BaseProcessingResult,
-  ProcessingStatus,
   ProcessingAnalysis,
   ProcessingMetadata,
 } from "@/app/types/processing/base";
-
+import { ProcessingStatus } from "@/app/types/processing/constants";
 import { PodcastProcessor } from "../podcast/PodcastProcessor";
 import { logger } from "@/lib/logger";
-import { ProcessingResult as PodcastResult } from "@/app/types/podcast/processing";
 import { v4 as uuidv4 } from "uuid";
 import crypto from "crypto";
 
 const generateId = () => uuidv4();
 
 export class PodcastProcessingAdapter implements ProcessingAdapter {
-  constructor(private processor: PodcastProcessor) {}
+  private processor: PodcastProcessor;
+
+  constructor() {
+    this.processor = new PodcastProcessor();
+  }
 
   async validate(input: string): Promise<boolean> {
     try {
@@ -30,7 +35,7 @@ export class PodcastProcessingAdapter implements ProcessingAdapter {
   async process(
     input: string,
     options: ProcessingOptions
-  ): Promise<BaseProcessingResult> {
+  ): Promise<ProcessingResult> {
     try {
       const isValid = await this.validate(input);
       if (!isValid) {
@@ -46,12 +51,12 @@ export class PodcastProcessingAdapter implements ProcessingAdapter {
     }
   }
 
-  async getStatus(id: string): Promise<BaseProcessingResult> {
+  async getStatus(id: string): Promise<ProcessingResult> {
     // In a real implementation, this would check a database or queue
     return this.createPendingResult();
   }
 
-  private isValidPodcastResult(result: any): result is PodcastResult {
+  private isValidPodcastResult(result: any): result is ProcessingResult {
     return (
       result &&
       typeof result === "object" &&
@@ -62,7 +67,7 @@ export class PodcastProcessingAdapter implements ProcessingAdapter {
     );
   }
 
-  private createErrorResult(error: string): BaseProcessingResult {
+  private createErrorResult(error: string): ProcessingResult {
     return {
       id: crypto.randomUUID(),
       status: "error" as ProcessingStatus,
@@ -80,7 +85,7 @@ export class PodcastProcessingAdapter implements ProcessingAdapter {
   private createSuccessResult(
     metadata: ProcessingMetadata,
     analysis: ProcessingAnalysis
-  ): BaseProcessingResult {
+  ): ProcessingResult {
     return {
       id: crypto.randomUUID(),
       status: "completed" as ProcessingStatus,
@@ -91,7 +96,7 @@ export class PodcastProcessingAdapter implements ProcessingAdapter {
     };
   }
 
-  private createPendingResult(): BaseProcessingResult {
+  private createPendingResult(): ProcessingResult {
     return {
       id: crypto.randomUUID(),
       status: "pending" as ProcessingStatus,

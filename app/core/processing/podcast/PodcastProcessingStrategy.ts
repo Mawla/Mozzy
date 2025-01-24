@@ -1,12 +1,16 @@
-import {
-  ProcessingStep,
+import type {
+  ProcessingChunk,
   ProcessingState,
+  ProcessingStep,
+  ProcessingResult,
+  ProcessingAdapter,
+  ProcessingOptions,
   ProcessingAnalysis,
+  ProcessingMetadata,
   TimelineEvent,
-  BaseProcessingResult,
-  ChunkResult,
-  ProcessingStatus,
 } from "@/app/types/processing/base";
+import { ProcessingStatus } from "@/app/types/processing/constants";
+import { logger } from "@/lib/logger";
 
 import {
   PersonEntity,
@@ -18,7 +22,6 @@ import {
 } from "@/app/types/entities/base";
 
 import { BaseProcessingStrategy } from "../base/ProcessingStrategy";
-import { logger } from "@/lib/logger";
 import { ProcessingError } from "../errors/ProcessingError";
 import { podcastService } from "@/app/services/podcastService";
 
@@ -36,7 +39,7 @@ interface StepResult {
 
 export class PodcastProcessingStrategy extends BaseProcessingStrategy<
   string,
-  BaseProcessingResult
+  ProcessingResult
 > {
   private stepResults: Map<string, StepResult> = new Map();
 
@@ -113,7 +116,7 @@ export class PodcastProcessingStrategy extends BaseProcessingStrategy<
     }
   }
 
-  public async process(input: string): Promise<BaseProcessingResult> {
+  public async process(input: string): Promise<ProcessingResult> {
     try {
       await this.validateInput(input);
       this.state.currentTranscript = input;
@@ -146,9 +149,7 @@ export class PodcastProcessingStrategy extends BaseProcessingStrategy<
     }
   }
 
-  public async combine(
-    results: BaseProcessingResult[]
-  ): Promise<BaseProcessingResult> {
+  public async combine(results: ProcessingResult[]): Promise<ProcessingResult> {
     if (results.length === 0) {
       throw new Error("No results to combine");
     }
@@ -158,7 +159,7 @@ export class PodcastProcessingStrategy extends BaseProcessingStrategy<
     }
 
     // Combine the results into a single result
-    const combinedResult: BaseProcessingResult = {
+    const combinedResult: ProcessingResult = {
       id: crypto.randomUUID(),
       status: "completed",
       success: true,
@@ -177,9 +178,7 @@ export class PodcastProcessingStrategy extends BaseProcessingStrategy<
       entities: this.combineEntities(
         results
           .map((r) => r.entities)
-          .filter(
-            (e): e is NonNullable<BaseProcessingResult["entities"]> => !!e
-          )
+          .filter((e): e is NonNullable<ProcessingResult["entities"]> => !!e)
       ),
       timeline: results.flatMap((r) => r.timeline || []),
     };
@@ -260,7 +259,7 @@ export class PodcastProcessingStrategy extends BaseProcessingStrategy<
     // Implementation
   }
 
-  private async createProcessingResult(): Promise<BaseProcessingResult> {
+  private async createProcessingResult(): Promise<ProcessingResult> {
     return {
       id: crypto.randomUUID(),
       status: this.state.status,
@@ -293,9 +292,7 @@ export class PodcastProcessingStrategy extends BaseProcessingStrategy<
       entities: this.combineEntities(
         analyses
           .map((a) => a.entities)
-          .filter(
-            (e): e is NonNullable<BaseProcessingResult["entities"]> => !!e
-          )
+          .filter((e): e is NonNullable<ProcessingResult["entities"]> => !!e)
       ),
       timeline: analyses.flatMap((a) => a.timeline || []),
       sentiment: analyses[0]?.sentiment,
@@ -307,7 +304,7 @@ export class PodcastProcessingStrategy extends BaseProcessingStrategy<
   }
 
   private combineEntities(
-    entitiesList: Array<NonNullable<BaseProcessingResult["entities"]>>
+    entitiesList: Array<NonNullable<ProcessingResult["entities"]>>
   ) {
     if (entitiesList.length === 0) return undefined;
 

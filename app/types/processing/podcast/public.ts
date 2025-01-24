@@ -1,11 +1,18 @@
 import type {
-  BaseProcessingResult,
+  ProcessingResult,
+  ProcessingStep as BaseProcessingStep,
+  ProcessingState as BaseProcessingState,
+  ProcessingChunk as BaseProcessingChunk,
+  NetworkLog,
+  ChunkResult,
   ProcessingOptions,
   ProcessingAnalysis,
   TimelineEvent,
-  BaseTextChunk,
-  ProcessingStatus,
-} from "../base";
+  ProcessingMetadata,
+  SentimentAnalysis,
+  TopicAnalysis,
+  TextChunk as BaseTextChunk,
+} from "../types";
 
 import type {
   PersonEntity,
@@ -13,6 +20,8 @@ import type {
   LocationEntity,
   EventEntity,
 } from "@/app/types/entities/podcast";
+
+import type { ProcessingStatus } from "../base";
 
 /**
  * Configuration options for podcast processing operations.
@@ -85,7 +94,7 @@ export interface PodcastAnalysis extends ProcessingAnalysis {
  * Extends base processing result with podcast-specific outputs
  * including transcription, speaker analysis, and entity extraction.
  */
-export interface PodcastProcessingResult extends BaseProcessingResult {
+export interface PodcastProcessingResult extends ProcessingResult {
   /** Content format identifier */
   format: "podcast";
   /** Detailed podcast analysis results */

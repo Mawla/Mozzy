@@ -198,37 +198,137 @@ Track type system changes in updates.md:
 - [x] Documentation complete
 - [ ] Tests need updating for new type requirements
 
+## Completion Strategy (Revised Implementation Approach)
+
+### 2025-01-24 11:15
+
+1. Establish a Stable Baseline
+
+   - Temporarily freeze work on all but the highest-priority fixes.
+   - Revert or comment-out non-critical in-progress changes that introduce complexity.
+   - Ensure the baseline compiles, even if some functionality must be temporarily disabled.
+   - (1a) Temporarily disable or comment out unit tests for experimental code while focusing on core functionality.
+   - (1b) Document which features are deferred so we can reintroduce them later without confusion.
+
+2. Fix Blocking Issues in Small Batches
+
+   - Refer to .cursorrules for surgical edits only.
+   - Group TypeScript errors by component or module.
+   - Address one batch at a time and run "tsc --noEmit" to confirm all errors in that batch are resolved before moving on.
+   - (2a) Maintain a short list of critical errors; tackle them in priority order.
+   - (2b) After fixing each batch, compile and run partial tests to confirm no new regressions.
+
+3. Align Entities, Interfaces, and Mocks
+
+   - For each interface, ensure all required fields are present and documented.
+   - Update mocks in parallel so tests won't break.
+   - Verify that entity validation schemas match the updated interfaces.
+   - (3a) Create a quick reference table for new/modified entity fields.
+   - (3b) Ensure all JSDoc comments follow the .cursorrules format and numeric field ranges are documented where applicable.
+
+4. Validate Imports and Exports
+
+   - According to the .cursorrules, verify each file references /app/types or local prop types correctly.
+   - Eliminate any leftover or duplicate declarations.
+   - Update references in mock files or utilities to avoid reintroducing errors.
+   - (4a) Use editor search to locate "import ... from '@/app/types/processing/podcast/types'" and ensure correct usage.
+   - (4b) Consolidate or remove any older duplicated definitions, verifying no required fields get lost.
+
+5. Perform Full Type Check and Lint
+
+   - After each batch is fixed, re-run "tsc --noEmit" across the entire codebase.
+   - Perform a final "eslint --fix" pass when type errors reach zero for a given batch.
+   - Document changes in updates.md after each successful pass.
+   - (5a) Keep an incremental log of which errors were fixed in each batch for clarity.
+   - (5b) Validate code formatting and commit changes right after verifying a clean build.
+
+6. Final Integration and Documentation
+
+   - Unfreeze any disabled features and re-introduce them gradually, verifying type consistency.
+   - Update the plan and progress logs (updates.md) to reflect resolved errors.
+   - Provide a short migration guide if any external dependencies or app consumers need to adapt to the final type changes.
+   - (6a) Retest any reintroduced features using a dedicated partial test suite before merging to main branch.
+   - (6b) Link new or updated docs in the final commit message for easy cross-referencing.
+
+7. TSC Log Detailed Steps
+   - (7a) Replace all references to `BaseProcessingResult` with `ProcessingResult` in test files
+     (e.g. `PodcastProcessingAdapter.test.ts`, `PostProcessingAdapter.test.ts`) and code that previously imported `BaseProcessingResult` from "@/app/types/processing..." or "@/app/types/processing/base".
+   - (7b) Provide required fields (e.g., `id`, `createdAt`, `updatedAt`, `expertise`, etc.) in `PersonEntity`, `OrganizationEntity`, `LocationEntity`, `EventEntity`, and others used in `anthropicActions.ts` so they satisfy the stricter type definitions.
+   - (7c) Fix "no exported member 'SentimentAnalysis'" by ensuring the actual exports match the import references, or remove/replace the usage if `SentimentAnalysis` is deprecated.
+   - (7d) Correct function calls that pass the wrong number of arguments (e.g., "Expected 0 arguments, but got 1") by aligning them with updated function signatures. Use partial testing to verify each fix.
+   - (7e) Restore or properly rename missing exports such as `podcastEntitiesSchema`, `ExtendedTheme`, `PodcastAnalysis`, and any sibling types in `podcastActions.ts`, `analysis.ts`, or other schema files.
+   - (7f) Adjust newly required fields (`format`, `progress`, `keyPoints`, etc.) in `ProcessingResult`, `ProcessingChunk`, and mock data so they conform to the updated interfaces. For instance, code referencing `ProcessingResult` without a `format` property must now include it, or use partial mocks for tests.
+   - (7g) Update references to `SidebarMenu`, `SidebarMenuItem`, etc., ensuring that the sidebar components are exported consistently (case-sensitive paths in Next.js). The .cursorrules specify verifying imports for correct capitalization to avoid conflicts.
+   - (7h) For entity array mismatches (e.g., `PersonEntity[]` not assignable to the expected shape), confirm each entity's required fields (like `size`, `relevance`, or `examples`) are present in the interface and mock data. (Use small commits so you can verify each fix.)
+   - (7i) Fix incorrectly extended or inherited interfaces (e.g., `PodcastProcessingStep` missing `data` or `chunks` not matching `ProcessingChunk`). Where needed, unify them in `/app/types/base` or `/app/types/podcast` according to project guidelines in .cursorrules.
+   - (7j) Remove or rename references to `ComparisonBlock`, `PodcastProcessingAnalysis`, `ProcessingStatus`, `NetworkLogData`, or other types that were moved or deprecated. Aim for minimal changes in line with .cursorrules to avoid reintroducing collisions.
+
 ## Current Status
 
-### 2025-01-24 10:06
+### 2025-01-24 10:30
 
 **Status**: In Progress
 
-- What's working:
+**What's working**:
 
-  - Fixed ProcessingChunk interface inheritance
-  - Added proper JSDoc documentation
-  - Resolved circular dependencies
-  - Fixed entity type compatibility
+- Base processing types are properly defined
+- Podcast processing types are being consolidated
+- Old podcast.ts file has been removed
+- Constants have been separated into their own file
+- Fixed type exports in podcast/types.ts
+- Fixed base type imports and exports
+- Fixed entity type compatibility in podcast/types.ts
+- Updated BaseProcessingResult references to ProcessingResult
+- Fixed ProcessingStatus imports
 
-- What's not:
+**What's not**:
 
-  - Several test files need updating for new type requirements
-  - Need to update constants/processing.ts with progress field
-  - Some import paths still need fixing
-  - Entity validation needs alignment
+- 215 TypeScript errors across 74 files
+- Missing required fields in mock data
+- Import path issues in multiple files
+- Missing exports in processing/base.ts
+- Missing required fields in entity types
+- Incorrect type extensions in podcast/types.ts
+- Missing progress fields in several interfaces
 
-- Blocking issues:
+**Next actions**:
 
-  - None at this time
-
-- Next actions:
-  1. Update test files to handle required progress field
-  2. Fix import paths in core/processing
-  3. Update processing constants with progress field
-  4. Align entity validation across the system
-  5. Create migration guide for breaking changes
+1. Fix missing exports in processing/base.ts
+2. Add required fields to entity types
+3. Fix type extensions in podcast/types.ts
+4. Add missing progress fields to interfaces
+5. Update mock data to include required fields
+6. Fix import paths
 
 ## Progress History
+
+### 2025-01-24 11:26 - Type System Reorganization
+
+✓ **Completed**:
+
+- Moved base type definitions to types.ts
+- Fixed entity type required fields
+- Updated mock data with proper chunk results
+- Fixed type exports and imports
+- Added missing progress fields
+
+🤔 **Decisions**:
+
+- Keep ProcessingStatus in base.ts for core type definitions
+- Move interface definitions to types.ts for better organization
+- Add required fields to entity types for stricter type checking
+
+❌ **Issues**:
+
+- Had to reorganize type exports to fix conflicts
+- Some mock data needed updates for stricter types
+- Entity types needed additional required fields
+
+⏭️ **Next Steps**:
+
+1. Continue with remaining TSC log steps
+2. Fix function argument mismatches
+3. Update remaining mock data
+4. Fix remaining import issues
 
 [Previous history preserved...]

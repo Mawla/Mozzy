@@ -4,18 +4,33 @@ import { BaseEntity, EntityType, baseEntitySchema } from "./base";
 // Post-specific entity interfaces
 export interface PostPersonEntity extends BaseEntity {
   type: Extract<EntityType, "PERSON">;
+  /** Professional title or role */
+  title?: string;
+  /** Organization affiliations */
+  affiliations?: string[];
+  /** Areas of expertise or topics associated with person */
+  expertise: string[];
+  /** Role of the person */
   role: string;
-  expertise?: string[];
+  /** Social media profiles */
   socialProfiles?: string[];
+  /** Authored posts */
   authoredPosts?: string[];
 }
 
 export interface PostOrganizationEntity extends BaseEntity {
   type: Extract<EntityType, "ORGANIZATION">;
-  industry?: string;
-  size?: string;
+  /** Industry or sector */
+  industry: string;
+  /** Organization description */
+  description?: string;
+  /** Location of headquarters or main office */
   location?: string;
+  /** Size of the organization */
+  size: string;
+  /** Website URL */
   website?: string;
+  /** Social media profiles */
   socialProfiles?: string[];
 }
 
@@ -58,17 +73,20 @@ export interface PostConceptEntity extends BaseEntity {
 // Post-specific validation schemas
 export const postPersonSchema = baseEntitySchema.extend({
   type: z.literal("PERSON"),
+  title: z.string().optional(),
+  affiliations: z.array(z.string()).optional(),
+  expertise: z.array(z.string()),
   role: z.string(),
-  expertise: z.array(z.string()).optional(),
   socialProfiles: z.array(z.string()).optional(),
   authoredPosts: z.array(z.string()).optional(),
 });
 
 export const postOrganizationSchema = baseEntitySchema.extend({
   type: z.literal("ORGANIZATION"),
-  industry: z.string().optional(),
-  size: z.string().optional(),
+  industry: z.string(),
+  description: z.string().optional(),
   location: z.string().optional(),
+  size: z.string(),
   website: z.string().optional(),
   socialProfiles: z.array(z.string()).optional(),
 });

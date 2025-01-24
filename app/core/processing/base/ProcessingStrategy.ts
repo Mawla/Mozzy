@@ -1,10 +1,14 @@
-import {
-  ProcessingState,
-  ProcessingStep,
-  ProcessingStatus,
+import type {
+  BaseProcessingState,
+  BaseProcessingStep,
+  ProcessingResult,
+  ProcessingOptions,
+  ProcessingChunk,
   BaseTextChunk,
-  NetworkLog,
-} from "@/app/types/processing/base";
+  NetworkLogData,
+} from "@/app/types";
+import { ProcessingStatus } from "@/app/types/processing/constants";
+import { NetworkLog } from "@/app/types/processing/base";
 
 // Polyfill for crypto.randomUUID in test environment
 const generateId = (): string => {
@@ -26,12 +30,12 @@ export interface BaseInput {
 
 export interface ProcessingStrategy<TInput, TOutput> {
   // Core methods
-  getState(): ProcessingState;
+  getState(): BaseProcessingState;
   process(input: TInput): Promise<TOutput>;
 
   // Step management
   processStep(stepId: string): Promise<void>;
-  getStepById(stepId: string): ProcessingStep | undefined;
+  getStepById(stepId: string): BaseProcessingStep | undefined;
 
   // Status updates with proper type safety
   updateStepStatus(
@@ -47,7 +51,7 @@ export interface ProcessingStrategy<TInput, TOutput> {
 export abstract class BaseProcessingStrategy<TInput, TOutput>
   implements ProcessingStrategy<TInput, TOutput>
 {
-  protected state: ProcessingState;
+  protected state: BaseProcessingState;
 
   constructor() {
     this.state = {
@@ -61,12 +65,14 @@ export abstract class BaseProcessingStrategy<TInput, TOutput>
     };
   }
 
-  public getState(): ProcessingState {
+  public getState(): BaseProcessingState {
     return this.state;
   }
 
-  public getStepById(stepId: string): ProcessingStep | undefined {
-    return this.state.steps.find((step: ProcessingStep) => step.id === stepId);
+  public getStepById(stepId: string): BaseProcessingStep | undefined {
+    return this.state.steps.find(
+      (step: BaseProcessingStep) => step.id === stepId
+    );
   }
 
   public abstract processStep(stepId: string): Promise<void>;
@@ -122,24 +128,24 @@ export abstract class BaseProcessingStrategy<TInput, TOutput>
     this.state.networkLogs.push(errorLog);
   }
 
-  protected logRequest(message: string, data?: unknown): void {
-    const requestLog: NetworkLog = {
+  protected logNetworkRequest(message: string, data?: NetworkLogData): void {
+    const log: NetworkLog = {
       timestamp: new Date().toISOString(),
       type: "request",
       message,
       data,
     };
-    this.state.networkLogs.push(requestLog);
+    this.state.networkLogs.push(log);
   }
 
-  protected logResponse(message: string, data?: unknown): void {
-    const responseLog: NetworkLog = {
+  protected logNetworkResponse(message: string, data?: NetworkLogData): void {
+    const log: NetworkLog = {
       timestamp: new Date().toISOString(),
       type: "response",
       message,
       data,
     };
-    this.state.networkLogs.push(responseLog);
+    this.state.networkLogs.push(log);
   }
 
   protected setStepError(stepId: string, error: Error): void {
@@ -180,5 +186,18 @@ export abstract class BaseProcessingStrategy<TInput, TOutput>
     } finally {
       this.updateOverallProgress();
     }
+  }
+
+  protected getTotalProgress(): number {
+    return this.state.steps.reduce(
+      (sum: number, step: BaseProcessingStep) => sum + (step.progress || 0),
+      0
+    );
+  }
+
+  protected getStepProgress(): number {
+    return this.state.steps.filter(
+      (s: BaseProcessingStep) => s.status === ProcessingStatus.COMPLETED
+    ).length;
   }
 }

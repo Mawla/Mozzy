@@ -12,7 +12,7 @@ import type {
   ChunkResult,
   TopicAnalysis,
   SentimentAnalysis,
-} from "@/app/types/processing";
+} from "@/app/types/processing/base";
 
 import type {
   BaseEntity,

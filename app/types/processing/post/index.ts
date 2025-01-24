@@ -1,12 +1,19 @@
+import type { ProcessingStatus } from "../base";
 import type {
-  BaseProcessingResult,
+  ProcessingResult,
+  ProcessingStep as BaseProcessingStep,
+  ProcessingState as BaseProcessingState,
+  ProcessingChunk as BaseProcessingChunk,
+  NetworkLog,
+  ChunkResult,
   ProcessingOptions,
   ProcessingAnalysis,
   TimelineEvent,
-  BaseTextChunk,
-  ProcessingStatus,
-  NetworkLog,
-} from "../base";
+  ProcessingMetadata,
+  SentimentAnalysis,
+  TopicAnalysis,
+  TextChunk as BaseTextChunk,
+} from "../types";
 
 import type {
   PostPersonEntity,
@@ -112,7 +119,7 @@ export interface PostAnalysis extends Omit<ProcessingAnalysis, "keyPoints"> {
  * Complete result of post processing operation.
  * Extends base processing result with post-specific outputs.
  */
-export interface PostProcessingResult extends BaseProcessingResult {
+export interface PostProcessingResult extends ProcessingResult {
   /** Content format identifier */
   format: "post";
   /** Detailed content analysis */
