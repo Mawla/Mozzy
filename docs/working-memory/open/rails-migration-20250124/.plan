@@ -1,39 +1,210 @@
-# Task Plan ({task-id})
+# Task Plan (rails-migration-20250124)
 
 Reference: [Task Updates](./updates.md)
 
 ## Problem Analysis
 
-- Issue description
-- Root causes
-- Impact assessment
-- Stakeholders affected
+Mozzy is currently built with Next.js, TypeScript, and a variety of AI-driven features. We want to migrate to a new Rails 7 app called "SocialScript" while preserving existing functionalities. This migration aims to align with teams accustomed to Ruby on Rails workflows and to possibly simplify some backend tasks.
+
+### Root Causes / Reasons for Migration
+
+- Preference for Rails-based ecosystem for certain teams.
+- Possibly more straightforward ActiveRecord model usage.
+- Desire for improved server-side MVC structure.
+- Strong gem ecosystem for integrated functionalities.
+
+### Impact Assessment
+
+- This affects all major features: authentication, content processing, post creation, podcast transformation, etc.
+- Documentation must be updated to reflect the new application structure.
+- New environment variables, migrations, and data model conversions will be needed.
+
+### Stakeholders Affected
+
+- Engineering (frontend and backend) must adapt to new Rails codebase.
+- QA/testing teams must re-check all functionalities.
+- DevOps must handle new deployment flows for the Rails app.
+
+---
 
 ## Solution Design
 
 ### Approach
 
-- Description of solution
-- Technical approach
-- Implementation strategy
+1. Create a new "SocialScript" Rails 7 project in parallel with the existing Mozzy codebase.
+2. Port essential features iteratively, ensuring feature parity with Mozzy.
+3. Provide thorough migration documentation in /docs/rails-migration or a similar structure.
+4. Document or create tasks for any features or behaviors discovered that are not fully implemented or were previously undocumented.
+5. Conduct thorough testing (unit, integration, e2e) to confirm that the migrated Rails code aligns with existing Mozzy logic.
 
-### Considerations
+### Technical Approach
 
-- Pros and cons
-- Technical implications
-- Security considerations
-- Performance impact
+- Use Rails 7 with --api mode to maintain a minimal scaffolding for service endpoints.
+- Leverage PostgreSQL for the underlying database, matching or improving upon Mozzy's existing data models.
+- Evaluate gems for background processing, file uploads, authentication (e.g., Devise, OmniAuth, or similar), and possibly GraphQL or REST for the API layer.
+- Migrate existing environment variables and logging structure into the new Rails environment.
+- Maintain alignment with .cursorrules for code standards, type-checking (where feasible with Ruby), and thorough documentation.
+
+### Implementation Strategy
+
+- Break down the migration into modules:
+  1. Auth & Security
+  2. Content Processing & Entities
+  3. Podcast transformations
+  4. Social Posts & "Core-Processing" synergy
+  5. Logging & Observability
+- For each module, create a Rails engine or standard controllers/models that replicate Mozzy's logic.
+- Transfer and adapt tests from Jest to RSpec (or Minitest) in Ruby.
+- Identify any missing coverage or documentation.
+
+---
+
+## Considerations
+
+### Pros and Cons
+
+- **Pros**:
+
+  - Familiar Rails ecosystem for many devs.
+  - Standard MVC structures can simplify code.
+  - Large gem ecosystem.
+
+- **Cons**:
+  - Requires rewriting significant portions of Next.js-based server logic.
+  - Potential performance differences with advanced processing tasks.
+  - Team ramp-up time on a different stack.
+
+### Technical Implications
+
+- Must replicate all AI-driven content transformations (Core Processing) with a Ruby-based pipeline or integrate from the Rails side.
+- Some Node-based libraries may not have direct Ruby equivalents, requiring new solutions.
+
+### Security Considerations
+
+- Must replicate role-based auth from Next.js & Supabase SSR into Rails routes.
+- Cookie and token management strategies may differ.
+- Ensure compliance with .cursorrules suggestions on logging, security, and role-based access.
+
+### Performance Impact
+
+- Re-check performance of "Core Processing" if re-implemented in Ruby or invoked through microservices.
+- If large content is processed, consider Sidekiq or ActiveJob for background tasks.
+
+---
 
 ## Implementation Steps
 
-- [ ] High-level step
-  - [ ] Sub-task
-  - Success criteria
-  - Dependencies
+1. High-level step
+
+   - Sub-task
+   - Success criteria
+   - Dependencies
+
+2. **Migrate to Rails app "SocialScript"**
+
+   - [ ] **Initialize new Rails 7 project named "social_script"**
+
+     - Command:
+       ```
+       rails new social_script --api --database=postgresql
+       ```
+     - Success Criteria:
+       - Project scaffold includes a working Rails API skeleton
+       - rails server boots with no errors
+
+   - [ ] **Provide Migration Docs**
+
+     - Create a new doc in `/docs/rails-migration` (or a close variant under `/docs`)
+     - Outline old vs. new environment differences for Mozzy → SocialScript
+       - Summarize existing behaviors, features, integration points
+       - Reference known tasks from .cursorrules or updates.md
+     - Document the exact mapping of existing Next.js routes and server actions to their Rails controller counterparts
+
+   - [ ] **Document Existing Behavior in SocialScript**
+
+     - Identify any missing or undocumented features from Mozzy by reviewing docs/ folder references
+     - For each documented feature (Auth, Podcast, Social Posts), confirm if it's fully captured in new rails controllers/models
+     - Ensure .cursorrules compliance for code standards in new Rails code
+       - E.g., keep logging best practices, route naming, structure
+
+   - [ ] **List of Files to Convert/Port**
+
+     - Example: `prompts/` directory, relevant config JSON, seeds or migrations from Next.js
+     - Summarize each file's usage
+     - Decide if it's re-coded, partially borrowed, or integrated as data seeds
+
+   - [ ] **Confirm or Create Tasks for Unlisted Behaviors**
+     - If any feature is not fully documented in the existing Next.js structure, open a sub-task in updates.md
+     - Evaluate potential new behaviors or improvements for SocialScript, e.g., new admin panel
+
+3. **Refactor or Reimplement Key Modules**
+
+   - [ ] **Authentication & SSR**
+
+     - Replace Supabase SSR with Devise or custom token-based auth
+     - Confirm session & cookie mgmt approach
+     - Check role-based access & redirect flows
+
+   - [ ] **Core Processing**
+
+     - Decide if we replicate Node-based scripts or call them from Rails via API.
+     - Potential background jobs for big tasks.
+     - Maintain all existing transformations: podcast → text, text → wiki, etc.
+
+   - [ ] **Podcast Feature**
+
+     - Build models for episodes, transcripts, transformations.
+     - Integrate with ActiveStorage for file uploads (if relevant).
+     - Add optional background job for transcript processing.
+
+   - [ ] **Social Posts**
+
+     - Migrate or re-code logic that merges user content with templates.
+     - Possibly use ActionText or similar for text.
+     - Keep track of statuses (draft, processing, published).
+
+   - [ ] **Logging & Observability**
+     - Implement a centralized logger akin to Ruby Logger or semantic logger.
+     - Replicate the log levels (info, warn, error, debug).
+     - Ensure robust monitoring in production environment.
+
+4. **Data Migration & Environment Setup**
+
+   - [ ] **Database Schema**
+
+     - Compare existing Postgres schema (if any) with new Rails migrations.
+     - Write or generate ActiveRecord migrations.
+     - Possibly script user or content data transfer.
+
+   - [ ] **Environment Variables**
+
+     - Shift or rename .env usage to Rails's credentials or environment files.
+     - Check for differences in naming or format.
+
+   - [ ] **Deployment Pipeline**
+     - Integrate Rails app into existing CI/CD or create a new pipeline.
+     - Ensure that environment variables are properly set in staging/prod.
+
+5. **Testing & Validation**
+
+   - [ ] Convert or rewrite existing Jest tests to RSpec or Minitest.
+   - [ ] Validate all major features with integration tests.
+   - [ ] Manual QA for behaviors that are tricky or new.
+   - [ ] Conduct load tests if required for large content transformations.
+
+6. **Rollout & Deprecation**
+   - [ ] Decide on timeline for deprecating or shutting down Next.js back-end routes.
+   - [ ] Provide freeze date for the old code.
+   - [ ] Staged rollout to a subset of users or dev environment.
+
+---
 
 ## Feature Documentation Impact
 
 ### Affected Features
+
+- Specifically: Podcast transformations, Social Posts, Authentication, Core Processing.
+- Each portion must have an updated README or architecture doc within the new Rails codebase.
 
 - Feature: {feature-name}
   - Files to update:
@@ -43,8 +214,8 @@ Reference: [Task Updates](./updates.md)
     - [ ] api.md
     - [ ] testing.md
   - Changes needed:
-    - Description of changes
-    - Impact assessment
+    - Description of changes from Next.js to Rails
+    - Impact assessment on data models and endpoints
     - Cross-reference updates
 
 ### Documentation Review
@@ -55,31 +226,62 @@ Reference: [Task Updates](./updates.md)
 - [ ] Test cases updated
 - [ ] Cross-references maintained
 
+---
+
 ## Affected Components
 
-- Component path
-  - Changes needed
-  - Impact level
-  - Test requirements
+- **Mozzy's Next.js server components** → new Rails controllers & models
+- **Zustand stores** for data management → possibly replaced by Redux or left on the front-end / turned into Rails-based data flow
+- **Core Processing scripts** → re-implemented or integrated via microservice calls
+- **Supabase auth** → replaced or combined with Devise or JWT-based auth in Rails
+
+For each, define:
+
+- Changes needed
+- Impact level
+- Test requirements
+
+---
 
 ## Testing Plan
 
-- Unit tests
-- Integration tests
-- Manual testing steps
-- Performance testing
+### Unit Tests
+
+- Migrate existing behaviors from Jest to RSpec.
+- Thoroughly test Models, Services, Controllers in Rails.
+- Validate logging.
+
+### Integration Tests
+
+- Ensure that new routes replicate existing functionalities.
+- Test side-by-side with old Next.js routes to confirm parity.
+- Validate the success/failure scenarios for each feature.
+
+### Manual Testing Steps
+
+- End-to-end usage: e.g., sign in, upload a podcast, transform it, create a social post, publish.
+- Confirm data correctness in the new database.
+
+### Performance Testing
+
+- Potentially test background tasks (10+ simultaneous transformations).
+- Evaluate memory usage under load.
+
+---
 
 ## Dependencies
 
-- Blocks: {blocked tasks}
-- Blocked by: {blocking tasks}
-- Related: {related tasks}
+- Blocks: Possibly tasks that require finishing in Next.js before migration can begin.
+- Blocked by: Finalization of data schema or environment details.
+- Related:
+  - Type system changes in "type-error-fixes-20250121"
+  - .cursorrules referencing code standards
 
-### Template Usage Notes:
+### Template Usage Notes
 
-1. Focus on planning and requirements
-2. Keep implementation steps clear and actionable
-3. List all affected components and documentation
-4. Include all dependencies
-5. Reference task ID throughout
-6. Link to updates.md for progress tracking
+1. Focus on planning and requirements.
+2. Keep implementation steps clear and actionable.
+3. List all affected components and documentation.
+4. Include all dependencies.
+5. Reference this plan ID (rails-migration-20250124) throughout.
+6. Link to updates.md for progress tracking.
