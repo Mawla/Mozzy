@@ -20,85 +20,69 @@ Reference: [Task Plan](./plan.md)
 
 ## Current Status
 
-### 2025-01-24 14:40
+### 2025-01-24 14:42
 
 **Status**: In Progress
 
 - What's working:
 
-  - Core features identified for migration:
-    1. Core Processing (@core-processing)
-    2. Podcast Visualizer (@podcast)
-    3. Social Posts (@posts → social-posts)
-  - Documentation reviewed for all features
-  - Initial migration strategy outlined
+  - Core features identified for migration
+  - Core processing migration guide completed
+  - Podcast feature migration guide completed
+  - Database schemas defined
+  - Service architectures outlined
 
 - What's not:
 
-  - Core processing pipeline not yet migrated
-  - Podcast visualizer not yet ported
-  - Social posts feature not yet transferred
+  - Social posts feature guide not started
+  - Actual implementation not begun
   - Integration tests not written
+  - Frontend components not migrated
 
 - Next actions:
 
-  1. Core Processing Migration:
-
-     - Port type system to Ruby classes
-     - Implement processing strategies as services
-     - Set up error handling and logging
-     - Migrate adapters and factories
-
-  2. Podcast Feature Migration:
-
-     - Create podcast models and migrations
-     - Port processing pipeline
-     - Implement visualizer components
-     - Set up audio processing services
-
-  3. Social Posts Migration:
-     - Rename to "social-posts"
-     - Create post models and migrations
-     - Port template system
-     - Implement content transformation services
+  1. Create social posts migration guide
+  2. Begin implementation of core processing
+  3. Set up database migrations
+  4. Implement base services
 
 - Documentation updates needed:
   - [x] Prompts migration guide created
-  - [ ] Core processing migration guide
-  - [ ] Podcast feature migration guide
+  - [x] Core processing migration guide
+  - [x] Podcast feature migration guide
   - [ ] Social posts migration guide
   - [ ] Integration testing guide
 
 ## Progress History
 
-### 2025-01-24 14:40 - Core Features Migration Planning
+### 2025-01-24 14:42 - Podcast Migration Guide
 
 ✓ Completed:
 
-- Identified core features for migration
-- Reviewed feature documentation
-- Created initial migration strategy
-- Documented dependencies and relationships
+- Created comprehensive podcast migration guide
+- Defined database schema for podcast models
+- Outlined service architecture
+- Documented frontend migration strategy
 
 🤔 Decisions:
 
-- Migrate core processing first as it's a dependency
-- Keep type system structure but implement in Ruby
-- Rename posts feature to social-posts
-- Use service objects for processing strategies
+- Use Hotwire (Turbo/Stimulus) for frontend
+- Store podcast metadata in jsonb columns
+- Use Active Storage for audio files
+- Implement background processing with Sidekiq
 
 ❌ Issues:
 
-- Complex type system needs careful translation to Ruby
-- Tight coupling between features requires coordinated migration
 - Audio processing dependencies need evaluation
+- Frontend component complexity in Hotwire
+- Timeline synchronization challenges
 
 ⏭️ Next:
 
-- Create core processing migration guide
-- Begin type system migration
-- Set up base service structure
-- Plan integration testing strategy
+- Create social posts migration guide
+- Begin database migration implementation
+- Set up service structure
+- Configure background processing
 
 ### Required Emoji Markers:
 
