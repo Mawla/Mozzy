@@ -1,40 +1,61 @@
 # Cursor Rules for Mozzy Project
 
-You are a powerful agentic AI coding assistant, powered by Claude 3.5 Sonnet. You operate exclusively in Cursor, the world's best IDE.
+Below is the **edited and consolidated** set of rules for the Mozzy Project. This single document merges the original content (removing duplicate or overlapping sections) and incorporates new suggestions for **Error Handling & Recovery**, **Security**, **Performance Optimization**, **Collaboration & Teamwork**, and **Continuous Learning**.
 
-My name is Dan.
+---
 
-You are pair programming with a USER to solve their coding task.
-The task may require creating a new codebase, modifying or debugging an existing codebase, or simply answering a question.
+## 1. Introduction
 
-## Problem-Solving Approach
+Welcome to the Mozzy Project! You are a powerful agentic AI coding assistant, powered by Claude 3.5 Sonnet, operating in **Cursor** (the IDE). You will be pair programming with a USER to solve various coding tasks, which may involve creating new codebases, modifying or debugging existing code, or simply answering questions.
 
-When addressing issues or implementing new features, follow this structured approach:
+This `.cursorrules` file outlines:
 
-1. Problem Analysis:
+1. **Problem-Solving Approach**
+2. **Project Context** and **Directory Structures**
+3. **Task Management & Documentation Standards**
+4. **Development Requirements** and **Code Standards**
+5. **Logging & Observability**
+6. **Git & Commit Guidelines**
+7. **Type System Enforcement**
+8. **Fix/Planning Standards**
+9. **Self-Improvement & Continuous Learning**
+10. **Error Handling & Recovery**
+11. **Security Best Practices**
+12. **Performance Optimization**
+13. **Collaboration & Teamwork**
 
-   - Clearly identify and describe the issue
-   - List potential causes
-   - Identify affected components/systems
-   - Document any recursive or performance implications
+These rules aim to maintain **efficiency, clarity, consistency, and security** across the entire development process.
 
-2. Solution Design:
+---
 
-   - Outline potential solutions
-   - List pros and cons of each approach
-   - Consider performance implications
-   - Consider maintainability
-   - Consider scalability
+## 2. Problem-Solving Approach
 
-3. Implementation Plan:
-   - Break down the solution into steps
-   - Identify potential risks
-   - Plan for error handling
-   - Consider testing requirements
+When addressing issues or implementing features, follow this structured approach:
 
-Example:
+1. **Problem Analysis**
 
-```typescript
+   - Clearly identify and describe the issue.
+   - List potential causes.
+   - Identify affected components/systems.
+   - Document any performance or recursive implications.
+
+2. **Solution Design**
+
+   - Outline potential solutions.
+   - List pros and cons of each.
+   - Consider performance, maintainability, scalability.
+   - Consider security implications if relevant.
+
+3. **Implementation Plan**
+   - Break down the solution into steps.
+   - Identify potential risks.
+   - Plan for error handling.
+   - Consider testing requirements.
+
+**Example**:
+
+```
+
 // Problem: Infinite loops in logging system
 // Causes:
 // 1. Console methods triggering their own logs
@@ -52,37 +73,45 @@ Example:
 // 3. Add proper flag management
 ```
 
-## Project Context
+---
 
-Project Name: Mozzy
-Description: AI-powered content transformation platform that helps creators repurpose their content across different formats and platforms.
-Tech Stack:
+## 3. Project Context
 
-- Frontend: Next.js 14, TypeScript, Tailwind CSS, shadcn/UI
-- AI Integration: Claude AI (Anthropic)
-- State Management: Zustand
-- Icons: Lucide Icons
-- Testing: Jest
+**Project Name**: Mozzy  
+**Description**: AI-powered content transformation platform that helps creators repurpose their content across different formats and platforms.
 
-## Task Documentation Organization
+**Tech Stack**:
 
-### Directory Structure
+- **Frontend**: Next.js 14, TypeScript, Tailwind CSS, shadcn/UI
+- **AI Integration**: Claude AI (Anthropic)
+- **State Management**: Zustand
+- **Icons**: Lucide Icons
+- **Testing**: Jest
+
+---
+
+## 4. Task & Memory Management
+
+### 4.1 Task Documentation Organization
+
+All tasks are tracked in `/docs/working-memory/`:
 
 ```
+
 /docs/
 ├── working-memory/           # Task tracking directory
-│   ├── open/                # Active tasks
-│   │   └── {task-id}/      # Task-specific directory
-│   │       ├── plan.md     # Task plan and requirements
-│   │       └── updates.md  # Progress updates and status
-│   └── done/               # Completed tasks
-├── templates/              # Project templates
-└── standards/             # Project standards
+│   ├── open/                 # Active tasks
+│   │   └── {task-id}/
+│   │       ├── plan.md       # Task plan and requirements
+│   │       └── updates.md    # Progress updates and status
+│   └── done/                 # Completed tasks
+├── templates/                # Project templates
+└── standards/                # Project standards
 ```
 
-### Task Documentation Files
+#### Task Documentation Files
 
-1. `plan.md` - Task Planning Document:
+1. **plan.md**:
 
    - Problem Analysis
    - Solution Design
@@ -92,37 +121,31 @@ Tech Stack:
    - Documentation Impact
    - Dependencies
 
-2. `updates.md` - Progress Tracking Document:
-   - Current Status (always at top)
-   - Progress History (chronological)
-   - Decisions Log
-   - Issues Encountered
-   - Next Steps
+2. **updates.md**:
+   - **Current Status** (always at top; only one at a time)
+   - **Progress History** (chronological)
+   - **Decisions Log**
+   - **Issues Encountered**
+   - **Next Steps**
 
-### Status Updates Process
+#### Status Updates Process
 
-1. Current Status:
+1. **Current Status**
 
-   - ONLY ONE status entry should exist at any time
-   - Previous status should be moved to Progress History before updating
-   - Always at top of updates.md
-   - Update timestamp using `date "+%Y-%m-%d %H:%M"`
-   - Include working/not working sections
-   - List blocking issues
-   - Document next actions
+   - Only one status entry should exist at any time.
+   - Previous status moves to Progress History.
+   - Always add a timestamp with `date "+%Y-%m-%d %H:%M"`.
 
-2. Progress History:
+2. **Progress History**
 
-   - Add new entries at bottom of updates.md
-   - Move previous status to history before updating current status
-   - Include timestamp for each entry
-   - Use consistent emoji markers:
-     - ✓ Completed: Work completed
-     - 🤔 Decisions: Key decisions made
-     - ❌ Issues: Problems encountered
-     - ⏭️ Next: Upcoming work
+   - New entries go at the bottom of `updates.md`.
+   - Mark entries with emojis:
+     - ✓ Completed
+     - 🤔 Decisions
+     - ❌ Issues
+     - ⏭️ Next
 
-3. Status Update Flow:
+3. **Status Update Flow**:
 
    ```bash
    # 1. Get current timestamp
@@ -133,88 +156,150 @@ Tech Stack:
    # 4. Add previous status content to Progress History
    ```
 
-### Cross-Referencing:
+#### Cross-Referencing
 
-- Link between plan.md and updates.md
-- Reference task ID in all updates
-- Link to affected components
-- Reference related tasks
+- Link between `plan.md` and `updates.md`.
+- Reference the task ID in all updates.
+- Link to affected components and related tasks.
 
-### File Management
+#### File Management
 
-1. Active Tasks:
+1. **Active Tasks**:
 
-   - Keep in /docs/working-memory/open/
-   - Update both plan and updates files
-   - Move to /done/ when completed
-   - Archive after 30 days
+   - `/docs/working-memory/open/` for active.
+   - Update `plan.md` and `updates.md` as progress is made.
+   - Move to `/done/` when finished (archived after 30 days).
 
-2. Templates:
+2. **Templates**:
 
-   - Use task-plan-template.md for new plans
-   - Use task-updates-template.md for updates
-   - Follow standard format
-   - Include all required sections
+   - Use `task-plan-template.md` for new plans.
+   - Use `task-updates-template.md` for updates.
+   - Follow standard format.
 
-3. Maintenance:
-   - Review active tasks weekly
-   - Archive completed tasks monthly
-   - Update templates as needed
-   - Maintain clean directory structure
+3. **Maintenance**:
+   - Review active tasks weekly.
+   - Archive completed tasks monthly.
+   - Keep directory structure clean.
 
-## State Management
+### 4.2 Memory Management Types
 
-Always check these files for current project state before any work:
+1. **Working Memory**:
 
-1. /docs/plan.md - Main project plan and task tracking
-2. /docs/plan-podcast.md - Podcast feature specific planning
-3. Output plan updates before starting work
-4. Reference plan number in all communications
+   - Active context in `/docs/working-memory/`.
+   - Real-time updates while tasks are ongoing.
 
-## Development Requirements
+2. **Project Memory**:
 
-1. Do not delete existing functionality unless necessary
-2. Use App Router: All components within `app` directory
-3. Implement Server Components by default
-4. Use modern TypeScript syntax
-5. Follow responsive design with Tailwind CSS
-6. Create modular, reusable components
-7. Efficient data fetching with server components
-8. Use Next.js 14's metadata API for SEO
-9. Use Next.js Image component
-10. Ensure accessibility with ARIA
-11. Use error.tsx for error handling
-12. Use loading.tsx for loading states
-13. Use route.ts for API routes
-14. Implement SSG/SSR appropriately
-15. Focus only on task-related changes
-16. Endevor to use components over in-line html. If a component doesn't exist, check shadecn for it. If it doesn't exist there, create it.
+   - `/docs/` for long-term project knowledge.
+   - Update regularly for major decisions.
 
-## Code Standards
+3. **Documentation Memory**:
+   - `/docs/templates/` for standards/patterns.
+   - Monthly reviews to keep templates current.
 
-1. Client Components:
+---
 
-```tsx
+## 5. Directory Structures
+
+### 5.1 Code Directory (Next.js App Router)
+
+````
+
+/app (Next.js 14 App Router)
+├── actions/        # Server actions
+├── api/            # API routes
+├── components/     # UI components
+│   ├── blocks/     # Content blocks
+│   └── ui/         # shadcn/UI components
+├── config/         # Configuration
+├── constants/      # Constants
+├── hooks/          # React hooks
+├── services/       # Business logic
+├── stores/         # Zustand stores
+├── types/          # TypeScript types
+└── utils/          # Utilities
+```
+
+**Key Requirements**:
+1. Use **App Router**.
+2. Implement **Server Components** by default.
+3. Use modern TypeScript syntax.
+4. Use **Tailwind CSS** for responsiveness.
+5. Keep components **modular and reusable**.
+6. Use Next.js 14 **metadata API** for SEO.
+7. Use Next.js **Image** component.
+8. Ensure **accessibility** with ARIA.
+9. Use `error.tsx` and `loading.tsx` for error/loading states.
+10. Use `route.ts` for API routes.
+11. Implement SSG/SSR appropriately.
+12. Prefer shadcn/UI.
+13. Only modify code relevant to the task at hand.
+
+### 5.2 Documentation Directory
+
+```
+
+/docs/
+├── working-memory/   # Task tracking
+│   ├── open/
+│   └── done/
+├── templates/        # Project templates
+└── standards/        # Project-wide standards
+```
+
+**Document Organization**:
+- Keep `plan.md` and `updates.md` for each task.
+- Reference tasks with IDs.
+- Archive after completion to `/done/`.
+
+---
+
+## 6. Development Requirements
+
+1. **Do not delete existing functionality** unless necessary.
+2. **Use App Router** for Next.js 14.
+3. **Server Components** by default, client components only if needed.
+4. **TypeScript** usage is mandatory.
+5. **Responsive design** via Tailwind CSS.
+6. **Modular, reusable components** with minimal duplication.
+7. **Efficient data fetching** with server components.
+8. **Metadata API** for SEO in Next.js.
+9. **Next.js Image** for optimized images.
+10. **Accessibility** with ARIA.
+11. **error.tsx** for error handling, **loading.tsx** for loading states.
+12. **route.ts** for API routes.
+13. Implement SSG/SSR appropriately.
+
+---
+
+## 7. Code Standards
+
+### 7.1 Client Components
+
+```
+
 "use client";
 const ComponentName = () => {
-  // Component logic
+  // ...
 };
 ```
 
-2. Props Interface:
+### 7.2 Props Interface
 
-```tsx
+```
+
 interface ComponentNameProps {
-  // Props definition
+  // ...
 }
 const ComponentName = ({ prop1, prop2 }: ComponentNameProps) => {
-  // Component logic
+  // ...
 };
 ```
 
-3. Server Components:
+### 7.3 Server Components
 
-```tsx
+```
+
 async function getData() {
   const res = await fetch("https://api.example.com/data", {
     next: { revalidate: 3600 },
@@ -224,19 +309,20 @@ async function getData() {
 }
 ```
 
-4. Type Documentation:
+### 7.4 Type Documentation
 
-```typescript
+```
+
 /**
  * Clear description of the type's purpose and context.
  * Include any important notes about usage or constraints.
  */
 export interface ExampleType {
-  /** Description with value range if applicable (e.g., 0-1) */
+  /** Value range (e.g., 0-1) */
   numericField: number;
-  /** Description of what this field represents */
+  /** Description of stringField */
   stringField: string;
-  /** Object field description */
+  /** Object field details */
   objectField: {
     /** Nested field description */
     nestedField: string;
@@ -244,97 +330,297 @@ export interface ExampleType {
 }
 ```
 
-Type Documentation Rules:
+**Rules**:
+- Every exported type must have a JSDoc comment.
+- Each field must have an inline JSDoc comment.
+- Document optional fields, value ranges, default values, and usage examples.
 
-- Every exported type must have a JSDoc comment explaining its purpose
-- Each field must have an inline JSDoc comment
-- Include value ranges for numeric fields (e.g., 0-1, 0-100)
-- Document optional fields and their implications
-- Explain relationships with other types
-- Note any validation requirements
-- Document any default values
-- Include usage examples for complex types
+---
 
-## Self-Improvement Rules
+## 8. Logging & Observability
 
-1. Documentation Maintenance:
+### 8.1 Centralized Logger
 
-   - Update .cursorrules when new patterns emerge
-   - Document solutions for recurring issues
-   - Keep code examples current
-   - Update plan files regularly
+- **Import** from `@/lib/logger`.
+- Use **singleton**: `import { logger } from "@/lib/logger"`.
+- **Never** override console methods directly.
 
-2. Knowledge Capture:
+### 8.2 Log Levels
 
-   - Document common errors and solutions
-   - Record successful patterns
-   - Update component examples
-   - Track performance improvements
-   - Document API learnings
+- `debug`: Development details, verbose.
+- `info`: General operational events.
+- `warn`: Warnings needing review.
+- `error`: Errors needing immediate attention.
 
-3. Issue Prevention:
-   - Document type-checking patterns
-   - Record validation strategies
-   - Note state management solutions
-   - Track optimization techniques
-   - Document error handling approaches
+### 8.3 Logging Methods
 
-## Directory Structure
+```
 
-/app (Next.js 14 App Router):
+logger.debug(message: string, data?: any);
+logger.info(message: string, data?: any);
+logger.warn(message: string, data?: any);
+logger.error(message: string, error?: any, data?: any);
+```
 
-- /actions: Server actions
-- /api: API routes
-- /components: UI components
-  - /blocks: Content blocks
-  - /ui: shadcn/UI components
-- /config: Configuration
-- /constants: Constants
-- /hooks: React hooks
-- /services: Business logic
-- /stores: Zustand stores
-- /types: TypeScript types
-- /utils: Utilities
+### 8.4 Error Handling
 
-## Coding & Logging Best Practices
+```
 
-1. Code & Project Best Practices
+try {
+  // Operation
+} catch (error) {
+  logger.error("Operation failed", error, { context: "additional data" });
+}
+```
 
-   - Use TypeScript for type safety.
-   - Use Tailwind CSS exclusively.
-   - Follow Next.js 14 structure.
-   - Use environment variables.
-   - Optimize performance and ensure accessibility.
-   - Use functional components with hooks and let TypeScript infer types when possible.
-   - Keep commits small and atomic; always push after committing.
+### 8.5 Log Files & Rotation
 
-2. Logging Best Practices
+- Files: `logs/app-YYYY-MM-DD.log`
+- Daily rotation, max 1000 entries in memory.
+- Full stack traces for errors.
+- Commands for tailing logs, searching via `grep`, etc.
 
-   - Use the centralized logger from `@/lib/logger`.
-   - Follow the log levels: debug, info, warn, error.
-   - Avoid logging sensitive data.
-   - Do not create new logger instances or override console methods.
-   - Check logs regularly (especially after deployments, bug reports, or performance issues).
+### 8.6 Observability & Monitoring
 
-3. When to Check Logs
+1. **Performance Monitoring**: Page load times, API response times, memory usage.
+2. **Error Tracking**: Client-side errors, API failures, authentication issues.
+3. **User Analytics**: Feature usage, user flows, error rates.
+4. **Alerting**:
+   - **Critical**: Auth failures, API downtime, database errors, build failures.
+   - **Warning**: High latency, repeated warnings, disk space issues.
 
-   - After deployment changes.
-   - When investigating bugs or performance issues.
-   - For user issue reports.
-   - After any security incidents.
+---
 
-4. What to Look For
+## 9. Git & Commit Guidelines
 
-   - Unexpected error patterns.
-   - Repeated warnings or spikes in errors.
-   - Database connection issues or API failures.
-   - Authentication issues.
+### 9.1 When to Commit
 
-5. Response Actions
-   - Document new error patterns.
-   - Update error handling as needed.
-   - Add detailed logs or alerts if problems recur.
-   - Keep documentation in sync with any logging changes.
+- After completing a significant feature or bug fix.
+- After refactoring code.
+- After updating documentation.
+- After adding tests.
+- **Keep commits focused and atomic**.
+
+### 9.2 Conventional Commits
+
+```
+
+type(scope): description
+
+- Detailed info if needed
+````
+
+- **Types**: feat, fix, docs, style, refactor, test, chore.
+- **Scope**: A short string (e.g., `auth`, `docs`, `logging`).
+- **Example**: `feat(auth): implement Supabase authentication`.
+
+### 9.3 Branch Management & Version Tagging
+
+1. **Branches**:
+   - `feature/{task-id}`, `fix/{bug-id}`, `docs/plan/{milestone}`, etc.
+2. **Version Tagging**:
+   - For docs or memory: `docs/v{major}.{minor}`, `memory/{YYYY-MM}`.
+3. **Pull Requests**:
+   - Reference task/issue.
+   - Ensure at least one reviewer approval if team-based.
+
+---
+
+## 10. Type System Enforcement
+
+1. **Location**: All types go in `/app/types/` (except UI prop types kept near components).
+2. **Directory Structure**:
+   ```
+   /app/types/
+   ├── index.ts
+   ├── entities/
+   ├── processing/
+   ├── shared/
+   ├── ui/
+   └── logging/
+   ```
+3. **Import Rules**:
+   - Always import from `@/app/types/index.ts` externally.
+4. **Enforcement**:
+   - Pre-commit hooks check for type declarations outside `/app/types`.
+   - Document all type changes in the code + plan updates.
+
+---
+
+## 11. Fix Explanation & Planning Standards
+
+When introducing a fix:
+
+1. **Problem**: Clear description of the issue.
+2. **Analysis**: Current state, cause, dependencies, potential side effects.
+3. **Solution**: Proposed approach, rationale, expected outcomes, any security or performance notes.
+4. **Implementation**: Step-by-step changes, testing/validation plan, rollback strategy if needed.
+
+**Example**:
+
+````
+
+/*
+Problem: The PostEventEntity interface has optional date/duration fields
+but ProcessingResult expects them required, causing a type mismatch.
+
+Solution:
+1. Update PostEventEntity to make date/duration required
+2. Remove .optional() from relevant validation schema
+3. Review and fix any usage references
+
+Implementation Steps:
+1. ...
+2. ...
+3. ...
+*/
+```
+
+---
+
+## 12. Self-Improvement & Continuous Learning
+
+1. **Documentation Maintenance**:
+   - Update `.cursorrules` when new patterns emerge.
+   - Document solutions for recurring issues.
+   - Keep code examples current.
+
+2. **Knowledge Capture**:
+   - Record common errors and solutions.
+   - Update component examples.
+   - Track performance improvements.
+   - Document API learnings.
+
+3. **Issue Prevention**:
+   - Document type-checking patterns.
+   - Record validation strategies.
+   - Track optimization techniques.
+   - Document error handling approaches.
+
+4. **Learning Strategies** (Expanded):
+   - Stay updated on Next.js, TypeScript, Tailwind releases.
+   - Attend conferences or watch recorded sessions.
+   - Participate in online communities, forums, or dev Slack channels.
+   - Experiment with new features or libraries in side projects.
+
+---
+
+## 13. Error Handling & Recovery
+
+While the document covers **in-code error handling**, here are guidelines for broader development-level error recovery:
+
+1. **Build Failures**:
+   - Check CI logs immediately.
+   - Identify the commit causing the failure and revert if needed.
+   - Document the cause in task updates or plan files.
+
+2. **Test Failures**:
+   - Maintain a comprehensive test suite (unit, integration, e2e).
+   - Investigate failing tests locally.
+   - If hotfixes are required, ensure a rollback strategy.
+
+3. **Deployment & Production Errors**:
+   - Use a canary or staging environment to reduce risks.
+   - Keep a **runbook** of known issues and quick solutions.
+   - Roll back to the last stable version if catastrophic errors occur.
+   - Log all incidents for post-mortem analysis.
+
+4. **Data Corruption**:
+   - Maintain regular backups (database snapshots).
+   - Confirm restore procedures and test them periodically.
+   - Carefully log all data-migration scripts.
+
+---
+
+## 14. Security Best Practices
+
+Though Supabase auth is used, broader security guidelines include:
+
+1. **Secure Coding Frameworks**:
+   - Reference **OWASP** top 10 vulnerabilities.
+   - Use ESLint or other linters to detect unsafe patterns.
+
+2. **Dependency Management**:
+   - Run `npm audit` or `yarn audit` regularly.
+   - Update packages promptly for security patches.
+
+3. **Penetration Testing & Audits**:
+   - Conduct regular scans or audits (e.g., Snyk, Dependabot).
+   - Include third-party penetration tests if dealing with sensitive data.
+
+4. **Authentication & Authorization**:
+   - Use role-based access checks in server components.
+   - Handle tokens securely and implement refresh flows.
+   - Log all auth failures or suspicious activity.
+
+5. **Secret Management**:
+   - Store secrets in environment variables, not in code.
+   - Rotate credentials periodically.
+   - Use secure vault services if possible.
+
+---
+
+## 15. Performance Optimization
+
+While monitoring is covered, here are more **specific optimization techniques**:
+
+1. **Profiling**:
+   - Use Chrome DevTools or Node.js profiler to identify bottlenecks.
+   - Monitor react render times with React Profiler.
+
+2. **Caching & Lazy Loading**:
+   - Use caching or memoization for expensive operations.
+   - Implement code-splitting and lazy loading for large modules.
+   - Consider SSR caching for frequently accessed pages.
+
+3. **Database & Network**:
+   - Optimize queries, use indexing.
+   - Minimize API roundtrips; batch requests if possible.
+   - Monitor slow endpoints with real-time metrics.
+
+4. **Build Optimization**:
+   - Use Next.js built-in optimizations (static exports, revalidate).
+   - Keep bundle size small; tree-shake unused dependencies.
+
+---
+
+## 16. Collaboration & Teamwork
+
+For effective multi-developer work:
+
+1. **Code Review Process**:
+   - Every PR should be reviewed by at least one teammate (or yourself if solo).
+   - Use checklists for best practices (linting, tests, docs).
+
+2. **Pair Programming**:
+   - Encourage pairing for complex tasks.
+   - Share knowledge, reduce siloed expertise.
+
+3. **Communication**:
+   - Establish clear channels (Slack, Teams, etc.).
+   - Document decisions in `updates.md` or in a shared wiki.
+
+4. **Knowledge Sharing**:
+   - Host weekly lunch-and-learn or stand-up sessions.
+   - Encourage internal workshops on new tools or patterns.
+
+---
+
+## 17. Final Notes
+
+With these merged and expanded guidelines, the Mozzy Project `.cursorrules` now offers a single authoritative reference for:
+
+- **Coding Standards**
+- **Task Documentation**
+- **Git & Commit Workflows**
+- **Logging & Observability**
+- **Error Recovery & Security**
+- **Performance Tuning**
+- **Collaboration & Continuous Learning**
+
+Always keep this file up to date as the project evolves. Before each task, **check relevant plan files** and **ensure your changes align** with the rules here.
+
+**Happy coding!**
 
 ## Git Practices
 
@@ -394,293 +680,6 @@ Remember:
 - Check plan files before starting work
 - Document improvements as you discover them
 - Commit work after significant progress
-
-## Log Review Guidelines
-
-1. Accessing Logs:
-
-   - View recent logs: `tail -f logs/app-$(date +%Y-%m-%d).log`
-   - View specific number of lines: `tail -n 100 logs/app-$(date +%Y-%m-%d).log`
-   - View all logs from today: `cat logs/app-$(date +%Y-%m-%d).log`
-   - Search logs: `grep "error" logs/app-$(date +%Y-%m-%d).log`
-   - Follow multiple log files: `tail -f logs/app-*.log`
-
-2. Log Structure:
-
-   ```typescript
-   interface LogEntry {
-     timestamp: string;
-     level: "debug" | "info" | "warn" | "error";
-     message: string;
-     data?: any;
-     error?: Error;
-   }
-   ```
-
-3. Available Methods:
-
-   - `logger.getLogSummary()`: Quick overview of logging state
-   - `logger.getLogs()`: Get all logs from memory
-   - `logger.getLogs().filter(log => log.level === "error")`: Get error logs
-   - `logger.getLogs().slice(-100)`: Get last 100 logs
-
-4. Log Files:
-
-   - Location: `logs/app-YYYY-MM-DD.log`
-   - Daily rotation
-   - Maximum 1000 entries in memory
-   - Full stack traces for errors
-   - Use `ls -ltr logs/` to list log files by date
-
-5. Review Process:
-
-   1. Check recent logs: `tail -n 50 logs/app-$(date +%Y-%m-%d).log`
-   2. Filter for errors: `grep "ERROR" logs/app-$(date +%Y-%m-%d).log`
-   3. Search for patterns: `grep -r "pattern" logs/`
-   4. Monitor live: `tail -f logs/app-$(date +%Y-%m-%d).log`
-
-6. Common Log Patterns:
-   - Application startup sequence
-   - Authentication events
-   - API calls and responses
-   - Error conditions and recovery
-   - Performance issues
-
-Remember:
-
-- Use `tail -f` for real-time monitoring
-- Use `grep` for searching specific patterns
-- Use `cat` for viewing entire log files
-- Use `wc -l` to count log entries
-- Use `| less` for paginated viewing
-
-## Best Practices
-
-1. When to Check Logs:
-
-   - After deployment changes
-   - When investigating bugs
-   - During performance analysis
-   - After security incidents
-   - For user issue reports
-
-2. What to Look For:
-
-   - Unexpected error patterns
-   - Repeated warnings
-   - Authentication failures
-   - API timeouts or failures
-   - Database connection issues
-
-3. Response Actions:
-   - Document new error patterns
-   - Update error handling if needed
-   - Add more detailed logging
-   - Create monitoring alerts
-   - Update documentation
-
-## Logging Best Practices
-
-1. Use the Centralized Logger:
-
-   - Import from `@/lib/logger`
-   - Use singleton instance: `import { logger } from "@/lib/logger"`
-   - Never create new logger instances
-   - Never override console methods directly
-
-2. Log Levels:
-
-   - debug: Development details and verbose information
-   - info: General operational events
-   - warn: Warning conditions that should be reviewed
-   - error: Error conditions that need immediate attention
-
-3. Logging Methods:
-
-   ```typescript
-   logger.debug(message: string, data?: any)
-   logger.info(message: string, data?: any)
-   logger.warn(message: string, data?: any)
-   logger.error(message: string, error?: any, data?: any)
-   ```
-
-4. Error Handling:
-
-   ```typescript
-   try {
-     // Operation that may fail
-   } catch (error) {
-     logger.error("Operation failed", error, { context: "additional data" });
-   }
-   ```
-
-5. Data Serialization:
-
-   - Avoid circular references
-   - Keep data structures simple
-   - Don't log sensitive information
-   - Use the error parameter for Error objects
-
-6. Performance Considerations:
-
-   - Log at appropriate levels
-   - Avoid excessive logging in loops
-   - Use debug level for development-only logs
-   - Consider log rotation and cleanup
-
-7. Browser vs Server:
-
-   - Logger automatically detects environment
-   - Browser logs are queued and sent to server
-   - Server logs are written directly to file
-   - Console methods are safely wrapped
-
-8. Log Review:
-
-   ```typescript
-   // Get log summary
-   const summary = logger.getLogSummary();
-
-   // Get all logs
-   const logs = logger.getLogs();
-   ```
-
-9. Common Patterns:
-
-   ```typescript
-   // Feature initialization
-   logger.info("Feature initialized", { featureId, config });
-
-   // API calls
-   logger.debug("API request", { endpoint, params });
-   logger.info("API response received", { status, data });
-
-   // Error handling
-   logger.error("API request failed", error, { endpoint, params });
-
-   // User actions
-   logger.info("User action", { action, userId, details });
-
-   // Performance metrics
-   logger.debug("Performance metric", { operation, duration });
-
-   // UI changes
-   logger.info("UI update", { component, change, reason });
-   ```
-
-10. Log Provider Setup:
-    - Always wrap app with LogProvider
-    - Ensures proper browser setup
-    - Handles error boundaries
-    - Manages console overrides
-
-## Memory Management
-
-### Memory Types
-
-1. Working Memory:
-
-   - Location: `/docs/working-memory/`
-   - Purpose: Active task tracking and current context
-   - Lifecycle: Task duration
-   - Updates: Real-time during task execution
-   - Feature Documentation Integration:
-     - Every task plan must reference affected feature docs
-     - Documentation updates must be tracked in progress history
-     - Feature changes require documentation review
-     - Component changes must update feature docs
-
-2. Project Memory:
-
-   - Location: `/docs/`
-   - Purpose: Long-term project knowledge
-   - Lifecycle: Project duration
-   - Updates: After significant milestones
-   - Feature Documentation Integration:
-     - Maintain `/docs/features/` directory
-     - Track feature documentation versions
-     - Link features to architectural decisions
-     - Monitor documentation health
-
-3. Documentation Memory:
-
-   - Location: `/docs/templates/`
-   - Purpose: Standards and patterns
-   - Lifecycle: Evolves with project
-   - Updates: Monthly reviews
-   - Feature Documentation Integration:
-     - Maintain feature documentation templates
-     - Update templates based on learnings
-     - Track template usage patterns
-     - Document best practices
-
-### Directory Structure
-
-```
-/docs/
-├── working-memory/           # Active context
-│   ├── open/                # Active tasks
-│   │   └── {task-id}/
-│   │       └── .plan       # Task plan
-│   └── done/               # Completed tasks
-├── templates/              # Project templates
-└── standards/             # Project standards
-```
-
-### Memory Retention Policy
-
-1. Working Memory:
-
-   - Keep active tasks in `open/`
-   - Move completed tasks to `done/`
-   - Archive tasks older than 30 days
-   - Maintain task relationships
-
-2. Project Memory:
-
-   - Regular updates to plan.md
-   - Document major decisions
-   - Track architectural changes
-   - Keep dependency updates
-
-3. Documentation Memory:
-   - Monthly template reviews
-   - Update patterns library
-   - Maintain examples
-   - Version control changes
-
-## Documentation Standards
-
-### Documentation Types
-
-1. Project Documentation:
-
-   - Location: `/docs/`
-   - Purpose: Project overview, architecture, decisions
-   - Format: Markdown with code examples
-   - Updates: After major changes
-
-2. Technical Documentation:
-
-   - Location: `/docs/technical/`
-   - Purpose: Implementation details, APIs, patterns
-   - Format: Markdown with TypeScript examples
-   - Updates: With code changes
-
-3. Task Documentation:
-   - Location: `/docs/working-memory/`
-   - Purpose: Current work tracking
-   - Format: Task plan template
-   - Updates: Real-time
-
-### Documentation Guidelines
-
-1. File Structure:
-
-   - Clear hierarchical organization
-   - Consistent naming conventions
-   - Related files grouped together
-   - Version controlled
 
 2. Content Standards:
 
@@ -1059,7 +1058,7 @@ Remember:
 
 4. Common Log Patterns:
 
-   ```typescript
+```typescript
    // Feature initialization
    logger.info("Feature initialized", { featureId, config });
 
@@ -1072,7 +1071,7 @@ Remember:
 
    // User actions
    logger.info("User action", { action, userId, details });
-   ```
+```
 
 ### Debugging Guidelines
 
@@ -1403,7 +1402,8 @@ Remember:
 
 Example Format:
 
-```markdown
+```
+
 ### Feature Name
 
 A clear description of what this feature does and why it's useful.
@@ -1467,7 +1467,8 @@ Real-world examples of how to use this feature.
 
 Example Update:
 
-```markdown
+```
+
 ### YYYY-MM-DD HH:mm - Brief Title
 
 Update Type: [Feature|Fix|Security|Type|API]
@@ -1498,7 +1499,7 @@ Note: See [related-doc] for details.
 
 2. Example Usage:
 
-   ```markdown
+   ```
    ### $(date "+%Y-%m-%d %H:%M") - Feature Update
 
    - ✓ Completed: Task details
@@ -1583,101 +1584,4 @@ Remember:
 - Document all type system changes
 - Keep types organized and well-documented
 - Follow the established directory structure
-
-## Fix Explanation and Planning Standards
-
-### Fix Planning Process
-
-1. Problem Analysis:
-
-   - Clearly identify the specific issue(s)
-   - List affected files and components
-   - Explain dependencies and potential impacts
-   - Document any type conflicts or interface mismatches
-
-2. Solution Design:
-
-   - Outline the proposed changes
-   - Explain why this approach was chosen
-   - Highlight potential risks or side effects
-   - Consider type safety implications
-
-3. Implementation Plan:
-   - Break down changes into logical steps
-   - Specify order of operations
-   - Note any required follow-up actions
-   - Plan for validation after changes
-
-Example of a Good Fix Plan:
-
-```typescript
-/*
-Problem: The PostEventEntity interface has optional date/duration fields but ProcessingResult 
-expects them to be required, causing a type mismatch.
-
-Analysis:
-- PostEventEntity in app/types/entities/post.ts has optional fields
-- ProcessingResult requires these fields to be non-optional
-- This creates an incompatible type extension
-
-Solution:
-1. Update PostEventEntity to make date and duration required
-2. Update corresponding validation schema
-3. Update any mock data or tests using PostEventEntity
-
-Implementation Steps:
-1. Modify PostEventEntity interface:
-   - Change date?: string to date: string
-   - Change duration?: string to duration: string
-2. Update postEventSchema validation:
-   - Remove .optional() from date and duration fields
-3. Review and update any usage of PostEventEntity
-*/
-
-// Implementation
-export interface PostEventEntity extends BaseEntity {
-  type: Extract<EntityType, "EVENT">;
-  date: string; // Now required
-  duration: string; // Now required
-  participants?: string[];
-  location?: string;
-  url?: string;
-}
-```
-
-### Fix Documentation Requirements
-
-1. Every fix must include:
-
-   - Clear problem statement
-   - Analysis of current state
-   - Explanation of chosen solution
-   - Step-by-step implementation plan
-   - Validation approach
-
-2. Format:
-
-   ```
-   Problem: [Clear description of the issue]
-
-   Analysis:
-   - Current state
-   - Affected components
-   - Type conflicts
-
-   Solution:
-   - Proposed changes
-   - Why this approach
-   - Expected outcomes
-
-   Implementation:
-   1. Step one details
-   2. Step two details
-   3. Validation steps
-   ```
-
-3. Validation:
-   - Document expected outcomes
-   - List potential side effects
-   - Plan for testing changes
-   - Consider rollback strategy
+````
