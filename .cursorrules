@@ -296,18 +296,45 @@ Type Documentation Rules:
 - /types: TypeScript types
 - /utils: Utilities
 
-## Best Practices
+## Coding & Logging Best Practices
 
-1. Use TypeScript for type safety
-2. Use Tailwind CSS exclusively
-3. Use functional components with hooks
-4. Add clear comments
-5. Follow Next.js 14 structure
-6. Use environment variables
-7. Optimize performance
-8. Ensure accessibility
-9. Use shadcn/UI from /app/components/ui
-10. Let TypeScript infer types when possible
+1. Code & Project Best Practices
+
+   - Use TypeScript for type safety.
+   - Use Tailwind CSS exclusively.
+   - Follow Next.js 14 structure.
+   - Use environment variables.
+   - Optimize performance and ensure accessibility.
+   - Use functional components with hooks and let TypeScript infer types when possible.
+   - Keep commits small and atomic; always push after committing.
+
+2. Logging Best Practices
+
+   - Use the centralized logger from `@/lib/logger`.
+   - Follow the log levels: debug, info, warn, error.
+   - Avoid logging sensitive data.
+   - Do not create new logger instances or override console methods.
+   - Check logs regularly (especially after deployments, bug reports, or performance issues).
+
+3. When to Check Logs
+
+   - After deployment changes.
+   - When investigating bugs or performance issues.
+   - For user issue reports.
+   - After any security incidents.
+
+4. What to Look For
+
+   - Unexpected error patterns.
+   - Repeated warnings or spikes in errors.
+   - Database connection issues or API failures.
+   - Authentication issues.
+
+5. Response Actions
+   - Document new error patterns.
+   - Update error handling as needed.
+   - Add detailed logs or alerts if problems recur.
+   - Keep documentation in sync with any logging changes.
 
 ## Git Practices
 
@@ -1556,3 +1583,101 @@ Remember:
 - Document all type system changes
 - Keep types organized and well-documented
 - Follow the established directory structure
+
+## Fix Explanation and Planning Standards
+
+### Fix Planning Process
+
+1. Problem Analysis:
+
+   - Clearly identify the specific issue(s)
+   - List affected files and components
+   - Explain dependencies and potential impacts
+   - Document any type conflicts or interface mismatches
+
+2. Solution Design:
+
+   - Outline the proposed changes
+   - Explain why this approach was chosen
+   - Highlight potential risks or side effects
+   - Consider type safety implications
+
+3. Implementation Plan:
+   - Break down changes into logical steps
+   - Specify order of operations
+   - Note any required follow-up actions
+   - Plan for validation after changes
+
+Example of a Good Fix Plan:
+
+```typescript
+/*
+Problem: The PostEventEntity interface has optional date/duration fields but ProcessingResult 
+expects them to be required, causing a type mismatch.
+
+Analysis:
+- PostEventEntity in app/types/entities/post.ts has optional fields
+- ProcessingResult requires these fields to be non-optional
+- This creates an incompatible type extension
+
+Solution:
+1. Update PostEventEntity to make date and duration required
+2. Update corresponding validation schema
+3. Update any mock data or tests using PostEventEntity
+
+Implementation Steps:
+1. Modify PostEventEntity interface:
+   - Change date?: string to date: string
+   - Change duration?: string to duration: string
+2. Update postEventSchema validation:
+   - Remove .optional() from date and duration fields
+3. Review and update any usage of PostEventEntity
+*/
+
+// Implementation
+export interface PostEventEntity extends BaseEntity {
+  type: Extract<EntityType, "EVENT">;
+  date: string; // Now required
+  duration: string; // Now required
+  participants?: string[];
+  location?: string;
+  url?: string;
+}
+```
+
+### Fix Documentation Requirements
+
+1. Every fix must include:
+
+   - Clear problem statement
+   - Analysis of current state
+   - Explanation of chosen solution
+   - Step-by-step implementation plan
+   - Validation approach
+
+2. Format:
+
+   ```
+   Problem: [Clear description of the issue]
+
+   Analysis:
+   - Current state
+   - Affected components
+   - Type conflicts
+
+   Solution:
+   - Proposed changes
+   - Why this approach
+   - Expected outcomes
+
+   Implementation:
+   1. Step one details
+   2. Step two details
+   3. Validation steps
+   ```
+
+3. Validation:
+   - Document expected outcomes
+   - List potential side effects
+   - Plan for testing changes
+   - Consider rollback strategy
