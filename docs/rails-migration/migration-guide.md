@@ -145,6 +145,233 @@ Key steps:
 4. Run migrations and import data
 5. Verify template functionality
 
+## Phase 2: Data Migration Strategy
+
+### 1. Data Export Process
+
+```bash
+# Export data from Supabase
+supabase db dump -f mozzy_data_dump.sql
+
+# Export specific tables (if needed)
+supabase db dump -t users,podcasts,posts -f specific_tables.sql
+```
+
+### 2. Data Transformation
+
+1. Schema Mapping:
+
+   ```ruby
+   # config/initializers/schema_mapping.rb
+   SCHEMA_MAPPING = {
+     'mozzy_users' => 'users',
+     'mozzy_podcasts' => 'podcasts',
+     'mozzy_posts' => 'social_posts',
+     # Add other table mappings
+   }
+   ```
+
+2. Data Transformation Service:
+   ```ruby
+   # lib/tasks/data_migration.rake
+   namespace :data_migration do
+     desc 'Transform and import data from Mozzy'
+     task transform_and_import: :environment do
+       DataMigration::TransformationService.new.perform
+     end
+   end
+   ```
+
+### 3. Import Procedures
+
+1. Database Import:
+
+   ```ruby
+   # lib/tasks/data_migration.rake
+   namespace :data_migration do
+     desc 'Import transformed data'
+     task import: :environment do
+       Rails.logger.info "Starting data import at #{Time.current}"
+
+       ActiveRecord::Base.transaction do
+         # Import users first
+         User.import transformed_users
+
+         # Import podcasts with user associations
+         Podcast.import transformed_podcasts
+
+         # Import posts with user associations
+         SocialPost.import transformed_posts
+       end
+
+       Rails.logger.info "Completed data import at #{Time.current}"
+     end
+   end
+   ```
+
+2. File Storage Migration:
+   ```ruby
+   # app/services/data_migration/storage_migration_service.rb
+   module DataMigration
+     class StorageMigrationService
+       def migrate_files
+         migrate_podcast_files
+         migrate_post_attachments
+         migrate_user_avatars
+       end
+
+       private
+
+       def migrate_podcast_files
+         Podcast.find_each do |podcast|
+           next unless podcast.original_audio_url
+
+           begin
+             download_and_attach(
+               podcast,
+               :audio_file,
+               podcast.original_audio_url
+             )
+           rescue => e
+             log_error(podcast, e)
+           end
+         end
+       end
+     end
+   end
+   ```
+
+### 4. Validation & Rollback
+
+1. Validation Service:
+
+   ```ruby
+   # app/services/data_migration/validation_service.rb
+   module DataMigration
+     class ValidationService
+       def validate_migration
+         validate_user_data
+         validate_podcast_data
+         validate_post_data
+         validate_relationships
+         validate_file_attachments
+       end
+
+       private
+
+       def validate_user_data
+         # Compare user counts
+         original_count = Legacy::User.count
+         new_count = User.count
+
+         raise "User count mismatch" unless original_count == new_count
+
+         # Validate specific users
+         User.find_each do |user|
+           validate_user(user)
+         end
+       end
+     end
+   end
+   ```
+
+2. Rollback Procedures:
+   ```ruby
+   # lib/tasks/data_migration.rake
+   namespace :data_migration do
+     desc 'Rollback migration'
+     task rollback: :environment do
+       if ENV['CONFIRM_ROLLBACK'] != 'yes'
+         puts "Please run with CONFIRM_ROLLBACK=yes to proceed"
+         exit
+       end
+
+       ActiveRecord::Base.transaction do
+         # Clear new tables in reverse dependency order
+         SocialPost.delete_all
+         Podcast.delete_all
+         User.delete_all
+
+         # Clear uploaded files
+         Rails.application.config.active_storage.service.delete_all
+
+         # Reset sequences
+         ActiveRecord::Base.connection.reset_pk_sequence!('users')
+         ActiveRecord::Base.connection.reset_pk_sequence!('podcasts')
+         ActiveRecord::Base.connection.reset_pk_sequence!('social_posts')
+       end
+     end
+   end
+   ```
+
+### 5. Migration Monitoring
+
+1. Progress Tracking:
+
+   ```ruby
+   # config/initializers/migration_progress.rb
+   MIGRATION_STEPS = [
+     'users',
+     'podcasts',
+     'social_posts',
+     'files',
+     'validation'
+   ].freeze
+
+   # app/services/data_migration/progress_service.rb
+   module DataMigration
+     class ProgressService
+       def self.track(step)
+         Redis.current.sadd('migration:completed_steps', step)
+       end
+
+       def self.progress
+         completed = Redis.current.smembers('migration:completed_steps')
+         (completed.size.to_f / MIGRATION_STEPS.size * 100).round(2)
+       end
+     end
+   end
+   ```
+
+2. Error Handling:
+   ```ruby
+   # app/services/data_migration/error_handler.rb
+   module DataMigration
+     class ErrorHandler
+       def self.log_error(entity, error)
+         Rails.logger.error(
+           "Migration failed for #{entity.class}##{entity.id}: #{error.message}"
+         )
+
+         ErrorTracker.notify(
+           error,
+           context: {
+             entity_type: entity.class.name,
+             entity_id: entity.id,
+             migration_step: current_step
+           }
+         )
+       end
+     end
+   end
+   ```
+
+### 6. Running the Migration
+
+```bash
+# 1. Export data
+bundle exec rake data_migration:export
+
+# 2. Transform and import
+bundle exec rake data_migration:transform_and_import
+
+# 3. Validate
+bundle exec rake data_migration:validate
+
+# 4. If validation fails, rollback
+CONFIRM_ROLLBACK=yes bundle exec rake data_migration:rollback
+```
+
 ## Phase 2: Feature Migration
 
 [Rest of the file remains unchanged...]
