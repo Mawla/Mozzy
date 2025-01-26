@@ -197,6 +197,80 @@ Mozzy is currently built with Next.js, TypeScript, and a variety of AI-driven fe
    - [ ] Provide freeze date for the old code.
    - [ ] Staged rollout to a subset of users or dev environment.
 
+## Migration Documentation Improvements
+
+### 1. Data Migration Strategy
+
+- Add clear data migration procedures:
+  - [ ] Data export from Next.js/Supabase
+  - [ ] Data transformation scripts
+  - [ ] Import procedures into Rails
+  - [ ] Validation and rollback procedures
+
+### 2. API Versioning
+
+- [ ] Specify API versioning strategy
+- [ ] Document backward compatibility plan
+- [ ] Add API documentation for both old and new endpoints
+- [ ] Version mapping between old and new endpoints
+
+### 3. Testing Coverage Enhancement
+
+- [ ] Detail Jest to RSpec conversion strategy
+- [ ] Document API integration test coverage plan
+- [ ] Outline system/end-to-end test migration
+- [ ] Add test data migration procedures
+
+### 4. Dependency Management
+
+- [ ] List specific gem versions in migration-guide.md
+- [ ] Document Node.js dependencies to maintain
+- [ ] Create strategy for shared dependencies
+- [ ] Version compatibility matrix
+
+### 5. Error Handling Improvements
+
+- [ ] Enhance core-processing.md with detailed error recovery
+- [ ] Add centralized error tracking strategy
+- [ ] Include error notification system setup
+- [ ] Document error reporting and monitoring
+
+### 6. Security Considerations
+
+- [ ] Document token migration strategy
+- [ ] Detail session handling differences
+- [ ] Add CORS configuration guide
+- [ ] Specify API authentication changes
+
+### 7. Performance Monitoring
+
+- [ ] Add monitoring setup instructions
+- [ ] Include performance comparison metrics
+- [ ] Document APM (New Relic or similar) setup
+- [ ] Define performance benchmarks
+
+### 8. Rollout Strategy
+
+- [ ] Create phased rollout plan
+- [ ] Document feature flag strategy
+- [ ] Include detailed rollback procedures
+- [ ] Define success metrics
+
+### 9. Documentation Restructure
+
+- [ ] Organize into:
+  - Pre-migration tasks
+  - Migration procedures
+  - Post-migration validation
+  - Rollback procedures
+
+### 10. Environment Setup
+
+- [ ] Create development environment setup guide
+- [ ] Document staging environment configuration
+- [ ] Detail production deployment changes
+- [ ] Add environment-specific considerations
+
 ---
 
 ## Feature Documentation Impact

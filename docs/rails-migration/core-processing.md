@@ -2,11 +2,11 @@
 
 ## Overview
 
-This document outlines the migration of the core processing system from Mozzy's Next.js implementation to the Rails-based SocialScript application. The core processing system is the foundation for both podcast and social posts features.
+This document outlines the migration of the core processing system from Mozzy's Next.js implementation to the Rails-based SocialScript application. The core processing system is the foundation for both podcast and social posts features, as defined in [Project Requirements](../project_requirements_document.md#core-features).
 
 ## Source Structure
 
-Current location: `app/core/processing/`
+Current location: `app/core/processing/` (ref: [File Structure](../file_structure_document.md))
 
 ```typescript
 app/core/processing/
@@ -24,6 +24,8 @@ app/core/processing/
 ```
 
 ## Target Structure in Rails
+
+Based on [Backend Structure](../backend_structure_document.md):
 
 ```ruby
 app/
@@ -54,7 +56,7 @@ app/
 
 ## Database Schema
 
-### Processing Records
+Following [Tech Stack](../tech_stack_document.md#backend--storage) guidelines:
 
 ```ruby
 create_table :processing_records do |t|
@@ -91,6 +93,8 @@ end
 
 ### 1. Base Types Module
 
+Following [System Prompts](../system_prompts_document.md) for AI processing:
+
 ```ruby
 # lib/processing/types.rb
 module Processing
@@ -110,6 +114,8 @@ end
 ```
 
 ### 2. Base Processing Model
+
+Based on [Backend Structure](../backend_structure_document.md):
 
 ```ruby
 # app/models/processing/base.rb
@@ -137,6 +143,8 @@ end
 ## Service Implementation
 
 ### 1. Base Processor Service
+
+Following [Project Requirements](../project_requirements_document.md#core-features):
 
 ```ruby
 # app/services/processing/base_processor.rb
@@ -198,6 +206,8 @@ end
 
 ### 2. Processing Strategy
 
+Based on [System Prompts](../system_prompts_document.md) for AI integration:
+
 ```ruby
 # app/services/strategies/base_strategy.rb
 module Strategies
@@ -220,6 +230,8 @@ end
 ```
 
 ## Background Jobs
+
+Following [Tech Stack](../tech_stack_document.md#performance-optimization):
 
 ```ruby
 # app/jobs/processing_job.rb
@@ -245,47 +257,35 @@ end
 
 ## Error Handling
 
+Based on [Frontend Guidelines](../frontend_guidelines_document.md#error-handling):
+
 ```ruby
 # lib/processing/errors.rb
 module Processing
-  module Errors
-    class ProcessingError < StandardError
-      attr_reader :details
+  class Error < StandardError
+    attr_reader :details
 
-      def initialize(message = nil, details = {})
-        @details = details
-        super(message)
-      end
+    def initialize(message, details = {})
+      @details = details
+      super(message)
     end
-
-    class ValidationError < ProcessingError; end
-    class AdapterError < ProcessingError; end
-    class StrategyError < ProcessingError; end
   end
+
+  class ValidationError < Error; end
+  class ProcessingError < Error; end
+  class AdapterError < Error; end
 end
 ```
 
-## Monitoring and Logging
+## Documentation Requirements
 
-```ruby
-# config/initializers/processing_monitoring.rb
-Rails.application.config.after_initialize do
-  ActiveSupport::Notifications.subscribe "processing.start" do |*args|
-    event = ActiveSupport::Notifications::Event.new(*args)
-    Rails.logger.info "Processing started: #{event.payload}"
-  end
+When updating this documentation:
 
-  ActiveSupport::Notifications.subscribe "processing.complete" do |*args|
-    event = ActiveSupport::Notifications::Event.new(*args)
-    Rails.logger.info "Processing completed: #{event.payload}"
-  end
-
-  ActiveSupport::Notifications.subscribe "processing.error" do |*args|
-    event = ActiveSupport::Notifications::Event.new(*args)
-    Rails.logger.error "Processing error: #{event.payload}"
-  end
-end
-```
+1. Reference [Project Requirements](../project_requirements_document.md)
+2. Follow [Backend Structure](../backend_structure_document.md)
+3. Align with [Tech Stack](../tech_stack_document.md)
+4. Consider [System Prompts](../system_prompts_document.md)
+5. Update [Frontend Guidelines](../frontend_guidelines_document.md) if needed
 
 ## Migration Steps
 

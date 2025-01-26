@@ -1,0 +1,3 @@
+# Create new Rails API with Postgres
+rails new social_script --api --database=postgresql -T
+cd social_script 

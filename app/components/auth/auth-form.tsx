@@ -55,6 +55,7 @@ export function AuthForm() {
                 messageTextDanger: "hsl(var(--destructive))",
                 anchorTextColor: "hsl(var(--primary))",
                 dividerBackground: "hsl(var(--border))",
+                brandButtonText: "black",
               },
             },
           },
@@ -65,7 +66,7 @@ export function AuthForm() {
             input:
               "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
             button:
-              "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full",
+              "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-black !text-black hover:bg-primary/90 h-10 px-4 py-2 w-full",
             divider: "relative my-4",
             message: "text-sm text-muted-foreground",
             anchor:
