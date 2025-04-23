@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 
-const CLAUDE_MODEL_VERSION = "claude-3-sonnet-20240229";
-const MAX_OUTPUT_TOKENS = 4096; // Maximum allowed for Claude 3 Sonnet
+const CLAUDE_MODEL_VERSION = "claude-3-7-sonnet-20250219";
+const MAX_OUTPUT_TOKENS = 10000; // Maximum allowed for Claude 3 Sonnet
 
 export class AnthropicHelper {
   private static instance: AnthropicHelper;
@@ -21,8 +21,8 @@ export class AnthropicHelper {
   }
 
   public async getCompletion(
-      prompt: string,
-      maxTokens: number = MAX_OUTPUT_TOKENS
+    prompt: string,
+    maxTokens: number = MAX_OUTPUT_TOKENS
   ): Promise<string> {
     try {
       console.log("Calling Anthropic API with prompt:", prompt);
@@ -41,9 +41,9 @@ export class AnthropicHelper {
       console.log("Anthropic API response:", response);
 
       if (
-          response.content &&
-          response.content.length > 0 &&
-          "text" in response.content[0]
+        response.content &&
+        response.content.length > 0 &&
+        "text" in response.content[0]
       ) {
         return response.content[0].text.trim();
       } else {

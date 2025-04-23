@@ -176,22 +176,130 @@ export async function getSimilarTemplates(
       prompt,
       SIMILAR_TEMPLATES_COMPLETION_LENGTH
     );
-    const sanitizedResponse = sanitizeJsonString(response);
+
+    // Log raw response for debugging
+    console.log("Raw similarity response:", response.substring(0, 200) + "...");
+
+    // Handle common response formats
+
+    // Case 1: Response is inside a code block
+    if (response.includes("```json")) {
+      const codeBlockRegex = /```json\s*(\{[\s\S]*?\})\s*```/;
+      const match = response.match(codeBlockRegex);
+
+      if (match && match[1]) {
+        try {
+          const jsonContent = match[1].trim();
+          console.log(
+            "Extracted JSON from code block:",
+            jsonContent.substring(0, 100) + "..."
+          );
+          const parsed = JSON.parse(jsonContent);
+
+          if (Array.isArray(parsed.similarTemplateIds)) {
+            return parsed.similarTemplateIds;
+          }
+        } catch (error) {
+          console.warn("Failed to parse JSON from code block:", error);
+        }
+      }
+    }
+
+    // Case 2: Handle the specific malformed JSON format with object keys in array
+    if (response.includes('"similarTemplateIds"')) {
+      // Try to extract all template IDs using a regular expression
+      const idRegex = /"(clj[a-zA-Z0-9]+)"/g;
+      const templateIds: string[] = [];
+      let match;
+
+      // Use exec in a loop instead of matchAll for better compatibility
+      while ((match = idRegex.exec(response)) !== null) {
+        if (match[1]) {
+          templateIds.push(match[1]);
+        }
+      }
+
+      if (templateIds.length > 0) {
+        console.log("Extracted template IDs using regex:", templateIds);
+        return templateIds;
+      }
+    }
+
+    // Case 3: Try traditional JSON parsing
     try {
+      // First try to clean any markdown or code block markers
+      let cleanResponse = response.replace(/```json|```/g, "").trim();
+
+      // If it looks like JSON, try to parse it
+      if (
+        cleanResponse.startsWith("{") &&
+        cleanResponse.includes("similarTemplateIds")
+      ) {
+        const sanitizedResponse = sanitizeJsonString(cleanResponse);
+        const parsedResponse = JSON.parse(sanitizedResponse);
+
+        if (Array.isArray(parsedResponse.similarTemplateIds)) {
+          return parsedResponse.similarTemplateIds;
+        } else if (parsedResponse.similarTemplateIds) {
+          console.warn(
+            "similarTemplateIds is not an array, converting:",
+            parsedResponse.similarTemplateIds
+          );
+          return [parsedResponse.similarTemplateIds.toString()];
+        }
+      }
+
+      // Try parsing the raw response as a last resort
+      const sanitizedResponse = sanitizeJsonString(response);
       const parsedResponse = JSON.parse(sanitizedResponse);
-      return parsedResponse.similarTemplateIds;
+
+      if (Array.isArray(parsedResponse.similarTemplateIds)) {
+        return parsedResponse.similarTemplateIds;
+      } else if (parsedResponse.similarTemplateIds) {
+        return [parsedResponse.similarTemplateIds.toString()];
+      } else {
+        console.warn("No similarTemplateIds field found in response");
+      }
     } catch (parseError) {
       console.error("Error parsing JSON response:", parseError);
-      // Fallback to regex matching if JSON parsing fails
-      return extractJsonArrayFromString(
-        sanitizedResponse,
-        "similarTemplateIds"
-      );
+
+      // Fallback to regex extraction if JSON parsing fails
+      // Extract any ID-like strings that match the known format of template IDs
+      const templateIdRegex = /clj[a-zA-Z0-9]{20,30}/g;
+      const matches = response.match(templateIdRegex);
+
+      if (matches && matches.length > 0) {
+        console.log("Extracted template IDs using fallback regex:", matches);
+        return matches;
+      }
+
+      // Ultimate fallback - extract anything that looks like a template ID
+      const generalIdRegex = /"([a-zA-Z0-9-_]{20,40})"/g;
+      const ids: string[] = [];
+      let generalMatch;
+
+      // Use exec in a loop instead of matchAll for better compatibility
+      while ((generalMatch = generalIdRegex.exec(response)) !== null) {
+        if (generalMatch[1]) {
+          ids.push(generalMatch[1]);
+        }
+      }
+
+      if (ids.length > 0) {
+        console.log("Extracted possible template IDs:", ids);
+        return ids;
+      }
+
+      console.warn("Could not extract template IDs using any method");
+      return [];
     }
   } catch (error) {
     console.error("Error fetching similar templates from Anthropic:", error);
     return [];
   }
+
+  // If we reach here, we couldn't extract any IDs
+  return [];
 }
 
 export async function mergeMultipleContents(
