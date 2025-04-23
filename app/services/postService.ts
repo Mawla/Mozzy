@@ -51,24 +51,29 @@ export const postService = {
   },
 
   async createNewPost(): Promise<Post> {
-    const newPost = {
-      title: "",
-      content: "",
-      tags: [],
-      tweet_thread_content: [],
-      transcript: "",
-      merged_contents: {},
-      template_ids: [],
-      templates: [],
-      status: "draft" as const,
-    };
+    try {
+      const newPost = {
+        title: "Untitled Post",
+        content: "",
+        tags: [],
+        tweet_thread_content: [],
+        transcript: "",
+        merged_contents: {},
+        template_ids: [],
+        templates: [],
+        status: "draft" as const,
+      };
 
-    const response = await PostActions.createPost(newPost);
-    if (response.error) {
-      logger.error("Error creating post", new Error(response.error));
-      throw new Error(response.error);
+      const response = await PostActions.createPost(newPost);
+      if (response.error) {
+        logger.error("Error creating post", new Error(response.error));
+        throw new Error(response.error);
+      }
+      return response.data!;
+    } catch (error) {
+      console.error("Error creating new post:", error);
+      throw error;
     }
-    return response.data!;
   },
 
   async handleSave(post: Post): Promise<Post> {
