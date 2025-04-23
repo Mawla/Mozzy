@@ -47,3 +47,4 @@ app-*.log
 
 # Supabase
 supabase/.temp
+.env
