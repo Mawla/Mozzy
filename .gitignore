@@ -44,3 +44,6 @@ next-env.d.ts
 logs/
 app-*.log
 .repomix-output.txt
+
+# Supabase
+supabase/.temp/*
