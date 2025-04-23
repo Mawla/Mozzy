@@ -63,6 +63,12 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({
     (newContent: string) => {
       if (editor && newContent !== editor.getHTML()) {
         // Preserve line breaks and normalize content
+        if (!newContent) {
+          // Handle the case when newContent is undefined or null
+          editor.commands.setContent("", false);
+          return;
+        }
+
         const cleanContent = newContent
           .replace(/<li>\s*<\/li>/g, "") // Remove empty list items
           .replace(/<ul>\s*<\/ul>/g, "") // Remove empty lists

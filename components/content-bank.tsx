@@ -15,6 +15,7 @@ import {
   generateImprovedTranscript,
   suggestTags,
 } from "@/app/services/aiTextService";
+import { formatDate } from "@/app/utils/formatters";
 
 export function ContentBank() {
   const [recordings, setRecordings] = useState<StoredRecording[]>([]);
@@ -71,15 +72,6 @@ export function ContentBank() {
     setIsRecording(false);
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(undefined, {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
       <main className="flex-grow p-6">
@@ -124,7 +116,7 @@ export function ContentBank() {
                   onClick={() => setSelectedRecording(recording)}
                 >
                   <span className="text-xs text-gray-500 absolute top-1 right-2">
-                    {formatDate(recording.date)}
+                    {formatDate(new Date(recording.date))}
                   </span>
                   <p className="text-sm text-gray-800 mt-2">
                     {recording.title || "No title available"}

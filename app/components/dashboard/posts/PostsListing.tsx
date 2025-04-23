@@ -12,6 +12,7 @@ import { Post } from "@/app/types/post";
 import { logger } from "@/lib/logger";
 import { postService } from "@/app/services/postService";
 import { toast } from "sonner";
+import { formatDate } from "@/app/utils/formatters";
 
 interface PostsListingProps {
   initialPosts: Post[];
@@ -189,7 +190,7 @@ export const PostsListing: React.FC<PostsListingProps> = ({ initialPosts }) => {
                 <div className="flex-grow">
                   <CardTitle>{post.title || "Untitled"}</CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    Created: {new Date(post.created_at).toLocaleDateString()}
+                    Created: {formatDate(new Date(post.created_at))}
                   </p>
                 </div>
               </div>

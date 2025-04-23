@@ -121,7 +121,7 @@ export async function createPost(data: {
   content: string;
   metadata?: any;
   templates?: any[];
-  mergedContents?: Record<string, string>;
+  merged_contents?: Record<string, string>;
   status?: "draft" | "published";
 }): Promise<ServerActionResponse<Post>> {
   try {
@@ -138,7 +138,7 @@ export async function createPost(data: {
       status: data.status || "draft",
       metadata: data.metadata || {},
       templates: data.templates || [],
-      mergedContents: data.mergedContents || {},
+      merged_contents: data.merged_contents || {},
     };
 
     const { data: post, error } = await supabase
