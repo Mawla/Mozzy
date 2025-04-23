@@ -121,6 +121,7 @@ export async function createPost(data: {
   content: string;
   metadata?: any;
   templates?: any[];
+  template_ids?: string[];
   merged_contents?: Record<string, string>;
   status?: "draft" | "published";
 }): Promise<ServerActionResponse<Post>> {
@@ -132,14 +133,25 @@ export async function createPost(data: {
       return { error: "User not authenticated" };
     }
 
+    // Clone the data to avoid modifying the original
     const postData = {
       ...data,
       user_id: user.data.user.id,
       status: data.status || "draft",
       metadata: data.metadata || {},
       templates: data.templates || [],
+      template_ids: data.template_ids
+        ? data.template_ids.map((id) => String(id))
+        : [], // Ensure strings
       merged_contents: data.merged_contents || {},
     };
+
+    // Log the template IDs we're using
+    if (postData.template_ids && postData.template_ids.length > 0) {
+      logger.info("Creating post with template_ids:", {
+        template_ids: postData.template_ids,
+      });
+    }
 
     const { data: post, error } = await supabase
       .from("posts")
@@ -191,9 +203,23 @@ export async function updatePost(
       return { error: "Post not found" };
     }
 
+    // Clone the data to avoid modifying the original
+    const updateData = { ...data };
+
+    // Ensure template_ids are stored as text strings
+    // This is critical since the template IDs from the system are not valid UUIDs
+    if (updateData.template_ids) {
+      // Make sure we're working with an array of strings
+      updateData.template_ids = updateData.template_ids.map((id) => String(id));
+
+      logger.info(`Updating post ${id} with template_ids:`, {
+        template_ids: updateData.template_ids,
+      });
+    }
+
     const { data: updatedPost, error } = await supabase
       .from("posts")
-      .update(data)
+      .update(updateData)
       .eq("id", id)
       .select()
       .single();
@@ -202,7 +228,7 @@ export async function updatePost(
       const errorMessage =
         (error as PostgrestError).message || `Failed to update post ${id}`;
       logger.error(`Failed to update post ${id}`, new Error(errorMessage), {
-        data,
+        data: updateData,
       });
       return { error: errorMessage };
     }
