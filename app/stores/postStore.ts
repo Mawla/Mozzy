@@ -3,6 +3,7 @@ import { Post } from "@/app/types/post";
 import { Template } from "@/app/types/template";
 import { postService } from "@/app/services/postService";
 import { ContentMetadata } from "@/app/types/contentMetadata";
+import { ProcessingFormat } from "@/app/types/processing/base";
 
 interface PostState {
   posts: Post[];
@@ -11,8 +12,8 @@ interface PostState {
   isLoading: boolean;
   progress: number;
   loadingMessage: string;
-  refinementInstructions: string;
-  mergeInstructions: string;
+  refinement_instructions: string;
+  merge_instructions: string;
 }
 
 interface PostActions {
@@ -27,7 +28,7 @@ interface PostActions {
   handleMerge: (
     postId: string,
     templateIndex: number,
-    mergeInstructions: string
+    merge_instructions: string
   ) => Promise<void>;
   handleSave: () => Promise<void>;
   handleRemoveTemplate: (index: number) => void;
@@ -49,8 +50,8 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
   isLoading: false,
   progress: 0,
   loadingMessage: "",
-  refinementInstructions: "",
-  mergeInstructions: "",
+  refinement_instructions: "",
+  merge_instructions: "",
 
   // Actions
   loadPosts: async () => {
@@ -58,8 +59,8 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
     const processedPosts = loadedPosts.map((post) => ({
       ...post,
       templates: post.templates || [],
-      templateIds: post.templateIds || [],
-      mergedContents: post.mergedContents || {},
+      template_ids: post.template_ids || [],
+      merged_contents: post.merged_contents || {},
     }));
 
     console.log("Loading all posts with templates:", processedPosts);
@@ -72,8 +73,8 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
       const fullPost = {
         ...loadedPost,
         templates: loadedPost.templates || [],
-        templateIds: loadedPost.templateIds || [],
-        mergedContents: loadedPost.mergedContents || {},
+        template_ids: loadedPost.template_ids || [],
+        merged_contents: loadedPost.merged_contents || {},
       };
 
       console.log("Loading post with templates:", fullPost);
@@ -81,8 +82,8 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
       set({
         currentPost: fullPost,
         wordCount: fullPost.content.trim().split(/\s+/).length,
-        refinementInstructions: fullPost.refinementInstructions || "",
-        mergeInstructions: fullPost.mergeInstructions || "",
+        refinement_instructions: fullPost.refinement_instructions || "",
+        merge_instructions: fullPost.merge_instructions || "",
       });
     } else {
       console.error(`Post with id ${id} not found`);
@@ -110,8 +111,8 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
         posts: [...state.posts, newPost],
         currentPost: newPost,
         wordCount: 0,
-        mergeInstructions: "",
-        refinementInstructions: "",
+        merge_instructions: "",
+        refinement_instructions: "",
       }));
     } else {
       console.error("Failed to create new post");
@@ -157,19 +158,22 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
         keyPeople: [],
         industries: [],
         contentType: [],
+        format: "post" as ProcessingFormat,
+        platform: "web",
+        processedAt: new Date().toISOString(),
       },
       allTemplates
     );
     get().updatePost({
       templates: suggestedTemplates,
-      templateIds: suggestedTemplates.map((t) => t.id),
+      template_ids: suggestedTemplates.map((t) => t.id),
     });
   },
 
   handleMerge: async (
     postId: string,
     templateIndex: number,
-    mergeInstructions: string = ""
+    merge_instructions: string = ""
   ) => {
     try {
       const { posts, currentPost } = get();
@@ -216,19 +220,22 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
           keyPeople: [],
           industries: [],
           contentType: [],
+          format: "post" as ProcessingFormat,
+          platform: "web",
+          processedAt: new Date().toISOString(),
         },
-        mergeInstructions
+        merge_instructions
       );
 
       // Update the post with the new merged content and merge context
-      const updatedMergedContents = {
-        ...post.mergedContents,
+      const updated_merged_contents = {
+        ...post.merged_contents,
         [template.id]: mergedContent,
       };
       const updatedPost = {
         ...post,
-        mergedContents: updatedMergedContents,
-        mergeInstructions,
+        merged_contents: updated_merged_contents,
+        merge_instructions,
       };
 
       // Save to Supabase and update local state
@@ -277,17 +284,17 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
 
     if (!removedTemplate) return;
 
-    const updatedTemplateIds = currentPost.templateIds.filter(
+    const updatedTemplateIds = currentPost.template_ids.filter(
       (id) => id !== removedTemplate.id
     );
 
     const { [removedTemplate.id]: removedContent, ...remainingContents } =
-      currentPost.mergedContents;
+      currentPost.merged_contents;
 
     get().updatePost({
       templates: updatedTemplates,
-      templateIds: updatedTemplateIds,
-      mergedContents: remainingContents,
+      template_ids: updatedTemplateIds,
+      merged_contents: remainingContents,
     });
   },
 
@@ -296,7 +303,7 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
     if (!currentPost) return;
 
     const updatedTemplates = [...(currentPost.templates || [])];
-    const updatedTemplateIds = [...(currentPost.templateIds || [])];
+    const updatedTemplateIds = [...(currentPost.template_ids || [])];
 
     // Check if template is already selected
     const existingIndex = updatedTemplates.findIndex(
@@ -311,7 +318,7 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
 
     get().updatePost({
       templates: updatedTemplates,
-      templateIds: updatedTemplateIds,
+      template_ids: updatedTemplateIds,
     });
   },
 
@@ -319,8 +326,8 @@ export const usePostStore = create<PostState & PostActions>()((set, get) => ({
     set({ isLoading, progress, loadingMessage }),
 
   setRefinementInstructions: (instructions: string) =>
-    set({ refinementInstructions: instructions }),
+    set({ refinement_instructions: instructions }),
 
   setMergeInstructions: (instructions: string) =>
-    set({ mergeInstructions: instructions }),
+    set({ merge_instructions: instructions }),
 }));

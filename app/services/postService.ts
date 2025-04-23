@@ -5,6 +5,7 @@ import { refinePodcastTranscriptPrompt } from "@/prompts/refinePodcastTranscript
 import * as AnthropicActions from "@/app/actions/anthropicActions";
 import * as PostActions from "@/app/actions/posts";
 import { ContentMetadata } from "@/app/types/contentMetadata";
+import { ProcessingFormat } from "@/app/types/processing/base";
 import { useLoadingStore } from "@/app/stores/loadingStore";
 import { logger } from "@/lib/logger";
 
@@ -54,10 +55,10 @@ export const postService = {
       title: "",
       content: "",
       tags: [],
-      tweetThreadContent: [],
+      tweet_thread_content: [],
       transcript: "",
-      mergedContents: {},
-      templateIds: [],
+      merged_contents: {},
+      template_ids: [],
       templates: [],
       status: "draft" as const,
     };
@@ -111,6 +112,9 @@ export const postService = {
         keyPeople: [],
         industries: [],
         contentType: [],
+        format: "post" as ProcessingFormat,
+        platform: "web",
+        processedAt: new Date().toISOString(),
       };
     }
   },
@@ -161,7 +165,7 @@ export const postService = {
     templates: Template[],
     metadata: ContentMetadata
   ): Promise<{
-    mergedContents: { [templateId: string]: string };
+    merged_contents: { [templateId: string]: string };
     suggestedTitle: string;
   }> {
     const { setLoading } = useLoadingStore.getState();
@@ -174,16 +178,19 @@ export const postService = {
     );
     console.log("Merge response:", mergeResponse);
 
-    const mergedContents = mergeResponse.mergedResults.reduce((acc, result) => {
-      if (result.templateId && result.mergedContent !== null) {
-        acc[result.templateId] = result.mergedContent;
-      } else {
-        console.error(`Missing template ID or merged content:`, result);
-      }
-      return acc;
-    }, {} as { [templateId: string]: string });
+    const merged_contents = mergeResponse.mergedResults.reduce(
+      (acc, result) => {
+        if (result.templateId && result.mergedContent !== null) {
+          acc[result.templateId] = result.mergedContent;
+        } else {
+          console.error(`Missing template ID or merged content:`, result);
+        }
+        return acc;
+      },
+      {} as { [templateId: string]: string }
+    );
 
-    console.log("Processed mergedContents:", mergedContents);
+    console.log("Processed merged_contents:", merged_contents);
 
     setLoading(true, 90, "Generating title...");
     let suggestedTitle;
@@ -195,7 +202,7 @@ export const postService = {
     }
 
     setLoading(false, 100, "Merge process completed");
-    return { mergedContents, suggestedTitle };
+    return { merged_contents, suggestedTitle };
   },
 
   generateFallbackTitle(transcript: string): string {
@@ -502,7 +509,7 @@ export const postService = {
       const post = await this.getPostById(postId);
       if (!post) throw new Error("Post not found");
 
-      const { mergedContents, suggestedTitle } =
+      const { merged_contents, suggestedTitle } =
         await this.mergeContentsAndSuggestTitle(
           post.content,
           post.templates ?? [],
@@ -513,14 +520,17 @@ export const postService = {
             keyPeople: [],
             industries: [],
             contentType: [],
+            format: "post" as ProcessingFormat,
+            platform: "web",
+            processedAt: new Date().toISOString(),
           }
         );
 
       const updatedPost = {
         ...post,
-        mergedContents,
+        merged_contents,
         title: suggestedTitle,
-        updatedAt: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
 
       await this.handleSave(updatedPost);
@@ -529,6 +539,42 @@ export const postService = {
       console.error("Error handling merge:", error);
       setLoading(false, 0, "Merge process failed");
       throw error;
+    }
+  },
+
+  async regenerateTemplateContent(postId: string): Promise<Post | null> {
+    try {
+      const post = await this.getPostById(postId);
+      if (!post) throw new Error("Post not found");
+
+      const { merged_contents, suggestedTitle } =
+        await this.mergeContentsAndSuggestTitle(
+          post.content,
+          post.templates ?? [],
+          post.metadata ?? {
+            categories: [],
+            tags: [],
+            topics: [],
+            keyPeople: [],
+            industries: [],
+            contentType: [],
+            format: "post" as ProcessingFormat,
+            platform: "web",
+            processedAt: new Date().toISOString(),
+          }
+        );
+
+      const updatedPost = {
+        ...post,
+        merged_contents,
+        title: suggestedTitle,
+        updated_at: new Date().toISOString(),
+      };
+
+      return updatedPost;
+    } catch (error) {
+      console.error("Error regenerating template content:", error);
+      return null;
     }
   },
 };

@@ -6,14 +6,14 @@ export interface Post {
   title: string;
   content: string;
   tags: string[];
-  tweetThreadContent: string[];
+  tweet_thread_content: string[];
   transcript: string;
-  mergedContents: { [key: string]: string };
-  createdAt: string;
-  updatedAt: string;
-  templateIds: string[];
+  merged_contents: { [key: string]: string };
+  created_at: string;
+  updated_at: string;
+  template_ids: string[];
   templates: Template[];
   metadata?: ContentMetadata;
-  refinementInstructions?: string;
-  mergeInstructions?: string;
+  refinement_instructions?: string;
+  merge_instructions?: string;
 }
