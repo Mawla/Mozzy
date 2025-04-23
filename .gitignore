@@ -46,4 +46,4 @@ app-*.log
 .repomix-output.txt
 
 # Supabase
-supabase/.temp/*
+supabase/.temp

@@ -1,4 +1,6 @@
+import { z } from "zod";
+
 export * from "./analysis";
-export * from "./entities";
-export * from "./transcript";
+export * from "@/app/types/entities";
 export * from "./timeline";
+export * from "./transcript";
