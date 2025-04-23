@@ -1,0 +1,195 @@
+---
+description: Ensures tests are run after any Ruby file changes
+globs: "\\.rb$", \\.rb$,app|lib|spec
+---
+# Ruby Test Confirmation Rule
+description: Ensures tests are run after any Ruby file changes
+globs:
+  - type: file_extension
+    pattern: "\\.rb$"
+  - type: directory
+    pattern: "(app|lib|spec)"
+
+<rule>
+name: ruby_test_confirmation
+
+actions:
+  - type: suggest
+    message: |
+      Ruby Test Confirmation Rules:
+
+      1. Test Confirmation Process:
+         a) After ANY Ruby file changes:
+            - Run the specific test file for the changed file
+            - Run related test files
+            - Run the full test suite if changes affect multiple components
+
+      2. Test Running Order:
+         a) Run specific test first:
+            ```bash
+            bundle exec rspec spec/path/to/specific_spec.rb
+            ```
+         b) Run related tests:
+            ```bash
+            bundle exec rspec spec/path/to/related/*_spec.rb
+            ```
+         c) If needed, run full suite:
+            ```bash
+            bundle exec rspec
+            ```
+
+      3. Test Coverage Requirements:
+         - All changes must maintain or improve test coverage
+         - New functionality must include corresponding tests
+         - Bug fixes must include regression tests
+
+      4. Test Validation Steps:
+         - Check test results
+         - Verify no regressions
+         - Confirm coverage
+         - Review test output for deprecation warnings
+
+      5. Error Prevention:
+         - No commits without passing tests
+         - No skipping tests
+         - No pending tests without justification
+         - Document any test limitations
+
+examples:
+  - input: |
+      # After changing a service
+      bundle exec rspec spec/services/my_service_spec.rb
+      
+      # After changing a model
+      bundle exec rspec spec/models/my_model_spec.rb
+      
+      # After changing shared functionality
+      bundle exec rspec
+metadata:
+  priority: high
+  version: 1.0.0
+  changelog:
+    - version: 1.0.0
+      changes:
+        - Initial version
+        - Added test confirmation process
+        - Added test running order
+        - Added coverage requirements
+</rule>
+
+## Implementation Guide
+
+1. **Finding Related Tests**
+   ```bash
+   find spec/ -name "*_spec.rb" | grep $(basename $RUBY_FILE .rb)
+   ```
+
+2. **Running Specific Tests**
+   ```bash
+   # For a specific test file
+   bundle exec rspec spec/path/to/specific_spec.rb
+
+   # For a specific test within a file
+   bundle exec rspec spec/path/to/specific_spec.rb:LINE_NUMBER
+   ```
+
+3. **Running Related Tests**
+   ```bash
+   # For all tests in a directory
+   bundle exec rspec spec/services/
+
+   # For all tests matching a pattern
+   bundle exec rspec --pattern "spec/**/*_spec.rb"
+   ```
+
+## Best Practices
+
+1. **Test Organization**
+   - One test file per Ruby file
+   - Logical grouping of contexts
+   - Clear, descriptive test names
+   - Proper use of before/after hooks
+
+2. **Test Coverage**
+   - Happy path scenarios
+   - Edge cases
+   - Error conditions
+   - Boundary values
+
+3. **Test Maintenance**
+   - Keep tests DRY
+   - Use shared examples
+   - Clear setup using let/before
+   - Meaningful assertions
+
+4. **Documentation**
+   - Document test purpose
+   - Document test limitations
+   - Document test dependencies
+   - Document test data requirements
+
+## Overview
+
+This rule establishes the requirement to run tests after any Ruby file changes in the project. It ensures that changes do not introduce regressions and maintains the stability of the codebase.
+
+## Core Principles
+
+1. **Always Run Tests**
+   - Run tests after EVERY Ruby file change
+   - Run specific tests first
+   - Run related tests next
+   - Run full suite if changes affect multiple components
+
+2. **Test Coverage**
+   - Maintain or improve coverage
+   - Add tests for new functionality
+   - Include regression tests for bug fixes
+   - Document test limitations
+
+3. **Test Quality**
+   - Clear and descriptive tests
+   - Proper use of RSpec features
+   - Efficient test execution
+   - Meaningful assertions
+
+## Validation Steps
+
+Before committing any Ruby file changes:
+
+1. **Test Execution**
+   ```bash
+   # Run specific test
+   bundle exec rspec spec/path/to/specific_spec.rb
+
+   # Run related tests
+   bundle exec rspec spec/path/to/related/*_spec.rb
+
+   # Run full suite if needed
+   bundle exec rspec
+   ```
+
+2. **Coverage Check**
+   - Review coverage reports
+   - Identify uncovered lines
+   - Add missing tests
+   - Document coverage decisions
+
+3. **Quality Check**
+   - Review test descriptions
+   - Check assertion quality
+   - Verify test independence
+   - Confirm test reliability
+
+## Error Prevention
+
+1. Never commit without running tests
+2. Never skip tests without justification
+3. Never ignore test failures
+4. Document all test limitations
+
+## References
+
+- RSpec documentation
+- Ruby testing best practices
+- Test coverage tools
+- Continuous Integration guides 

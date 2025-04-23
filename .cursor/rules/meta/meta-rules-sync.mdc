@@ -1,0 +1,151 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Cursor Rules Sync
+# Standards for syncing rules with the cursor_rules repository
+
+<rule>
+name: cursor_rules_sync
+description: Guidelines for maintaining and syncing rules with the cursor_rules repository
+version: 1.0.0
+author: Dan
+date: 2025-02-12
+globs:
+  - ".cursor/rules/**/*.mdc"
+tags:
+  - sync
+  - maintenance
+  - rules
+
+## Overview
+
+This rule establishes the process for syncing local cursor rules with the central repository at https://github.com/Mawla/cursor_rules.
+
+## Sync Process
+
+1. Create a temporary directory:
+   ```bash
+   mkdir -p /tmp/cursor_rules_push
+   cd /tmp/cursor_rules_push
+   ```
+
+2. Clone the repository using SSH:
+   ```bash
+   git clone git@github.com:Mawla/cursor_rules.git .
+   ```
+
+3. Copy current rules:
+   ```bash
+   mkdir -p .cursor/rules
+   cp /path/to/your/project/.cursor/rules/*.mdc .cursor/rules/
+   ```
+
+4. Review for sensitive information:
+   - Check for API keys, tokens, or credentials
+   - Verify no internal URLs or endpoints
+   - Remove any project-specific secrets
+   - Ensure examples use placeholder values
+
+5. Commit and push:
+   ```bash
+   git add .cursor/rules/
+   git commit -m "feat: Update cursor rules - [brief description]"
+   git push origin main
+   ```
+
+6. Clean up:
+   ```bash
+   cd ..
+   rm -rf cursor_rules_push
+   ```
+
+## Best Practices
+
+1. **Regular Updates**
+   - Sync valuable new rules promptly
+   - Keep rule versions aligned
+   - Document significant changes
+
+2. **Quality Control**
+   - Test rules locally before syncing
+   - Remove any .bak or temporary files
+   - Ensure proper formatting
+   - Verify all rules follow the standard structure
+
+3. **Security**
+   - Always review for sensitive data
+   - Use example.com for URLs
+   - Use placeholder values for credentials
+   - Remove any internal references
+
+4. **Documentation**
+   - Update version numbers
+   - Add changelog entries
+   - Include clear descriptions
+   - Document dependencies
+
+## Troubleshooting
+
+1. **SSH Issues**
+   - Verify SSH key is added to GitHub
+   - Test connection: `ssh -T git@github.com`
+   - Check remote URL: `git remote -v`
+
+2. **Merge Conflicts**
+   - Pull latest changes before pushing
+   - Resolve conflicts locally
+   - Maintain rule structure
+
+3. **Permission Issues**
+   - Verify repository access
+   - Check GitHub team membership
+   - Contact repository owner if needed
+
+## Rule Maintenance
+
+1. **Version Control**
+   - Increment version numbers appropriately
+   - Follow semantic versioning
+   - Document breaking changes
+
+2. **Quality Checks**
+   - Validate YAML frontmatter
+   - Check rule syntax
+   - Verify file permissions
+   - Test rule functionality
+
+3. **Cleanup**
+   - Remove obsolete rules
+   - Update dependencies
+   - Archive deprecated content
+
+## Examples
+
+Good commit message:
+```
+feat: Update cursor rules - Add Rails 8 view component standards
+
+- Add ViewComponent best practices
+- Update TailwindCSS guidelines
+- Improve documentation references
+```
+
+Bad commit message:
+```
+update rules
+```
+
+## Metadata
+
+priority: high
+changelog:
+  - version: 1.0.0
+    date: 2025-02-12
+    changes:
+      - Initial version
+      - Added sync process
+      - Added best practices
+      - Added troubleshooting guide
+</rule> 

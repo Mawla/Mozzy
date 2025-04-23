@@ -1,0 +1,277 @@
+---
+description: Enforces a strict test-driven workflow where each change must be tested before moving on
+globs: 
+alwaysApply: true
+---
+ # Test-Edit-Test Workflow Rule
+
+<rule>
+name: test_edit_test_workflow
+description: Enforces a strict test-driven workflow where each change must be tested before moving on
+globs:
+  - type: file_extension
+    pattern: "\\.(rb|rake)$"
+  - type: directory
+    pattern: "(spec|test|app)"
+
+actions:
+  - type: suggest
+    message: |
+      Test-Edit-Test Workflow Rules:
+
+      1. Single Edit Cycle:
+         - Make ONE edit at a time
+         - Test IMMEDIATELY after each edit
+         - Resolve issues before proceeding
+         - Document progress in updates.md
+
+      2. Workflow Process:
+         a) Read existing test for target file
+         b) Make single focused edit OR create/update test
+         c) Run test to verify change works
+         d) Fix any issues before moving to next edit
+         e) Document completion in updates.md
+
+      3. Error Prevention:
+         - NO multiple edits before testing
+         - NO accumulating untested changes
+         - NO postponing test failures
+         - NO moving on with failing tests
+
+      4. Documentation Requirement:
+         - Document each completed test cycle
+         - Note any test limitations or issues
+         - Reference test results in updates
+         - Track progress against plan.md
+examples:
+  - input: |
+      # Good Practice
+      1. Edit file.rb
+      2. Run tests for file.rb
+      3. Fix issues if found
+      4. Document completion
+      5. Move to next edit
+      
+      # Bad Practice
+      1. Edit file1.rb
+      2. Edit file2.rb
+      3. Edit file3.rb
+      4. Run tests (find multiple issues)
+      5. Struggle to identify which edit caused problems
+metadata:
+  priority: critical
+  version: 1.0.0
+  changelog:
+    - version: 1.0.0
+      changes:
+        - Initial version
+        - Added workflow requirements
+        - Added error prevention
+        - Added documentation steps
+</rule>
+
+## Implementation Guide
+
+### Core Principles
+
+1. **One Edit at a Time**
+   - Make a single, focused change
+   - Changes should be surgical and specific
+   - Document the purpose of each change
+
+2. **Test Immediately**
+   - Run tests immediately after each change
+   - Don't proceed if tests fail
+   - Fix issues before making new changes
+
+3. **Track Progress**
+   - Document each successful change
+   - Reference test results
+   - Update plan.md with progress
+
+### Workflow Steps
+
+1. **Before Editing**
+   ```bash
+   # Check for existing tests
+   find spec/ -name "*_spec.rb" | grep $FILE_NAME
+   
+   # Run tests to establish baseline
+   bundle exec rspec spec/path/to/spec_file.rb
+   ```
+
+2. **After Editing**
+   ```bash
+   # Run tests immediately
+   bundle exec rspec spec/path/to/spec_file.rb
+   
+   # If tests fail, fix issues before continuing
+   ```
+
+3. **Documentation**
+   ```markdown
+   # Update in docs/working-memory/open/{task-id}/updates.md
+   
+   ## Test Results
+   - Edited: app/lib/some_class.rb
+   - Test: spec/lib/some_class_spec.rb
+   - Result: ✅ All tests passing
+   - Notes: Fixed issue with X by implementing Y
+   ```
+
+## Best Practices
+
+1. **Atomicity**
+   - Changes should be atomic and focused
+   - One logical change at a time
+   - Easier to debug when isolated
+
+2. **Traceability**
+   - Each change should be traceable to a test
+   - Each test should verify specific behavior
+   - Documentation should reference both
+
+3. **Sequential Progress**
+   - Follow task plan in sequence
+   - Don't jump ahead or work on multiple steps
+   - Complete each step fully before moving on
+
+4. **Documentation**
+   - Document success criteria
+   - Document unexpected behaviors
+   - Document test limitations
+   - Reference plan step numbers
+
+## Why This Matters
+
+1. **Reduced Debugging Time**
+   - Isolating changes makes problems obvious
+   - Test failures immediately point to recent change
+   - No need to search through multiple changes
+
+2. **Higher Quality**
+   - Each change is verified
+   - No accumulation of untested code
+   - Issues fixed when context is fresh
+
+3. **Better Progress Tracking**
+   - Clear documentation of what works
+   - Easier to resume after breaks
+   - Visible progress against plan
+
+## Example Workflow
+
+### Good Example
+
+```
+# 1. Check existing test
+cat spec/lib/transcript_parser/segment_builder_spec.rb
+
+# 2. Make single edit to fix issue
+vi app/lib/transcript_parser/segment_builder.rb
+
+# 3. Run test immediately
+bundle exec rspec spec/lib/transcript_parser/segment_builder_spec.rb
+
+# 4. Document in updates.md
+- Fixed SegmentBuilder#with_index by ensuring index is properly converted to integer
+- All tests passing ✅
+
+# 5. Move to next item in plan
+```
+
+### Bad Example
+
+```
+# 1. Make multiple edits
+vi app/lib/transcript_parser/segment_builder.rb
+vi app/lib/transcript_parser/segment.rb
+vi app/lib/transcript_parser/transcript.rb
+
+# 2. Run tests later
+bundle exec rspec spec/lib/transcript_parser
+
+# 3. Confusion when tests fail
+# Which edit caused the problem?
+# What was working before?
+# Hard to trace the issue
+```
+
+## Common Pitfalls
+
+1. **Temptation to Batch Changes**
+   - "I'll just make one more quick change..."
+   - "These changes are related so I'll do them together..."
+   - "I'm on a roll, I'll test later..."
+
+2. **Underestimating Complexity**
+   - "This change is so simple it can't possibly break anything..."
+   - "I understand the code well enough to make multiple changes..."
+   - "The test will probably pass anyway..."
+
+3. **Time Pressure**
+   - "I don't have time to run tests for every small change..."
+   - "I'll just fix all the issues at the end..."
+   - "I'm confident this will work without testing..."
+
+## How to Enforce
+
+1. **Self-Discipline**
+   - Commit to the workflow
+   - Resist temptation to batch changes
+   - Be patient with the process
+
+2. **Documentation**
+   - Update progress after each tested change
+   - Reference test results in updates
+   - Track against plan.md
+
+3. **Review**
+   - Periodically review progress
+   - Check that each step was tested
+   - Verify documentation completeness
+
+## Workflow Application Example
+
+### Task: Fix Segment Builder with_index Method
+
+1. **Initial Check**
+   ```bash
+   # Review test
+   cat spec/lib/transcript_parser/segment_builder_spec.rb
+   
+   # Review implementation
+   cat app/lib/transcript_parser/segment_builder.rb
+   
+   # Run test to see failure
+   bundle exec rspec spec/lib/transcript_parser/segment_builder_spec.rb
+   ```
+
+2. **Make Focused Edit**
+   ```ruby
+   # ONLY edit the with_index method
+   def with_index(index)
+     @attributes[:index] = index.to_i
+     self
+   end
+   ```
+
+3. **Test Immediately**
+   ```bash
+   bundle exec rspec spec/lib/transcript_parser/segment_builder_spec.rb
+   ```
+
+4. **Document Result**
+   ```markdown
+   ## Updates - April 22, 2025
+   
+   ### Completed Tasks
+   - Fixed SegmentBuilder#with_index method (Plan item 2.3.1)
+   - Test now passes, verified index correctly converted to integer
+   - No regressions in related functionality
+   ```
+
+5. **Move to Next Task**
+   - Only after confirming success
+   - Reference plan.md for next item
+   - Begin next edit cycle

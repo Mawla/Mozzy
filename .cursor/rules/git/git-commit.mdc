@@ -1,0 +1,140 @@
+---
+description: Git commit standards and guidelines to ensure consistent and error-free commits
+globs: ["**/*.{rb,js,jsx,ts,tsx,erb,html,css,scss,md,yml,yaml}"]
+---
+
+# Git Commit Guidelines
+
+## 1. Pre-Commit Review Requirements
+
+### 1.1 Working Memory Review
+```bash
+# Required files to check before commit
+docs/working-memory/open/*/plan.md    # Active task plans
+docs/working-memory/open/*/updates.md  # Latest status updates
+```
+
+### 1.2 Review Process
+1. Check plan.md for:
+   - Current phase and step
+   - Task requirements
+   - Expected outcomes
+   - Dependencies
+
+2. Check updates.md for:
+   - Latest status
+   - Recent changes
+   - Current blockers
+   - Next steps
+
+3. Incorporate in commit message:
+   - Current phase reference
+   - Task ID from plan
+   - Status updates
+   - Progress markers
+
+## 2. Quick Reference
+
+### 2.1 Single-Line Commits (Preferred)
+```bash
+# Safe single-line commit with task reference
+git commit -m "type(scope/task-id): description"
+```
+
+### 2.2 Tool-Safe Multi-Line Commits
+```bash
+# Using semicolons for line breaks, including task context
+tool_commit "type(scope/task-id): title; Phase: current_phase; - Point 1; - Point 2"
+```
+
+## 3. Functions
+
+### 3.1 Terminal Multi-Line Commit
+```bash
+mlcommit() {
+    cat > .git/commit-template << EOL
+$1
+EOL
+    git commit -F .git/commit-template
+    rm .git/commit-template
+}
+```
+
+### 3.2 Tool Interface Commit
+```bash
+tool_commit() {
+    message=$(echo "$1" | tr ";" "\\n")
+    echo "$message" > .git/tool-commit
+    git commit -F .git/tool-commit
+    rm .git/tool-commit
+}
+```
+
+## 4. Usage Examples
+
+### 4.1 Terminal Usage
+```bash
+mlcommit "feat(auth): implement OAuth2
+
+- Add Google OAuth provider
+- Implement callback handling
+- Add user authentication flow"
+```
+
+### 4.2 Tool Interface Usage
+```bash
+tool_commit "feat(auth): implement OAuth2; - Add Google OAuth provider; - Implement callback handling; - Add user authentication flow"
+```
+
+## 5. Best Practices
+
+1. Working Memory Integration:
+   - Review plan.md before commit
+   - Check updates.md for latest status
+   - Include task ID and phase in commit message
+   - Reference current phase
+
+2. Terminal commits:
+   - Use mlcommit for multi-line messages
+   - Keep formatting consistent
+   - Include blank line after title
+
+3. Tool interface commits:
+   - Use tool_commit function
+   - Use semicolons as line separators
+   - Maintain consistent formatting
+
+4. General guidelines:
+   - Follow type(scope/task-id): format
+   - Keep title under 50 chars
+   - Use imperative mood
+   - Add detailed bullet points
+
+<rule>
+name: git_commit
+description: Standards for git commit messages and processes
+filters:
+  - type: command
+    pattern: "git commit"
+  - type: file_pattern
+    pattern: "docs/working-memory/open/*/plan.md"
+  - type: file_pattern
+    pattern: "docs/working-memory/open/*/updates.md"
+actions:
+  - type: suggest
+    message: |
+      Before committing:
+      1. Review plan.md for current phase and requirements
+      2. Check updates.md for latest status
+      3. Include task ID and phase in commit message
+      4. Use appropriate commit function (mlcommit or tool_commit)
+      5. Follow format: type(scope/task-id): description
+metadata:
+  priority: high
+  version: 2.1
+  tags:
+    - git
+    - commit
+    - standards
+    - working-memory
+</rule>

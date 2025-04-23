@@ -1,0 +1,247 @@
+---
+description: Standards for using cursor-tools commands and integrations
+globs: 
+alwaysApply: false
+---
+# Cursor Tools Usage
+# Standards for using cursor-tools commands and integrations
+
+<rule>
+name: cursor_tools
+description: Guidelines for using cursor-tools commands and integrations effectively
+version: 1.0.1
+author: Dan
+date: 2025-02-12
+globs:
+  - "**/*"
+tags:
+  - tools
+  - integration
+  - automation
+
+## Version Management
+
+1. **Check Current Version**
+   ```bash
+   # Using npm
+   npm list cursor-tools
+   # or globally
+   npm list -g cursor-tools
+   # or using npx
+   npx cursor-tools --version
+   ```
+
+2. **Check Latest Version**
+   ```bash
+   npm view cursor-tools version
+   # or
+   npm outdated cursor-tools
+   # or check GitHub releases
+   curl -s https://api.github.com/repos/eastlondoner/cursor-tools/releases/latest | grep tag_name
+   ```
+
+3. **Upgrade Process**
+   ```bash
+   # Local upgrade
+   npm update cursor-tools
+   # Global upgrade
+   npm update -g cursor-tools
+   # Force latest version
+   npm install cursor-tools@latest
+   # or from GitHub directly
+   npm install eastlondoner/cursor-tools#main
+   ```
+
+4. **Version Requirements**
+   - Always use version 0.4.3-alpha.8 or newer
+   - Check version before critical operations
+   - Document version in bug reports
+   - Test upgrades in non-critical tasks first
+   - Verify GitHub repository for latest updates: https://github.com/eastlondoner/cursor-tools
+
+5. **Upgrade Best Practices**
+   - Review changelog before upgrading
+   - Test all command categories after upgrade
+   - Backup configuration files
+   - Update documentation if needed
+   - Test browser automation features
+   - Verify API integrations still work
+   - Check for breaking changes in GitHub releases
+   - Run a test command after upgrade to verify installation
+
+6. **Version Verification**
+   ```bash
+   # After upgrade, verify installation
+   npx cursor-tools --version
+   # Test basic functionality
+   npx cursor-tools web "test query"
+   # Verify browser automation if used
+   npx cursor-tools browser --version
+   ```
+
+</rule>
+
+## Command Categories
+
+1. **Web Search**
+   ```bash
+   cursor-tools web "<query>"
+   ```
+   - Use for general web information
+   - Write complex query results to `local-research/<query-summary>.md`
+   - Useful for external documentation and research
+
+2. **Repository Context**
+   ```bash
+   cursor-tools repo "<query>"
+   ```
+   - Use for repository-specific questions
+   - Ideal for code review and debugging
+   - Context-aware answers using Google Gemini
+
+3. **Documentation Generation**
+   ```bash
+   cursor-tools doc [options]
+   ```
+   - Generate comprehensive documentation
+   - Use `--output docs.md` for local output
+   - For remote repos, use `local-docs/<repo-name>.md`
+
+4. **GitHub Integration**
+   ```bash
+   cursor-tools github pr [number]    # Last 10 PRs or specific PR
+   cursor-tools github issue [number] # Last 10 issues or specific issue
+   ```
+   - Track pull requests and issues
+   - Reference specific numbers for details
+
+5. **Browser Automation**
+   ```bash
+   cursor-tools browser open <url> [options]
+   cursor-tools browser act "<instruction>" --url=<url>
+   cursor-tools browser observe "<instruction>" --url=<url>
+   cursor-tools browser extract "<instruction>" --url=<url>
+   ```
+   - All commands are stateless (fresh browser instance each time)
+   - Useful for testing and debugging web apps
+   - Capture page content, logs, and network activity
+
+## Command Options
+
+1. **Global Options**
+   - `--model=<model name>`: Alternative AI model
+   - `--max-tokens=<number>`: Control response length
+   - `--save-to=<file path>`: Save output to file
+   - `--help`: View available options
+
+2. **Documentation Options**
+   - `--from-github=<username>/<repo>[@<branch>]`: Remote repo docs
+
+3. **Browser Options**
+   - `--console`: Capture console logs
+   - `--html`: Capture page HTML
+   - `--network`: Capture network activity
+   - `--screenshot=<file path>`: Save screenshot
+   - `--timeout=<ms>`: Navigation timeout (default: 30000ms)
+   - `--viewport=<width>x<height>`: Set viewport size
+   - `--headless`: Run headless (default: true)
+   - `--no-headless`: Show browser UI
+   - `--connect-to=<port>`: Connect to Chrome instance
+   - `--wait=<duration|selector>`: Wait after load
+
+## Best Practices
+
+1. **Version Management**
+   - Check version before starting work
+   - Keep tools updated weekly
+   - Test after major version changes
+   - Document version-specific issues
+
+2. **Research Organization**
+   - Store web search results in `local-research/`
+   - Use descriptive filenames for research files
+   - Include date and query summary in filename
+   - Document key findings at the top
+
+3. **Documentation Management**
+   - Keep generated docs in `local-docs/`
+   - Version control important documentation
+   - Update docs when dependencies change
+   - Cross-reference with main documentation
+
+4. **Browser Testing**
+   - Use headless mode by default
+   - Enable console logs for debugging
+   - Capture network activity for API testing
+   - Take screenshots for visual regression
+
+5. **Command Usage**
+   - Prefer installed version when available
+   - Use npx/bunx for one-off commands
+   - Document complex command chains
+   - Save important outputs to files
+
+## Configuration
+
+1. **Files**
+   - `cursor-tools.config.json`: Local config
+   - `~/.cursor-tools/config.json`: Global config
+   - `.cursor-tools.env`: Local env vars
+   - `~/.cursor-tools/.env`: Global env vars
+
+2. **Dependencies**
+   - Requires Playwright for browser commands:
+     ```bash
+     npm install --save-dev playwright
+     # or
+     npm install -g playwright
+     ```
+
+## Examples
+
+1. **Version Check and Upgrade**
+   ```bash
+   # Check and upgrade workflow
+   current_version=$(npx cursor-tools --version)
+   latest_version=$(npm view cursor-tools version)
+   if [ "$current_version" != "$latest_version" ]; then
+     npm install -g cursor-tools@latest
+   fi
+   ```
+
+2. **Web Research**
+   ```bash
+   cursor-tools web "Rails 8 new features" --save-to local-research/rails8-features.md
+   ```
+
+3. **Repository Analysis**
+   ```bash
+   cursor-tools repo "explain authentication flow" --save-to local-docs/auth-flow.md
+   ```
+
+4. **Browser Testing**
+   ```bash
+   cursor-tools browser act "Fill login form and submit" \
+     --url=http://localhost:3000/login \
+     --console \
+     --network \
+     --screenshot=test-results/login.png
+   ```
+
+## Metadata
+
+priority: high
+changelog:
+  - version: 1.0.1
+    date: 2025-02-12
+    changes:
+      - Added version checking section
+      - Added upgrade process
+      - Added version management best practices
+  - version: 1.0.0
+    date: 2025-02-12
+    changes:
+      - Initial version
+      - Added command documentation
+      - Added best practices
+      - Added configuration details

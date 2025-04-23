@@ -1,0 +1,398 @@
+---
+description: Memory management system rules and standards
+globs: ["**/docs/working-memory/**/*", "**/docs/templates/**/*", "**/docs/standards/**/*"]
+alwaysApply: true
+---
+# Memory Management System
+# Comprehensive rules for managing working memory, project memory, and documentation memory
+
+<rule>
+name: memory_management_system
+description: Rules and standards for the memory management system
+filters:
+  - type: file_extension
+    pattern: "\\.(md|mdc)$"
+  - type: directory
+    pattern: "(working-memory|templates|standards)"
+actions:
+  - type: suggest
+    message: |
+      Memory Management System Rules:
+
+      1. Memory Types:
+         a) Working Memory:
+            - Location: /docs/working-memory/
+            - Purpose: Active context and ongoing tasks
+            - Updates: Real-time during task execution
+            - Structure:
+              ```
+              /docs/working-memory/
+              ├── open/                 # Active tasks
+              │   └── {task-id}/
+              │       ├── plan.md       # Task planning
+              │       └── updates.md    # Progress tracking
+              └── done/                 # Completed tasks
+              ```
+
+         b) Project Memory:
+            - Location: /docs/
+            - Purpose: Long-term project knowledge
+            - Updates: Major decisions and milestones
+            - Components: Architecture, decisions, standards
+
+         c) Documentation Memory:
+            - Location: /docs/templates/
+            - Purpose: Standards and patterns
+            - Review: Monthly template updates
+            - Maintenance: Keep examples current
+
+      2. Task Documentation Files:
+         a) plan.md Requirements:
+            - Problem Analysis
+            - Solution Design
+            - Implementation Steps
+            - Affected Components
+            - Testing Plan
+            - Documentation Impact
+            - Dependencies
+
+         b) updates.md Structure:
+            - Current Status (top, single entry)
+            - Progress History (chronological)
+            - Decisions Log
+            - Issues Encountered
+            - Next Steps
+            - Completed Task Details (for squashed plan sections)
+
+      3. Status Update Process:
+         a) Current Status:
+            - Single active status
+            - Use `date "+%Y-%m-%d %H:%M"` for timestamps
+            - Previous status moves to history
+
+         b) Progress Markers:
+            - ✓ Completed work
+            - 🤔 Decisions made
+            - ❌ Issues encountered
+            - ⏭️ Next steps
+            - 📚 Documentation updates
+            - 🔄 Task squashing references
+
+      4. File Management:
+         a) Active Tasks:
+            - Keep in /docs/working-memory/open/
+            - Regular updates to plan.md and updates.md
+            - Move to /done/ when complete
+
+         b) Templates:
+            - Use task-plan-template.md
+            - Use task-updates-template.md
+            - Follow standard formats
+
+         c) Maintenance:
+            - Weekly active task review
+            - Monthly completed task archival
+            - Clean directory structure
+            - Regularly squash completed sections
+
+      5. Task Squashing Process:
+         a) Completed Section Management:
+            - Once a section is fully complete, move details to updates.md
+            - Keep only summarized entry in plan.md
+            - Format: "[x] {Task Name} - Completed (N subtasks) [YYYY-MM-DD]"
+            - Include task count and completion date
+
+         b) updates.md Format for Squashed Tasks:
+            ```markdown
+            ## Task Details Archive [YYYY-MM-DD]
+            
+            ### {Task Section Name} - Squashed
+            Original tasks before squashing:
+            - [x] Subtask 1.1.1: Description
+            - [x] Subtask 1.1.2: Description
+            ...
+            
+            Key achievements:
+            1. Achievement 1
+            2. Achievement 2
+            ```
+
+         c) File Size Management:
+            - Target: Keep plan.md under 1000 lines
+            - Regular reviews for squashing opportunities
+            - Prioritize squashing large task sections
+            - Maintain clear section headers
+
+         d) Squashing Timing:
+            - Squash after section review and verification
+            - Squash when moving to a new phase
+            - Do not squash active or partially completed sections
+            - Document squashing in progress updates
+
+      6. Cross-Referencing:
+         a) Internal Links:
+            - Between plan.md and updates.md
+            - Task ID in all updates
+            - Component and task relationships
+            - Reference squashed sections by date and task name
+
+         b) External Links:
+            - Related documentation
+            - Affected components
+            - External dependencies
+
+      7. Version Control:
+         a) Commit Patterns:
+            - Prefix: docs(memory)
+            - Include task ID
+            - Reference memory types
+            - For squashed sections: squash(task-id)
+
+         b) Branch Management:
+            - Format: docs/memory/{task-id}
+            - Short-lived, task-specific
+            - Merge after completion
+
+         c) Version Tagging:
+            - Format: memory/{YYYY-MM}
+            - Monthly snapshots
+            - Archive old memory
+
+      Remember:
+      - Update status before starting work
+      - Document decisions immediately
+      - Keep progress log current
+      - Use proper timestamps
+      - Regular maintenance and cleanup
+      - Squash completed sections to manage file size
+      - Preserve detailed history in updates.md
+examples:
+  - input: |
+      # New task creation
+      mkdir -p docs/working-memory/open/auth-update-20240320
+      cp docs/templates/task-plan-template.md docs/working-memory/open/auth-update-20240320/plan.md
+      cp docs/templates/task-updates-template.md docs/working-memory/open/auth-update-20240320/updates.md
+
+  - input: |
+      # Status update
+      date "+%Y-%m-%d %H:%M"
+      # Update status in updates.md
+
+  - input: |
+      # Task completion
+      mv docs/working-memory/open/auth-update-20240320 docs/working-memory/done/
+      
+  - input: |
+      # Task squashing example
+      
+      # In plan.md (before)
+      ## Phase 1: Authentication
+      - [x] User Login Implementation
+        - [x] Create controller
+        - [x] Implement JWT tokens
+        - [x] Add login form
+        - [x] Write tests
+      
+      # In plan.md (after)
+      ## Phase 1: Authentication
+      - [x] User Login Implementation - Completed (4 subtasks) [2025-02-25]
+      
+      # In updates.md (add this section)
+      ## Task Details Archive [2025-02-25]
+      
+      ### User Login Implementation - Squashed
+      Original tasks before squashing:
+      - [x] Create controller
+      - [x] Implement JWT tokens
+      - [x] Add login form
+      - [x] Write tests
+      
+      Key achievements:
+      1. Added JWT-based authentication
+      2. Created reusable login component
+      3. Achieved 95% test coverage
+metadata:
+  priority: critical
+  version: 1.0
+  tags:
+    - memory
+    - documentation
+    - task-management
+  changelog:
+    - version: 1.0
+      changes:
+        - Added task squashing information
+        - Updated documentation structure
+        - Streamlined status update process
+</rule>
+
+## Implementation Guide
+
+### Core Principles
+
+1. **Simplified Documentation**
+   - Focus on a single plan.md file for each task
+   - Keep documentation concise and focused on active work
+   - Summarize completed sections and remove unnecessary details
+
+2. **Clear Status Tracking**
+   - Use consistent status markers throughout
+   - Mark completed sections with [COMPLETED] and summaries
+   - Maintain detailed steps only for in-progress work
+
+3. **Focused Progress Tracking**
+   - Update plan.md directly with progress
+   - Use section headers with status indicators
+   - Include timestamps for significant updates
+
+### Document Structure
+
+1. **Completed Sections**
+   ```markdown
+   ### 4. Format System Enhancement [COMPLETED]
+   
+   Implemented format module with constants, MIME mapping, and validation methods; 
+   updated all components to use Format enum; added comprehensive documentation and tests.
+   
+   Success Criteria: Type-safe format handling with clear validation ✓
+   Dependencies: None
+   ```
+
+2. **In-Progress Sections**
+   ```markdown
+   ### 5. Transcript Parser System Refactoring [IN PROGRESS]
+   
+   #### Extract Shared Functionality [COMPLETED]
+   
+   Created utility modules for time formatting and validation, moved duplicate 
+   timestamp handling to shared modules, and standardized segment creation.
+   
+   Success Criteria: Reduced code duplication ✓
+   Dependencies: None
+   
+   #### Format Handler Consolidation [IN PROGRESS]
+   
+   - [x] Created TranscriptParser::Formats namespace ✓
+   - [x] Moved SrtFormatterService to TranscriptParser::Formats::Srt ✓
+   - [ ] Create handlers for other formats (VTT, JSON, HTML, TXT)
+   
+   Success Criteria: Unified format handling system
+   Dependencies: Shared functionality modules ✓
+   ```
+
+3. **Future Sections**
+   ```markdown
+   ### 6. API Integration [NOT STARTED]
+   
+   - [ ] Design API endpoints
+   - [ ] Implement authentication
+   - [ ] Create documentation
+   
+   Success Criteria: Complete API documentation and implementation
+   Dependencies: Format handlers completion
+   ```
+
+### Best Practices
+
+1. **Regular Maintenance**
+   - Review plan.md weekly
+   - Update status markers as tasks progress
+   - Summarize and clean up completed sections
+   - Focus documentation efforts on active work
+
+2. **Clarity and Conciseness**
+   - Keep summaries brief but comprehensive
+   - Maintain all success criteria and dependencies
+   - Remove unnecessary details from completed work
+   - Highlight key technical decisions
+
+3. **Status Visibility**
+   - Use consistent section numbering
+   - Apply clear status markers ([COMPLETED], [IN PROGRESS], [NOT STARTED])
+   - Include completion checkmarks (✓) for finished items
+   - Prioritize active and next tasks
+
+## Why This Matters
+
+1. **Reduced Documentation Overhead**
+   - Single file to maintain
+   - Focus on essential information
+   - Less duplication across files
+   - Clearer status tracking
+
+2. **Better Focus on Active Work**
+   - Active tasks are more visible
+   - Completed work is summarized
+   - Cleaner document structure
+   - Easier to identify next steps
+
+3. **Improved Readability**
+   - Shorter, more focused documents
+   - Clearer status indicators
+   - Less scrolling through completed details
+   - Better overview of project status
+
+## Example Plan Structure
+
+```markdown
+# Task Plan (feature-implementation-20250301)
+
+## Problem Analysis
+[Details about the problem...]
+
+## Solution Design
+[Design approach...]
+
+## Implementation Steps
+
+### 1. Foundation Setup [COMPLETED]
+Implemented basic structure and core components. Created base classes and interfaces.
+
+Success Criteria: Core architecture implemented ✓
+Dependencies: None
+
+### 2. Feature Implementation [IN PROGRESS]
+
+#### 2.1 Component Creation [COMPLETED]
+Created UI components with all required functionality and styling.
+
+Success Criteria: Components match design specs ✓
+Dependencies: Design system ✓
+
+#### 2.2 Integration [IN PROGRESS]
+- [x] Connect components to data sources ✓
+- [x] Implement event handling ✓
+- [ ] Add validation logic
+- [ ] Implement error handling
+
+Success Criteria: Fully functional integration
+Dependencies: Component creation ✓
+
+### 3. Testing and Validation [NOT STARTED]
+- [ ] Create unit tests
+- [ ] Add integration tests
+- [ ] Perform manual testing
+- [ ] Address feedback
+
+Success Criteria: All tests passing
+Dependencies: Feature implementation
+
+## Technical Notes
+[Only include relevant notes for active work...]
+```
+
+## Migration from Previous Approach
+
+When transitioning from the previous documentation approach:
+
+1. For existing tasks:
+   - Consolidate updates.md content into plan.md
+   - Summarize all completed sections
+   - Remove sub-items from completed work
+   - Update status markers throughout
+
+2. For new tasks:
+   - Use only plan.md
+   - Follow the simplified structure
+   - Maintain clean documentation from the start
+   - Focus on active and future work

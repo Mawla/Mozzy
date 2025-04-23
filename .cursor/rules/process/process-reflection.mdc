@@ -1,0 +1,386 @@
+---
+description: A structured approach to analyzing problems, reflecting on solutions, and documenting insights
+globs: 
+alwaysApply: true
+---
+
+# Reflection-Based Problem Analysis Framework
+# Guidelines for systematic problem analysis and solution reflection
+
+<rule>
+name: process_reflection
+description: A structured approach to analyzing problems, reflecting on solutions, and documenting insights
+filters:
+  - type: file_extension
+    pattern: "\\.(rb|md|mdc)$"
+  - type: content
+    pattern: "(Problem|Solution|Analysis|Reflection|Implementation)"
+actions:
+  - type: suggest
+    message: |
+      Problem Analysis Framework:
+
+      1. Problem Identification
+         a) Context Analysis:
+            - Current system state
+            - Affected components
+            - User impact
+            - Business implications
+            - Circular Dependencies Check:
+              * Model associations
+              * Callback chains
+              * Service dependencies
+              * Factory relationships
+
+         b) Issue Classification:
+            - Type (bug/feature/enhancement)
+            - Severity level
+            - Scope of impact
+            - Technical domain
+            - Dependency Type:
+              * Data flow dependencies
+              * Temporal dependencies
+              * Validation dependencies
+              * Factory dependencies
+
+         c) Problem Source Analysis:
+            - Initial Hypothesis Generation:
+              * List 5-7 potential problem sources
+              * Consider: Code, Config, Data, Network, Infrastructure, Dependencies, User Behavior
+              * Document reasoning for each potential source
+              * Identify Dependency Chains:
+                - Model callbacks
+                - Service interactions
+                - Factory relationships
+                - Validation sequences
+            
+            - Source Prioritization:
+              * Evaluate likelihood of each source
+              * Consider historical patterns
+              * Assess complexity of validation
+              * Rank sources by probability
+              * Map Dependency Impacts:
+                - Direct effects
+                - Indirect effects
+                - Test implications
+                - Factory considerations
+            
+            - Hypothesis Refinement:
+              * Distill to 1-2 most likely sources
+              * Document elimination reasoning
+              * Identify key assumptions
+              * Plan validation approach
+              * Consider Architectural Patterns:
+                - Service Objects
+                - Command Pattern
+                - Observer Pattern
+                - Factory Pattern
+            
+            - Log-Based Validation:
+              * Define logging strategy for each hypothesis
+              * Specify log patterns to look for
+              * Implement targeted logging
+              * Document validation results
+              ```ruby
+              # Example log validation structure
+              {
+                hypothesis: "Connection pool exhaustion",
+                log_patterns: [
+                  "connection timeout",
+                  "pool full",
+                  "waiting for connection"
+                ],
+                log_locations: [
+                  "log/production.log",
+                  "log/sidekiq.log"
+                ],
+                validation_commands: [
+                  "grep -i 'connection.*timeout' log/production.log | tail -n 50",
+                  "grep -i 'pool.*full' log/sidekiq.log | tail -n 50"
+                ],
+                results: {
+                  evidence_found: true/false,
+                  supporting_logs: [],
+                  timestamp_pattern: ""
+                }
+              }
+              ```
+
+         d) Historical Context:
+            - Previous occurrences
+            - Related issues
+            - Past solutions
+            - Legacy considerations
+
+      2. Solution Design Process
+         a) Requirements Analysis:
+            - Functional requirements
+            - Technical constraints
+            - Performance criteria
+            - Security implications
+            - Testing Requirements:
+              * Unit test scenarios
+              * Integration test needs
+              * Factory considerations
+              * Stub/Mock strategies
+
+         b) Solution Alternatives:
+            - Generate Multiple Options (minimum 3-5):
+              * Quick fixes
+              * Architectural changes
+              * Pattern applications
+              * Refactoring approaches
+            
+            - Comparison Matrix:
+              ```
+              | Criteria          | Option A | Option B | Option C |
+              |-------------------|----------|----------|----------|
+              | Implementation    |          |          |          |
+              | Testing          |          |          |          |
+              | Maintenance      |          |          |          |
+              | Performance      |          |          |          |
+              | Security         |          |          |          |
+              | Factory Impact   |          |          |          |
+              | Migration Needs  |          |          |          |
+              ```
+
+            - Trade-offs Analysis:
+              * Short-term vs Long-term
+              * Complexity vs Simplicity
+              * Performance vs Maintainability
+              * Testing ease vs Implementation time
+
+         c) Implementation Strategy:
+            - Step-by-step plan
+            - Dependencies
+            - Testing approach
+            - Rollback plan
+            - Factory Updates:
+              * Required changes
+              * Migration strategy
+              * Test coverage
+              * Validation approach
+
+      3. Implementation Reflection
+         a) Code Review Insights:
+            - Design patterns used
+            - Code quality metrics
+            - Performance impacts
+            - Security considerations
+            - Factory Improvements:
+              * Creation patterns
+              * Association handling
+              * Validation strategies
+              * Test isolation
+
+         b) Testing Results:
+            - Test coverage
+            - Edge cases
+            - Performance metrics
+            - Integration points
+            - Factory Scenarios:
+              * Unit test isolation
+              * Integration test setup
+              * Validation coverage
+              * Edge case handling
+
+         c) Deployment Observations:
+            - System behavior
+            - Resource utilization
+            - User feedback
+            - Monitoring alerts
+
+      4. Knowledge Capture
+         a) Documentation Updates:
+            - Technical specifications
+            - API documentation
+            - Architecture diagrams
+            - Usage examples
+            - Factory Guidelines:
+              * Creation patterns
+              * Association handling
+              * Validation strategies
+              * Test isolation
+
+         b) Learning Points:
+            - Key insights
+            - Best practices
+            - Anti-patterns
+            - Future considerations
+            - Pattern Recognition:
+              * Common issues
+              * Effective solutions
+              * Testing strategies
+              * Factory patterns
+
+         c) Team Communication:
+            - Knowledge sharing
+            - Training needs
+            - Process improvements
+            - Collaboration insights
+
+      5. Continuous Improvement
+         a) Metrics Collection:
+            - Performance data
+            - Error rates
+            - User satisfaction
+            - Resource utilization
+            - Test Coverage:
+              * Unit tests
+              * Integration tests
+              * Factory tests
+              * Validation tests
+
+         b) Process Refinement:
+            - Workflow improvements
+            - Tool effectiveness
+            - Communication patterns
+            - Documentation quality
+
+         c) Future Planning:
+            - Technical debt
+            - Scalability needs
+            - Feature roadmap
+            - Resource planning
+
+      Remember:
+      - Document all decisions
+      - Capture context
+      - Track metrics
+      - Share insights
+      - Plan for future
+      - Consider alternatives
+      - Learn from history
+
+examples:
+  - input: |
+      Problem Analysis:
+      - Intermittent API timeouts
+      - Affecting 15% of requests
+      - Medium severity impact
+      - Performance implications
+    output: |
+      1. Problem Source Analysis:
+         a) Initial Sources:
+            1. Connection pool exhaustion
+               - High request volume periods
+               - Limited pool configuration
+            2. Network latency
+               - CDN configuration
+               - Regional routing
+            3. Database query performance
+               - Missing indexes
+               - N+1 queries
+            4. Memory pressure
+               - Large response payloads
+               - GC pauses
+            5. External service delays
+               - Third-party API latency
+               - Timeout configuration
+            6. Application thread starvation
+               - Worker configuration
+               - Thread pool limits
+            7. Cache misses
+               - Invalidation patterns
+               - Cache configuration
+
+         b) Refined Hypotheses:
+            1. Connection pool exhaustion
+               - Correlates with timeout patterns
+               - Matches load characteristics
+            2. Database query performance
+               - Explains intermittent nature
+               - Consistent with monitoring
+
+         c) Log Validation:
+            ```ruby
+            {
+              hypothesis: "Connection pool exhaustion",
+              log_patterns: [
+                "connection timeout",
+                "pool full",
+                "waiting for connection"
+              ],
+              validation_results: {
+                evidence_found: true,
+                supporting_logs: [
+                  "2024-03-20 10:15:23 [ERROR] Pool full, waiting for connection"
+                ],
+                frequency: "Increases during peak hours"
+              }
+            }
+            ```
+
+  - input: |
+      Implementation Reflection:
+      - New caching layer added
+      - Performance improved 30%
+      - Memory usage increased
+      - Some edge cases found
+    output: |
+      1. Results Analysis:
+         - Performance: +30% improvement
+         - Trade-offs: Higher memory usage
+         - Risks: Edge cases identified
+         - Monitoring: Added cache metrics
+
+      2. Knowledge Capture:
+         - Updated architecture docs
+         - Added monitoring guides
+         - Documented edge cases
+         - Created runbook
+
+metadata:
+  priority: high
+  version: 1.0
+  tags:
+    - analysis
+    - reflection
+    - documentation
+    - problem-solving
+    - continuous-improvement
+</rule>
+
+## Integration Guidelines
+
+1. When to Apply:
+   - During problem analysis
+   - Before solution design
+   - After implementation
+   - During code review
+   - For post-mortems
+   - Knowledge sharing
+
+2. Key Benefits:
+   - Structured analysis
+   - Comprehensive documentation
+   - Knowledge retention
+   - Process improvement
+   - Team learning
+   - Better solutions
+
+3. Success Metrics:
+   - Documentation quality
+   - Solution effectiveness
+   - Knowledge sharing
+   - Process improvements
+   - Team productivity
+   - Error reduction
+
+4. Best Practices:
+   - Use templates
+   - Include context
+   - Add examples
+   - Link resources
+   - Track metrics
+   - Share insights
+
+## Maintenance
+
+Update this rule when:
+- New patterns emerge
+- Process changes
+- Tools evolve
+- Team feedback
+- Metrics indicate need
+- Best practices change

@@ -1,0 +1,288 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Project Documentation Review Rule
+# Ensures consistent understanding of project architecture and documentation
+
+<rule>
+name: project_documentation_review
+description: Enforces review of docs and architecture folders for project context
+filters:
+  - type: event
+    pattern: "conversation_start"
+  - type: content
+    pattern: "(?i)(feature|change|implement|develop|code|update|refactor)"
+actions:
+  - type: suggest
+    message: |
+      # Documentation Review Requirements
+
+      Before starting any implementation work, review these documentation sources:
+
+      ## 0. Quick Start Documentation
+      - Location: `/docs/AGENT_GUIDE.md`
+      - This is your entry point for understanding the project structure
+      - Review this first for a high-level overview of documentation organization
+
+      ## 1. Architecture Documentation
+      - Location: `/docs/architecture/`
+      - Start with: `index.md` for architecture overview
+      - Required Reading:
+        - `transcription_service_flow.md`: Complete flow of transcription processing
+        - `command_pattern.md`: Command pattern implementation details
+        - `view_components.md`: Component architecture guidelines
+
+      ## 2. Memory Management
+      - Location: `/memory/open/`
+      - Review active task plans and updates:
+        - Each active task has a `plan.md` and `updates.md`
+        - Focus on task details relevant to your current work
+        - Note dependencies and integration points
+        - Start with `/memory/index.md` for a list of all active tasks
+
+      ## 3. Feature Documentation
+      - Location: `/docs/features/`
+      - Start with: `index.md` for feature overview
+      - Review feature-specific documentation related to your task
+
+      ## 4. Required Documentation Review Process
+
+      1. **Agent Guide Review**:
+         - Start with the AGENT_GUIDE.md for orientation
+         - Note command references and quick start info
+         - Identify key documentation entry points
+
+      2. **Architecture Context Gathering**:
+         - Start with architecture/index.md
+         - Review diagrams and flow charts
+         - Understand component relationships
+         - Identify architectural patterns in use
+         - Note integration points
+
+      3. **Task Plan Review**:
+         - Check memory/index.md for current tasks
+         - Identify current phase of work
+         - Note completed vs pending tasks
+         - Review technical notes
+         - Check for similar past tasks
+
+      4. **Feature-Specific Documentation Check**:
+         - Start with features/index.md
+         - Based on your task, check for related documentation:
+           - For transcription work: See `transcription_service_flow.md`
+           - For command patterns: See `command_pattern.md`
+           - For UI components: See `view_components.md`
+
+      5. **Documentation Integration**:
+         - Reference documentation in your work
+         - Update docs if you make architectural changes
+         - Add to architecture docs if creating new patterns
+         - Keep memory folder in sync with your changes
+
+      ## 5. Command to List Documentation Sources
+
+      ```bash
+      # List architecture documentation
+      find docs/architecture -type f -name "*.md" | sort
+
+      # List active memory tasks
+      find memory/open -name "plan.md" | sort
+
+      # Check current tasks overview
+      cat memory/index.md
+      
+      # Read the agent guide
+      cat docs/AGENT_GUIDE.md
+      ```
+
+      ## 6. Command to Read Documentation
+
+      ```bash
+      # Quick read first 20 lines of a doc
+      head -n 20 docs/architecture/transcription_service_flow.md
+
+      # Search docs for specific feature
+      grep -r "Command Pattern" docs/architecture/
+      
+      # Read architecture overview
+      cat docs/architecture/index.md
+      
+      # Read features overview
+      cat docs/features/index.md
+      ```
+
+      Remember:
+      - Architecture docs explain HOW the system works
+      - Memory folder explains WHAT is currently being worked on
+      - Feature docs explain the USER-FACING functionality
+      - All sources are essential for complete context
+      - Update documentation when you make significant changes
+examples:
+  - input: |
+      "Implement new transcription feature"
+    output: |
+      # Documentation Review Required
+      
+      Before implementing the transcription feature, review:
+      
+      1. `/docs/AGENT_GUIDE.md` for project overview
+      2. `/docs/architecture/transcription_service_flow.md` for complete understanding
+      3. `/memory/open/transcription-service-integration-*/plan.md` for current tasks
+      4. Command pattern implementation in `/docs/architecture/command_pattern.md`
+      
+      This will ensure your implementation aligns with existing architecture.
+  - input: |
+      "Update the UI component"
+    output: |
+      # Documentation Review Required
+      
+      Before updating UI components, review:
+      
+      1. `/docs/AGENT_GUIDE.md` for project overview
+      2. `/docs/architecture/view_components.md` for component guidelines
+      3. `/docs/features/index.md` for feature context
+      4. Active memory for UI-related tasks: `cat memory/index.md`
+      
+      This ensures consistent component implementation.
+metadata:
+  priority: high
+  version: 1.1
+  tags:
+    - documentation
+    - context
+    - architecture
+    - planning
+</rule>
+
+## Implementation Guide
+
+### Purpose
+
+This rule ensures all agents have a comprehensive understanding of the project's architecture and current work before making changes. By reviewing documentation in both the `docs/architecture/` directory and the `memory` folder, agents can:
+
+1. Understand the system's design principles and patterns
+2. See how components interact
+3. Learn about current and planned work
+4. Identify dependencies and integration points
+
+### Key Documentation Sources
+
+#### 0. Agent Guide
+
+The `docs/AGENT_GUIDE.md` file provides a quick orientation:
+
+- Project overview and current phase
+- Quick links to essential documentation
+- Common commands for working with documentation
+- Current priority areas for development
+
+#### 1. Architecture Documentation
+
+The `docs/architecture/` folder contains high-level explanations of how the system works:
+
+- **index.md**: Overview of architecture documentation
+- **transcription_service_flow.md**: Details the end-to-end flow of audio transcription
+- **command_pattern.md**: Explains the command pattern implementation used throughout
+- **view_components.md**: Provides guidelines for component architecture
+
+These documents explain the WHY and HOW of the system's design.
+
+#### 2. Memory Management
+
+The `/memory/` folder at the root level contains task-specific information:
+
+- **index.md**: Dashboard of active and completed tasks
+- **open/**: Contains active task folders
+  - **plan.md**: Detailed breakdowns of tasks, their status, and implementation steps
+  - **updates.md**: Chronological history of work, decisions, and progress
+
+These documents explain the WHAT of current work.
+
+#### 3. Feature Documentation
+
+The `docs/features/` folder contains feature-specific documentation:
+
+- **index.md**: Overview of available features
+- Feature-specific folders with READMEs and implementation details
+
+### Review Process
+
+For effective documentation review:
+
+1. Start with AGENT_GUIDE.md for orientation
+2. Review architecture docs related to your task
+3. Check memory/index.md for current task status
+4. Review relevant feature documentation
+5. Note connections between architectural concepts and specific tasks
+6. Reference documentation in your implementation
+7. Update documentation when you make architectural changes
+
+### Practical Examples
+
+#### Example 1: Transcription Feature Work
+
+When working on transcription features:
+
+```bash
+# Start with the agent guide
+cat docs/AGENT_GUIDE.md
+
+# Then review the architecture overview
+cat docs/architecture/index.md
+
+# Review the architectural flow
+cat docs/architecture/transcription_service_flow.md
+
+# Check current task status
+cat memory/index.md
+cat memory/open/transcription-service-integration-20250213/plan.md
+cat memory/open/transcription-service-integration-20250213/updates.md
+
+# Look for command pattern implementation details
+cat docs/architecture/command_pattern.md
+```
+
+#### Example 2: UI Component Updates
+
+When working on UI components:
+
+```bash
+# Start with the agent guide
+cat docs/AGENT_GUIDE.md
+
+# Review component architecture
+cat docs/architecture/view_components.md
+
+# Check features overview
+cat docs/features/index.md
+
+# Then check for current UI tasks
+find memory/open -name "plan.md" | xargs grep -l "component"
+```
+
+### Documentation Maintenance
+
+Remember to:
+
+1. Keep architecture docs updated as patterns evolve
+2. Maintain memory with regular updates
+3. Reference relevant docs in your commits
+4. Add new architecture docs for new patterns or significant changes
+
+## Why This Matters
+
+1. **Consistency**: Ensures all agents follow the same architecture
+2. **Quality**: Prevents design inconsistencies and pattern violations
+3. **Efficiency**: Reduces time spent understanding the system
+4. **Knowledge Transfer**: Makes system knowledge accessible to all
+
+## Common Pitfalls
+
+1. **Outdated Documentation**: Always check for recent updates
+2. **Missing Context**: Some details may be spread across multiple docs
+3. **Implementation Drift**: Code may have evolved beyond documentation
+4. **Architecture Gaps**: Some components may lack documentation
+
+When in doubt, cross-reference docs with code and ask clarifying questions.

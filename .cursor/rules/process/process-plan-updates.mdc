@@ -1,0 +1,155 @@
+---
+description: Guidelines for making surgical, focused updates to plan files
+globs: *.md
+alwaysApply: true
+---
+# Plan Updates Rule
+# Guidelines for making surgical, focused updates to plan files
+
+<rule>
+name: plan_updates
+description: Rules for maintaining precision in plan updates
+filters:
+  - type: file_extension
+    pattern: "\\.md$"
+  - type: content
+    pattern: "(Implementation Steps|Phase [0-9]|Current Status)"
+actions:
+  - type: suggest
+    message: |
+      Plan Update Guidelines:
+
+      1. Surgical Focus:
+         a) Phase Isolation:
+            - Only update the current active phase
+            - Leave future phases unchanged
+            - Preserve original structure of other phases
+            - Mark interrupted tasks as [INCOMPLETE]
+
+         b) Task Status:
+            - Use [x] for completed tasks
+            - Use [ ] for pending tasks
+            - Use [INCOMPLETE] for interrupted tasks
+            - Maintain task hierarchy and indentation
+
+         c) Task Additions:
+            - Add new tasks only to current phase
+            - Place new tasks in logical sequence
+            - Maintain consistent formatting
+            - Preserve task dependencies
+
+         d) Task Updates:
+            - Update only affected tasks
+            - Keep unaffected tasks unchanged
+            - Maintain original task descriptions
+            - Preserve task IDs and references
+
+      2. Change Documentation:
+         a) Status Updates:
+            - Document changes in updates.md
+            - Reference specific tasks modified
+            - Explain interruptions
+            - Note any blockers
+
+         b) Progress Tracking:
+            - Update only completed tasks
+            - Maintain task completion order
+            - Document partial completions
+            - Note dependencies affected
+
+      3. Task Squashing/Summarizing:
+         a) Completed Section Handling:
+            - Once a section with subtasks is fully completed, squash it into a single summary item
+            - Format: "[x] {Section Name} - Completed (N subtasks)" where N is the number of completed subtasks
+            - Move original detailed tasks to updates.md for reference
+            - Include completion date in the summary item
+
+         b) Summarization Process:
+            - Verify all subtasks are marked completed [x]
+            - Create summary line with section header
+            - Document key achievements or important notes
+            - Remove detailed subtask lines
+            - Document the summarization in updates.md
+
+         c) Partial Completion:
+            - Do not squash sections with incomplete tasks
+            - Only summarize when all subtasks are done
+            - Keep in-progress sections expanded
+
+         d) Reference Format:
+            ```markdown
+            # Before Squashing
+            ## Phase 1: Implementation
+            - [x] Task 1.1: Setup development environment
+              - [x] Subtask 1.1.1: Install dependencies
+              - [x] Subtask 1.1.2: Configure environment variables
+              - [x] Subtask 1.1.3: Setup testing framework
+            
+            # After Squashing
+            ## Phase 1: Implementation
+            - [x] Task 1.1: Setup development environment - Completed (3 subtasks) [2025-02-25]
+            ```
+
+      4. Version Control:
+         a) Commit Strategy:
+            - Commit only changed phase
+            - Use clear commit messages
+            - Reference task IDs
+            - Note incomplete tasks
+            - For squashed sections, use prefix: `squash(task-id): summarize completed section`
+
+         b) Review Process:
+            - Verify only intended changes
+            - Check phase isolation
+            - Validate task status
+            - Confirm formatting
+            - Ensure proper squashing of completed sections
+
+      Remember:
+      - Focus on current phase only
+      - Document interrupted tasks
+      - Maintain plan structure
+      - Keep future phases intact
+      - Update status in sync
+      - Squash completed sections to reduce file size
+      - Preserve detailed history in updates.md
+
+examples:
+  - input: |
+      ### Phase 1: Foundation
+      - [x] Task 1.1
+      - [ ] Task 1.2
+      - [INCOMPLETE] Task 1.3
+      
+      ### Phase 2: Implementation
+      [Original content preserved]
+
+  - input: |
+      Commit message:
+      plan(task-123): update Phase 1 tasks, mark Task 1.3 incomplete
+  
+  - input: |
+      # Before Squashing
+      ### Phase 1: Foundation
+      - [x] Task 1.1: Database Setup
+        - [x] Configure PostgreSQL
+        - [x] Create initial schema
+        - [x] Setup migrations
+      - [x] Task 1.2: API Configuration
+      
+      # After Squashing
+      ### Phase 1: Foundation
+      - [x] Task 1.1: Database Setup - Completed (3 subtasks) [2025-02-25]
+      - [x] Task 1.2: API Configuration
+
+      Commit message:
+      squash(task-456): summarize completed database setup section
+
+metadata:
+  priority: high
+  version: 1.0
+  tags:
+    - planning
+    - documentation
+    - task-management
+</rule> 

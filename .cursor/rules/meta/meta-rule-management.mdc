@@ -1,0 +1,104 @@
+---
+description: Meta-rule to assist with prompting for and managing future cursor rules
+globs: ["**/*.mdc", ".cursor/rules/**/*.mdc"]
+---
+# Meta Rule: Future Rule Management
+# This rule helps identify opportunities for new rules and manages their creation
+
+<rule>
+name: meta_rule_management
+description: Meta-rule to assist with prompting for and managing future cursor rules
+filters:
+  - type: file_extension
+    pattern: "\\.mdc$"
+actions:
+  - type: suggest
+    message: |
+      Rule Management Guidelines:
+
+      1. Rule Structure:
+         - Each rule must have a clear name and description
+         - Include filters for when the rule applies
+         - Provide specific actions or suggestions
+         - Include examples where appropriate
+
+      2. Rule Categories and File Naming:
+         a) Meta Rules (prefix: meta-):
+            - meta-rule-management.mdc: Rule system management
+            - meta-rule-extraction.mdc: Rule extraction
+            - meta-rule-sync.mdc: Rule synchronization
+
+         b) Process Rules (prefix: process-):
+            - process-memory-management.mdc: Memory and task tracking
+            - process-documentation.mdc: Documentation standards
+            - process-problem-solving.mdc: Analysis approach
+            - process-plan-updates.mdc: Plan management
+
+         c) Framework Rules (prefix: framework-):
+            - framework-rails.mdc: Rails guidelines
+            - framework-hotwire.mdc: Hotwire patterns
+            - framework-tailwind.mdc: Tailwind usage
+
+         d) Development Rules (prefix: dev-):
+            - dev-auto-format.mdc: Code formatting
+            - dev-testing.mdc: Testing standards
+            - dev-components.mdc: Component guidelines
+            - dev-api.mdc: API development
+
+         e) Tool Rules (prefix: tool-):
+            - tool-git.mdc: Git practices
+            - tool-docker.mdc: Docker usage
+            - tool-console.mdc: Console interaction
+
+         f) Security Rules (prefix: security-):
+            - security-auth.mdc: Authentication
+            - security-data.mdc: Data protection
+            - security-audit.mdc: Security auditing
+
+         g) Performance Rules (prefix: perf-):
+            - perf-monitoring.mdc: Performance monitoring
+            - perf-optimization.mdc: Optimization guidelines
+            - perf-caching.mdc: Caching strategies
+
+      3. Rule Updates:
+         - Document changes in rule version
+         - Update related rules if needed
+         - Maintain backwards compatibility
+         - Keep examples current
+
+      4. Rule Application:
+         - Check relevant rules before tasks
+         - Follow rule hierarchy
+         - Document rule conflicts
+         - Update as needed
+
+      5. File Organization:
+         - All rules in .cursor/rules/
+         - Optional subdirectories by category
+         - Use kebab-case for filenames
+         - Always include .mdc extension
+
+      Remember:
+      - Keep rules focused and clear
+      - Update examples regularly
+      - Maintain rule relationships
+      - Document changes properly
+      - Follow naming conventions strictly
+
+metadata:
+  priority: high
+  version: 1.2
+  changelog:
+    - version: 1.2
+      changes:
+        - Added detailed rule categorization
+        - Introduced file naming scheme
+        - Updated organization guidelines
+    - version: 1.1
+      changes:
+        - Initial version
+  tags:
+    - meta
+    - rules
+    - management
+</rule>
