@@ -189,18 +189,20 @@ export const PostsListing: React.FC<PostsListingProps> = ({ initialPosts }) => {
                 <div className="flex-grow">
                   <CardTitle>{post.title || "Untitled"}</CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    Created: {new Date(post.createdAt).toLocaleDateString()}
+                    Created: {new Date(post.created_at).toLocaleDateString()}
                   </p>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2 mb-4">
-                {post.tags?.map((tag, tagIndex) => (
-                  <Badge key={tagIndex} variant="secondary">
-                    {tag}
-                  </Badge>
-                ))}
+                {post.tags &&
+                  post.tags.length > 0 &&
+                  post.tags.map((tag, tagIndex) => (
+                    <Badge key={tagIndex} variant="secondary">
+                      {tag}
+                    </Badge>
+                  ))}
               </div>
               <p className="text-sm text-gray-700 line-clamp-3">
                 {post.content}

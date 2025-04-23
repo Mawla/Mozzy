@@ -10,18 +10,23 @@ interface ContentMetadataDisplayProps {
 export const ContentMetadataDisplay: React.FC<ContentMetadataDisplayProps> = ({
   metadata,
 }) => {
-  const renderSection = (title: string, items: string[]) => (
-    <div className="mb-4">
-      <h4 className="text-sm font-semibold mb-2">{title}</h4>
-      <div className="flex flex-wrap gap-2">
-        {items.map((item, index) => (
-          <Badge key={index} variant="secondary">
-            {item}
-          </Badge>
-        ))}
+  const renderSection = (title: string, items: string[] | undefined) => {
+    // Skip rendering if items is undefined or empty
+    if (!items || items.length === 0) return null;
+
+    return (
+      <div className="mb-4">
+        <h4 className="text-sm font-semibold mb-2">{title}</h4>
+        <div className="flex flex-wrap gap-2">
+          {items.map((item, index) => (
+            <Badge key={index} variant="secondary">
+              {item}
+            </Badge>
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <ScrollArea className="h-[300px] w-full rounded-md border p-4">
