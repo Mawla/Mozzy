@@ -1,6 +1,6 @@
 "use client";
 
-import { createBrowserClient } from "@supabase/ssr";
+import { createBrowserClient } from "@/lib/supabase/client";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { useEffect, useState } from "react";
@@ -12,10 +12,7 @@ export function AuthForm() {
   const searchParams = useSearchParams();
   const next = searchParams?.get("next") ?? "/dashboard";
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const supabase = createBrowserClient();
 
   useEffect(() => {
     setMounted(true);

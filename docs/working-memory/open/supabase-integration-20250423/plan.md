@@ -74,9 +74,9 @@ This task will complete and validate the Supabase integration, covering **Auth, 
   - [x] Success criteria: migrations replay, buckets exist, RLS policies enforced.
   - Dependencies: Phase 1 ✓
 
-- [ ] Phase 3 – Code Audit & Refactor
+- [x] Phase 3 – Code Audit & Refactor
 
-  - [ ] Grep for `createServerClient`/`createBrowserClient` outside helpers; refactor
+  - [x] Grep for `createServerClient`/`createBrowserClient` outside helpers; refactor
   - [ ] Update `postService` storage functions to use Supabase Storage API
   - [ ] Update middleware and `app/auth/*` routes to latest helpers
   - Success criteria: `yarn build` succeeds, lint passes, no TODO warnings

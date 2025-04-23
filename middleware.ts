@@ -1,6 +1,6 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { logger } from "@/lib/logger";
+import { createMiddlewareClient } from "@/lib/supabase/middleware";
 
 export async function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
@@ -22,30 +22,7 @@ export async function middleware(request: NextRequest) {
 
   try {
     logger.debug("Checking auth for protected route", { pathname });
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            const cookie = request.cookies.get(name);
-            logger.debug("Cookie get in middleware", {
-              name,
-              exists: !!cookie,
-            });
-            return cookie?.value;
-          },
-          set(name: string, value: string, options: CookieOptions) {
-            logger.debug("Cookie set in middleware", { name });
-            response.cookies.set({ name, value, ...options });
-          },
-          remove(name: string, options: CookieOptions) {
-            logger.debug("Cookie removed in middleware", { name });
-            response.cookies.delete({ name, ...options });
-          },
-        },
-      }
-    );
+    const supabase = createMiddlewareClient(request, response);
 
     const {
       data: { session },
