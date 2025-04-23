@@ -123,6 +123,34 @@ export interface OrganizationEntity extends BaseEntity {
 }
 
 /**
+ * Represents geographic coordinates with latitude and longitude.
+ * Used for precise location positioning in the system.
+ */
+export interface Coordinates {
+  /** Latitude value between -90 and 90 degrees */
+  latitude: number;
+  /** Longitude value between -180 and 180 degrees */
+  longitude: number;
+}
+
+/**
+ * Standard location type classifications.
+ * Used to categorize different types of locations in the system.
+ */
+export enum LocationType {
+  /** City or urban area */
+  CITY = "CITY",
+  /** Country or nation */
+  COUNTRY = "COUNTRY",
+  /** Geographic or administrative region */
+  REGION = "REGION",
+  /** Notable place or monument */
+  LANDMARK = "LANDMARK",
+  /** Specific street address or location */
+  ADDRESS = "ADDRESS",
+}
+
+/**
  * Represents a location entity with specific location-related properties.
  * Used for tracking places mentioned in content.
  */
@@ -130,14 +158,9 @@ export interface LocationEntity extends BaseEntity {
   /** Must be LOCATION type */
   type: Extract<EntityType, "LOCATION">;
   /** Required type of location (city, country, etc.) */
-  locationType: string;
+  locationType: LocationType;
   /** Optional geographic coordinates */
-  coordinates?: {
-    /** Latitude (-90 to 90) */
-    latitude: number;
-    /** Longitude (-180 to 180) */
-    longitude: number;
-  };
+  coordinates?: Coordinates;
   /** Optional geographic region */
   region?: string;
   /** Optional parent location (e.g., country for a city) */
@@ -201,3 +224,22 @@ export interface ConceptEntity extends BaseEntity {
   /** Examples of the concept */
   examples: string[];
 }
+
+// Coordinates validation schema
+export const coordinatesSchema = z.object({
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+});
+
+// Location validation schema
+export const locationEntitySchema = baseEntitySchema.extend({
+  type: z.literal("LOCATION"),
+  locationType: z.nativeEnum(LocationType),
+  coordinates: coordinatesSchema.optional(),
+  region: z.string().optional(),
+  parent: z.string().optional(),
+  country: z.string().optional(),
+});
+
+// Export type helpers
+export type ValidatedLocationEntity = z.infer<typeof locationEntitySchema>;

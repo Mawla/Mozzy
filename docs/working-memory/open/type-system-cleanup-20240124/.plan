@@ -1,0 +1,182 @@
+# Type System Cleanup and Optimization Plan
+
+## Problem Analysis
+
+Based on the codebase analysis, we have identified several specific issues:
+
+1. **Type Duplication**:
+
+   - Duplicate entity interfaces between base and feature-specific types (e.g., `PersonEntity` in base.ts and post.ts)
+   - Redundant type definitions in shared/podcast.ts and podcast/shared.ts
+   - Overlapping interfaces in shared/content.ts and shared/podcast.ts
+
+2. **Inconsistent Type Organization**:
+
+   - Mixed type definitions in index.ts files
+   - Inconsistent file structure between different feature directories
+   - Scattered shared types across multiple locations
+
+3. **Documentation Issues**:
+
+   - Incomplete JSDoc comments in many type definitions
+   - Missing validation schemas for some entity types
+   - Inconsistent documentation style
+
+4. **Type Hierarchy Problems**:
+   - Unclear inheritance patterns in entity types
+   - Redundant base type exports
+   - Confusing type naming conventions
+
+## Solution Design
+
+### Phase 1: Audit and Documentation
+
+1. **Type System Structure**:
+
+   - [ ] Create comprehensive type relationship diagram
+   - [ ] Document all type dependencies
+   - [ ] Map out type inheritance hierarchy
+
+2. **Documentation**:
+
+   - [ ] Add missing JSDoc comments
+   - [ ] Standardize documentation format
+   - [ ] Create type usage examples
+
+3. **Validation**:
+   - [ ] Identify missing Zod schemas
+   - [ ] Document validation requirements
+   - [ ] Plan schema implementation
+
+### Phase 2: Consolidation and Cleanup
+
+1. **Entity Types**:
+
+   - [ ] Merge duplicate entity definitions
+   - [ ] Create proper type inheritance hierarchy
+   - [ ] Implement consistent naming convention
+
+2. **Shared Types**:
+
+   - [ ] Consolidate shared interfaces
+   - [ ] Remove redundant definitions
+   - [ ] Create clear type boundaries
+
+3. **Type Organization**:
+   - [ ] Restructure type directories
+   - [ ] Clean up index.ts exports
+   - [ ] Implement consistent file naming
+
+### Phase 3: Validation and Testing
+
+1. **Schema Implementation**:
+
+   - [ ] Create missing Zod schemas
+   - [ ] Implement validation helpers
+   - [ ] Add runtime type checking
+
+2. **Testing**:
+   - [ ] Add type compatibility tests
+   - [ ] Create validation test suite
+   - [ ] Implement type checking CI
+
+## Implementation Steps
+
+1. **Initial Cleanup (Phase 1)**:
+
+   - [ ] Create type system documentation
+     - Document current structure
+     - Map type relationships
+     - Identify all duplications
+   - [ ] Add missing JSDoc comments
+     - Focus on entity types first
+     - Document shared interfaces
+     - Add validation requirements
+   - [ ] Create type diagrams
+     - Entity inheritance diagram
+     - Type dependency graph
+     - Directory structure map
+
+2. **Type Consolidation (Phase 2)**:
+
+   - [ ] Merge duplicate entity types
+     - Combine base.ts and post.ts entities
+     - Consolidate shared interfaces
+     - Update type exports
+   - [ ] Implement type hierarchy
+     - Create proper base types
+     - Add specific type extensions
+     - Update type guards
+   - [ ] Clean up shared types
+     - Merge podcast shared types
+     - Consolidate content types
+     - Remove redundancies
+
+3. **Validation Implementation (Phase 3)**:
+   - [ ] Create Zod schemas
+     - Add missing entity schemas
+     - Implement shared type validation
+     - Add runtime checks
+   - [ ] Add type tests
+     - Write compatibility tests
+     - Add validation tests
+     - Create CI checks
+
+## Affected Components
+
+1. Type System Files:
+
+   - `/app/types/entities/*`
+   - `/app/types/shared/*`
+   - `/app/types/processing/*`
+   - `/app/types/podcast/*`
+
+2. Dependent Components:
+   - Components using entity types
+   - Processing system
+   - API interfaces
+   - Validation logic
+
+## Dependencies
+
+- None (internal refactoring)
+
+## Testing Plan
+
+1. Type Compatibility:
+
+   - Test all type relationships
+   - Verify inheritance hierarchy
+   - Check type constraints
+
+2. Validation:
+
+   - Test all Zod schemas
+   - Verify runtime checks
+   - Test error handling
+
+3. Integration:
+   - Test with dependent components
+   - Verify API compatibility
+   - Check processing system
+
+## Documentation Impact
+
+1. Type System:
+
+   - Update type documentation
+   - Add relationship diagrams
+   - Document validation rules
+
+2. Components:
+
+   - Update component docs
+   - Add type usage examples
+   - Document breaking changes
+
+3. Standards:
+   - Update .cursorrules
+   - Add type conventions
+   - Document best practices
+
+## Current Status

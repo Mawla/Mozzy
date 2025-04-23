@@ -4,6 +4,10 @@ import {
   EntityType,
   baseEntitySchema,
   LocationEntity as BaseLocationEntity,
+  LocationType,
+  Coordinates,
+  coordinatesSchema,
+  locationEntitySchema as baseLocationSchema,
 } from "./base";
 import { ContentMetadata } from "@/app/types/contentMetadata";
 import { ProcessingStatus } from "../processing/base";
@@ -49,7 +53,7 @@ export interface OrganizationEntity extends BaseEntity {
  */
 export interface LocationEntity extends BaseLocationEntity {
   /** Required type of location (city, country, etc.) */
-  locationType: string;
+  locationType: LocationType;
   /** Optional relevance score for this location in the podcast context (0-1) */
   relevance?: number;
   /** Optional timestamps where this location is mentioned */
@@ -134,17 +138,7 @@ export const organizationEntitySchema = baseEntitySchema.extend({
 });
 
 // Location Entity Schema
-export const locationEntitySchema = baseEntitySchema.extend({
-  type: z.literal("LOCATION"),
-  locationType: z.string().min(1),
-  coordinates: z
-    .object({
-      latitude: z.number().min(-90).max(90),
-      longitude: z.number().min(-180).max(180),
-    })
-    .optional(),
-  region: z.string().optional(),
-  parent: z.string().optional(),
+export const locationEntitySchema = baseLocationSchema.extend({
   relevance: z.number().min(0).max(1).optional(),
   mentionTimestamps: z.array(z.string()).optional(),
 });

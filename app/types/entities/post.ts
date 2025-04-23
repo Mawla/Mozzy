@@ -1,5 +1,13 @@
 import { z } from "zod";
-import { BaseEntity, EntityType, baseEntitySchema } from "./base";
+import {
+  BaseEntity,
+  EntityType,
+  baseEntitySchema,
+  LocationType,
+  Coordinates,
+  coordinatesSchema,
+  locationEntitySchema as baseLocationSchema,
+} from "./base";
 
 // Post-specific entity interfaces
 export interface PostPersonEntity extends BaseEntity {
@@ -34,17 +42,18 @@ export interface PostOrganizationEntity extends BaseEntity {
   socialProfiles?: string[];
 }
 
+/**
+ * Location entity interface for post content.
+ * Extends base LocationEntity with post-specific fields.
+ */
 export interface PostLocationEntity extends BaseEntity {
   type: Extract<EntityType, "LOCATION">;
   /** Type of location (e.g. city, country, landmark) */
-  locationType: string;
+  locationType: LocationType;
   /** Geographic region */
   region?: string;
   /** Geographic coordinates */
-  coordinates?: {
-    latitude: number;
-    longitude: number;
-  };
+  coordinates?: Coordinates;
 }
 
 export interface PostEventEntity extends BaseEntity {
@@ -91,16 +100,8 @@ export const postOrganizationSchema = baseEntitySchema.extend({
   socialProfiles: z.array(z.string()).optional(),
 });
 
-export const postLocationSchema = baseEntitySchema.extend({
-  type: z.literal("LOCATION"),
-  locationType: z.string().optional(),
-  region: z.string().optional(),
-  coordinates: z
-    .object({
-      latitude: z.number(),
-      longitude: z.number(),
-    })
-    .optional(),
+export const postLocationSchema = baseLocationSchema.extend({
+  // Add any post-specific validation rules here
 });
 
 export const postEventSchema = baseEntitySchema.extend({

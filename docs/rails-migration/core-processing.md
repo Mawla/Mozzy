@@ -399,3 +399,97 @@ end
      duration: Time.current - start_time
    )
    ```
+
+## Core Processing Migration Specifications
+
+### 5. Type System Requirements
+
+**Current TypeScript Foundations** ([source](../features/core-processing/architecture.md#type-system-architecture)):
+
+- `ProcessingResult` with format-specific extensions
+- Strict null checks and type guards
+- Internal/public API type separation
+- Entity types with validation schemas
+
+**Migration Requirements:**
+
+- Maintain equivalent type safety
+- Preserve format-specific type extensions
+- Replicate type-driven error handling
+- Keep internal/public type separation
+
+### 6. Validation Requirements
+
+**Current Zod Implementation** ([source](../features/core-processing/validation.md)):
+
+- Entity schema validation
+- Minimum array length checks
+- Non-empty string constraints
+- Batch validation operations
+
+**Migration Requirements:**
+
+- Equivalent input validation rigor
+- Parallel error messaging structure
+- Matching validation test coverage
+- Identical entity requirements
+
+### 7. API Contract
+
+**Current Endpoint Behavior** ([source](../features/core-processing/api.md)):
+
+- POST /api/process/[format]
+- Processing options payload
+- JSON response with:
+  - Status field
+  - Progress percentage
+  - Error details object
+  - Analysis metadata
+
+**Migration Requirements:**
+
+- Maintain identical endpoint contracts
+- Preserve response structure
+- Match error status codes
+- Keep analysis metadata format
+
+### 8. Error Handling Standards
+
+**Current Patterns** ([source](../features/core-processing/architecture.md#error-handling)):
+
+- Custom error classes with codes
+- Centralized error logging
+- Type-safe error propagation
+- Contextual error metadata
+
+**Migration Requirements:**
+
+- Equivalent error classification
+- Same error code taxonomy
+- Identical logging structure
+- Matching error recovery flows
+
+### 9. Monitoring Essentials
+
+**Current Metrics** ([source](../features/core-processing/testing.md#monitoring-and-logging)):
+
+- Step duration tracking
+- Error rate thresholds
+- Progress milestones
+- Memory/CPU utilization
+
+**Migration Requirements:**
+
+- Replicate metric collection
+- Maintain same thresholds
+- Preserve alerting levels
+- Keep dashboard groupings
+
+## Migration Verification Checklist
+
+- [ ] Type hierarchy matches [architecture docs](../features/core-processing/architecture.md)
+- [ ] Validation rules match [validation specs](../features/core-processing/validation.md)
+- [ ] API endpoints comply with [API documentation](../features/core-processing/api.md)
+- [ ] Error handling replicates [defined patterns](../features/core-processing/testing.md#error-handling)
+- [ ] Monitoring meets [defined observability standards](../features/core-processing/testing.md#monitoring-and-logging)
+- [ ] All [core processing components](../features/core-processing/components.md) have migration parity
