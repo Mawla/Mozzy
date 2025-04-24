@@ -22,7 +22,7 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
       logger.debug("User not authenticated, redirecting to login", {
         from: pathname,
       });
-      router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
+      router.push(`/login?next=${encodeURIComponent(pathname)}`);
       return;
     }
 

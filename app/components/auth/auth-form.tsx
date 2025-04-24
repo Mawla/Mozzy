@@ -5,6 +5,7 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { logger } from "@/lib/logger";
 
 export function AuthForm() {
   console.log("AuthForm: Component rendering");
@@ -12,11 +13,20 @@ export function AuthForm() {
   const searchParams = useSearchParams();
   const next = searchParams?.get("next") ?? "/dashboard";
 
+  // Log component initialization
+  useEffect(() => {
+    logger.debug("AuthForm: Initializing with redirect parameters", {
+      next_param: next,
+      full_url: window.location.href,
+    });
+  }, [next]);
+
   const supabase = createBrowserClient();
 
   useEffect(() => {
     setMounted(true);
     console.log("AuthForm: Component mounted");
+    logger.debug("AuthForm: Component mounted");
   }, []);
 
   if (!mounted) {
@@ -26,6 +36,11 @@ export function AuthForm() {
   const redirectUrl = `${
     window.location.origin
   }/auth/callback?next=${encodeURIComponent(next)}`;
+
+  logger.debug("AuthForm: Setting up redirect URL", {
+    redirectUrl,
+    next_destination: next,
+  });
 
   return (
     <div className="w-full max-w-[400px] mx-auto p-8">

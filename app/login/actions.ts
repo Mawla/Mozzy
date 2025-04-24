@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { logger } from "@/lib/logger";
 
 export async function login(formData: FormData) {
   const supabase = await createClient();
@@ -14,14 +15,24 @@ export async function login(formData: FormData) {
     password: formData.get("password") as string,
   };
 
-  const { error } = await supabase.auth.signInWithPassword(data);
+  // Get the next parameter if present
+  const next = (formData.get("next") as string) || "/dashboard";
 
-  if (error) {
+  try {
+    const { error } = await supabase.auth.signInWithPassword(data);
+
+    if (error) {
+      logger.error("Login failed", error, { email: data.email });
+      redirect("/auth/auth-code-error");
+    }
+
+    logger.info("Login successful", { email: data.email, redirectTo: next });
+    revalidatePath("/", "layout");
+    redirect(next);
+  } catch (err) {
+    logger.error("Unexpected login error", err as Error, { email: data.email });
     redirect("/auth/auth-code-error");
   }
-
-  revalidatePath("/", "layout");
-  redirect("/dashboard");
 }
 
 export async function signup(formData: FormData) {

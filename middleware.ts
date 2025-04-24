@@ -32,7 +32,7 @@ export async function middleware(request: NextRequest) {
     if (!session && !publicRoutes.some((route) => pathname.startsWith(route))) {
       logger.warn("Unauthorized access attempt", { pathname });
       const redirectUrl = new URL("/login", request.url);
-      redirectUrl.searchParams.set("redirectTo", pathname);
+      redirectUrl.searchParams.set("next", pathname);
       return NextResponse.redirect(redirectUrl);
     }
 
