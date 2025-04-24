@@ -2,6 +2,7 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { Database } from "@/types/supabase";
 import { logger } from "@/lib/logger";
+import { cache } from "react";
 
 export async function createClient(cookieStore = cookies()) {
   try {
@@ -12,7 +13,6 @@ export async function createClient(cookieStore = cookies()) {
         cookies: {
           get(name: string) {
             const cookie = cookieStore.get(name);
-            logger.debug("Cookie get", { name, exists: !!cookie });
             return cookie?.value;
           },
           set(name: string, value: string, options: CookieOptions) {
@@ -22,7 +22,6 @@ export async function createClient(cookieStore = cookies()) {
                 return;
               }
               cookieStore.set({ name, value, ...options });
-              logger.debug("Cookie set", { name });
             } catch (error) {
               // Only log warning if not in a Server Action
               if (!(error as Error).message.includes("Server Action")) {
@@ -43,7 +42,6 @@ export async function createClient(cookieStore = cookies()) {
                 return;
               }
               cookieStore.delete({ name, ...options });
-              logger.debug("Cookie removed", { name });
             } catch (error) {
               // Only log warning if not in a Server Action
               if (!(error as Error).message.includes("Server Action")) {
@@ -77,8 +75,9 @@ export async function createClient(cookieStore = cookies()) {
 }
 
 // Session management utilities
-export async function getSessionOrThrow() {
-  const client = await createClient();
+export const getSessionOrThrow = cache(async () => {
+  const cookieStore = cookies();
+  const client = await createClient(cookieStore);
   const {
     data: { session },
     error,
@@ -91,11 +90,12 @@ export async function getSessionOrThrow() {
     );
     throw new Error("No active session");
   }
-
+  logger.info("Session retrieved successfully");
   return session;
-}
+});
 
-export async function getUserOrThrow() {
+export const getUserOrThrow = cache(async () => {
   const session = await getSessionOrThrow();
+  logger.info("User retrieved successfully from cached session");
   return session.user;
-}
+});
