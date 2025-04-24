@@ -50,7 +50,7 @@ export const MergeTab: React.FC = () => {
     setMergeInstructions,
   } = usePostStore();
   const { toast } = useToast();
-  const { isLoading, progress, loadingMessage } = useLoadingStore();
+  const { loading, progress, loadingText } = useLoadingStore();
   const [currentMergingIndex, setCurrentMergingIndex] = useState<number | null>(
     null
   );
@@ -395,7 +395,7 @@ export const MergeTab: React.FC = () => {
             !contentToMerge ||
             selectedContentIndex === null ||
             templates.length === 0 ||
-            isLoading
+            loading
           }
           variant="secondary"
         >
@@ -403,21 +403,21 @@ export const MergeTab: React.FC = () => {
         </Button>
         <Button
           onClick={handleMergeClick}
-          disabled={!contentToMerge || templates.length === 0 || isLoading}
+          disabled={!contentToMerge || templates.length === 0 || loading}
           variant="outline"
         >
-          {isLoading ? MESSAGES.MERGING_CONTENT : BUTTON_TEXTS.MERGE_ALL}
+          {loading ? MESSAGES.MERGING_CONTENT : BUTTON_TEXTS.MERGE_ALL}
         </Button>
         <Button
           onClick={handleSaveClick}
-          disabled={Object.keys(merged_contents).length === 0 || isLoading}
+          disabled={Object.keys(merged_contents).length === 0 || loading}
           className="bg-gray-800 hover:bg-gray-700 text-white"
         >
           {BUTTON_TEXTS.SAVE}
         </Button>
         <Button
           onClick={handleExport}
-          disabled={Object.keys(merged_contents).length === 0 || isLoading}
+          disabled={Object.keys(merged_contents).length === 0 || loading}
           variant="outline"
         >
           <Download className="mr-2 h-4 w-4" />
@@ -425,7 +425,7 @@ export const MergeTab: React.FC = () => {
         </Button>
         <Button
           onClick={handleCopyForSocial}
-          disabled={!editorContent || isLoading}
+          disabled={!editorContent || loading}
           variant="outline"
         >
           <Clipboard className="mr-2 h-4 w-4" />
@@ -470,7 +470,7 @@ export const MergeTab: React.FC = () => {
           <TweetPreview content={editorContent} />
           <Button
             onClick={handleCopyForSocial}
-            disabled={!editorContent || isLoading}
+            disabled={!editorContent || loading}
             variant="outline"
             className="w-full"
           >
@@ -480,12 +480,12 @@ export const MergeTab: React.FC = () => {
         </div>
       </div>
 
-      {isLoading && (
+      {loading && (
         <div className="mt-4 p-4 bg-gray-100 rounded-md">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Loader2 className="animate-spin mr-2" />
-              <span>{loadingMessage}</span>
+              <span>{loadingText}</span>
             </div>
             {!isCancelling && (
               <Button
