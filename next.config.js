@@ -7,7 +7,15 @@ const nextConfig = {
   },
   webpack: (config, { isServer }) => {
     // Suppress punycode warning
-    config.ignoreWarnings = [{ module: /node_modules\/punycode/ }];
+    config.ignoreWarnings = [
+      { module: /node_modules\/punycode/ },
+      // Ignore sidebar component import warnings
+      { message: /SidebarGroup/ },
+      { message: /SidebarGroupContent/ },
+      { message: /SidebarMenu/ },
+      { message: /SidebarMenuItem/ },
+      { message: /SidebarMenuButton/ },
+    ];
     return config;
   },
 };
