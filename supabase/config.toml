@@ -41,7 +41,7 @@ file_size_limit = "50MiB"
 
 [auth]
 enabled = true
-site_url = "env(NEXT_PUBLIC_VERCEL_URL)"
+site_url = "env(VERCEL_URL)"
 jwt_expiry = 3600
 enable_refresh_token_rotation = true
 refresh_token_reuse_interval = 10
@@ -119,7 +119,7 @@ url = ""
 enabled = true
 client_id = "your-github-client-id"
 secret = "your-github-client-secret"
-redirect_uri = "env(NEXT_PUBLIC_VERCEL_URL)/auth/callback"
+redirect_uri = "env(VERCEL_URL)/auth/callback"
 
 [auth.external.gitlab]
 enabled = false
@@ -132,7 +132,7 @@ url = ""
 enabled = true
 client_id = "your-google-client-id"
 secret = "your-google-client-secret"
-redirect_uri = "env(NEXT_PUBLIC_VERCEL_URL)/auth/callback"
+redirect_uri = "env(VERCEL_URL)/auth/callback"
 
 [auth.external.keycloak]
 enabled = false
