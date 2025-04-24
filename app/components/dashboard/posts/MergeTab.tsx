@@ -46,7 +46,7 @@ export const MergeTab: React.FC = () => {
     updatePost,
     handleMerge,
     handleSave,
-    mergeInstructions,
+    merge_instructions,
     setMergeInstructions,
   } = usePostStore();
   const { toast } = useToast();
@@ -62,9 +62,9 @@ export const MergeTab: React.FC = () => {
   const [isCancelling, setIsCancelling] = useState(false);
   const cancelRef = useRef(false);
 
-  const mergedContents = useMemo(
-    () => currentPost?.mergedContents || {},
-    [currentPost?.mergedContents]
+  const merged_contents = useMemo(
+    () => currentPost?.merged_contents || {},
+    [currentPost?.merged_contents]
   );
   const templates = useMemo(
     () => currentPost?.templates || [],
@@ -74,27 +74,27 @@ export const MergeTab: React.FC = () => {
   useEffect(() => {
     setIsClient(true);
     // Initialize merge instructions from post if it exists
-    if (currentPost?.mergeInstructions) {
-      setMergeInstructions(currentPost.mergeInstructions);
+    if (currentPost?.merge_instructions) {
+      setMergeInstructions(currentPost.merge_instructions);
     }
-  }, [currentPost?.mergeInstructions, setMergeInstructions]);
+  }, [currentPost?.merge_instructions, setMergeInstructions]);
 
   useEffect(() => {
     console.log("Current templates:", templates);
-    console.log("Current mergedContents:", mergedContents);
-  }, [templates, mergedContents]);
+    console.log("Current merged_contents:", merged_contents);
+  }, [templates, merged_contents]);
 
   const handleEditorUpdate = (newContent: string) => {
     if (currentPost && templates.length > 0 && selectedContentIndex !== null) {
       const selectedTemplate = templates[selectedContentIndex];
       if (selectedTemplate && selectedTemplate.id) {
-        const updatedMergedContents = { ...mergedContents };
+        const updatedMergedContents = { ...merged_contents };
         updatedMergedContents[selectedTemplate.id] = newContent;
         updatePost({
           ...currentPost,
-          mergedContents: updatedMergedContents,
+          merged_contents: updatedMergedContents,
         });
-        console.log("Updated mergedContents:", updatedMergedContents);
+        console.log("Updated merged_contents:", updatedMergedContents);
       } else {
         console.error("Selected template or template ID is undefined");
       }
@@ -114,16 +114,16 @@ export const MergeTab: React.FC = () => {
     if (selectedContentIndex !== null && templates[selectedContentIndex]) {
       const templateId = templates[selectedContentIndex].id;
       if (templateId) {
-        const content = mergedContents[templateId] || "";
+        const content = merged_contents[templateId] || "";
         setEditorContent(content);
       } else {
         console.error("Selected template ID is undefined");
       }
     }
-  }, [selectedContentIndex, templates, mergedContents]);
+  }, [selectedContentIndex, templates, merged_contents]);
 
   const placeholderMessage =
-    Object.keys(mergedContents).length === 0
+    Object.keys(merged_contents).length === 0
       ? "No merged content available. Click 'Merge Content' to generate merged content."
       : "Select a template to view its merged content.";
 
@@ -184,15 +184,15 @@ export const MergeTab: React.FC = () => {
         setCurrentMergingIndex(i);
         try {
           console.log(`Attempting to merge template ${i}:`, template);
-          await handleMerge(currentPost.id, i, mergeInstructions);
+          await handleMerge(currentPost.id, i, merge_instructions);
 
           if (cancelRef.current) break;
 
           console.log(`Successfully merged content for template ${i + 1}`);
 
           const updatedPost = usePostStore.getState().currentPost;
-          if (updatedPost?.mergedContents && template.id) {
-            const mergedContent = updatedPost.mergedContents[template.id];
+          if (updatedPost?.merged_contents && template.id) {
+            const mergedContent = updatedPost.merged_contents[template.id];
             if (mergedContent) {
               setEditorContent(mergedContent);
               setSelectedContentIndex(i);
@@ -266,12 +266,12 @@ export const MergeTab: React.FC = () => {
     }
 
     try {
-      const tweetPreviews = Object.entries(mergedContents).map(
+      const tweetPreviews = Object.entries(merged_contents).map(
         ([templateId, content]) => {
           const template = templates.find((t) => t.id === templateId);
           return {
             templateName: template?.name || "Unknown Template",
-            content: content,
+            content: String(content), // Ensure content is a string
           };
         }
       );
@@ -331,14 +331,14 @@ export const MergeTab: React.FC = () => {
       await handleMerge(
         currentPost.id,
         selectedContentIndex,
-        mergeInstructions
+        merge_instructions
       );
       console.log(`Successfully merged content for selected template`);
 
       // Update the local state after merge
       const updatedPost = usePostStore.getState().currentPost;
-      if (updatedPost?.mergedContents && template.id) {
-        const mergedContent = updatedPost.mergedContents[template.id];
+      if (updatedPost?.merged_contents && template.id) {
+        const mergedContent = updatedPost.merged_contents[template.id];
         if (mergedContent) {
           setEditorContent(mergedContent);
           toast({
@@ -410,14 +410,14 @@ export const MergeTab: React.FC = () => {
         </Button>
         <Button
           onClick={handleSaveClick}
-          disabled={Object.keys(mergedContents).length === 0 || isLoading}
+          disabled={Object.keys(merged_contents).length === 0 || isLoading}
           className="bg-gray-800 hover:bg-gray-700 text-white"
         >
           {BUTTON_TEXTS.SAVE}
         </Button>
         <Button
           onClick={handleExport}
-          disabled={Object.keys(mergedContents).length === 0 || isLoading}
+          disabled={Object.keys(merged_contents).length === 0 || isLoading}
           variant="outline"
         >
           <Download className="mr-2 h-4 w-4" />
@@ -450,7 +450,7 @@ export const MergeTab: React.FC = () => {
         <Textarea
           id="merge-instructions"
           placeholder="Add any instructions for the AI to consider when merging content..."
-          value={mergeInstructions}
+          value={merge_instructions}
           onChange={(e) => setMergeInstructions(e.target.value)}
           className="min-h-[100px]"
         />

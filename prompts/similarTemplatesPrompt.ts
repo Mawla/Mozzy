@@ -1,6 +1,10 @@
 import { ContentMetadata } from "@/app/types/contentMetadata";
 import { Template } from "@/app/types/template";
 
+const safeJoin = (arr: string[] | undefined | null): string => {
+  return Array.isArray(arr) ? arr.join(", ") : "N/A";
+};
+
 export const getSimilarTemplatesPrompt = (
   contentMetadata: ContentMetadata,
   templates: Template[]
@@ -8,12 +12,12 @@ export const getSimilarTemplatesPrompt = (
 You are an assistant that helps find similar templates based on content metadata.
 
 Content Metadata:
-Categories: ${contentMetadata.categories.join(", ")}
-Tags: ${contentMetadata.tags.join(", ")}
-Topics: ${contentMetadata.topics.join(", ")}
-Key People: ${contentMetadata.keyPeople.join(", ")}
-Industries: ${contentMetadata.industries.join(", ")}
-Content Type: ${contentMetadata.contentType.join(", ")}
+Categories: ${safeJoin(contentMetadata.categories)}
+Tags: ${safeJoin(contentMetadata.tags)}
+Topics: ${safeJoin(contentMetadata.topics)}
+Key People: ${safeJoin(contentMetadata.keyPeople)}
+Industries: ${safeJoin(contentMetadata.industries)}
+Content Type: ${safeJoin(contentMetadata.contentType)}
 
 Available Templates:
 ${templates
@@ -22,7 +26,7 @@ ${templates
       `Template ID: ${template.id}
       Name: ${template.name}
       Description: ${template.description}
-      Tags: ${template.tags ? template.tags.join(", ") : "N/A"}
+      Tags: ${safeJoin(template.tags)}
       `
   )
   .join("\n")}

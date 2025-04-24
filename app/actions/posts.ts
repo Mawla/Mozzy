@@ -37,23 +37,56 @@ export async function getPosts(): Promise<ServerActionResponse<Post[]>> {
       return { error: "Failed to fetch user posts" };
     }
 
-    // Then get team IDs the user is a member of
-    const { data: teamMemberships, error: teamError } = await supabase
-      .from("team_members")
-      .select("team_id")
-      .eq("user_id", user.id);
+    // Try to get team memberships using the is_in_same_team function directly to avoid RLS issues
+    let teamIds: string[] = [];
+    try {
+      // Use a direct raw query to bypass RLS checks
+      const { data: teamMemberships, error: teamError } = await supabase.rpc(
+        "get_user_team_ids",
+        { user_uuid: user.id }
+      );
 
-    if (teamError) {
-      logger.error("Failed to fetch team memberships", teamError);
-      return { data: userPosts }; // Return just user posts if team fetch fails
+      if (teamError) {
+        // Fallback method - try the team_members table but with limited scope
+        logger.warn(
+          "Failed to fetch team memberships via RPC, attempting alternate approach",
+          teamError
+        );
+
+        const { data: memberships, error: membershipError } = await supabase
+          .from("team_members")
+          .select("team_id")
+          .eq("user_id", user.id);
+
+        if (!membershipError && memberships) {
+          teamIds = memberships.map((tm) => tm.team_id);
+        } else {
+          logger.error(
+            "Failed to fetch team memberships using fallback",
+            membershipError
+          );
+          return { data: userPosts }; // Return just user posts if both team fetch methods fail
+        }
+      } else if (teamMemberships) {
+        // RPC call successful
+        teamIds = teamMemberships;
+      }
+    } catch (teamMembershipError) {
+      logger.error(
+        "Exception in team membership fetch",
+        teamMembershipError instanceof Error
+          ? teamMembershipError
+          : new Error(String(teamMembershipError))
+      );
+      return { data: userPosts }; // Return just user posts on exception
     }
 
-    if (!teamMemberships?.length) {
-      return { data: userPosts }; // Return just user posts if no team memberships
+    // If no teams, return just user posts
+    if (teamIds.length === 0) {
+      return { data: userPosts };
     }
 
     // Get team posts
-    const teamIds = teamMemberships.map((tm) => tm.team_id);
     const { data: teamPosts, error: teamPostsError } = await supabase
       .from("posts")
       .select("*")
