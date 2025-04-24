@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { logger } from "@/lib/logger";
+import { headers } from "next/headers";
 
 export async function login(formData: FormData) {
   const supabase = await createClient();
@@ -45,10 +46,16 @@ export async function signup(formData: FormData) {
     password: formData.get("password") as string,
   };
 
+  // Get the current site URL from the referer or use NEXT_PUBLIC_SITE_URL as fallback
+  const siteUrl =
+    headers().get("origin") ||
+    process.env.VERCEL_URL ||
+    "https://your-production-domain.com";
+
   const { error } = await supabase.auth.signUp({
     ...data,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/confirm`,
+      emailRedirectTo: `${siteUrl}/auth/confirm`,
     },
   });
 
