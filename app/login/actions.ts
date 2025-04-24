@@ -49,7 +49,7 @@ export async function signup(formData: FormData) {
   // Get the current site URL from the referer or use NEXT_PUBLIC_SITE_URL as fallback
   const siteUrl =
     headers().get("origin") ||
-    process.env.VERCEL_URL ||
+    process.env.NEXT_PUBLIC_VERCEL_URL ||
     "https://your-production-domain.com";
 
   const { error } = await supabase.auth.signUp({
