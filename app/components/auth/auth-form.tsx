@@ -4,13 +4,14 @@ import { createBrowserClient } from "@/lib/supabase/client";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { logger } from "@/lib/logger";
 
 export function AuthForm() {
   console.log("AuthForm: Component rendering");
   const [mounted, setMounted] = useState(false);
   const searchParams = useSearchParams();
+  const router = useRouter();
   const next = searchParams?.get("next") ?? "/dashboard";
 
   // Log component initialization
@@ -28,6 +29,24 @@ export function AuthForm() {
     console.log("AuthForm: Component mounted");
     logger.debug("AuthForm: Component mounted");
   }, []);
+
+  // After mounted check or at end of first mounted useEffect we add a new useEffect for auth state change
+  useEffect(() => {
+    if (!mounted) return; // ensure component mounted
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN") {
+        logger.info("AuthForm: Signed in, redirecting", { redirectTo: next });
+        router.push(next);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [mounted, next, router, supabase]);
 
   if (!mounted) {
     return null;
