@@ -6,6 +6,7 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { logger } from "@/lib/logger";
+import { getURL } from "@/app/utils/url";
 
 export function AuthForm() {
   console.log("AuthForm: Component rendering");
@@ -52,9 +53,9 @@ export function AuthForm() {
     return null;
   }
 
-  const redirectUrl = `${
-    window.location.origin
-  }/auth/callback?next=${encodeURIComponent(next)}`;
+  // Construct the full redirect URL robustly using the URL constructor
+  const callbackPath = `/auth/callback?next=${encodeURIComponent(next)}`;
+  const redirectUrl = new URL(callbackPath, getURL()).toString();
 
   logger.debug("AuthForm: Setting up redirect URL", {
     redirectUrl,

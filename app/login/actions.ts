@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { logger } from "@/lib/logger";
 import { headers } from "next/headers";
+import { getURL } from "@/app/utils/url";
 
 export async function login(formData: FormData) {
   const supabase = await createClient();
@@ -46,23 +47,23 @@ export async function signup(formData: FormData) {
     password: formData.get("password") as string,
   };
 
-  // Get the current site URL from the referer or use NEXT_PUBLIC_SITE_URL as fallback
-  const siteUrl =
-    headers().get("origin") ||
-    process.env.NEXT_PUBLIC_VERCEL_URL ||
-    "https://your-production-domain.com";
+  // Use getURL for the email confirmation redirect
+  const siteUrl = getURL();
 
   const { error } = await supabase.auth.signUp({
     ...data,
     options: {
-      emailRedirectTo: `${siteUrl}/auth/confirm`,
+      // Ensure path starts correctly relative to the base URL
+      emailRedirectTo: `${siteUrl}auth/confirm`,
     },
   });
 
   if (error) {
+    logger.error("Signup failed", error, { email: data.email });
     redirect("/auth/auth-code-error");
   }
 
+  logger.info("Signup successful, pending confirmation", { email: data.email });
   revalidatePath("/", "layout");
   redirect("/auth/check-email");
 }
